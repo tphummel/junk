@@ -1,0 +1,165 @@
+id,OAK201203280
+version,2
+info,visteam,SEA
+info,hometeam,OAK
+info,site,TOK01
+info,date,2012/03/28
+info,number,0
+info,starttime,7:09PM
+info,daynight,night
+info,usedh,true
+info,umphome,hallt901
+info,ump1b,nelsj901
+info,ump2b,hudsm901
+info,ump3b,belld901
+info,howscored,park
+info,pitches,pitches
+info,temp,72
+info,winddir,unknown
+info,windspeed,0
+info,fieldcond,unknown
+info,precip,unknown
+info,sky,unknown
+info,timeofgame,184
+info,attendance,44227
+info,wp,wilht001
+info,lp,caria001
+info,save,leagb001
+start,figgc001,"Chone Figgins",0,1,5
+start,ackld001,"Dustin Ackley",0,2,4
+start,suzui001,"Ichiro Suzuki",0,3,9
+start,smoaj001,"Justin Smoak",0,4,3
+start,montj003,"Jesus Montero",0,5,10
+start,carpm001,"Mike Carp",0,6,7
+start,olivm001,"Miguel Olivo",0,7,2
+start,saunm001,"Michael Saunders",0,8,8
+start,ryanb002,"Brendan Ryan",0,9,6
+start,hernf002,"Felix Hernandez",0,0,1
+start,weekj001,"Jemile Weeks",1,1,4
+start,pennc001,"Cliff Pennington",1,2,6
+start,crisc001,"Coco Crisp",1,3,7
+start,smits002,"Seth Smith",1,4,10
+start,suzuk001,"Kurt Suzuki",1,5,2
+start,reddj001,"Josh Reddick",1,6,9
+start,cespy001,"Yoenis Cespedes",1,7,8
+start,alleb001,"Brandon Allen",1,8,3
+start,sogae001,"Eric Sogard",1,9,5
+start,mccab001,"Brandon McCarthy",1,0,1
+com,"$First game of the 2012 season; played at Tokyo Dome, Tokyo, Japan"
+play,1,0,figgc001,01,CX,63/G
+play,1,0,ackld001,10,BX,43/G
+play,1,0,suzui001,32,CBFBBX,S16/G-
+play,1,0,smoaj001,22,B>F1BF>S,K
+play,1,1,weekj001,22,BCCFBX,S8/L
+play,1,1,pennc001,31,BCB1B>X,8/F
+play,1,1,crisc001,00,>B,SB2
+play,1,1,crisc001,10,>B.X,43/G.2-3
+play,1,1,smits002,22,CBFBS,K
+play,2,0,montj003,00,X,53/G
+play,2,0,carpm001,11,CBX,3/G
+play,2,0,olivm001,01,CX,43/G
+play,2,1,suzuk001,22,CBBCC,K
+play,2,1,reddj001,00,X,43/G
+play,2,1,cespy001,12,BCSS,K23
+play,3,0,saunm001,00,X,S9/L
+play,3,0,ryanb002,11,CB1>S,SB2
+play,3,0,ryanb002,12,CB1>S.X,FC6/G.2X3(65)
+play,3,0,figgc001,10,B>C,CS2(26)
+play,3,0,figgc001,22,B>C.LBFX,43/G
+play,3,1,alleb001,12,BFCFS,K
+play,3,1,sogae001,01,CX,43/G
+play,3,1,weekj001,21,CBBX,8/L
+play,4,0,ackld001,11,CBX,HR/8/F
+play,4,0,suzui001,11,BCX,S6/G
+play,4,0,smoaj001,11,F1P>X,43/G.1-2
+play,4,0,montj003,10,BX,9/L
+play,4,0,carpm001,01,SX,7/F
+play,4,1,pennc001,00,X,D8/L
+play,4,1,crisc001,00,X,3/G-.2-3
+play,4,1,smits002,01,FX,3/G
+play,4,1,suzuk001,10,BX,D7/L.3-H
+play,4,1,reddj001,11,BFX,5/P5F
+play,5,0,olivm001,11,CBX,E5/TH1/G
+play,5,0,saunm001,12,CBFX,46(1)3/GDP
+play,5,0,ryanb002,11,CBX,63/G
+play,5,1,cespy001,11,BCH,HP
+play,5,1,alleb001,12,CBSC,K
+play,5,1,sogae001,00,1>X,3/G.1-2
+play,5,1,weekj001,12,CCBC,K
+play,6,0,figgc001,22,BCFBX,S8/G
+play,6,0,ackld001,22,BBCS1C,K
+play,6,0,suzui001,21,BBFX,S8/G.1-2
+play,6,0,smoaj001,01,CX,7/L
+play,6,0,montj003,10,BX,64(1)/FO/G
+play,6,1,pennc001,22,BFBFFX,S9/L
+play,6,1,crisc001,01,11F>B,SB2
+play,6,1,crisc001,21,11F>B.BX,7/F.2-3
+play,6,1,smits002,22,CBBFH,HP
+play,6,1,suzuk001,12,BCCX,6/P
+play,6,1,reddj001,21,BFBX,7/L
+play,7,0,carpm001,01,CX,5/P5F
+play,7,0,olivm001,02,FFX,8/F
+play,7,0,saunm001,02,SFFS,K
+play,7,1,cespy001,11,BCX,D8/L
+play,7,1,alleb001,01,LX,5/BP
+play,7,1,sogae001,01,CX,1/L
+play,7,1,weekj001,00,X,43/G
+play,8,0,ryanb002,00,,NP
+sub,cookr001,"Ryan Cook",1,0,1
+play,8,0,ryanb002,12,.CBFX,53/G
+play,8,0,figgc001,12,CSBS,K
+play,8,0,ackld001,32,CFBBBX,7/F
+play,8,1,pennc001,31,BBCBX,63/G
+play,8,1,crisc001,31,BBBCX,7/F
+play,8,1,smits002,11,SBX,7/F
+play,9,0,suzui001,00,,NP
+sub,balfg001,"Grant Balfour",1,0,1
+play,9,0,suzui001,00,.X,7/F
+play,9,0,smoaj001,32,BCBFBX,41/G
+play,9,0,montj003,21,BBCX,8/F
+play,9,1,suzuk001,00,,NP
+sub,wilht001,"Tom Wilhelmsen",0,0,1
+play,9,1,suzuk001,11,.BFX,8/F
+play,9,1,reddj001,10,BX,7/F
+play,9,1,cespy001,12,BFST,K
+play,10,0,carpm001,00,,NP
+sub,fuenb001,"Brian Fuentes",1,0,1
+play,10,0,carpm001,22,.BCCBX,2/P2F
+play,10,0,olivm001,12,BCFX,63/G
+play,10,0,saunm001,11,BCX,9/F
+play,10,1,alleb001,12,BFFX,E4/TH1/G
+play,10,1,sogae001,00,,NP
+sub,cowgc001,"Collin Cowgill",1,8,12
+play,10,1,sogae001,21,.B>F*B11>S,CS2(26)
+play,10,1,sogae001,32,.B>F*B11>S.FBX,8/F
+play,10,1,weekj001,22,CBBFC,K
+play,11,0,ryanb002,00,,NP
+sub,rosaa001,"Adam Rosales",1,8,3
+play,11,0,ryanb002,00,,NP
+sub,caria001,"Andrew Carignan",1,0,1
+play,11,0,ryanb002,12,..CBCX,D7/L
+play,11,0,figgc001,21,BBCX,54/SH/BG.2-3
+play,11,0,ackld001,10,BX,S8/L.3-H
+play,11,0,suzui001,00,,NP
+sub,blevj001,"Jerry Blevins",1,0,1
+play,11,0,suzui001,11,.1CB>C,SB2
+play,11,0,suzui001,12,.1CB>C.FX,S8/L.2-H;BX2(8364)
+play,11,0,smoaj001,01,CX,2/P
+play,11,1,pennc001,00,,NP
+sub,wellc001,"Casper Wells",0,6,7
+play,11,1,pennc001,00,,NP
+sub,leagb001,"Brandon League",0,0,1
+play,11,1,pennc001,01,..CX,7/F
+play,11,1,crisc001,32,BCBBCC,K
+play,11,1,smits002,10,BX,S8/G
+play,11,1,suzuk001,00,>C,DI.1-2
+play,11,1,suzuk001,12,>C.*BFS,K
+data,er,hernf002,1
+data,er,wilht001,0
+data,er,leagb001,0
+data,er,mccab001,1
+data,er,cookr001,0
+data,er,balfg001,0
+data,er,fuenb001,0
+data,er,caria001,2
+data,er,blevj001,0

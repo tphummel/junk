@@ -1,0 +1,10 @@
+playerID,yearID,teamID,lgID,round,POS,G,GS,InnOuts,PO,A,E,DP,TP,PB,SB,CS
+colliji01,1903,BOS,AL,WS,3B,8,8,213,9,18,1,1,0,,,
+crigelo01,1903,BOS,AL,WS,C,8,8,213,54,7,3,2,0,0,9,3
+dinnebi01,1903,BOS,AL,WS,P,4,4,105,2,9,0,0,0,,6,1
+doughpa01,1903,BOS,AL,WS,LF,8,8,213,13,3,1,1,0,,,
+ferriho01,1903,BOS,AL,WS,2B,8,8,213,18,23,2,2,0,,,
+freembu01,1903,BOS,AL,WS,RF,8,8,213,10,0,0,0,0,,,
+hugheto01,1903,BOS,AL,WS,P,1,1,6,0,0,0,0,0,,0,0
+lachaca01,1903,BOS,AL,WS,1B,8,8,213,77,3,3,3,0,,,
+parenfr01,1903,BOS,AL,WS,SS,8,8,213,16,28,3,2,0,,,

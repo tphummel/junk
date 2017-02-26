@@ -1,0 +1,10 @@
+{
+  "run_list": [
+    "recipe[bootstrap]",
+    "recipe[nodejs]",
+    "recipe[nginx]",
+    "recipe[php]",
+    "recipe[postgres]",
+    "recipe[mysql]"
+  ]
+}

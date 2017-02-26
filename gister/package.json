@@ -1,0 +1,12 @@
+{
+  "author": "Tom Hummel <tphummel@gmail.com>",
+  "name": "gister",
+  "description": "library for working with github gists",
+  "version": "0.0.1",
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}

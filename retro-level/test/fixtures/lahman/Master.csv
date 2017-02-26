@@ -1,0 +1,10 @@
+lahmanID,playerID,managerID,hofID,birthYear,birthMonth,birthDay,birthCountry,birthState,birthCity,deathYear,deathMonth,deathDay,deathCountry,deathState,deathCity,nameFirst,nameLast,nameNote,nameGiven,nameNick,weight,height,bats,throws,debut,finalGame,college,lahman40ID,lahman45ID,retroID,holtzID,bbrefID
+1,aaronha01,,aaronha01h,1934,2,5,USA,AL,Mobile,,,,,,,Hank,Aaron,,Henry Louis,"Hammer,Hammerin' Hank,Bad Henry",180,72,R,R,4/13/1954,10/3/1976,,aaronha01,aaronha01,aaroh101,aaronha01,aaronha01
+2,aaronto01,,,1939,8,5,USA,AL,Mobile,1984,8,16,USA,GA,Atlanta,Tommie,Aaron,,Tommie Lee,,190,75,R,R,4/10/1962,9/26/1971,,aaronto01,aaronto01,aarot101,aaronto01,aaronto01
+3,aasedo01,,,1954,9,8,USA,CA,Orange,,,,,,,Don,Aase,,Donald William,,190,75,R,R,7/26/1977,10/3/1990,Cal St. Fullerton,aasedo01,aasedo01,aased001,aasedo01,aasedo01
+4,abadan01,,,1972,8,25,USA,FL,West Palm Beach,,,,,,,Andy,Abad,,,,184,73,L,L,9/10/2001,4/13/2006,Middle Georgia JC,abadan01,abadan01,abada001,abadan01,abadan01
+5,abadijo01,,,1854,11,4,USA,PA,Philadelphia,1905,5,17,USA,NJ,Pemberton,John,Abadie,,John,,192,72,R,R,4/26/1875,6/10/1875,,abadijo01,abadijo01,abadj101,abadijo01,abadijo01
+6,abbated01,,,1877,4,15,USA,PA,Latrobe,1957,1,6,USA,FL,Ft.Lauderdale,Ed,Abbaticchio,,Edward James,Batty,170,71,R,R,9/4/1897,9/15/1910,,abbated01,abbated01,abbae101,abbated01,abbated01
+7,abbeybe01,,,1869,11,29,USA,VT,Essex,1962,6,11,USA,VT,Essex Junction,Bert,Abbey,,Bert Wood,,175,71,R,R,6/14/1892,9/23/1896,,abbeybe01,abbeybe01,abbeb101,abbeybe01,abbeybe01
+8,abbeych01,,,1866,10,14,USA,NE,Falls City,1926,4,27,USA,CA,San Francisco,Charlie,Abbey,,Charles S.,,169,68,L,,8/16/1893,8/19/1897,,abbeych01,abbeych01,abbec101,abbeych01,abbeych01
+9,abbotda01,,,1862,3,16,USA,OH,Portage,1930,2,13,USA,MI,Ottawa Lake,Dan,Abbott,,Leander Franklin,Big Dan,190,71,R,R,4/19/1890,5/23/1890,,abbotda01,abbotda01,abbod101,abbotda01,abbotda01

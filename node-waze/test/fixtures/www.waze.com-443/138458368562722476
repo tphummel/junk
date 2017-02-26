@@ -1,0 +1,15 @@
+POST /login/create
+host: www.waze.com
+content-type: application/x-www-form-urlencoded; charset=utf-8
+body: user_id=tphummel&password=testpassword
+
+200 HTTP/1.1
+content-type: text/json;charset=utf-8
+date: Sat, 16 Nov 2013 06:34:45 GMT
+server: nginx/1.1.19
+set-cookie: _web_session=b3VoUkpNbWtvZmh5alB2WmNHVlNpcEF1cUdHTnZPVld5Qzl5bDJ3VDNocz0tLXcydG55aDR1dmVjNE1qSGhZNDBZRVE9PQ%3D%3D--64b3fd8dd45deebedf5d213d3087f0043d89e186; Expires=Sun, 17-Nov-2013 06:34:45 GMT; Path=/
+set-cookie: _csrf_token=eEygj-erduKc_8xke4Gd3D1ARhphOVuijLNPunAbvQs; Expires=Sun, 17-Nov-2013 06:34:45 GMT; Path=/
+content-length: 98
+connection: keep-alive
+
+{"reply":{"error":0,"message":"tphummel","user_id":90740228,"rank":0,"full_name":"","login":true}}

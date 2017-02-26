@@ -1,0 +1,5 @@
+source 'https://rubygems.org'
+
+gem 'berkshelf'
+gem 'knife-solo', '~> 0.3.0'
+gem 'knife-digital_ocean', :git => "git@github.com:salemine/knife-digital_ocean.git", :branch => "fix-name-error"

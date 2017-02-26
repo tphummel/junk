@@ -1,0 +1,13 @@
+GET /Descartes-live/app/Archive/List?minDistance=1000&offset=0&count=
+host: www.waze.com
+
+200 HTTP/1.1
+content-type: application/json
+date: Fri, 06 Dec 2013 05:56:59 GMT
+server: nginx/1.1.19
+set-cookie: _web_session=MGhGRGt6bW9Vb0lySEdHVWhCQ0R3ZkpNR1ZQUElucDhuQXVuTnRiSURQaz0tLTU4R0MyZGo1RDBGRllGRTJncmhmUXc9PQ%3D%3D--0c66634104ab71bc3401793859d831487111a124; Expires=Sat, 07-Dec-2013 05:56:58 GMT; Path=/
+set-cookie: _csrf_token=nY0EWnqiFpsA0EM8E6QTRpDSROir0ljlkPKAWhVoAV4; Expires=Sat, 07-Dec-2013 05:56:58 GMT; Path=/
+content-length: 1830
+connection: keep-alive
+
+{"users":{"objects":[]},"archives":{"totalSessions":41,"objects":[{"id":763230797,"userID":90740228,"existingRoadMeters":19355,"newRoadMeters":0,"totalRoadMeters":19355,"startTime":1386263787000,"endTime":1386266300000,"hasFullSession":true},{"id":762513630,"userID":90740228,"existingRoadMeters":18756,"newRoadMeters":0,"totalRoadMeters":18756,"startTime":1386223332000,"endTime":1386224112000,"hasFullSession":true},{"id":762316434,"userID":90740228,"existingRoadMeters":16970,"newRoadMeters":0,"totalRoadMeters":16970,"startTime":1386208616000,"endTime":1386210337000,"hasFullSession":true},{"id":761475936,"userID":90740228,"existingRoadMeters":32578,"newRoadMeters":0,"totalRoadMeters":32547,"startTime":1386184905000,"endTime":1386187099000,"hasFullSession":true},{"id":761341406,"userID":90740228,"existingRoadMeters":32531,"newRoadMeters":0,"totalRoadMeters":33457,"startTime":1386178715000,"endTime":1386180676000,"hasFullSession":true},{"id":760549726,"userID":90740228,"existingRoadMeters":13291,"newRoadMeters":0,"totalRoadMeters":13418,"startTime":1386127286000,"endTime":1386129464000,"hasFullSession":true},{"id":759334733,"userID":90740228,"existingRoadMeters":19858,"newRoadMeters":0,"totalRoadMeters":19870,"startTime":1386087310000,"endTime":1386090198000,"hasFullSession":true},{"id":758549341,"userID":90740228,"existingRoadMeters":29260,"newRoadMeters":0,"totalRoadMeters":29262,"startTime":1386039005000,"endTime":1386041207000,"hasFullSession":true},{"id":757631906,"userID":90740228,"existingRoadMeters":26964,"newRoadMeters":0,"totalRoadMeters":26910,"startTime":1386002764000,"endTime":1386006084000,"hasFullSession":true},{"id":750322330,"userID":90740228,"existingRoadMeters":215960,"newRoadMeters":0,"totalRoadMeters":218942,"startTime":1385526117000,"endTime":1385535962000,"hasFullSession":true}]}}

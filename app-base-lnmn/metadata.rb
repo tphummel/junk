@@ -1,0 +1,15 @@
+name             "app-base-lnmn"
+maintainer       "Tom Hummel"
+maintainer_email "tphummel@gmail.com"
+license          "MIT"
+description      "Installs/Configures a basic node.js app server"
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version          "0.0.0"
+
+depends "apt"
+depends "build-essential"
+depends "git"
+depends "mongodb"
+depends "nginx"
+depends "redisio"
+depends "nodejs"

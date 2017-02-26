@@ -1,0 +1,13 @@
+{
+  "author": "Tom Hummel <tphummel@gmail.com> (tomhummel.com)",
+  "name": "striper",
+  "version": "0.0.0",
+  "dependencies": {
+    "stripe": "~1.2.0"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}

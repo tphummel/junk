@@ -1,0 +1,16 @@
+GET /login/get
+host: www.waze.com
+content-type: application/x-www-form-urlencoded; charset=utf-8
+body: user_id=tphummel&password=testpass
+
+200 HTTP/1.1
+content-type: text/json;charset=utf-8
+date: Sun, 11 May 2014 17:28:05 GMT
+server: nginx/1.1.19
+set-cookie: _web_session=MzlwbUNQa0kwb1hBMi9iQUxNUS9DY09TT0ZyTm9OVG1hckJKa3A4T3RLND0tLXFtZGRtYlZVd2paQTJFK2J3NkdmWGc9PQ%3D%3D--31b917c2d979718a239e3e3b2e781115b773d1e7; Expires=Mon, 12-May-2014 17:28:05 GMT; Path=/
+set-cookie: _csrf_token=J9oDR2n3UiPyxr5t3GcXVqgWbm8BjTRm7eUgvTA9Zg4; Expires=Mon, 12-May-2014 17:28:05 GMT; Path=/
+x-frame-options: SAMEORIGIN
+content-length: 85
+connection: keep-alive
+
+{"reply":{"error":0,"message":"","user_id":-1,"rank":0,"full_name":"","login":false}}

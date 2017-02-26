@@ -1,0 +1,19 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant::Config.run do |config|
+  config.vm.define :fett_server do |m|
+    m.vm.box = "precise64"
+    m.vm.network :hostonly, "192.168.33.10"
+    m.vm.provision :chef_solo do |chef|
+      chef.cookbooks_path = "./cookbooks"
+      chef.roles_path = "./roles"
+      chef.data_bags_path = "./data_bags"
+      chef.add_role "fett"
+    end
+  end
+end
+

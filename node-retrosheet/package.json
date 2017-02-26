@@ -1,0 +1,21 @@
+{
+  "author": "Tom Hummel <tphummel@gmail.com> (tomhummel.com)",
+  "name": "retrosheet",
+  "description": "library to decode retrosheet data files",
+  "version": "0.0.1",
+  "repository": "https://github.com/tphummel/node-retrosheet",
+  "dependencies": {
+    "moment": "~1.7.2",
+    "walk": "~2.2.1",
+    "request": "~2.21.0",
+    "node-zip": "~1.0.1"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*"
+  },
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}

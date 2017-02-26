@@ -1,0 +1,11 @@
+# Netatalk defaults applied to shares
+:DEFAULT: options:upriv,usedots cnidscheme:dbd dbpath:/var/dbd/AppleDB/$v allowed_hosts:192.168.1.0/24
+
+# User's home directory available as user's username
+# ~/ "$u"
+
+# file sharing volume
+/srv/share "Ben Sharington" allow:root,vagrant options:upriv
+
+# Time Machine volume
+# /mnt/tmachine "Time Machine" allow:user1,@timemachine options:usedots,upriv,tm

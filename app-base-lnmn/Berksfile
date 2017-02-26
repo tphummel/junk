@@ -1,0 +1,12 @@
+site :opscode
+
+metadata
+
+cookbook 'apt', '~>1.7.0'
+cookbook 'build-essential'
+cookbook 'git'
+
+cookbook 'mongodb', github: 'edelight/chef-mongodb'
+cookbook 'nginx'
+cookbook 'redisio', github: 'brianbianco/redisio'
+cookbook 'nodejs', github: 'mdxp/nodejs-cookbook'

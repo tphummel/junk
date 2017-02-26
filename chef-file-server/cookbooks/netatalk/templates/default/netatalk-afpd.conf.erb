@@ -1,0 +1,19 @@
+# Default AFP server
+"ben-sharington" -tcp -noddp -nosavepassword -nosetpassword -nodebug -nouservolfirst -nouservol -closevol \
+  -fqdn ben-sharington.mariners-village \
+  -hostname ben-sharington \
+  -mimicmodel AirPort \
+  -ipaddr 192.168.1.1 \
+  -port 548 \
+  -unixcodepage utf8 \
+  -volnamelen 255 \
+  -uampath /usr/lib/netatalk \
+  -uamlist uams_dhx2_passwd.so,uams_guest.so \
+  -defaultvol /etc/netatalk/AppleVolumes.default \
+  -systemvol /etc/netatalk/AppleVolumes.system \
+  -sleep 168
+
+# AFPd Logging
+- -setuplog "AFPDaemon log_info /var/log/netatalk/afpd.log" \
+  -setuplog "UAMSDaemon log_info /var/log/netatalk/uams.log" \
+  -setuplog "Default log_info /var/log/netatalk/netatalk.log"
