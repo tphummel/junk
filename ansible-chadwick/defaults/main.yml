@@ -1,0 +1,7 @@
+---
+cw_major_minor: "0.6"
+cw_patch: "4"
+cw_version: "{{cw_major_minor}}.{{cw_patch}}"
+cw_url_root: http://downloads.sourceforge.net
+cw_url_path: /project/chadwick/chadwick-{{cw_major_minor}}/chadwick-{{cw_version}}/chadwick-{{cw_version}}.tar.gz
+cw_url: "{{chadwick_url_root}}{{chadwick_url_path}}"

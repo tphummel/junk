@@ -1,0 +1,30 @@
+- name: download chadwick tarball
+  get_url:
+    url: "{{cw_url_root}}{{cw_url_path}}"
+    dest: /tmp/chadwick-{{cw_version}}.tar.gz
+
+- name: Uncompress chadwick tarball
+  sudo: yes
+  unarchive:
+    copy: no
+    creates: /opt/chadwick-{{cw_version}}
+    dest: /opt/
+    src: /tmp/chadwick-{{cw_version}}.tar.gz
+
+- name: build chadwick tools
+  sudo: yes
+  shell: "./configure; make; make install"
+  args:
+    chdir: /opt/chadwick-{{cw_version}}
+    creates: /usr/local/bin/cwevent
+
+# https://sourceforge.net/p/chadwick/mailman/message/28414951/
+- name: set LD_LIBRARY_PATH
+  lineinfile:
+    dest: ~/.profile
+    state: present
+    insertafter: EOF
+    line: "export LD_LIBRARY_PATH=/usr/local/lib"
+
+
+
