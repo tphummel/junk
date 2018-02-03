@@ -1,0 +1,29 @@
+{
+  "name": "put-json",
+  "version": "0.1.2",
+  "description": "wrapper for PUTting json with hyperquest",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha"
+  },
+  "keywords": [
+    "hyperquest",
+    "post",
+    "json",
+    "browserify"
+  ],
+  "author": "Tom Hummel",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "mocha": "~1.13.0",
+    "through": "~2.3.4"
+  },
+  "dependencies": {
+    "hyperquest": "~0.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/tphummel/put-json.git"
+  },
+  "bugs": "http://github.com/tphummel/put-json/issues"
+}
