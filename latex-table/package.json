@@ -1,0 +1,34 @@
+{
+  "name": "latex-table",
+  "version": "1.0.1",
+  "description": "convert an object array to latex table text",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "coffee-script": "~1.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tphummel/latex-table.git"
+  },
+  "keywords": [
+    "latex",
+    "table"
+  ],
+  "author": {
+    "name": "Tom Hummel",
+    "email": "tphummel@gmail.com",
+    "url": "tomhummel.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tphummel/latex-table/issues"
+  },
+  "homepage": "https://github.com/tphummel/latex-table"
+}
