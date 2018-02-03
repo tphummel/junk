@@ -1,0 +1,37 @@
+{
+  "name": "node-coffee-starter",
+  "version": "0.0.0",
+  "description": "node/coffee-script starter app",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape test",
+    "start": "node index.js"
+  },
+  "author": {
+    "name": "Tom Hummel",
+    "email": "tphummel@gmail.com",
+    "url": "tomhummel.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tphummel/node-coffee-starter.git"
+  },
+  "keywords": [
+    "boilerplate",
+    "starter",
+    "quickstart",
+    "template",
+    "coffee-script"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/tphummel/node-coffee-starter",
+  "bugs": {
+    "url": "https://github.com/tphummel/node-coffee-starter/issues"
+  },
+  "dependencies": {
+    "coffee-script": "1.7.x"
+  },
+  "devDependencies": {
+    "tape": "*"
+  }
+}
