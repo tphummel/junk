@@ -1,0 +1,21 @@
+{
+  "name": "node-bowling-lambda-single",
+  "version": "1.0.0",
+  "description": "score a single game of ten-pin bowling in a lambda function",
+  "repository": "https://github.com/tphummel/node-bowling-lambda-single.git",
+  "main": "index.js",
+  "scripts": {
+    "styleguide": "standard",
+    "test": "npm run styleguide && node test",
+    "zip": "zip -r node-bowling-lambda-single.zip ."
+  },
+  "author": "Tom Hummel",
+  "license": "ISC",
+  "dependencies": {
+    "bowling": "^1.3.0"
+  },
+  "devDependencies": {
+    "standard": "latest",
+    "tape": "latest"
+  }
+}
