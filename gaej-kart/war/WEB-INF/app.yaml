@@ -1,0 +1,36 @@
+application: babyparkdd
+version: 1
+runtime: java
+threadsafe: true
+
+handlers:
+- url: /*
+  name: UrlRewrite
+  filter: org.tuckey.web.filters.urlrewrite.UrlRewriteFilter
+
+- url: /app/*
+  login: admin
+
+- url: /admin/*
+  login: admin
+
+- url: /app/leaguecrud
+  name: LeagueCRUD
+  servlet: triad.LeagueCRUDServlet
+
+- url: /app/seasoncrud
+  name: SeasonCRUD
+  servlet: triad.SeasonCRUDServlet
+
+- url: /app/home
+  name: UserDash
+  jsp: /application/userdash.jsp
+
+- url: /remote_api
+  name: remoteapi
+  servlet: com.google.apphosting.utils.remoteapi.RemoteApiServlet
+  login: admin
+
+#- url: /app/league
+#  name: LeagueDash
+#  jsp: /application/leaguedash.jsp

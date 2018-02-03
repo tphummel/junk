@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/nightly.jsp</url>
+    <description>Run daily diagnostics</description>
+    <schedule>1st monday of dec 05:05</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+</cronentries>

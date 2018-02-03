@@ -1,0 +1,3231 @@
+id,league_id,course,player,finishPos,d1,d2
+11001_4001_14,11001,DK Mountain,Tom,1,Diddy Kong,Koopa
+11001_4001_9,11001,Mario Circuit,Tom,1,Diddy Kong,Koopa
+11001_4001_10,11001,Daisy Cruiser,Tom,1,Diddy Kong,Koopa
+11001_4001_15,11001,Mushroom Bridge,Tom,1,Diddy Kong,Koopa
+11001_4001_1,11001,Luigi Circuit,Tom,1,Diddy Kong,Koopa
+11001_4001_16,11001,Rainbow Road,Tom,1,Diddy Kong,Koopa
+11001_4001_3,11001,Mushroom City,Tom,1,Diddy Kong,Koopa
+11001_4001_4,11001,Yoshi Circuit,Tom,1,Diddy Kong,Koopa
+11001_4001_6,11001,Wario Colosseum,Tom,1,Diddy Kong,Koopa
+11001_4001_7,11001,Sherbet Land,Tom,1,Diddy Kong,Koopa
+11001_4001_12,11001,Waluigi Stadium,Tom,1,Diddy Kong,Koopa
+11001_4001_11,11001,Dino Dino Jungle,Tom,1,Diddy Kong,Koopa
+11001_67002_2,11001,Bowser Castle,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_10,11001,Waluigi Stadium,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_6,11001,Sherbet Land,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_8,11001,Baby Park,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_3,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_15,11001,Wario Colosseum,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_11,11001,Dino Dino Jungle,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_12,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_7,11001,Peach Beach,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_4,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_5,11001,Mushroom City,Tom,1,Bowser Jr.,Diddy Kong
+11001_67002_9,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Diddy Kong
+11001_69001_2,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_69001_3,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_69001_4,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_69001_12,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_69001_5,11001,Waluigi Stadium,Tom,1,Bowser Jr.,Koopa
+11001_69001_7,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_69001_8,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_69001_13,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_94005_8,11001,Bowser Castle,Tom,1,Diddy Kong,Waluigi
+11001_94005_4,11001,Yoshi Circuit,Tom,1,Diddy Kong,Waluigi
+11001_94005_12,11001,Daisy Cruiser,Tom,1,Diddy Kong,Waluigi
+11001_94005_10,11001,Sherbet Land,Tom,1,Diddy Kong,Waluigi
+11001_94005_3,11001,Mushroom City,Tom,1,Diddy Kong,Waluigi
+11001_94005_5,11001,Mario Circuit,Tom,1,Diddy Kong,Waluigi
+11001_94005_7,11001,Waluigi Stadium,Tom,1,Diddy Kong,Waluigi
+11001_94005_11,11001,DK Mountain,Tom,1,Diddy Kong,Waluigi
+11001_161001_1,11001,Luigi Circuit,Nick,1,Koopa,Paratroopa
+11001_161001_9,11001,Dry Dry Desert,Nick,1,Koopa,Paratroopa
+11001_161001_3,11001,DK Mountain,Nick,1,Koopa,Paratroopa
+11001_161001_4,11001,Dino Dino Jungle,Nick,1,Koopa,Paratroopa
+11001_161001_6,11001,Peach Beach,Nick,1,Koopa,Paratroopa
+11001_161001_10,11001,Baby Park,Nick,1,Koopa,Paratroopa
+11001_161001_12,11001,Daisy Cruiser,Nick,1,Koopa,Paratroopa
+11001_161001_13,11001,Bowser Castle,Nick,1,Koopa,Paratroopa
+11001_161001_14,11001,Waluigi Stadium,Nick,1,Koopa,Paratroopa
+11001_161001_15,11001,Yoshi Circuit,Nick,1,Koopa,Paratroopa
+11001_169003_1,11001,Luigi Circuit,Tom,1,Koopa,Toad
+11001_169003_2,11001,Mushroom City,Tom,1,Koopa,Toad
+11001_169003_4,11001,Mario Circuit,Tom,1,Koopa,Toad
+11001_169003_6,11001,Peach Beach,Tom,1,Koopa,Toad
+11001_169003_7,11001,Sherbet Land,Tom,1,Koopa,Toad
+11001_169003_13,11001,Waluigi Stadium,Tom,1,Koopa,Toad
+11001_169003_5,11001,Baby Park,Tom,1,Koopa,Toad
+11001_169003_9,11001,Wario Colosseum,Tom,1,Koopa,Toad
+11001_169003_10,11001,Mushroom Bridge,Tom,1,Koopa,Toad
+11001_194002_3,11001,Wario Colosseum,Nick,1,Koopa,Paratroopa
+11001_194002_14,11001,Sherbet Land,Nick,1,Koopa,Paratroopa
+11001_194002_16,11001,Rainbow Road,Nick,1,Koopa,Paratroopa
+11001_194002_12,11001,Mushroom City,Nick,1,Koopa,Paratroopa
+11001_194002_8,11001,Mario Circuit,Nick,1,Koopa,Paratroopa
+11001_194002_10,11001,DK Mountain,Nick,1,Koopa,Paratroopa
+11001_194002_11,11001,Bowser Castle,Nick,1,Koopa,Paratroopa
+11001_194002_4,11001,Waluigi Stadium,Nick,1,Koopa,Paratroopa
+11001_194002_15,11001,Mushroom Bridge,Nick,1,Koopa,Paratroopa
+11001_220002_3,11001,Bowser Castle,Nick,1,Koopa,Paratroopa
+11001_220002_16,11001,Rainbow Road,Nick,1,Koopa,Paratroopa
+11001_220002_13,11001,DK Mountain,Nick,1,Koopa,Paratroopa
+11001_220002_2,11001,Mario Circuit,Nick,1,Koopa,Paratroopa
+11001_220002_10,11001,Dino Dino Jungle,Nick,1,Koopa,Paratroopa
+11001_220002_11,11001,Daisy Cruiser,Nick,1,Koopa,Paratroopa
+11001_220002_12,11001,Dry Dry Desert,Nick,1,Koopa,Paratroopa
+11001_220002_15,11001,Mushroom Bridge,Nick,1,Koopa,Paratroopa
+11001_220002_1,11001,Luigi Circuit,Nick,1,Koopa,Paratroopa
+11001_220002_6,11001,Waluigi Stadium,Nick,1,Koopa,Paratroopa
+11001_220002_7,11001,Wario Colosseum,Nick,1,Koopa,Paratroopa
+11001_220002_8,11001,Mushroom City,Nick,1,Koopa,Paratroopa
+11001_244001_1,11001,Luigi Circuit,Tom,1,Diddy Kong,Koopa
+11001_244001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_244001_2,11001,Daisy Cruiser,Tom,1,Diddy Kong,Koopa
+11001_244001_13,11001,Mushroom City,Tom,1,Diddy Kong,Koopa
+11001_244001_3,11001,DK Mountain,Tom,1,Diddy Kong,Koopa
+11001_244001_4,11001,Peach Beach,Tom,1,Diddy Kong,Koopa
+11001_244001_9,11001,Baby Park,Tom,1,Diddy Kong,Koopa
+11001_244001_5,11001,Dino Dino Jungle,Tom,1,Diddy Kong,Koopa
+11001_244001_7,11001,Yoshi Circuit,Nick,1,Paratroopa,Toad
+11001_244001_6,11001,Sherbet Land,Tom,1,Diddy Kong,Koopa
+11001_244001_8,11001,Dry Dry Desert,Tom,1,Diddy Kong,Koopa
+11001_244001_10,11001,Wario Colosseum,Tom,1,Diddy Kong,Koopa
+11001_244001_11,11001,Mushroom Bridge,Tom,1,Diddy Kong,Koopa
+11001_244001_12,11001,Bowser Castle,Tom,1,Diddy Kong,Koopa
+11001_244001_14,11001,Mario Circuit,Tom,1,Diddy Kong,Koopa
+11001_244001_15,11001,Waluigi Stadium,Tom,1,Diddy Kong,Koopa
+11001_280001_2,11001,Mushroom Bridge,Nick,1,Paratroopa,Toad
+11001_280001_4,11001,Bowser Castle,Nick,1,Paratroopa,Toad
+11001_280001_5,11001,Dino Dino Jungle,Nick,1,Paratroopa,Toad
+11001_280001_6,11001,Wario Colosseum,Nick,1,Paratroopa,Toad
+11001_280001_10,11001,Waluigi Stadium,Nick,1,Paratroopa,Toad
+11001_280001_9,11001,Mushroom City,Nick,1,Paratroopa,Toad
+11001_280001_11,11001,DK Mountain,Nick,1,Paratroopa,Toad
+11001_280001_13,11001,Peach Beach,Nick,1,Paratroopa,Toad
+11001_280001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_323001_4,11001,Daisy Cruiser,Nick,1,Paratroopa,Toad
+11001_323001_14,11001,Mushroom Bridge,Nick,1,Paratroopa,Toad
+11001_323001_3,11001,Peach Beach,Nick,1,Paratroopa,Toad
+11001_323001_5,11001,Mario Circuit,Nick,1,Paratroopa,Toad
+11001_323001_11,11001,Yoshi Circuit,Nick,1,Paratroopa,Toad
+11001_323001_8,11001,Baby Park,Nick,1,Paratroopa,Toad
+11001_323001_9,11001,Waluigi Stadium,Nick,1,Paratroopa,Toad
+11001_323001_13,11001,Dino Dino Jungle,Nick,1,Paratroopa,Toad
+11001_323001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_338002_4,11001,Dino Dino Jungle,Nick,1,Paratroopa,Toad
+11001_338002_14,11001,DK Mountain,Nick,1,Paratroopa,Toad
+11001_338002_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_338002_12,11001,Waluigi Stadium,Nick,1,Paratroopa,Toad
+11001_338002_5,11001,Baby Park,Nick,1,Paratroopa,Toad
+11001_338002_2,11001,Dry Dry Desert,Nick,1,Paratroopa,Toad
+11001_369001_1,11001,Luigi Circuit,Nick,1,Paratroopa,Toad
+11001_369001_3,11001,Dry Dry Desert,Nick,1,Paratroopa,Toad
+11001_369001_10,11001,Daisy Cruiser,Nick,1,Paratroopa,Toad
+11001_369001_15,11001,Baby Park,Nick,1,Paratroopa,Toad
+11001_369001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_412001_15,11001,Dino Dino Jungle,Nick,1,Paratroopa,Toad
+11001_412001_8,11001,Dry Dry Desert,Nick,1,Paratroopa,Toad
+11001_412001_2,11001,Sherbet Land,Nick,1,Paratroopa,Toad
+11001_412001_5,11001,Wario Colosseum,Nick,1,Paratroopa,Toad
+11001_412001_11,11001,Bowser Castle,Nick,1,Paratroopa,Toad
+11001_412001_13,11001,Yoshi Circuit,Nick,1,Paratroopa,Toad
+11001_412001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_443001_9,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_443001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_443001_2,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_443001_3,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Koopa
+11001_443001_4,11001,Daisy Cruiser,Nick,1,Paratroopa,Toad
+11001_443001_5,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_443001_6,11001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_443001_11,11001,Mushroom City,Nick,1,Paratroopa,Toad
+11001_443001_15,11001,Dino Dino Jungle,Tom,1,Bowser Jr.,Koopa
+11001_443001_7,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_443001_8,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_443001_12,11001,Waluigi Stadium,Nick,1,Paratroopa,Toad
+11001_443001_13,11001,DK Mountain,Nick,1,Paratroopa,Toad
+11001_443001_14,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_443001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_481001_3,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_481001_14,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_481001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_481001_4,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_481001_5,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_481001_12,11001,Waluigi Stadium,Tom,1,Bowser Jr.,Koopa
+11001_481001_13,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_514001_1,11001,Luigi Circuit,Nick,1,Paratroopa,Toad
+11001_514001_6,11001,Waluigi Stadium,Nick,1,Paratroopa,Toad
+11001_514001_3,11001,Peach Beach,Nick,1,Paratroopa,Toad
+11001_514001_7,11001,Mushroom Bridge,Nick,1,Paratroopa,Toad
+11001_514001_12,11001,Dry Dry Desert,Nick,1,Paratroopa,Toad
+11001_514001_11,11001,Daisy Cruiser,Nick,1,Paratroopa,Toad
+11001_514001_13,11001,Sherbet Land,Nick,1,Paratroopa,Toad
+11001_514001_14,11001,Mario Circuit,Nick,1,Paratroopa,Toad
+11001_514001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_551001_15,11001,Baby Park,Nick,1,Paratroopa,Toad
+11001_551001_1,11001,Luigi Circuit,Nick,1,Paratroopa,Toad
+11001_551001_14,11001,Dino Dino Jungle,Nick,1,Paratroopa,Toad
+11001_551001_3,11001,Daisy Cruiser,Nick,1,Paratroopa,Toad
+11001_551001_4,11001,DK Mountain,Nick,1,Paratroopa,Toad
+11001_551001_5,11001,Wario Colosseum,Nick,1,Paratroopa,Toad
+11001_551001_6,11001,Mario Circuit,Nick,1,Paratroopa,Toad
+11001_551001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_580001_12,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_580001_5,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_580001_1,11001,Luigi Circuit,Nick,1,Paratroopa,Toad
+11001_580001_15,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_580001_10,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_580001_11,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_580001_8,11001,Dry Dry Desert,Nick,1,Paratroopa,Toad
+11001_580001_3,11001,Yoshi Circuit,Nick,1,Paratroopa,Toad
+11001_580001_14,11001,Mushroom City,Nick,1,Paratroopa,Toad
+11001_580001_2,11001,Waluigi Stadium,Nick,1,Paratroopa,Toad
+11001_580001_4,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_580001_6,11001,Dino Dino Jungle,Nick,1,Paratroopa,Toad
+11001_580001_7,11001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_580001_9,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_580001_13,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_580001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_600001_1,11001,Luigi Circuit,Nick,1,Paratroopa,Toad
+11001_600001_2,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_600001_3,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_600001_4,11001,Yoshi Circuit,Nick,1,Paratroopa,Toad
+11001_600001_5,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_600001_6,11001,Mushroom Bridge,Nick,1,Paratroopa,Toad
+11001_600001_7,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_600001_8,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Koopa
+11001_600001_12,11001,Waluigi Stadium,Nick,1,Paratroopa,Toad
+11001_600001_9,11001,Peach Beach,Nick,1,Paratroopa,Toad
+11001_600001_10,11001,Mario Circuit,Nick,1,Paratroopa,Toad
+11001_600001_11,11001,Bowser Castle,Nick,1,Paratroopa,Toad
+11001_600001_13,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_600001_14,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_600001_15,11001,Dino Dino Jungle,Tom,1,Bowser Jr.,Koopa
+11001_600001_16,11001,Rainbow Road,Nick,1,Paratroopa,Toad
+11001_821002_6,11001,Bowser Castle,Tom,1,Diddy Kong,Koopa
+11001_821002_9,11001,Wario Colosseum,Nick,1,Bowser Jr.,Paratroopa
+11001_821002_1,11001,Luigi Circuit,Nick,1,Bowser Jr.,Paratroopa
+11001_821002_2,11001,Mushroom Bridge,Nick,1,Bowser Jr.,Paratroopa
+11001_821002_4,11001,Yoshi Circuit,Tom,1,Diddy Kong,Koopa
+11001_821002_7,11001,Dry Dry Desert,Tom,1,Diddy Kong,Koopa
+11001_821002_5,11001,Sherbet Land,Tom,1,Diddy Kong,Koopa
+11001_821002_8,11001,Daisy Cruiser,Tom,1,Diddy Kong,Koopa
+11001_821002_16,11001,Rainbow Road,Tom,1,Diddy Kong,Koopa
+11001_821002_3,11001,DK Mountain,Tom,1,Diddy Kong,Koopa
+11001_821002_11,11001,Baby Park,Tom,1,Diddy Kong,Koopa
+11001_821002_12,11001,Mario Circuit,Tom,1,Diddy Kong,Koopa
+11001_821002_14,11001,Mushroom City,Tom,1,Diddy Kong,Koopa
+11001_821002_15,11001,Dino Dino Jungle,Tom,1,Diddy Kong,Koopa
+11001_821002_13,11001,Peach Beach,Nick,1,Bowser Jr.,Paratroopa
+16001_7001_26,16001,Baby Park,Tom,1,Bowser Jr.,Koopa
+16001_7001_37,16001,Baby Park,Tom,1,Diddy Kong,Koopa
+16001_7001_8,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_7001_1,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_7001_11,16001,Baby Park,Tom,1,Bowser Jr.,Koopa
+16001_7001_23,16001,Baby Park,Tom,1,Bowser Jr.,Koopa
+16001_7001_2,16001,Baby Park,JD,1,Toad,Yoshi
+16001_7001_3,16001,Baby Park,Nick,1,Koopa,Paratroopa
+16001_7001_45,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_7001_12,16001,Baby Park,Tom,1,Bowser Jr.,Koopa
+16001_7001_4,16001,Baby Park,JD,1,Toad,Yoshi
+16001_7001_15,16001,Baby Park,Nick,1,Baby Mario,Paratroopa
+16001_7001_5,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_7001_22,16001,Baby Park,Tom,1,Bowser Jr.,Koopa
+16001_7001_29,16001,Baby Park,Tom,1,Bowser Jr.,Koopa
+16001_7001_6,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_7001_7,16001,Baby Park,Nick,1,Koopa,Paratroopa
+16001_7001_9,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_7001_33,16001,Baby Park,Tom,1,Diddy Kong,Koopa
+16001_7001_35,16001,Baby Park,Tom,1,Diddy Kong,Koopa
+16001_7001_10,16001,Baby Park,JD,1,Toad,Yoshi
+16001_7001_39,16001,Baby Park,Tom,1,Diddy Kong,Koopa
+16001_7001_17,16001,Baby Park,Nick,1,Baby Mario,Paratroopa
+16001_7001_38,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_7001_27,16001,Baby Park,Tom,1,Bowser Jr.,Koopa
+16001_7001_20,16001,Baby Park,Nick,1,Baby Mario,Paratroopa
+16001_7001_48,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_7001_41,16001,Baby Park,JD,1,Bowser Jr.,Koopa
+16001_7001_49,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_7001_34,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_7001_47,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_7001_36,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_7001_40,16001,Baby Park,Dan,1,Toad,Waluigi
+16001_81001_40,16001,Baby Park,Nick,1,Diddy Kong,Paratroopa
+16001_81001_49,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_81001_45,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_81001_18,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81001_38,16001,Baby Park,Nick,1,Diddy Kong,Paratroopa
+16001_81001_39,16001,Baby Park,Nick,1,Diddy Kong,Paratroopa
+16001_81001_1,16001,Baby Park,Tom,1,Koopa,Toadette
+16001_81001_23,16001,Baby Park,Nick,1,Diddy Kong,Paratroopa
+16001_81001_29,16001,Baby Park,Nick,1,Diddy Kong,Paratroopa
+16001_81001_19,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81001_2,16001,Baby Park,Tom,1,Koopa,Toadette
+16001_81001_6,16001,Baby Park,Tom,1,Koopa,Toadette
+16001_81001_31,16001,Baby Park,Tom,1,Bowser Jr.,Toadette
+16001_81001_32,16001,Baby Park,Tom,1,Bowser Jr.,Toadette
+16001_81001_4,16001,Baby Park,Dan,1,Bowser Jr.,Waluigi
+16001_81001_8,16001,Baby Park,Dan,1,Bowser Jr.,Waluigi
+16001_81001_41,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_81037_4,16001,Baby Park,Tom,1,Paratroopa,Toad
+16001_81037_30,16001,Baby Park,Jeran,1,Toad,Toadette
+16001_81037_47,16001,Baby Park,Nick,1,Paratroopa,Waluigi
+16001_81037_6,16001,Baby Park,Tom,1,Paratroopa,Toad
+16001_81037_24,16001,Baby Park,Jeran,1,Toad,Toadette
+16001_81037_36,16001,Baby Park,Tom,1,Bowser Jr.,Toadette
+16001_81037_35,16001,Baby Park,Tom,1,Bowser Jr.,Toadette
+16001_81037_38,16001,Baby Park,Tom,1,Bowser Jr.,Toadette
+16001_81037_41,16001,Baby Park,Tom,1,Diddy Kong,Toadette
+16001_81037_48,16001,Baby Park,Tom,1,Diddy Kong,Toadette
+16001_81037_21,16001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+16001_81037_23,16001,Baby Park,Jeran,1,Toad,Toadette
+16001_81037_46,16001,Baby Park,Dan,1,Bowser Jr.,Koopa
+16001_81037_1,16001,Baby Park,Tom,1,Paratroopa,Toad
+16001_81037_28,16001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+16001_81037_40,16001,Baby Park,Tom,1,Bowser Jr.,Toadette
+16001_81037_43,16001,Baby Park,Tom,1,Diddy Kong,Toadette
+16001_81037_44,16001,Baby Park,Dan,1,Bowser Jr.,Koopa
+16001_81037_45,16001,Baby Park,Dan,1,Bowser Jr.,Koopa
+16001_81037_50,16001,Baby Park,Dan,1,Bowser Jr.,Koopa
+16001_81037_2,16001,Baby Park,Dan,1,Luigi,Waluigi
+16001_81037_3,16001,Baby Park,Dan,1,Luigi,Waluigi
+16001_81037_7,16001,Baby Park,Dan,1,Luigi,Waluigi
+16001_81037_8,16001,Baby Park,Dan,1,Luigi,Waluigi
+16001_81037_25,16001,Baby Park,Jeran,1,Toad,Toadette
+16001_81037_26,16001,Baby Park,Jeran,1,Toad,Toadette
+16001_81037_29,16001,Baby Park,Jeran,1,Toad,Toadette
+16001_81037_10,16001,Baby Park,Dan,1,Luigi,Waluigi
+16001_81037_27,16001,Baby Park,Jeran,1,Toad,Toadette
+16001_81037_49,16001,Baby Park,Dan,1,Bowser Jr.,Koopa
+16001_81037_22,16001,Baby Park,JD,1,Daisy,Waluigi
+16001_81037_42,16001,Baby Park,Nick,1,Paratroopa,Waluigi
+16001_93002_36,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_1,16001,Baby Park,Dan,1,Baby Mario,Toadette
+16001_93002_2,16001,Baby Park,JD,1,Bowser Jr.,Koopa
+16001_93002_4,16001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+16001_93002_5,16001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+16001_93002_9,16001,Baby Park,JD,1,Bowser Jr.,Koopa
+16001_93002_13,16001,Baby Park,JD,1,Diddy Kong,Koopa
+16001_93002_6,16001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+16001_93002_33,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_50,16001,Baby Park,Nick,1,Baby Luigi,Toad
+16001_93002_3,16001,Baby Park,Dan,1,Baby Mario,Toadette
+16001_93002_39,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_46,16001,Baby Park,Nick,1,Baby Luigi,Toad
+16001_93002_11,16001,Baby Park,Nick,1,Bowser Jr.,Paratroopa
+16001_93002_34,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_7,16001,Baby Park,Dan,1,Baby Mario,Toadette
+16001_93002_8,16001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+16001_93002_12,16001,Baby Park,Nick,1,Bowser Jr.,Paratroopa
+16001_93002_19,16001,Baby Park,JD,1,Diddy Kong,Koopa
+16001_93002_31,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_104001_4,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_104001_10,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_104001_26,16001,Baby Park,Dan,1,Diddy Kong,Waluigi
+16001_104001_27,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_50,16001,Baby Park,Dan,1,Toadette,Waluigi
+16001_104001_9,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_104001_17,16001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+16001_104001_22,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_33,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_104001_40,16001,Baby Park,Dan,1,Baby Luigi,Toadette
+16001_104001_29,16001,Baby Park,Dan,1,Diddy Kong,Waluigi
+16001_104001_32,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_104001_35,16001,Baby Park,Dan,1,Baby Luigi,Toadette
+16001_104001_38,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_104001_1,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_104001_2,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_104001_5,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_104001_23,16001,Baby Park,Tom,1,Bowser Jr.,Toad
+16001_104001_43,16001,Baby Park,Dan,1,Toadette,Waluigi
+16001_104001_3,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_104001_28,16001,Baby Park,Tom,1,Bowser Jr.,Toad
+16001_104001_30,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_20,16001,Baby Park,Nick,1,Baby Mario,Bowser Jr.
+16001_104001_31,16001,Baby Park,JD,1,Bowser Jr.,Koopa
+16001_104001_24,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_25,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_34,16001,Baby Park,Dan,1,Baby Luigi,Toadette
+16001_104001_37,16001,Baby Park,Dan,1,Baby Luigi,Toadette
+16001_117001_1,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_22002_16,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_12,17001,Baby Park,Tom,1,Baby Luigi,Koopa
+17001_22002_1,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_18,17001,Baby Park,Tom,1,Baby Luigi,Koopa
+17001_22002_2,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_3,17001,Baby Park,Tom,1,Baby Luigi,Koopa
+17001_22002_28,17001,Baby Park,Nick,1,Baby Luigi,Koopa
+17001_22002_4,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_5,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_6,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_7,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_13,17001,Baby Park,Tom,1,Baby Luigi,Koopa
+17001_22002_20,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_8,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_10,17001,Baby Park,Tom,1,Baby Luigi,Koopa
+17001_22002_11,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_14,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_22002_15,17001,Baby Park,Tom,1,Baby Luigi,Koopa
+17001_22002_19,17001,Baby Park,Tom,1,Baby Luigi,Koopa
+17001_22002_33,17001,Baby Park,Nick,1,Baby Luigi,Koopa
+17001_25001_1,17001,Baby Park,Nick,1,Paratroopa,Toad
+17001_25001_2,17001,Baby Park,Tom,1,Koopa,Waluigi
+17001_25001_3,17001,Baby Park,Nick,1,Paratroopa,Toad
+17001_25001_4,17001,Baby Park,Dan,1,Diddy Kong,Toadette
+17001_143001_5,17001,Baby Park,Dan,1,Paratroopa,Waluigi
+17001_143001_8,17001,Baby Park,Jeran,1,Diddy Kong,Toad
+17001_143001_24,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_143001_33,17001,Baby Park,JD,1,Bowser Jr.,Peach
+17001_143001_9,17001,Baby Park,Jeran,1,Diddy Kong,Toad
+17001_143001_15,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_143001_38,17001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+17001_143001_32,17001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+17001_143001_1,17001,Baby Park,JD,1,Bowser Jr.,Toadette
+17001_143001_6,17001,Baby Park,Dan,1,Paratroopa,Waluigi
+17001_143001_2,17001,Baby Park,Jeran,1,Diddy Kong,Toad
+17001_143001_34,17001,Baby Park,Jeran,1,Koopa,Toad
+17001_143001_37,17001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+17001_143001_16,17001,Baby Park,Tom,1,Toad,Waluigi
+17001_143001_18,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_143001_31,17001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+17001_143001_3,17001,Baby Park,Dan,1,Paratroopa,Waluigi
+17001_143001_7,17001,Baby Park,Jeran,1,Diddy Kong,Toad
+17001_143001_10,17001,Baby Park,Jeran,1,Diddy Kong,Toad
+17001_143001_12,17001,Baby Park,JD,1,Bowser Jr.,Koopa
+17001_143001_19,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_143001_20,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_143001_36,17001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+17001_143001_17,17001,Baby Park,JD,1,Bowser Jr.,Koopa
+17001_143001_39,17001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+17001_143001_40,17001,Baby Park,Jeran,1,Koopa,Toad
+17001_143001_35,17001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+17001_155021_10,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_155021_5,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_155021_12,17001,Baby Park,Tom,1,Toadette,Waluigi
+17001_155021_15,17001,Baby Park,Dan,1,Paratroopa,Toad
+17001_155021_16,17001,Baby Park,Tom,1,Koopa,Toad
+17001_155021_18,17001,Baby Park,Tom,1,Koopa,Toad
+17001_155021_1,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_155021_4,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_155021_20,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_155021_2,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_155021_6,17001,Baby Park,Dan,1,Toad,Waluigi
+17001_155021_3,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_155021_7,17001,Baby Park,Dan,1,Toad,Waluigi
+17001_155021_9,17001,Baby Park,Dan,1,Toad,Waluigi
+17001_155021_11,17001,Baby Park,Dan,1,Paratroopa,Toad
+17001_155021_8,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_155021_19,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_167001_2,17001,Baby Park,Dan,1,Toad,Waluigi
+17001_167001_15,17001,Baby Park,Tom,1,Diddy Kong,Koopa
+17001_167001_35,17001,Baby Park,Dan,1,Bowser Jr.,Paratroopa
+17001_167001_37,17001,Baby Park,Dan,1,Bowser Jr.,Paratroopa
+17001_167001_17,17001,Baby Park,Dan,1,Toadette,Waluigi
+17001_167001_41,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_7,17001,Baby Park,JD,1,Bowser Jr.,Koopa
+17001_167001_21,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_167001_22,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_167001_28,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_167001_34,17001,Baby Park,Dan,1,Bowser Jr.,Paratroopa
+17001_167001_38,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_4,17001,Baby Park,Tom,1,Baby Luigi,Paratroopa
+17001_167001_13,17001,Baby Park,Dan,1,Toadette,Waluigi
+17001_167001_25,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_167001_33,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_11,17001,Baby Park,Tom,1,Diddy Kong,Koopa
+17001_167001_18,17001,Baby Park,Dan,1,Toadette,Waluigi
+17001_167001_30,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_167001_31,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_167001_32,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_8,17001,Baby Park,Dan,1,Toad,Waluigi
+17001_167001_20,17001,Baby Park,Dan,1,Toadette,Waluigi
+17001_167001_27,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_173001_6,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_173001_10,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_173001_14,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_173001_1,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_173001_3,17001,Baby Park,JD,1,Toad,Waluigi
+17001_173001_9,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_173001_13,17001,Baby Park,Dan,1,Toad,Waluigi
+17001_173001_5,17001,Baby Park,JD,1,Toad,Waluigi
+17001_173001_2,17001,Baby Park,JD,1,Toad,Waluigi
+17001_173001_8,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_173001_18,17001,Baby Park,Dan,1,Toad,Waluigi
+17001_184001_21,17001,Baby Park,JD,1,Koopa,Paratroopa
+17001_184001_49,17001,Baby Park,Dan,1,Diddy Kong,Toad
+17001_184001_47,17001,Baby Park,Dan,1,Diddy Kong,Toad
+17001_184001_3,17001,Baby Park,Tom,1,Bowser Jr.,Koopa
+17001_184001_29,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_22,17001,Baby Park,Dan,1,Bowser Jr.,Toadette
+17001_184001_46,17001,Baby Park,Dan,1,Diddy Kong,Toad
+17001_184001_48,17001,Baby Park,Dan,1,Diddy Kong,Toad
+17001_184001_17,17001,Baby Park,Nick,1,Koopa,Paratroopa
+17001_184001_23,17001,Baby Park,Tom,1,Diddy Kong,Toad
+17001_184001_25,17001,Baby Park,Dan,1,Bowser Jr.,Toad
+17001_184001_32,17001,Baby Park,Tom,1,Bowser Jr.,Koopa
+17001_184001_1,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_60,17001,Baby Park,Dan,1,Koopa,Toad
+17001_184001_2,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_4,17001,Baby Park,Tom,1,Bowser Jr.,Koopa
+17001_184001_28,17001,Baby Park,Tom,1,Bowser Jr.,Koopa
+17001_184001_55,17001,Baby Park,Dan,1,Bowser Jr.,Koopa
+17001_184001_24,17001,Baby Park,Dan,1,Bowser Jr.,Toad
+17001_184001_24,17001,Baby Park,Dan,1,Bowser Jr.,Toad
+17001_184001_26,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_57,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_58,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_52,17001,Baby Park,JD,1,Baby Luigi,Toad
+17001_184001_56,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_59,17001,Baby Park,Dan,1,Koopa,Toad
+17001_184001_5,17001,Baby Park,Tom,1,Bowser Jr.,Koopa
+17001_184001_42,17001,Baby Park,JD,1,Bowser Jr.,Toad
+17001_184001_51,17001,Baby Park,JD,1,Baby Luigi,Toad
+17001_184001_24,17001,Baby Park,Dan,1,Bowser Jr.,Toad
+17001_184001_24,17001,Baby Park,Dan,1,Bowser Jr.,Toad
+17001_184001_18,17001,Baby Park,Dan,1,Diddy Kong,Toad
+17001_184001_19,17001,Baby Park,Dan,1,Diddy Kong,Toad
+17001_184001_41,17001,Baby Park,JD,1,Bowser Jr.,Toad
+17001_184001_54,17001,Baby Park,Dan,1,Bowser Jr.,Koopa
+17001_184001_16,17001,Baby Park,Dan,1,Diddy Kong,Toad
+17001_184001_53,17001,Baby Park,Dan,1,Bowser Jr.,Koopa
+17001_184001_45,17001,Baby Park,JD,1,Bowser Jr.,Toad
+18001_6001_1,18001,Dry Dry Desert,Tom,1,Diddy Kong,Waluigi
+18001_6001_6,18001,Peach Beach,Tom,1,Diddy Kong,Waluigi
+18001_6001_4,18001,Mario Circuit,Tom,1,Diddy Kong,Waluigi
+18001_6001_5,18001,Mushroom Bridge,Tom,1,Diddy Kong,Waluigi
+18001_35001_8,18001,Baby Park,Tom,1,Baby Mario,Toadette
+18001_35001_4,18001,Bowser Castle,Tom,1,Baby Mario,Toadette
+18001_35001_5,18001,Sherbet Land,Tom,1,Baby Mario,Toadette
+18001_35001_7,18001,Daisy Cruiser,Tom,1,Baby Mario,Toadette
+18001_35001_15,18001,Dry Dry Desert,Tom,1,Baby Mario,Toadette
+19001_42001_7,19001,Daisy Cruiser,Tom,1,Bowser Jr.,Wario
+19001_42001_13,19001,Dino Dino Jungle,Tom,1,Bowser Jr.,Wario
+19001_42001_1,19001,Luigi Circuit,Tom,1,Bowser Jr.,Wario
+19001_42001_9,19001,DK Mountain,Dan,1,King Boo,Waluigi
+19001_42001_14,19001,Baby Park,Tom,1,Bowser Jr.,Wario
+19001_42001_4,19001,Sherbet Land,Dan,1,King Boo,Waluigi
+19001_42001_2,19001,Bowser Castle,Tom,1,Bowser Jr.,Wario
+19001_42001_15,19001,Mario Circuit,Tom,1,Bowser Jr.,Wario
+19001_42001_3,19001,Mushroom Bridge,Dan,1,King Boo,Waluigi
+19001_42001_5,19001,Yoshi Circuit,Tom,1,Bowser Jr.,Wario
+19001_42001_6,19001,Dry Dry Desert,Dan,1,King Boo,Waluigi
+19001_42001_8,19001,Wario Colosseum,Tom,1,Bowser Jr.,Wario
+19001_42001_11,19001,Mushroom City,Dan,1,King Boo,Waluigi
+19001_42001_10,19001,Peach Beach,Tom,1,Bowser Jr.,Wario
+19001_42001_12,19001,Waluigi Stadium,Tom,1,Bowser Jr.,Wario
+20001_4001_1,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_2,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_3,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_10,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_4,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_5,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_6,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_7,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_15,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_8,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_9,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_11,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_13,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+20001_4001_16,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_12,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_14,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_17,20001,Baby Park,Dan,1,Bowser Jr.,Toad
+20001_4001_18,20001,Baby Park,Tom,1,Diddy Kong,Koopa
+11001_4001_13,11001,Peach Beach,Nick,1,Baby Mario,Paratroopa
+11001_4001_5,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_37001_6,11001,Wario Colosseum,Tom,1,Bowser Jr.,Waluigi
+11001_37001_7,11001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+11001_37001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Waluigi
+11001_37001_16,11001,Rainbow Road,Tom,1,Bowser Jr.,Waluigi
+11001_37001_2,11001,Bowser Castle,Nick,1,Baby Mario,Paratroopa
+11001_37001_3,11001,Mushroom City,Tom,1,Bowser Jr.,Waluigi
+11001_37001_9,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Waluigi
+11001_37001_5,11001,Waluigi Stadium,Nick,1,Baby Mario,Paratroopa
+11001_37001_4,11001,Sherbet Land,Nick,1,Baby Mario,Paratroopa
+11001_37001_14,11001,Peach Beach,Nick,1,Baby Mario,Paratroopa
+11001_37001_13,11001,Baby Park,Nick,1,Baby Mario,Paratroopa
+11001_37001_12,11001,Mario Circuit,Nick,1,Baby Mario,Paratroopa
+11001_37001_8,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Waluigi
+11001_37001_10,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Waluigi
+11001_37001_11,11001,DK Mountain,Tom,1,Bowser Jr.,Waluigi
+11001_37001_15,11001,Mushroom Bridge,Nick,1,Baby Mario,Paratroopa
+11001_54001_14,11001,Baby Park,Tom,1,Diddy Kong,Waluigi
+11001_54001_9,11001,DK Mountain,Tom,1,Diddy Kong,Waluigi
+11001_54001_2,11001,Daisy Cruiser,Nick,1,Baby Mario,Paratroopa
+11001_54001_3,11001,Sherbet Land,Tom,1,Diddy Kong,Waluigi
+11001_54001_5,11001,Mushroom Bridge,Tom,1,Diddy Kong,Waluigi
+11001_54001_11,11001,Peach Beach,Nick,1,Baby Mario,Paratroopa
+11001_54001_1,11001,Luigi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_54001_7,11001,Bowser Castle,Nick,1,Baby Mario,Paratroopa
+11001_54001_15,11001,Mushroom City,Nick,1,Baby Mario,Paratroopa
+11001_54001_6,11001,Dry Dry Desert,Tom,1,Diddy Kong,Waluigi
+11001_54001_13,11001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+11001_54001_4,11001,Yoshi Circuit,Tom,1,Diddy Kong,Waluigi
+11001_54001_10,11001,Wario Colosseum,Nick,1,Baby Mario,Paratroopa
+11001_54001_12,11001,Waluigi Stadium,Nick,1,Baby Mario,Paratroopa
+11001_54001_16,11001,Rainbow Road,Nick,1,Baby Mario,Paratroopa
+11001_67002_14,11001,DK Mountain,Nick,1,Baby Mario,Paratroopa
+11001_67002_13,11001,Mario Circuit,Nick,1,Baby Mario,Paratroopa
+11001_69001_11,11001,DK Mountain,Nick,1,Baby Mario,Paratroopa
+11001_69001_1,11001,Luigi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_69001_16,11001,Rainbow Road,Nick,1,Baby Mario,Paratroopa
+11001_69001_6,11001,Bowser Castle,Nick,1,Baby Mario,Paratroopa
+11001_69001_9,11001,Yoshi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_69001_10,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_69001_15,11001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+11001_94005_1,11001,Luigi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_94005_13,11001,Peach Beach,Nick,1,Baby Mario,Paratroopa
+11001_94005_15,11001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+11001_94005_6,11001,Wario Colosseum,Nick,1,Baby Mario,Paratroopa
+11001_94005_16,11001,Rainbow Road,Nick,1,Baby Mario,Paratroopa
+11001_94005_2,11001,Mushroom Bridge,Nick,1,Baby Mario,Paratroopa
+11001_94005_9,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_103001_13,11001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+11001_103001_5,11001,Baby Park,Tom,1,Diddy Kong,Waluigi
+11001_103001_3,11001,Waluigi Stadium,Nick,1,Baby Mario,Paratroopa
+11001_103001_2,11001,Mushroom Bridge,Nick,1,Baby Mario,Paratroopa
+11001_103001_1,11001,Luigi Circuit,Tom,1,Diddy Kong,Waluigi
+11001_103001_7,11001,Mario Circuit,Tom,1,Diddy Kong,Waluigi
+11001_103001_4,11001,Bowser Castle,Nick,1,Baby Mario,Paratroopa
+11001_103001_8,11001,Yoshi Circuit,Tom,1,Diddy Kong,Waluigi
+11001_103001_10,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_103001_9,11001,DK Mountain,Nick,1,Baby Mario,Paratroopa
+11001_103001_11,11001,Daisy Cruiser,Tom,1,Diddy Kong,Waluigi
+11001_103001_12,11001,Mushroom City,Tom,1,Diddy Kong,Waluigi
+11001_103001_15,11001,Peach Beach,Nick,1,Baby Mario,Paratroopa
+11001_103001_14,11001,Sherbet Land,Tom,1,Diddy Kong,Waluigi
+11001_114003_6,11001,Mushroom Bridge,Tom,1,Diddy Kong,Waluigi
+11001_114003_14,11001,Mushroom City,Tom,1,Diddy Kong,Waluigi
+11001_114003_8,11001,Peach Beach,Nick,1,Baby Mario,Paratroopa
+11001_114003_1,11001,Luigi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_114003_4,11001,Wario Colosseum,Tom,1,Diddy Kong,Waluigi
+11001_114003_7,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_114003_9,11001,Mario Circuit,Tom,1,Diddy Kong,Waluigi
+11001_114003_5,11001,Bowser Castle,Tom,1,Diddy Kong,Waluigi
+11001_114003_3,11001,Yoshi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_114003_12,11001,Waluigi Stadium,Nick,1,Baby Mario,Paratroopa
+11001_114003_11,11001,DK Mountain,Nick,1,Baby Mario,Paratroopa
+11001_114003_15,11001,Dino Dino Jungle,Tom,1,Diddy Kong,Waluigi
+11001_114003_2,11001,Daisy Cruiser,Nick,1,Baby Mario,Paratroopa
+11001_114003_16,11001,Rainbow Road,Nick,1,Baby Mario,Paratroopa
+11001_114003_13,11001,Baby Park,Tom,1,Diddy Kong,Waluigi
+11001_133003_8,11001,Mushroom Bridge,Tom,1,Diddy Kong,Waluigi
+11001_133003_5,11001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+11001_133003_10,11001,Mushroom City,Tom,1,Diddy Kong,Waluigi
+11001_133003_1,11001,Luigi Circuit,Tom,1,Diddy Kong,Waluigi
+11001_133003_6,11001,Peach Beach,Nick,1,Baby Mario,Paratroopa
+11001_133003_7,11001,Sherbet Land,Tom,1,Diddy Kong,Waluigi
+11001_133003_12,11001,Waluigi Stadium,Nick,1,Baby Mario,Paratroopa
+11001_133003_16,11001,Rainbow Road,Tom,1,Diddy Kong,Waluigi
+11001_133003_11,11001,Wario Colosseum,Nick,1,Baby Mario,Paratroopa
+11001_133003_3,11001,Baby Park,Tom,1,Diddy Kong,Waluigi
+11001_133003_9,11001,Yoshi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_133003_4,11001,Mario Circuit,Nick,1,Baby Mario,Paratroopa
+11001_133003_15,11001,Bowser Castle,Tom,1,Diddy Kong,Waluigi
+11001_133003_2,11001,DK Mountain,Nick,1,Baby Mario,Paratroopa
+11001_133003_13,11001,Daisy Cruiser,Nick,1,Baby Mario,Paratroopa
+11001_133003_14,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_137001_5,11001,Mario Circuit,Tom,1,Diddy Kong,Waluigi
+11001_137001_13,11001,Bowser Castle,Tom,1,Diddy Kong,Waluigi
+11001_137001_14,11001,Yoshi Circuit,Tom,1,Diddy Kong,Waluigi
+11001_137001_4,11001,Baby Park,Tom,1,Diddy Kong,Waluigi
+11001_137001_1,11001,Luigi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_137001_8,11001,Peach Beach,Tom,1,Diddy Kong,Waluigi
+11001_137001_11,11001,Sherbet Land,Nick,1,Baby Mario,Paratroopa
+11001_137001_9,11001,Dino Dino Jungle,Tom,1,Diddy Kong,Waluigi
+11001_137001_16,11001,Rainbow Road,Nick,1,Baby Mario,Paratroopa
+11001_137001_7,11001,DK Mountain,Nick,1,Baby Mario,Paratroopa
+11001_137001_15,11001,Wario Colosseum,Nick,1,Baby Mario,Paratroopa
+11001_137001_10,11001,Mushroom City,Tom,1,Diddy Kong,Waluigi
+11001_137001_6,11001,Mushroom Bridge,Tom,1,Diddy Kong,Waluigi
+11001_137001_2,11001,Waluigi Stadium,Nick,1,Baby Mario,Paratroopa
+11001_137001_3,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_137001_12,11001,Daisy Cruiser,Tom,1,Diddy Kong,Waluigi
+11001_161001_8,11001,Mushroom City,Tom,1,Diddy Kong,Waluigi
+11001_161001_2,11001,Mario Circuit,Tom,1,Diddy Kong,Waluigi
+11001_161001_5,11001,Sherbet Land,Tom,1,Diddy Kong,Waluigi
+11001_161001_7,11001,Mushroom Bridge,Tom,1,Diddy Kong,Waluigi
+11001_161001_16,11001,Rainbow Road,Tom,1,Diddy Kong,Waluigi
+11001_161001_11,11001,Wario Colosseum,Tom,1,Diddy Kong,Waluigi
+11001_169003_8,11001,Dry Dry Desert,Nick,1,Baby Mario,Paratroopa
+11001_169003_11,11001,Yoshi Circuit,Nick,1,Baby Mario,Paratroopa
+11001_169003_14,11001,Daisy Cruiser,Nick,1,Baby Mario,Paratroopa
+11001_169003_3,11001,DK Mountain,Nick,1,Baby Mario,Paratroopa
+11001_169003_12,11001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+11001_169003_16,11001,Rainbow Road,Nick,1,Baby Mario,Paratroopa
+11001_169003_15,11001,Bowser Castle,Nick,1,Baby Mario,Paratroopa
+11001_194002_5,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Waluigi
+11001_194002_9,11001,Baby Park,Tom,1,Bowser Jr.,Waluigi
+11001_194002_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Waluigi
+11001_194002_2,11001,Dino Dino Jungle,Tom,1,Bowser Jr.,Waluigi
+11001_194002_7,11001,Peach Beach,Tom,1,Bowser Jr.,Waluigi
+11001_194002_6,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Waluigi
+11001_194002_13,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Waluigi
+11001_220002_14,11001,Yoshi Circuit,Tom,1,Diddy Kong,Waluigi
+11001_220002_5,11001,Sherbet Land,Tom,1,Diddy Kong,Waluigi
+11001_220002_4,11001,Peach Beach,Tom,1,Diddy Kong,Waluigi
+11001_220002_9,11001,Baby Park,Tom,1,Diddy Kong,Waluigi
+11001_280001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_280001_3,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_280001_7,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_280001_8,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Koopa
+11001_280001_12,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_280001_14,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_280001_15,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_323001_15,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_323001_7,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_323001_10,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_323001_12,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_323001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_323001_2,11001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_323001_6,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Koopa
+11001_338002_10,11001,Mushroom City,Tom,1,Diddy Kong,Koopa
+11001_338002_3,11001,Daisy Cruiser,Tom,1,Diddy Kong,Koopa
+11001_338002_6,11001,Mario Circuit,Tom,1,Diddy Kong,Koopa
+11001_338002_13,11001,Bowser Castle,Tom,1,Diddy Kong,Koopa
+11001_338002_1,11001,Luigi Circuit,Tom,1,Diddy Kong,Koopa
+11001_338002_15,11001,Mushroom Bridge,Tom,1,Diddy Kong,Koopa
+11001_338002_9,11001,Sherbet Land,Tom,1,Diddy Kong,Koopa
+11001_338002_7,11001,Wario Colosseum,Tom,1,Diddy Kong,Koopa
+11001_338002_8,11001,Peach Beach,Tom,1,Diddy Kong,Koopa
+11001_338002_11,11001,Yoshi Circuit,Tom,1,Diddy Kong,Koopa
+11001_369001_11,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_369001_2,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_369001_4,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_369001_5,11001,Dino Dino Jungle,Tom,1,Bowser Jr.,Koopa
+11001_369001_7,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_369001_8,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_369001_9,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_369001_12,11001,Waluigi Stadium,Tom,1,Bowser Jr.,Koopa
+11001_369001_13,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_369001_14,11001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_412001_9,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_412001_14,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_412001_4,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_412001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_412001_3,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_412001_6,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_412001_10,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_412001_7,11001,Waluigi Stadium,Tom,1,Bowser Jr.,Koopa
+11001_412001_12,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_481001_2,11001,DK Mountain,Nick,1,Paratroopa,Toad
+11001_481001_10,11001,Dino Dino Jungle,Nick,1,Paratroopa,Toad
+11001_481001_8,11001,Dry Dry Desert,Nick,1,Paratroopa,Toad
+11001_481001_11,11001,Yoshi Circuit,Nick,1,Paratroopa,Toad
+11001_481001_6,11001,Mushroom City,Nick,1,Paratroopa,Toad
+11001_481001_7,11001,Bowser Castle,Nick,1,Paratroopa,Toad
+11001_481001_9,11001,Peach Beach,Nick,1,Paratroopa,Toad
+11001_514001_2,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_514001_4,11001,Dino Dino Jungle,Tom,1,Bowser Jr.,Koopa
+11001_514001_9,11001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_514001_5,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_514001_8,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_514001_10,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_514001_15,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_551001_12,11001,Dry Dry Desert,Tom,1,Diddy Kong,Koopa
+11001_551001_2,11001,Waluigi Stadium,Tom,1,Diddy Kong,Koopa
+11001_551001_11,11001,Bowser Castle,Tom,1,Diddy Kong,Koopa
+11001_551001_7,11001,Mushroom Bridge,Tom,1,Diddy Kong,Koopa
+11001_551001_8,11001,Peach Beach,Tom,1,Diddy Kong,Koopa
+11001_551001_9,11001,Yoshi Circuit,Tom,1,Diddy Kong,Koopa
+11001_551001_10,11001,Mushroom City,Tom,1,Diddy Kong,Koopa
+11001_551001_13,11001,Sherbet Land,Tom,1,Diddy Kong,Koopa
+11001_650001_15,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_650001_12,11001,Mario Circuit,Nick,1,Diddy Kong,Paratroopa
+11001_650001_5,11001,Wario Colosseum,Nick,1,Diddy Kong,Paratroopa
+11001_650001_13,11001,Mushroom City,Nick,1,Diddy Kong,Paratroopa
+11001_650001_7,11001,Waluigi Stadium,Nick,1,Diddy Kong,Paratroopa
+11001_650001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_650001_2,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_650001_3,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_650001_4,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_650001_6,11001,Bowser Castle,Nick,1,Diddy Kong,Paratroopa
+11001_650001_8,11001,Baby Park,Nick,1,Diddy Kong,Paratroopa
+11001_650001_9,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_650001_10,11001,Dry Dry Desert,Nick,1,Diddy Kong,Paratroopa
+11001_650001_11,11001,Dino Dino Jungle,Nick,1,Diddy Kong,Paratroopa
+11001_650001_14,11001,DK Mountain,Nick,1,Diddy Kong,Paratroopa
+11001_650001_16,11001,Rainbow Road,Nick,1,Diddy Kong,Paratroopa
+11001_687001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_687001_7,11001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_687001_2,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_687001_3,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_687001_4,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_687001_5,11001,Wario Colosseum,Nick,1,Diddy Kong,Paratroopa
+11001_687001_6,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_687001_8,11001,Mushroom Bridge,Nick,1,Diddy Kong,Paratroopa
+11001_687001_9,11001,Dry Dry Desert,Nick,1,Diddy Kong,Paratroopa
+11001_687001_10,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_687001_11,11001,Dino Dino Jungle,Nick,1,Diddy Kong,Paratroopa
+11001_687001_12,11001,Waluigi Stadium,Nick,1,Diddy Kong,Paratroopa
+11001_687001_13,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_687001_14,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_687001_16,11001,Rainbow Road,Nick,1,Diddy Kong,Paratroopa
+11001_687001_15,11001,Mario Circuit,Nick,1,Diddy Kong,Paratroopa
+11001_729001_3,11001,Waluigi Stadium,Tom,1,Bowser Jr.,Koopa
+11001_729001_6,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_729001_14,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_729001_9,11001,Dino Dino Jungle,Nick,1,Diddy Kong,Paratroopa
+11001_729001_7,11001,Bowser Castle,Nick,1,Diddy Kong,Paratroopa
+11001_729001_1,11001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_729001_2,11001,Dry Dry Desert,Tom,1,Bowser Jr.,Koopa
+11001_729001_4,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_729001_5,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_729001_8,11001,Mushroom City,Nick,1,Diddy Kong,Paratroopa
+11001_729001_10,11001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+11001_729001_11,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_729001_12,11001,Yoshi Circuit,Nick,1,Diddy Kong,Paratroopa
+11001_729001_13,11001,Wario Colosseum,Tom,1,Bowser Jr.,Koopa
+11001_729001_15,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_729001_16,11001,Rainbow Road,Nick,1,Diddy Kong,Paratroopa
+11001_764001_1,11001,Luigi Circuit,Nick,1,Diddy Kong,Paratroopa
+11001_764001_2,11001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+11001_764001_3,11001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+11001_764001_4,11001,Wario Colosseum,Nick,1,Diddy Kong,Paratroopa
+11001_764001_5,11001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+11001_764001_6,11001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+11001_764001_7,11001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+11001_764001_8,11001,Sherbet Land,Tom,1,Bowser Jr.,Koopa
+11001_764001_9,11001,Baby Park,Tom,1,Bowser Jr.,Koopa
+11001_764001_10,11001,Waluigi Stadium,Tom,1,Bowser Jr.,Koopa
+11001_764001_11,11001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_764001_12,11001,Dry Dry Desert,Nick,1,Diddy Kong,Paratroopa
+11001_764001_13,11001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+11001_764001_14,11001,DK Mountain,Nick,1,Diddy Kong,Paratroopa
+11001_764001_15,11001,Dino Dino Jungle,Nick,1,Diddy Kong,Paratroopa
+11001_764001_16,11001,Rainbow Road,Tom,1,Bowser Jr.,Koopa
+11001_812001_14,11001,Daisy Cruiser,Tom,1,Diddy Kong,Paratroopa
+11001_812001_1,11001,Luigi Circuit,Nick,1,Bowser Jr.,Koopa
+11001_812001_5,11001,Peach Beach,Nick,1,Bowser Jr.,Koopa
+11001_812001_8,11001,Dino Dino Jungle,Tom,1,Diddy Kong,Paratroopa
+11001_812001_6,11001,DK Mountain,Tom,1,Diddy Kong,Paratroopa
+11001_812001_10,11001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+11001_812001_2,11001,Waluigi Stadium,Nick,1,Bowser Jr.,Koopa
+11001_812001_3,11001,Mushroom Bridge,Nick,1,Bowser Jr.,Koopa
+11001_812001_7,11001,Wario Colosseum,Tom,1,Diddy Kong,Paratroopa
+11001_812001_11,11001,Mushroom City,Tom,1,Diddy Kong,Paratroopa
+11001_812001_15,11001,Sherbet Land,Nick,1,Bowser Jr.,Koopa
+11001_812001_4,11001,Mario Circuit,Tom,1,Diddy Kong,Paratroopa
+11001_812001_16,11001,Rainbow Road,Nick,1,Bowser Jr.,Koopa
+11001_812001_13,11001,Dry Dry Desert,Nick,1,Bowser Jr.,Koopa
+11001_812001_9,11001,Bowser Castle,Tom,1,Diddy Kong,Paratroopa
+11001_812001_12,11001,Yoshi Circuit,Nick,1,Bowser Jr.,Koopa
+11001_818004_7,11001,Dino Dino Jungle,Tom,1,Diddy Kong,Koopa
+11001_818004_9,11001,Wario Colosseum,Tom,1,Diddy Kong,Koopa
+11001_818004_5,11001,Bowser Castle,Tom,1,Diddy Kong,Koopa
+11001_818004_11,11001,Waluigi Stadium,Tom,1,Diddy Kong,Koopa
+11001_818004_14,11001,Dry Dry Desert,Nick,1,Bowser Jr.,Paratroopa
+11001_818004_13,11001,Daisy Cruiser,Tom,1,Diddy Kong,Koopa
+11001_818004_15,11001,DK Mountain,Nick,1,Bowser Jr.,Paratroopa
+11001_818004_12,11001,Mushroom City,Nick,1,Bowser Jr.,Paratroopa
+11001_818004_1,11001,Luigi Circuit,Nick,1,Bowser Jr.,Paratroopa
+11001_818004_2,11001,Sherbet Land,Nick,1,Bowser Jr.,Paratroopa
+11001_818004_3,11001,Baby Park,Tom,1,Diddy Kong,Koopa
+11001_818004_4,11001,Mushroom Bridge,Tom,1,Diddy Kong,Koopa
+11001_818004_16,11001,Rainbow Road,Tom,1,Diddy Kong,Koopa
+11001_818004_6,11001,Yoshi Circuit,Tom,1,Diddy Kong,Koopa
+11001_818004_8,11001,Peach Beach,Nick,1,Bowser Jr.,Paratroopa
+11001_818004_10,11001,Mario Circuit,Nick,1,Bowser Jr.,Paratroopa
+16001_7001_30,16001,Baby Park,Dan,1,Baby Luigi,Toadette
+16001_7001_31,16001,Baby Park,Jeran,1,Paratroopa,Toadette
+16001_7001_44,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_7001_25,16001,Baby Park,Jeran,1,Diddy Kong,Toad
+16001_7001_21,16001,Baby Park,Jeran,1,Diddy Kong,Toad
+16001_7001_43,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_7001_42,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_7001_13,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_7001_16,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_7001_46,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_7001_50,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_7001_19,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_7001_14,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_7001_18,16001,Baby Park,Dan,1,Diddy Kong,Toadette
+16001_7001_32,16001,Baby Park,Jeran,1,Paratroopa,Toadette
+16001_7001_24,16001,Baby Park,Jeran,1,Diddy Kong,Toad
+16001_7001_28,16001,Baby Park,Dan,1,Baby Luigi,Toadette
+16001_81001_13,16001,Baby Park,Dan,1,Mario,Waluigi
+16001_81001_26,16001,Baby Park,Jeran,1,Baby Mario,Toadette
+16001_81001_30,16001,Baby Park,JD,1,Bowser Jr.,Koopa
+16001_81001_34,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81001_48,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81001_9,16001,Baby Park,JD,1,Paratroopa,Yoshi
+16001_81001_14,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_81001_16,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_81001_7,16001,Baby Park,Jeran,1,Diddy Kong,Toad
+16001_81001_10,16001,Baby Park,JD,1,Paratroopa,Yoshi
+16001_81001_15,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_81001_21,16001,Baby Park,Jeran,1,Baby Mario,Toadette
+16001_81001_33,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81001_36,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81001_3,16001,Baby Park,Jeran,1,Diddy Kong,Toad
+16001_81001_17,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_81001_27,16001,Baby Park,Jeran,1,Baby Mario,Toadette
+16001_81001_46,16001,Baby Park,JD,1,Bowser Jr.,Waluigi
+16001_81001_47,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81001_12,16001,Baby Park,Dan,1,Mario,Waluigi
+16001_81001_42,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81001_11,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_81001_28,16001,Baby Park,Jeran,1,Baby Mario,Toadette
+16001_81001_37,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81001_50,16001,Baby Park,Nick,1,Paratroopa,Yoshi
+16001_81001_5,16001,Baby Park,Jeran,1,Diddy Kong,Toad
+16001_81001_25,16001,Baby Park,JD,1,Bowser Jr.,Koopa
+16001_81001_35,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81001_43,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81001_44,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81001_20,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_81001_22,16001,Baby Park,Dan,1,Baby Luigi,Toad
+16001_81001_24,16001,Baby Park,Dan,1,Baby Luigi,Toad
+16001_81037_12,16001,Baby Park,Jeran,1,Bowser Jr.,Toadette
+16001_81037_17,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81037_34,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81037_5,16001,Baby Park,JD,1,Bowser Jr.,Koopa
+16001_81037_18,16001,Baby Park,Jeran,1,Bowser Jr.,Toadette
+16001_81037_33,16001,Baby Park,Dan,1,Paratroopa,Waluigi
+16001_81037_37,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81037_11,16001,Baby Park,Nick,1,Diddy Kong,Paratroopa
+16001_81037_13,16001,Baby Park,Jeran,1,Bowser Jr.,Toadette
+16001_81037_32,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81037_20,16001,Baby Park,JD,1,Luigi,Waluigi
+16001_81037_9,16001,Baby Park,Jeran,1,Diddy Kong,Toadette
+16001_81037_14,16001,Baby Park,Jeran,1,Bowser Jr.,Toadette
+16001_81037_15,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81037_16,16001,Baby Park,Jeran,1,Bowser Jr.,Toadette
+16001_81037_31,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_81037_19,16001,Baby Park,Tom,1,Koopa,Toad
+16001_81037_39,16001,Baby Park,Jeran,1,Baby Mario,Toad
+16001_93002_38,16001,Baby Park,JD,1,Baby Mario,Toad
+16001_93002_49,16001,Baby Park,Tom,1,Bowser Jr.,Paratroopa
+16001_93002_10,16001,Baby Park,Jeran,1,Baby Luigi,Toad
+16001_93002_18,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_93002_22,16001,Baby Park,Dan,1,Diddy Kong,Koopa
+16001_93002_23,16001,Baby Park,Dan,1,Diddy Kong,Koopa
+16001_93002_28,16001,Baby Park,Dan,1,Diddy Kong,Koopa
+16001_93002_41,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_48,16001,Baby Park,Dan,1,Toadette,Waluigi
+16001_93002_20,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_93002_25,16001,Baby Park,Dan,1,Diddy Kong,Koopa
+16001_93002_35,16001,Baby Park,Dan,1,Bowser Jr.,Toadette
+16001_93002_45,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_21,16001,Baby Park,Tom,1,Baby Mario,Toadette
+16001_93002_32,16001,Baby Park,Dan,1,Bowser Jr.,Toadette
+16001_93002_37,16001,Baby Park,JD,1,Baby Mario,Toad
+16001_93002_42,16001,Baby Park,Dan,1,Toadette,Waluigi
+16001_93002_24,16001,Baby Park,Tom,1,Baby Mario,Toadette
+16001_93002_27,16001,Baby Park,Dan,1,Diddy Kong,Koopa
+16001_93002_29,16001,Baby Park,JD,1,Baby Luigi,Toad
+16001_93002_14,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_93002_15,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_93002_17,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_93002_26,16001,Baby Park,JD,1,Baby Luigi,Toad
+16001_93002_30,16001,Baby Park,Tom,1,Baby Mario,Toadette
+16001_93002_40,16001,Baby Park,JD,1,Baby Mario,Toad
+16001_93002_43,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_44,16001,Baby Park,Tom,1,Bowser Jr.,Paratroopa
+16001_93002_47,16001,Baby Park,Jeran,1,Diddy Kong,Koopa
+16001_93002_16,16001,Baby Park,Jeran,1,Baby Luigi,Toadette
+16001_104001_8,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_18,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_36,16001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+16001_104001_39,16001,Baby Park,Tom,1,Diddy Kong,Paratroopa
+16001_104001_42,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_16,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_6,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_7,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_15,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_48,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_11,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_12,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_21,16001,Baby Park,Nick,1,Baby Luigi,Paratroopa
+16001_104001_41,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_45,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_44,16001,Baby Park,JD,1,Diddy Kong,Koopa
+16001_104001_49,16001,Baby Park,JD,1,Diddy Kong,Koopa
+16001_104001_13,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_14,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_19,16001,Baby Park,Jeran,1,Koopa,Toadette
+16001_104001_47,16001,Baby Park,Tom,1,Baby Luigi,Toad
+16001_104001_46,16001,Baby Park,Tom,1,Baby Luigi,Toad
+17001_6001_1,17001,Baby Park,JD,1,Bowser Jr.,Toadette
+17001_6001_2,17001,Baby Park,JD,1,Bowser Jr.,Toadette
+17001_6001_3,17001,Baby Park,JD,1,Bowser Jr.,Toadette
+17001_6001_4,17001,Baby Park,Dan,1,Diddy Kong,Koopa
+17001_22002_21,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_36,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_54,17001,Baby Park,JD,1,Bowser Jr.,Yoshi
+17001_22002_27,17001,Baby Park,JD,1,Bowser Jr.,Toad
+17001_22002_23,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_32,17001,Baby Park,JD,1,Bowser Jr.,Toad
+17001_22002_40,17001,Baby Park,Nick,1,Koopa,Toad
+17001_22002_52,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_25,17001,Baby Park,JD,1,Bowser Jr.,Toad
+17001_22002_29,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_43,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_9,17001,Baby Park,Nick,1,Baby Mario,Paratroopa
+17001_22002_53,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_50,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_46,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_38,17001,Baby Park,Nick,1,Koopa,Toad
+17001_22002_48,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_30,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_17,17001,Baby Park,Nick,1,Baby Mario,Paratroopa
+17001_22002_24,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_34,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_37,17001,Baby Park,Nick,1,Koopa,Toad
+17001_22002_31,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_22,17001,Baby Park,JD,1,Bowser Jr.,Toad
+17001_22002_47,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_26,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_56,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_35,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_44,17001,Baby Park,JD,1,Bowser Jr.,Yoshi
+17001_22002_42,17001,Baby Park,Nick,1,Koopa,Toad
+17001_22002_39,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_49,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_41,17001,Baby Park,Dan,1,Diddy Kong,Waluigi
+17001_22002_45,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_55,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_22002_51,17001,Baby Park,Tom,1,Paratroopa,Toadette
+17001_143001_22,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_28,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_23,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_13,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_21,17001,Baby Park,JD,1,Peach,Toad
+17001_143001_30,17001,Baby Park,JD,1,Peach,Toad
+17001_143001_14,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_25,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_26,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_4,17001,Baby Park,Tom,1,Baby Mario,Koopa
+17001_143001_11,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_143001_27,17001,Baby Park,JD,1,Peach,Toad
+17001_143001_29,17001,Baby Park,Tom,1,Bowser Jr.,Koopa
+17001_155021_17,17001,Baby Park,Dan,1,Diddy Kong,Paratroopa
+17001_155021_13,17001,Baby Park,JD,1,Bowser Jr.,Peach
+17001_155021_14,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_167001_14,17001,Baby Park,Jeran,1,Mario,Toad
+17001_167001_36,17001,Baby Park,Tom,1,Baby Mario,Toad
+17001_167001_19,17001,Baby Park,Jeran,1,Mario,Toad
+17001_167001_29,17001,Baby Park,Tom,1,Bowser Jr.,Toad
+17001_167001_24,17001,Baby Park,Tom,1,Bowser Jr.,Toad
+17001_167001_1,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_3,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_9,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_23,17001,Baby Park,Tom,1,Bowser Jr.,Toad
+17001_167001_10,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_39,17001,Baby Park,Tom,1,Baby Mario,Toad
+17001_167001_5,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_6,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_167001_16,17001,Baby Park,JD,1,Bowser Jr.,Paratroopa
+17001_167001_40,17001,Baby Park,Tom,1,Baby Mario,Toad
+17001_167001_12,17001,Baby Park,Jeran,1,Mario,Toad
+17001_173001_25,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_173001_24,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_173001_4,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_173001_7,17001,Baby Park,JD,1,Peach,Toad
+17001_173001_11,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_173001_12,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_173001_16,17001,Baby Park,Tom,1,Baby Luigi,Toadette
+17001_173001_21,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_173001_23,17001,Baby Park,JD,1,Baby Luigi,Toad
+17001_173001_15,17001,Baby Park,Tom,1,Bowser Jr.,Toadette
+17001_173001_17,17001,Baby Park,Tom,1,Baby Luigi,Toadette
+17001_173001_20,17001,Baby Park,JD,1,Bowser Jr.,Paratroopa
+17001_173001_22,17001,Baby Park,Nick,1,Bowser Jr.,Paratroopa
+17001_173001_19,17001,Baby Park,JD,1,Bowser Jr.,Paratroopa
+17001_184001_12,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_35,17001,Baby Park,Dan,1,Baby Luigi,Toad
+17001_184001_37,17001,Baby Park,Tom,1,Koopa,Toad
+17001_184001_10,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_27,17001,Baby Park,Dan,1,Paratroopa,Toad
+17001_184001_36,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_6,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_7,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_50,17001,Baby Park,Nick,1,Baby Luigi,Paratroopa
+17001_184001_8,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_13,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_15,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_14,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_44,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_184001_11,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_43,17001,Baby Park,Jeran,1,Baby Mario,Toadette
+17001_184001_30,17001,Baby Park,Dan,1,Paratroopa,Toad
+17001_184001_31,17001,Baby Park,Jeran,1,Paratroopa,Toadette
+17001_184001_33,17001,Baby Park,Jeran,1,Paratroopa,Toadette
+17001_184001_40,17001,Baby Park,Tom,1,Koopa,Toad
+17001_184001_9,17001,Baby Park,Jeran,1,Diddy Kong,Koopa
+17001_184001_39,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+17001_184001_34,17001,Baby Park,Jeran,1,Paratroopa,Toadette
+17001_184001_38,17001,Baby Park,Jeran,1,Diddy Kong,Toadette
+18001_6001_3,18001,Wario Colosseum,Nick,1,Baby Mario,Paratroopa
+18001_6001_2,18001,Dino Dino Jungle,Nick,1,Baby Mario,Paratroopa
+18001_6001_7,18001,Luigi Circuit,Nick,1,Baby Mario,Paratroopa
+18001_35001_10,18001,Waluigi Stadium,Jeran,1,Paratroopa,Toad
+18001_35001_16,18001,Rainbow Road,Jeran,1,Paratroopa,Toad
+18001_35001_1,18001,Luigi Circuit,Dan,1,Diddy Kong,Koopa
+18001_35001_2,18001,Mario Circuit,Jeran,1,Paratroopa,Toad
+18001_35001_3,18001,DK Mountain,Dan,1,Diddy Kong,Koopa
+18001_35001_9,18001,Mushroom Bridge,Jeran,1,Paratroopa,Toad
+18001_35001_11,18001,Mushroom City,Dan,1,Diddy Kong,Koopa
+18001_35001_12,18001,Yoshi Circuit,Jeran,1,Paratroopa,Toad
+18001_35001_13,18001,Wario Colosseum,Dan,1,Diddy Kong,Koopa
+18001_35001_14,18001,Dino Dino Jungle,Dan,1,Diddy Kong,Koopa
+18001_35001_6,18001,Peach Beach,Jeran,1,Paratroopa,Toad
+19001_4001_1,19001,Luigi Circuit,Tom,1,Bowser Jr.,Koopa
+19001_4001_2,19001,Peach Beach,Tom,1,Bowser Jr.,Koopa
+19001_4001_3,19001,Dino Dino Jungle,Tom,1,Bowser Jr.,Koopa
+19001_4001_4,19001,Mario Circuit,Tom,1,Bowser Jr.,Koopa
+19001_4001_5,19001,Sherbet Land,Dan,1,Diddy Kong,Paratroopa
+19001_4001_6,19001,Waluigi Stadium,Tom,1,Bowser Jr.,Koopa
+19001_4001_7,19001,Wario Colosseum,Dan,1,Diddy Kong,Paratroopa
+19001_4001_14,19001,Dry Dry Desert,Tom,1,Bowser Jr.,Koopa
+19001_4001_8,19001,Mushroom City,Tom,1,Bowser Jr.,Koopa
+19001_4001_10,19001,Mushroom Bridge,Tom,1,Bowser Jr.,Koopa
+19001_4001_9,19001,DK Mountain,Tom,1,Bowser Jr.,Koopa
+19001_4001_11,19001,Baby Park,Tom,1,Bowser Jr.,Koopa
+19001_4001_12,19001,Yoshi Circuit,Tom,1,Bowser Jr.,Koopa
+19001_4001_13,19001,Daisy Cruiser,Tom,1,Bowser Jr.,Koopa
+19001_4001_15,19001,Bowser Castle,Tom,1,Bowser Jr.,Koopa
+11001_4001_8,11001,Bowser Castle,Tom,2,Diddy Kong,Koopa
+11001_4001_5,11001,Dry Dry Desert,Tom,2,Diddy Kong,Koopa
+11001_67002_14,11001,DK Mountain,Tom,2,Bowser Jr.,Diddy Kong
+11001_67002_13,11001,Mario Circuit,Tom,2,Bowser Jr.,Diddy Kong
+11001_69001_11,11001,DK Mountain,Tom,2,Bowser Jr.,Koopa
+11001_69001_1,11001,Luigi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_69001_6,11001,Bowser Castle,Tom,2,Bowser Jr.,Koopa
+11001_69001_9,11001,Yoshi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_69001_10,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_69001_14,11001,Sherbet Land,Tom,2,Bowser Jr.,Koopa
+11001_69001_15,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_94005_13,11001,Peach Beach,Tom,2,Diddy Kong,Waluigi
+11001_94005_15,11001,Dino Dino Jungle,Tom,2,Diddy Kong,Waluigi
+11001_94005_6,11001,Wario Colosseum,Tom,2,Diddy Kong,Waluigi
+11001_94005_2,11001,Mushroom Bridge,Tom,2,Diddy Kong,Waluigi
+11001_94005_9,11001,Dry Dry Desert,Tom,2,Diddy Kong,Waluigi
+11001_161001_8,11001,Mushroom City,Nick,2,Koopa,Paratroopa
+11001_161001_2,11001,Mario Circuit,Nick,2,Koopa,Paratroopa
+11001_161001_5,11001,Sherbet Land,Nick,2,Koopa,Paratroopa
+11001_161001_7,11001,Mushroom Bridge,Nick,2,Koopa,Paratroopa
+11001_161001_16,11001,Rainbow Road,Nick,2,Koopa,Paratroopa
+11001_161001_11,11001,Wario Colosseum,Nick,2,Koopa,Paratroopa
+11001_169003_8,11001,Dry Dry Desert,Tom,2,Koopa,Toad
+11001_169003_14,11001,Daisy Cruiser,Tom,2,Koopa,Toad
+11001_169003_3,11001,DK Mountain,Tom,2,Koopa,Toad
+11001_169003_12,11001,Dino Dino Jungle,Tom,2,Koopa,Toad
+11001_169003_15,11001,Bowser Castle,Tom,2,Koopa,Toad
+11001_194002_5,11001,Yoshi Circuit,Nick,2,Koopa,Paratroopa
+11001_194002_9,11001,Baby Park,Nick,2,Koopa,Paratroopa
+11001_194002_1,11001,Luigi Circuit,Nick,2,Koopa,Paratroopa
+11001_194002_2,11001,Dino Dino Jungle,Nick,2,Koopa,Paratroopa
+11001_194002_7,11001,Peach Beach,Nick,2,Koopa,Paratroopa
+11001_194002_6,11001,Dry Dry Desert,Nick,2,Koopa,Paratroopa
+11001_194002_13,11001,Daisy Cruiser,Nick,2,Koopa,Paratroopa
+11001_220002_14,11001,Yoshi Circuit,Nick,2,Koopa,Paratroopa
+11001_220002_5,11001,Sherbet Land,Nick,2,Koopa,Paratroopa
+11001_220002_4,11001,Peach Beach,Nick,2,Koopa,Paratroopa
+11001_220002_9,11001,Baby Park,Nick,2,Koopa,Paratroopa
+11001_244001_1,11001,Luigi Circuit,Nick,2,Paratroopa,Toad
+11001_244001_16,11001,Rainbow Road,Tom,2,Diddy Kong,Koopa
+11001_244001_2,11001,Daisy Cruiser,Nick,2,Paratroopa,Toad
+11001_244001_13,11001,Mushroom City,Nick,2,Paratroopa,Toad
+11001_244001_3,11001,DK Mountain,Nick,2,Paratroopa,Toad
+11001_244001_4,11001,Peach Beach,Nick,2,Paratroopa,Toad
+11001_244001_9,11001,Baby Park,Nick,2,Paratroopa,Toad
+11001_244001_5,11001,Dino Dino Jungle,Nick,2,Paratroopa,Toad
+11001_244001_7,11001,Yoshi Circuit,Tom,2,Diddy Kong,Koopa
+11001_244001_6,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_244001_8,11001,Dry Dry Desert,Nick,2,Paratroopa,Toad
+11001_244001_10,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_244001_11,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_244001_12,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_244001_14,11001,Mario Circuit,Nick,2,Paratroopa,Toad
+11001_280001_1,11001,Luigi Circuit,Nick,2,Paratroopa,Toad
+11001_280001_3,11001,Baby Park,Nick,2,Paratroopa,Toad
+11001_280001_7,11001,Mario Circuit,Nick,2,Paratroopa,Toad
+11001_280001_12,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_280001_14,11001,Yoshi Circuit,Nick,2,Paratroopa,Toad
+11001_280001_15,11001,Daisy Cruiser,Nick,2,Paratroopa,Toad
+11001_323001_15,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_323001_7,11001,DK Mountain,Nick,2,Paratroopa,Toad
+11001_323001_10,11001,Mushroom City,Nick,2,Paratroopa,Toad
+11001_323001_12,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_323001_1,11001,Luigi Circuit,Nick,2,Paratroopa,Toad
+11001_323001_2,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_323001_6,11001,Dry Dry Desert,Nick,2,Paratroopa,Toad
+11001_338002_10,11001,Mushroom City,Nick,2,Paratroopa,Toad
+11001_338002_3,11001,Daisy Cruiser,Nick,2,Paratroopa,Toad
+11001_338002_6,11001,Mario Circuit,Nick,2,Paratroopa,Toad
+11001_338002_13,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_338002_1,11001,Luigi Circuit,Nick,2,Paratroopa,Toad
+11001_338002_15,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_338002_9,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_338002_7,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_338002_8,11001,Peach Beach,Nick,2,Paratroopa,Toad
+11001_338002_11,11001,Yoshi Circuit,Nick,2,Paratroopa,Toad
+11001_369001_11,11001,DK Mountain,Nick,2,Paratroopa,Toad
+11001_369001_2,11001,Yoshi Circuit,Nick,2,Paratroopa,Toad
+11001_369001_4,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_369001_6,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_369001_7,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_369001_8,11001,Mario Circuit,Nick,2,Paratroopa,Toad
+11001_369001_12,11001,Waluigi Stadium,Nick,2,Paratroopa,Toad
+11001_369001_14,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_412001_9,11001,Mushroom City,Nick,2,Paratroopa,Toad
+11001_412001_14,11001,DK Mountain,Nick,2,Paratroopa,Toad
+11001_412001_4,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_412001_1,11001,Luigi Circuit,Nick,2,Paratroopa,Toad
+11001_412001_3,11001,Mario Circuit,Nick,2,Paratroopa,Toad
+11001_412001_6,11001,Daisy Cruiser,Nick,2,Paratroopa,Toad
+11001_412001_10,11001,Baby Park,Nick,2,Paratroopa,Toad
+11001_412001_12,11001,Peach Beach,Nick,2,Paratroopa,Toad
+11001_443001_9,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_443001_1,11001,Luigi Circuit,Nick,2,Paratroopa,Toad
+11001_443001_2,11001,Baby Park,Nick,2,Paratroopa,Toad
+11001_443001_3,11001,Dry Dry Desert,Nick,2,Paratroopa,Toad
+11001_443001_4,11001,Daisy Cruiser,Tom,2,Bowser Jr.,Koopa
+11001_443001_5,11001,Peach Beach,Nick,2,Paratroopa,Toad
+11001_443001_6,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_443001_11,11001,Mushroom City,Tom,2,Bowser Jr.,Koopa
+11001_443001_15,11001,Dino Dino Jungle,Nick,2,Paratroopa,Toad
+11001_443001_7,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_443001_8,11001,Yoshi Circuit,Nick,2,Paratroopa,Toad
+11001_443001_10,11001,Mario Circuit,Tom,2,Bowser Jr.,Koopa
+11001_443001_12,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Koopa
+11001_443001_13,11001,DK Mountain,Tom,2,Bowser Jr.,Koopa
+11001_443001_14,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_481001_2,11001,DK Mountain,Tom,2,Bowser Jr.,Koopa
+11001_481001_10,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_481001_8,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_481001_11,11001,Yoshi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_481001_16,11001,Rainbow Road,Tom,2,Bowser Jr.,Koopa
+11001_481001_6,11001,Mushroom City,Tom,2,Bowser Jr.,Koopa
+11001_481001_7,11001,Bowser Castle,Tom,2,Bowser Jr.,Koopa
+11001_481001_9,11001,Peach Beach,Tom,2,Bowser Jr.,Koopa
+11001_514001_2,11001,Mushroom City,Nick,2,Paratroopa,Toad
+11001_514001_4,11001,Dino Dino Jungle,Nick,2,Paratroopa,Toad
+11001_514001_9,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_514001_5,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_514001_8,11001,Baby Park,Nick,2,Paratroopa,Toad
+11001_514001_10,11001,DK Mountain,Nick,2,Paratroopa,Toad
+11001_514001_15,11001,Yoshi Circuit,Nick,2,Paratroopa,Toad
+11001_551001_12,11001,Dry Dry Desert,Nick,2,Paratroopa,Toad
+11001_551001_2,11001,Waluigi Stadium,Nick,2,Paratroopa,Toad
+11001_551001_11,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_551001_7,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_551001_8,11001,Peach Beach,Nick,2,Paratroopa,Toad
+11001_551001_9,11001,Yoshi Circuit,Nick,2,Paratroopa,Toad
+11001_551001_10,11001,Mushroom City,Nick,2,Paratroopa,Toad
+11001_551001_13,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_580001_12,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_580001_1,11001,Luigi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_580001_15,11001,Daisy Cruiser,Nick,2,Paratroopa,Toad
+11001_580001_10,11001,Mario Circuit,Nick,2,Paratroopa,Toad
+11001_580001_11,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_580001_8,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_580001_3,11001,Yoshi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_580001_14,11001,Mushroom City,Tom,2,Bowser Jr.,Koopa
+11001_580001_2,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Koopa
+11001_580001_4,11001,Peach Beach,Nick,2,Paratroopa,Toad
+11001_580001_6,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_580001_7,11001,Bowser Castle,Nick,2,Paratroopa,Toad
+11001_580001_13,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_600001_1,11001,Luigi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_600001_2,11001,Daisy Cruiser,Nick,2,Paratroopa,Toad
+11001_600001_3,11001,DK Mountain,Nick,2,Paratroopa,Toad
+11001_600001_4,11001,Yoshi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_600001_5,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_600001_6,11001,Mushroom Bridge,Tom,2,Bowser Jr.,Koopa
+11001_600001_7,11001,Baby Park,Nick,2,Paratroopa,Toad
+11001_600001_8,11001,Dry Dry Desert,Nick,2,Paratroopa,Toad
+11001_600001_12,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Koopa
+11001_600001_9,11001,Peach Beach,Tom,2,Bowser Jr.,Koopa
+11001_600001_10,11001,Mario Circuit,Tom,2,Bowser Jr.,Koopa
+11001_600001_11,11001,Bowser Castle,Tom,2,Bowser Jr.,Koopa
+11001_600001_13,11001,Mushroom City,Nick,2,Paratroopa,Toad
+11001_600001_14,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_600001_15,11001,Dino Dino Jungle,Nick,2,Paratroopa,Toad
+11001_821002_6,11001,Bowser Castle,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_9,11001,Wario Colosseum,Tom,2,Diddy Kong,Koopa
+11001_821002_1,11001,Luigi Circuit,Tom,2,Diddy Kong,Koopa
+11001_821002_2,11001,Mushroom Bridge,Tom,2,Diddy Kong,Koopa
+11001_821002_4,11001,Yoshi Circuit,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_5,11001,Sherbet Land,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_8,11001,Daisy Cruiser,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_16,11001,Rainbow Road,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_3,11001,DK Mountain,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_10,11001,Waluigi Stadium,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_11,11001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_12,11001,Mario Circuit,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_14,11001,Mushroom City,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_15,11001,Dino Dino Jungle,Nick,2,Bowser Jr.,Paratroopa
+11001_821002_13,11001,Peach Beach,Tom,2,Diddy Kong,Koopa
+16001_7001_37,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_8,16001,Baby Park,Tom,2,Bowser Jr.,Diddy Kong
+16001_7001_1,16001,Baby Park,Tom,2,Bowser Jr.,Diddy Kong
+16001_7001_30,16001,Baby Park,Nick,2,Baby Mario,Paratroopa
+16001_7001_23,16001,Baby Park,Nick,2,Baby Mario,Paratroopa
+16001_7001_2,16001,Baby Park,Jeran,2,Baby Luigi,Toadette
+16001_7001_3,16001,Baby Park,Jeran,2,Baby Luigi,Toadette
+16001_7001_45,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_7001_31,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_4,16001,Baby Park,Tom,2,Bowser Jr.,Diddy Kong
+16001_7001_44,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_7001_15,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_5,16001,Baby Park,Tom,2,Bowser Jr.,Diddy Kong
+16001_7001_22,16001,Baby Park,Nick,2,Baby Mario,Paratroopa
+16001_7001_6,16001,Baby Park,Tom,2,Bowser Jr.,Diddy Kong
+16001_7001_25,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_21,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_43,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_7,16001,Baby Park,Jeran,2,Baby Luigi,Toadette
+16001_7001_9,16001,Baby Park,Tom,2,Bowser Jr.,Diddy Kong
+16001_7001_33,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_42,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_7001_13,16001,Baby Park,Nick,2,Baby Mario,Paratroopa
+16001_7001_16,16001,Baby Park,Nick,2,Baby Mario,Paratroopa
+16001_7001_35,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_46,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_10,16001,Baby Park,Nick,2,Koopa,Paratroopa
+16001_7001_50,16001,Baby Park,Nick,2,Baby Mario,Paratroopa
+16001_7001_19,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_14,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_18,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_38,16001,Baby Park,Tom,2,Diddy Kong,Koopa
+16001_7001_32,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_41,16001,Baby Park,Dan,2,Toad,Waluigi
+16001_7001_24,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_28,16001,Baby Park,Tom,2,Bowser Jr.,Koopa
+16001_7001_34,16001,Baby Park,Tom,2,Diddy Kong,Koopa
+16001_7001_47,16001,Baby Park,Nick,2,Baby Mario,Paratroopa
+16001_7001_40,16001,Baby Park,Tom,2,Diddy Kong,Koopa
+16001_81001_13,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_81001_30,16001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+16001_81001_34,16001,Baby Park,Tom,2,Bowser Jr.,Toadette
+16001_81001_40,16001,Baby Park,Tom,2,Bowser Jr.,Toadette
+16001_81001_48,16001,Baby Park,Dan,2,Diddy Kong,Toadette
+16001_81001_9,16001,Baby Park,Dan,2,Bowser Jr.,Waluigi
+16001_81001_14,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81001_16,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81001_7,16001,Baby Park,Dan,2,Bowser Jr.,Waluigi
+16001_81001_10,16001,Baby Park,Dan,2,Bowser Jr.,Waluigi
+16001_81001_15,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81001_33,16001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+16001_81001_36,16001,Baby Park,JD,2,Koopa,Waluigi
+16001_81001_39,16001,Baby Park,Tom,2,Bowser Jr.,Toadette
+16001_81001_3,16001,Baby Park,Dan,2,Bowser Jr.,Waluigi
+16001_81001_42,16001,Baby Park,Dan,2,Diddy Kong,Toadette
+16001_81001_2,16001,Baby Park,Dan,2,Bowser Jr.,Waluigi
+16001_81001_6,16001,Baby Park,Dan,2,Bowser Jr.,Waluigi
+16001_81001_11,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_81001_37,16001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+16001_81001_50,16001,Baby Park,Dan,2,Diddy Kong,Toadette
+16001_81001_25,16001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+16001_81001_32,16001,Baby Park,JD,2,Koopa,Waluigi
+16001_81001_35,16001,Baby Park,Tom,2,Bowser Jr.,Toadette
+16001_81001_20,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81001_24,16001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+16001_81037_30,16001,Baby Park,JD,2,Daisy,Waluigi
+16001_81037_47,16001,Baby Park,Dan,2,Bowser Jr.,Koopa
+16001_81037_6,16001,Baby Park,Dan,2,Luigi,Waluigi
+16001_81037_24,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_81037_34,16001,Baby Park,Nick,2,Diddy Kong,Koopa
+16001_81037_36,16001,Baby Park,Nick,2,Diddy Kong,Koopa
+16001_81037_5,16001,Baby Park,Dan,2,Luigi,Waluigi
+16001_81037_33,16001,Baby Park,Tom,2,Bowser Jr.,Toadette
+16001_81037_38,16001,Baby Park,Nick,2,Diddy Kong,Koopa
+16001_81037_41,16001,Baby Park,Dan,2,Bowser Jr.,Koopa
+16001_81037_48,16001,Baby Park,Dan,2,Bowser Jr.,Koopa
+16001_81037_21,16001,Baby Park,Jeran,2,Toad,Toadette
+16001_81037_23,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_81037_37,16001,Baby Park,Tom,2,Bowser Jr.,Toadette
+16001_81037_28,16001,Baby Park,Nick,2,Bowser Jr.,Koopa
+16001_81037_43,16001,Baby Park,Nick,2,Paratroopa,Waluigi
+16001_81037_44,16001,Baby Park,Nick,2,Paratroopa,Waluigi
+16001_81037_25,16001,Baby Park,JD,2,Daisy,Waluigi
+16001_81037_26,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_81037_29,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_81037_9,16001,Baby Park,Dan,2,Luigi,Waluigi
+16001_81037_10,16001,Baby Park,Tom,2,Paratroopa,Toad
+16001_81037_27,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_81037_49,16001,Baby Park,Tom,2,Diddy Kong,Toadette
+16001_81037_22,16001,Baby Park,Nick,2,Bowser Jr.,Koopa
+16001_81037_42,16001,Baby Park,Tom,2,Diddy Kong,Toadette
+16001_93002_1,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_93002_2,16001,Baby Park,Tom,2,Diddy Kong,Paratroopa
+16001_93002_10,16001,Baby Park,Tom,2,Diddy Kong,Paratroopa
+16001_93002_18,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_93002_48,16001,Baby Park,Nick,2,Baby Luigi,Toad
+16001_93002_5,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_93002_20,16001,Baby Park,JD,2,Diddy Kong,Koopa
+16001_93002_6,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_93002_37,16001,Baby Park,Jeran,2,Diddy Kong,Koopa
+16001_93002_3,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_93002_14,16001,Baby Park,Tom,2,Toad,Waluigi
+16001_93002_15,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_93002_17,16001,Baby Park,JD,2,Diddy Kong,Koopa
+16001_93002_8,16001,Baby Park,Dan,2,Baby Mario,Toadette
+16001_93002_12,16001,Baby Park,Tom,2,Toad,Waluigi
+16001_93002_16,16001,Baby Park,JD,2,Diddy Kong,Koopa
+16001_104001_8,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_104001_18,16001,Baby Park,Nick,2,Baby Mario,Bowser Jr.
+16001_104001_27,16001,Baby Park,Tom,2,Bowser Jr.,Toad
+16001_104001_36,16001,Baby Park,Jeran,2,Baby Mario,Toad
+16001_104001_39,16001,Baby Park,Jeran,2,Baby Mario,Toad
+16001_104001_42,16001,Baby Park,Dan,2,Toadette,Waluigi
+16001_104001_16,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_104001_22,16001,Baby Park,Tom,2,Bowser Jr.,Toad
+16001_104001_40,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_104001_6,16001,Baby Park,JD,2,Paratroopa,Waluigi
+16001_104001_7,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_104001_15,16001,Baby Park,Nick,2,Baby Mario,Bowser Jr.
+16001_104001_29,16001,Baby Park,Jeran,2,Koopa,Toadette
+16001_104001_32,16001,Baby Park,Dan,2,Baby Luigi,Toadette
+16001_104001_38,16001,Baby Park,Dan,2,Baby Luigi,Toadette
+16001_104001_2,16001,Baby Park,JD,2,Paratroopa,Waluigi
+16001_104001_11,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_104001_12,16001,Baby Park,Nick,2,Baby Mario,Bowser Jr.
+16001_104001_21,16001,Baby Park,Jeran,2,Koopa,Toadette
+16001_104001_23,16001,Baby Park,Dan,2,Diddy Kong,Waluigi
+16001_104001_45,16001,Baby Park,Dan,2,Toadette,Waluigi
+16001_104001_3,16001,Baby Park,Nick,2,Bowser Jr.,Koopa
+16001_104001_28,16001,Baby Park,Dan,2,Diddy Kong,Waluigi
+16001_104001_30,16001,Baby Park,Dan,2,Diddy Kong,Waluigi
+16001_104001_44,16001,Baby Park,Dan,2,Toadette,Waluigi
+16001_104001_49,16001,Baby Park,Dan,2,Toadette,Waluigi
+16001_104001_14,16001,Baby Park,Nick,2,Baby Mario,Bowser Jr.
+16001_104001_19,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_104001_20,16001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+16001_104001_31,16001,Baby Park,Dan,2,Baby Luigi,Toadette
+16001_104001_47,16001,Baby Park,Dan,2,Toadette,Waluigi
+16001_104001_24,16001,Baby Park,Tom,2,Bowser Jr.,Toad
+16001_104001_25,16001,Baby Park,Tom,2,Bowser Jr.,Toad
+16001_104001_34,16001,Baby Park,Jeran,2,Baby Mario,Toad
+16001_104001_37,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_117001_1,16001,Baby Park,Dan,2,Toad,Waluigi
+17001_6001_1,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_22002_1,17001,Baby Park,Tom,2,Baby Luigi,Koopa
+17001_22002_18,17001,Baby Park,Dan,2,Diddy Kong,Toadette
+17001_22002_27,17001,Baby Park,Nick,2,Baby Luigi,Koopa
+17001_22002_3,17001,Baby Park,Dan,2,Diddy Kong,Toadette
+17001_22002_4,17001,Baby Park,Tom,2,Baby Luigi,Koopa
+17001_22002_6,17001,Baby Park,Tom,2,Baby Luigi,Koopa
+17001_22002_29,17001,Baby Park,Nick,2,Baby Luigi,Koopa
+17001_22002_9,17001,Baby Park,Dan,2,Diddy Kong,Toadette
+17001_22002_20,17001,Baby Park,Tom,2,Baby Luigi,Koopa
+17001_22002_8,17001,Baby Park,Tom,2,Baby Luigi,Koopa
+17001_22002_30,17001,Baby Park,Nick,2,Baby Luigi,Koopa
+17001_22002_17,17001,Baby Park,Dan,2,Diddy Kong,Toadette
+17001_22002_22,17001,Baby Park,Nick,2,Baby Luigi,Koopa
+17001_22002_35,17001,Baby Park,Nick,2,Baby Luigi,Koopa
+17001_25001_1,17001,Baby Park,Dan,2,Diddy Kong,Toadette
+17001_25001_2,17001,Baby Park,Dan,2,Diddy Kong,Toadette
+17001_25001_3,17001,Baby Park,JD,2,Bowser Jr.,Yoshi
+17001_25001_4,17001,Baby Park,Nick,2,Paratroopa,Toad
+17001_143001_5,17001,Baby Park,JD,2,Bowser Jr.,Toadette
+17001_143001_8,17001,Baby Park,JD,2,Bowser Jr.,Toadette
+17001_143001_33,17001,Baby Park,Jeran,2,Koopa,Toad
+17001_143001_15,17001,Baby Park,Tom,2,Toad,Waluigi
+17001_143001_22,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_143001_38,17001,Baby Park,JD,2,Bowser Jr.,Peach
+17001_143001_32,17001,Baby Park,Jeran,2,Koopa,Toad
+17001_143001_1,17001,Baby Park,Dan,2,Paratroopa,Waluigi
+17001_143001_6,17001,Baby Park,Jeran,2,Diddy Kong,Toad
+17001_143001_2,17001,Baby Park,Dan,2,Paratroopa,Waluigi
+17001_143001_13,17001,Baby Park,Tom,2,Toad,Waluigi
+17001_143001_21,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_143001_30,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_143001_37,17001,Baby Park,Jeran,2,Koopa,Toad
+17001_143001_14,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_143001_16,17001,Baby Park,JD,2,Bowser Jr.,Koopa
+17001_143001_18,17001,Baby Park,Tom,2,Toad,Waluigi
+17001_143001_26,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_143001_10,17001,Baby Park,JD,2,Bowser Jr.,Toadette
+17001_143001_4,17001,Baby Park,Jeran,2,Diddy Kong,Toad
+17001_143001_11,17001,Baby Park,Tom,2,Toad,Waluigi
+17001_143001_19,17001,Baby Park,Tom,2,Toad,Waluigi
+17001_143001_20,17001,Baby Park,Tom,2,Toad,Waluigi
+17001_143001_29,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_143001_35,17001,Baby Park,Jeran,2,Koopa,Toad
+17001_155021_5,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_155021_1,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_155021_4,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_155021_17,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_155021_20,17001,Baby Park,Tom,2,Koopa,Toad
+17001_155021_2,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_155021_6,17001,Baby Park,Tom,2,Bowser Jr.,Toadette
+17001_155021_13,17001,Baby Park,Dan,2,Paratroopa,Toad
+17001_155021_3,17001,Baby Park,JD,2,Peach,Toad
+17001_155021_11,17001,Baby Park,Tom,2,Toadette,Waluigi
+17001_155021_14,17001,Baby Park,Tom,2,Toadette,Waluigi
+17001_155021_19,17001,Baby Park,Tom,2,Koopa,Toad
+17001_167001_2,17001,Baby Park,Tom,2,Baby Luigi,Paratroopa
+17001_167001_35,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_167001_36,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_167001_37,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_167001_17,17001,Baby Park,Tom,2,Diddy Kong,Koopa
+17001_167001_29,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_167001_41,17001,Baby Park,Dan,2,Bowser Jr.,Paratroopa
+17001_167001_7,17001,Baby Park,Tom,2,Baby Luigi,Paratroopa
+17001_167001_34,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_167001_4,17001,Baby Park,JD,2,Bowser Jr.,Koopa
+17001_167001_24,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_167001_1,17001,Baby Park,Tom,2,Baby Luigi,Paratroopa
+17001_167001_3,17001,Baby Park,Dan,2,Toad,Waluigi
+17001_167001_9,17001,Baby Park,Tom,2,Baby Luigi,Paratroopa
+17001_167001_23,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_167001_10,17001,Baby Park,Dan,2,Toad,Waluigi
+17001_167001_31,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_167001_39,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_167001_5,17001,Baby Park,Tom,2,Baby Luigi,Paratroopa
+17001_167001_6,17001,Baby Park,JD,2,Bowser Jr.,Koopa
+17001_167001_8,17001,Baby Park,Tom,2,Baby Luigi,Paratroopa
+17001_167001_16,17001,Baby Park,Tom,2,Diddy Kong,Koopa
+17001_167001_20,17001,Baby Park,Tom,2,Diddy Kong,Koopa
+17001_167001_40,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_167001_12,17001,Baby Park,Tom,2,Diddy Kong,Koopa
+17001_173001_6,17001,Baby Park,Nick,2,Paratroopa,Waluigi
+17001_173001_10,17001,Baby Park,Dan,2,Diddy Kong,Koopa
+17001_173001_14,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_173001_1,17001,Baby Park,JD,2,Toad,Waluigi
+17001_173001_9,17001,Baby Park,Dan,2,Diddy Kong,Koopa
+17001_173001_13,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_173001_4,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_173001_7,17001,Baby Park,Nick,2,Paratroopa,Waluigi
+17001_173001_11,17001,Baby Park,Jeran,2,Diddy Kong,Koopa
+17001_173001_12,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_173001_16,17001,Baby Park,Dan,2,Toad,Waluigi
+17001_173001_8,17001,Baby Park,Nick,2,Paratroopa,Waluigi
+17001_173001_15,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_184001_12,17001,Baby Park,Jesse,2,Baby Luigi,Baby Mario
+17001_184001_35,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_184001_49,17001,Baby Park,JD,2,Bowser Jr.,Koopa
+17001_184001_47,17001,Baby Park,JD,2,Bowser Jr.,Koopa
+17001_184001_3,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_29,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_184001_22,17001,Baby Park,Tom,2,Diddy Kong,Toad
+17001_184001_27,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_48,17001,Baby Park,JD,2,Bowser Jr.,Koopa
+17001_184001_17,17001,Baby Park,Dan,2,Diddy Kong,Toad
+17001_184001_23,17001,Baby Park,Dan,2,Bowser Jr.,Toadette
+17001_184001_25,17001,Baby Park,Tom,2,Diddy Kong,Toadette
+17001_184001_50,17001,Baby Park,Dan,2,Diddy Kong,Toad
+17001_184001_1,17001,Baby Park,Dan,2,Toad,Waluigi
+17001_184001_60,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_2,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_184001_4,17001,Baby Park,Dan,2,Toad,Waluigi
+17001_184001_15,17001,Baby Park,Jesse,2,Baby Luigi,Baby Mario
+17001_184001_28,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_55,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_184001_24,17001,Baby Park,JD,2,Koopa,Paratroopa
+17001_184001_24,17001,Baby Park,JD,2,Koopa,Paratroopa
+17001_184001_57,17001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+17001_184001_58,17001,Baby Park,Dan,2,Koopa,Toad
+17001_184001_44,17001,Baby Park,Nick,2,Diddy Kong,Koopa
+17001_184001_52,17001,Baby Park,Dan,2,Bowser Jr.,Koopa
+17001_184001_56,17001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+17001_184001_59,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_5,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_51,17001,Baby Park,Tom,2,Diddy Kong,Toadette
+17001_184001_24,17001,Baby Park,JD,2,Koopa,Paratroopa
+17001_184001_24,17001,Baby Park,JD,2,Koopa,Paratroopa
+17001_184001_18,17001,Baby Park,JD,2,Bowser Jr.,Toadette
+17001_184001_19,17001,Baby Park,JD,2,Bowser Jr.,Toadette
+17001_184001_43,17001,Baby Park,Nick,2,Diddy Kong,Koopa
+17001_184001_30,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_54,17001,Baby Park,Tom,2,Diddy Kong,Toadette
+17001_184001_16,17001,Baby Park,JD,2,Bowser Jr.,Toadette
+17001_184001_53,17001,Baby Park,Tom,2,Diddy Kong,Toadette
+17001_184001_38,17001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+18001_35001_9,18001,Mushroom Bridge,Tom,2,Baby Mario,Toadette
+18001_35001_11,18001,Mushroom City,Tom,2,Baby Mario,Toadette
+18001_35001_13,18001,Wario Colosseum,Tom,2,Baby Mario,Toadette
+19001_42001_7,19001,Daisy Cruiser,Dan,2,King Boo,Waluigi
+19001_42001_1,19001,Luigi Circuit,Dan,2,King Boo,Waluigi
+19001_42001_9,19001,DK Mountain,Tom,2,Bowser Jr.,Wario
+19001_42001_3,19001,Mushroom Bridge,Tom,2,Bowser Jr.,Wario
+19001_42001_5,19001,Yoshi Circuit,Dan,2,King Boo,Waluigi
+19001_42001_6,19001,Dry Dry Desert,Tom,2,Bowser Jr.,Wario
+19001_42001_8,19001,Wario Colosseum,Dan,2,King Boo,Waluigi
+19001_42001_11,19001,Mushroom City,Tom,2,Bowser Jr.,Wario
+20001_4001_1,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_2,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_3,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_10,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_4,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_5,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_6,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_7,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_15,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_8,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_9,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_11,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_13,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+20001_4001_16,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_12,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_14,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_17,20001,Baby Park,Tom,2,Diddy Kong,Koopa
+20001_4001_18,20001,Baby Park,Dan,2,Bowser Jr.,Toad
+11001_4001_14,11001,DK Mountain,Nick,2,Baby Mario,Paratroopa
+11001_4001_2,11001,Baby Park,Nick,2,Baby Mario,Paratroopa
+11001_4001_9,11001,Mario Circuit,Nick,2,Baby Mario,Paratroopa
+11001_4001_10,11001,Daisy Cruiser,Nick,2,Baby Mario,Paratroopa
+11001_4001_15,11001,Mushroom Bridge,Nick,2,Baby Mario,Paratroopa
+11001_4001_1,11001,Luigi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_4001_3,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_4001_4,11001,Yoshi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_4001_6,11001,Wario Colosseum,Nick,2,Baby Mario,Paratroopa
+11001_4001_12,11001,Waluigi Stadium,Nick,2,Baby Mario,Paratroopa
+11001_37001_6,11001,Wario Colosseum,Nick,2,Baby Mario,Paratroopa
+11001_37001_7,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Waluigi
+11001_37001_1,11001,Luigi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_37001_16,11001,Rainbow Road,Nick,2,Baby Mario,Paratroopa
+11001_37001_2,11001,Bowser Castle,Tom,2,Bowser Jr.,Waluigi
+11001_37001_3,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_37001_9,11001,Daisy Cruiser,Nick,2,Baby Mario,Paratroopa
+11001_37001_5,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Waluigi
+11001_37001_4,11001,Sherbet Land,Tom,2,Bowser Jr.,Waluigi
+11001_37001_14,11001,Peach Beach,Tom,2,Bowser Jr.,Waluigi
+11001_37001_12,11001,Mario Circuit,Tom,2,Bowser Jr.,Waluigi
+11001_37001_8,11001,Dry Dry Desert,Nick,2,Baby Mario,Paratroopa
+11001_37001_10,11001,Yoshi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_37001_15,11001,Mushroom Bridge,Tom,2,Bowser Jr.,Waluigi
+11001_54001_9,11001,DK Mountain,Nick,2,Baby Mario,Paratroopa
+11001_54001_2,11001,Daisy Cruiser,Tom,2,Diddy Kong,Waluigi
+11001_54001_11,11001,Peach Beach,Tom,2,Diddy Kong,Waluigi
+11001_54001_1,11001,Luigi Circuit,Tom,2,Diddy Kong,Waluigi
+11001_54001_7,11001,Bowser Castle,Tom,2,Diddy Kong,Waluigi
+11001_54001_15,11001,Mushroom City,Tom,2,Diddy Kong,Waluigi
+11001_54001_6,11001,Dry Dry Desert,Nick,2,Baby Mario,Paratroopa
+11001_54001_13,11001,Dino Dino Jungle,Tom,2,Diddy Kong,Waluigi
+11001_54001_4,11001,Yoshi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_54001_12,11001,Waluigi Stadium,Tom,2,Diddy Kong,Waluigi
+11001_67002_2,11001,Bowser Castle,Nick,2,Baby Mario,Paratroopa
+11001_67002_10,11001,Waluigi Stadium,Nick,2,Baby Mario,Paratroopa
+11001_67002_6,11001,Sherbet Land,Nick,2,Baby Mario,Paratroopa
+11001_67002_3,11001,Daisy Cruiser,Nick,2,Baby Mario,Paratroopa
+11001_67002_15,11001,Wario Colosseum,Nick,2,Baby Mario,Paratroopa
+11001_67002_11,11001,Dino Dino Jungle,Nick,2,Baby Mario,Paratroopa
+11001_67002_12,11001,Mushroom Bridge,Nick,2,Baby Mario,Paratroopa
+11001_67002_7,11001,Peach Beach,Nick,2,Baby Mario,Paratroopa
+11001_67002_1,11001,Luigi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_67002_4,11001,Yoshi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_67002_5,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_67002_9,11001,Dry Dry Desert,Nick,2,Baby Mario,Paratroopa
+11001_69001_3,11001,Wario Colosseum,Nick,2,Baby Mario,Paratroopa
+11001_69001_4,11001,Mushroom Bridge,Nick,2,Baby Mario,Paratroopa
+11001_69001_12,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_69001_5,11001,Waluigi Stadium,Nick,2,Baby Mario,Paratroopa
+11001_69001_7,11001,Peach Beach,Nick,2,Baby Mario,Paratroopa
+11001_69001_8,11001,Baby Park,Nick,2,Baby Mario,Paratroopa
+11001_69001_13,11001,Mario Circuit,Nick,2,Baby Mario,Paratroopa
+11001_94005_8,11001,Bowser Castle,Nick,2,Baby Mario,Paratroopa
+11001_94005_4,11001,Yoshi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_94005_12,11001,Daisy Cruiser,Nick,2,Baby Mario,Paratroopa
+11001_94005_10,11001,Sherbet Land,Nick,2,Baby Mario,Paratroopa
+11001_94005_3,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_94005_5,11001,Mario Circuit,Nick,2,Baby Mario,Paratroopa
+11001_94005_11,11001,DK Mountain,Nick,2,Baby Mario,Paratroopa
+11001_103001_6,11001,Wario Colosseum,Nick,2,Baby Mario,Paratroopa
+11001_103001_2,11001,Mushroom Bridge,Tom,2,Diddy Kong,Waluigi
+11001_103001_1,11001,Luigi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_103001_7,11001,Mario Circuit,Nick,2,Baby Mario,Paratroopa
+11001_103001_8,11001,Yoshi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_103001_11,11001,Daisy Cruiser,Nick,2,Baby Mario,Paratroopa
+11001_103001_12,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_103001_15,11001,Peach Beach,Tom,2,Diddy Kong,Waluigi
+11001_114003_6,11001,Mushroom Bridge,Nick,2,Baby Mario,Paratroopa
+11001_114003_14,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_114003_8,11001,Peach Beach,Tom,2,Diddy Kong,Waluigi
+11001_114003_4,11001,Wario Colosseum,Nick,2,Baby Mario,Paratroopa
+11001_114003_7,11001,Dry Dry Desert,Tom,2,Diddy Kong,Waluigi
+11001_114003_5,11001,Bowser Castle,Nick,2,Baby Mario,Paratroopa
+11001_114003_11,11001,DK Mountain,Tom,2,Diddy Kong,Waluigi
+11001_114003_15,11001,Dino Dino Jungle,Nick,2,Baby Mario,Paratroopa
+11001_114003_2,11001,Daisy Cruiser,Tom,2,Diddy Kong,Waluigi
+11001_114003_10,11001,Sherbet Land,Tom,2,Diddy Kong,Waluigi
+11001_114003_13,11001,Baby Park,Nick,2,Baby Mario,Paratroopa
+11001_133003_8,11001,Mushroom Bridge,Nick,2,Baby Mario,Paratroopa
+11001_133003_5,11001,Dino Dino Jungle,Tom,2,Diddy Kong,Waluigi
+11001_133003_10,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_133003_1,11001,Luigi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_133003_12,11001,Waluigi Stadium,Tom,2,Diddy Kong,Waluigi
+11001_133003_11,11001,Wario Colosseum,Tom,2,Diddy Kong,Waluigi
+11001_133003_3,11001,Baby Park,Nick,2,Baby Mario,Paratroopa
+11001_133003_9,11001,Yoshi Circuit,Tom,2,Diddy Kong,Waluigi
+11001_133003_4,11001,Mario Circuit,Tom,2,Diddy Kong,Waluigi
+11001_133003_15,11001,Bowser Castle,Nick,2,Baby Mario,Paratroopa
+11001_133003_2,11001,DK Mountain,Tom,2,Diddy Kong,Waluigi
+11001_133003_13,11001,Daisy Cruiser,Tom,2,Diddy Kong,Waluigi
+11001_133003_14,11001,Dry Dry Desert,Tom,2,Diddy Kong,Waluigi
+11001_137001_14,11001,Yoshi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_137001_4,11001,Baby Park,Nick,2,Baby Mario,Paratroopa
+11001_137001_1,11001,Luigi Circuit,Tom,2,Diddy Kong,Waluigi
+11001_137001_8,11001,Peach Beach,Nick,2,Baby Mario,Paratroopa
+11001_137001_11,11001,Sherbet Land,Tom,2,Diddy Kong,Waluigi
+11001_137001_9,11001,Dino Dino Jungle,Nick,2,Baby Mario,Paratroopa
+11001_137001_12,11001,Daisy Cruiser,Nick,2,Baby Mario,Paratroopa
+11001_161001_9,11001,Dry Dry Desert,Tom,2,Diddy Kong,Waluigi
+11001_161001_3,11001,DK Mountain,Tom,2,Diddy Kong,Waluigi
+11001_161001_4,11001,Dino Dino Jungle,Tom,2,Diddy Kong,Waluigi
+11001_161001_6,11001,Peach Beach,Tom,2,Diddy Kong,Waluigi
+11001_161001_10,11001,Baby Park,Tom,2,Diddy Kong,Waluigi
+11001_161001_12,11001,Daisy Cruiser,Tom,2,Diddy Kong,Waluigi
+11001_161001_13,11001,Bowser Castle,Tom,2,Diddy Kong,Waluigi
+11001_161001_14,11001,Waluigi Stadium,Tom,2,Diddy Kong,Waluigi
+11001_161001_15,11001,Yoshi Circuit,Tom,2,Diddy Kong,Waluigi
+11001_169003_1,11001,Luigi Circuit,Nick,2,Baby Mario,Paratroopa
+11001_169003_2,11001,Mushroom City,Nick,2,Baby Mario,Paratroopa
+11001_169003_6,11001,Peach Beach,Nick,2,Baby Mario,Paratroopa
+11001_169003_7,11001,Sherbet Land,Nick,2,Baby Mario,Paratroopa
+11001_169003_13,11001,Waluigi Stadium,Nick,2,Baby Mario,Paratroopa
+11001_169003_5,11001,Baby Park,Nick,2,Baby Mario,Paratroopa
+11001_169003_9,11001,Wario Colosseum,Nick,2,Baby Mario,Paratroopa
+11001_169003_10,11001,Mushroom Bridge,Nick,2,Baby Mario,Paratroopa
+11001_194002_3,11001,Wario Colosseum,Tom,2,Bowser Jr.,Waluigi
+11001_194002_14,11001,Sherbet Land,Tom,2,Bowser Jr.,Waluigi
+11001_194002_16,11001,Rainbow Road,Tom,2,Bowser Jr.,Waluigi
+11001_194002_12,11001,Mushroom City,Tom,2,Bowser Jr.,Waluigi
+11001_194002_8,11001,Mario Circuit,Tom,2,Bowser Jr.,Waluigi
+11001_194002_10,11001,DK Mountain,Tom,2,Bowser Jr.,Waluigi
+11001_194002_11,11001,Bowser Castle,Tom,2,Bowser Jr.,Waluigi
+11001_194002_4,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Waluigi
+11001_194002_15,11001,Mushroom Bridge,Tom,2,Bowser Jr.,Waluigi
+11001_220002_3,11001,Bowser Castle,Tom,2,Diddy Kong,Waluigi
+11001_220002_10,11001,Dino Dino Jungle,Tom,2,Diddy Kong,Waluigi
+11001_220002_11,11001,Daisy Cruiser,Tom,2,Diddy Kong,Waluigi
+11001_220002_12,11001,Dry Dry Desert,Tom,2,Diddy Kong,Waluigi
+11001_220002_15,11001,Mushroom Bridge,Tom,2,Diddy Kong,Waluigi
+11001_220002_1,11001,Luigi Circuit,Tom,2,Diddy Kong,Waluigi
+11001_220002_7,11001,Wario Colosseum,Tom,2,Diddy Kong,Waluigi
+11001_220002_8,11001,Mushroom City,Tom,2,Diddy Kong,Waluigi
+11001_280001_2,11001,Mushroom Bridge,Tom,2,Bowser Jr.,Koopa
+11001_280001_4,11001,Bowser Castle,Tom,2,Bowser Jr.,Koopa
+11001_280001_5,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_280001_6,11001,Wario Colosseum,Tom,2,Bowser Jr.,Koopa
+11001_280001_10,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Koopa
+11001_280001_9,11001,Mushroom City,Tom,2,Bowser Jr.,Koopa
+11001_280001_13,11001,Peach Beach,Tom,2,Bowser Jr.,Koopa
+11001_280001_16,11001,Rainbow Road,Tom,2,Bowser Jr.,Koopa
+11001_323001_4,11001,Daisy Cruiser,Tom,2,Bowser Jr.,Koopa
+11001_323001_14,11001,Mushroom Bridge,Tom,2,Bowser Jr.,Koopa
+11001_323001_3,11001,Peach Beach,Tom,2,Bowser Jr.,Koopa
+11001_323001_11,11001,Yoshi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_323001_8,11001,Baby Park,Tom,2,Bowser Jr.,Koopa
+11001_323001_13,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_338002_4,11001,Dino Dino Jungle,Tom,2,Diddy Kong,Koopa
+11001_338002_14,11001,DK Mountain,Tom,2,Diddy Kong,Koopa
+11001_338002_12,11001,Waluigi Stadium,Tom,2,Diddy Kong,Koopa
+11001_338002_5,11001,Baby Park,Tom,2,Diddy Kong,Koopa
+11001_338002_2,11001,Dry Dry Desert,Tom,2,Diddy Kong,Koopa
+11001_369001_10,11001,Daisy Cruiser,Tom,2,Bowser Jr.,Koopa
+11001_369001_15,11001,Baby Park,Tom,2,Bowser Jr.,Koopa
+11001_369001_16,11001,Rainbow Road,Tom,2,Bowser Jr.,Koopa
+11001_412001_15,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_412001_8,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_412001_2,11001,Sherbet Land,Tom,2,Bowser Jr.,Koopa
+11001_412001_5,11001,Wario Colosseum,Tom,2,Bowser Jr.,Koopa
+11001_412001_11,11001,Bowser Castle,Tom,2,Bowser Jr.,Koopa
+11001_412001_13,11001,Yoshi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_412001_16,11001,Rainbow Road,Tom,2,Bowser Jr.,Koopa
+11001_481001_3,11001,Baby Park,Nick,2,Paratroopa,Toad
+11001_481001_14,11001,Sherbet Land,Nick,2,Paratroopa,Toad
+11001_481001_1,11001,Luigi Circuit,Nick,2,Paratroopa,Toad
+11001_481001_4,11001,Mario Circuit,Nick,2,Paratroopa,Toad
+11001_481001_5,11001,Daisy Cruiser,Nick,2,Paratroopa,Toad
+11001_481001_13,11001,Wario Colosseum,Nick,2,Paratroopa,Toad
+11001_481001_15,11001,Mushroom Bridge,Nick,2,Paratroopa,Toad
+11001_514001_7,11001,Mushroom Bridge,Tom,2,Bowser Jr.,Koopa
+11001_514001_12,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_514001_11,11001,Daisy Cruiser,Tom,2,Bowser Jr.,Koopa
+11001_514001_13,11001,Sherbet Land,Tom,2,Bowser Jr.,Koopa
+11001_514001_14,11001,Mario Circuit,Tom,2,Bowser Jr.,Koopa
+11001_514001_16,11001,Rainbow Road,Tom,2,Bowser Jr.,Koopa
+11001_551001_1,11001,Luigi Circuit,Tom,2,Diddy Kong,Koopa
+11001_551001_14,11001,Dino Dino Jungle,Tom,2,Diddy Kong,Koopa
+11001_551001_3,11001,Daisy Cruiser,Tom,2,Diddy Kong,Koopa
+11001_551001_4,11001,DK Mountain,Tom,2,Diddy Kong,Koopa
+11001_551001_5,11001,Wario Colosseum,Tom,2,Diddy Kong,Koopa
+11001_650001_15,11001,Peach Beach,Nick,2,Diddy Kong,Paratroopa
+11001_650001_12,11001,Mario Circuit,Tom,2,Bowser Jr.,Koopa
+11001_650001_7,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Koopa
+11001_650001_1,11001,Luigi Circuit,Nick,2,Diddy Kong,Paratroopa
+11001_650001_2,11001,Sherbet Land,Nick,2,Diddy Kong,Paratroopa
+11001_650001_3,11001,Yoshi Circuit,Nick,2,Diddy Kong,Paratroopa
+11001_650001_4,11001,Daisy Cruiser,Nick,2,Diddy Kong,Paratroopa
+11001_650001_9,11001,Mushroom Bridge,Nick,2,Diddy Kong,Paratroopa
+11001_650001_10,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_650001_11,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_687001_1,11001,Luigi Circuit,Nick,2,Diddy Kong,Paratroopa
+11001_687001_7,11001,Bowser Castle,Nick,2,Diddy Kong,Paratroopa
+11001_687001_2,11001,Sherbet Land,Nick,2,Diddy Kong,Paratroopa
+11001_687001_3,11001,DK Mountain,Nick,2,Diddy Kong,Paratroopa
+11001_687001_5,11001,Wario Colosseum,Tom,2,Bowser Jr.,Koopa
+11001_687001_6,11001,Yoshi Circuit,Nick,2,Diddy Kong,Paratroopa
+11001_687001_8,11001,Mushroom Bridge,Tom,2,Bowser Jr.,Koopa
+11001_687001_9,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_687001_10,11001,Daisy Cruiser,Nick,2,Diddy Kong,Paratroopa
+11001_687001_11,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_687001_12,11001,Waluigi Stadium,Tom,2,Bowser Jr.,Koopa
+11001_687001_14,11001,Mushroom City,Nick,2,Diddy Kong,Paratroopa
+11001_687001_15,11001,Mario Circuit,Tom,2,Bowser Jr.,Koopa
+11001_729001_14,11001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+11001_729001_9,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_729001_7,11001,Bowser Castle,Tom,2,Bowser Jr.,Koopa
+11001_729001_1,11001,Luigi Circuit,Nick,2,Diddy Kong,Paratroopa
+11001_729001_2,11001,Dry Dry Desert,Nick,2,Diddy Kong,Paratroopa
+11001_729001_8,11001,Mushroom City,Tom,2,Bowser Jr.,Koopa
+11001_729001_10,11001,DK Mountain,Nick,2,Diddy Kong,Paratroopa
+11001_729001_11,11001,Mushroom Bridge,Nick,2,Diddy Kong,Paratroopa
+11001_729001_12,11001,Yoshi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_729001_15,11001,Daisy Cruiser,Nick,2,Diddy Kong,Paratroopa
+11001_729001_16,11001,Rainbow Road,Tom,2,Bowser Jr.,Koopa
+11001_764001_1,11001,Luigi Circuit,Tom,2,Bowser Jr.,Koopa
+11001_764001_2,11001,Daisy Cruiser,Nick,2,Diddy Kong,Paratroopa
+11001_764001_3,11001,Yoshi Circuit,Nick,2,Diddy Kong,Paratroopa
+11001_764001_4,11001,Wario Colosseum,Tom,2,Bowser Jr.,Koopa
+11001_764001_5,11001,Mushroom City,Nick,2,Diddy Kong,Paratroopa
+11001_764001_6,11001,Peach Beach,Nick,2,Diddy Kong,Paratroopa
+11001_764001_7,11001,Mushroom Bridge,Nick,2,Diddy Kong,Paratroopa
+11001_764001_8,11001,Sherbet Land,Nick,2,Diddy Kong,Paratroopa
+11001_764001_9,11001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+11001_764001_10,11001,Waluigi Stadium,Nick,2,Diddy Kong,Paratroopa
+11001_764001_11,11001,Bowser Castle,Nick,2,Diddy Kong,Paratroopa
+11001_764001_12,11001,Dry Dry Desert,Tom,2,Bowser Jr.,Koopa
+11001_764001_13,11001,Mario Circuit,Nick,2,Diddy Kong,Paratroopa
+11001_764001_14,11001,DK Mountain,Tom,2,Bowser Jr.,Koopa
+11001_764001_15,11001,Dino Dino Jungle,Tom,2,Bowser Jr.,Koopa
+11001_764001_16,11001,Rainbow Road,Nick,2,Diddy Kong,Paratroopa
+11001_812001_14,11001,Daisy Cruiser,Nick,2,Bowser Jr.,Koopa
+11001_812001_5,11001,Peach Beach,Tom,2,Diddy Kong,Paratroopa
+11001_812001_8,11001,Dino Dino Jungle,Nick,2,Bowser Jr.,Koopa
+11001_812001_10,11001,Baby Park,Nick,2,Bowser Jr.,Koopa
+11001_812001_2,11001,Waluigi Stadium,Tom,2,Diddy Kong,Paratroopa
+11001_812001_3,11001,Mushroom Bridge,Tom,2,Diddy Kong,Paratroopa
+11001_812001_7,11001,Wario Colosseum,Nick,2,Bowser Jr.,Koopa
+11001_812001_11,11001,Mushroom City,Nick,2,Bowser Jr.,Koopa
+11001_812001_15,11001,Sherbet Land,Tom,2,Diddy Kong,Paratroopa
+11001_812001_16,11001,Rainbow Road,Tom,2,Diddy Kong,Paratroopa
+11001_812001_13,11001,Dry Dry Desert,Tom,2,Diddy Kong,Paratroopa
+11001_812001_9,11001,Bowser Castle,Nick,2,Bowser Jr.,Koopa
+11001_812001_12,11001,Yoshi Circuit,Tom,2,Diddy Kong,Paratroopa
+11001_818004_7,11001,Dino Dino Jungle,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_9,11001,Wario Colosseum,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_5,11001,Bowser Castle,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_14,11001,Dry Dry Desert,Tom,2,Diddy Kong,Koopa
+11001_818004_13,11001,Daisy Cruiser,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_15,11001,DK Mountain,Tom,2,Diddy Kong,Koopa
+11001_818004_12,11001,Mushroom City,Tom,2,Diddy Kong,Koopa
+11001_818004_1,11001,Luigi Circuit,Tom,2,Diddy Kong,Koopa
+11001_818004_2,11001,Sherbet Land,Tom,2,Diddy Kong,Koopa
+11001_818004_3,11001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_4,11001,Mushroom Bridge,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_16,11001,Rainbow Road,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_6,11001,Yoshi Circuit,Nick,2,Bowser Jr.,Paratroopa
+11001_818004_8,11001,Peach Beach,Tom,2,Diddy Kong,Koopa
+11001_818004_10,11001,Mario Circuit,Tom,2,Diddy Kong,Koopa
+16001_7001_26,16001,Baby Park,Jeran,2,Diddy Kong,Toad
+16001_7001_11,16001,Baby Park,Dan,2,Diddy Kong,Toadette
+16001_7001_12,16001,Baby Park,Dan,2,Diddy Kong,Toadette
+16001_7001_29,16001,Baby Park,Jeran,2,Diddy Kong,Toad
+16001_7001_39,16001,Baby Park,Jeran,2,Paratroopa,Toadette
+16001_7001_17,16001,Baby Park,Dan,2,Diddy Kong,Toadette
+16001_7001_27,16001,Baby Park,Dan,2,Baby Luigi,Toadette
+16001_7001_20,16001,Baby Park,Dan,2,Diddy Kong,Toadette
+16001_7001_48,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_7001_49,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_7001_36,16001,Baby Park,Jeran,2,Paratroopa,Toadette
+16001_81001_26,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_81001_49,16001,Baby Park,JD,2,Bowser Jr.,Waluigi
+16001_81001_45,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81001_18,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_81001_21,16001,Baby Park,Dan,2,Baby Luigi,Toad
+16001_81001_38,16001,Baby Park,Jeran,2,Baby Mario,Toad
+16001_81001_1,16001,Baby Park,JD,2,Paratroopa,Yoshi
+16001_81001_17,16001,Baby Park,Dan,2,Mario,Waluigi
+16001_81001_23,16001,Baby Park,Jeran,2,Baby Mario,Toadette
+16001_81001_27,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_81001_29,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_81001_46,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81001_47,16001,Baby Park,Nick,2,Paratroopa,Yoshi
+16001_81001_12,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_81001_19,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_81001_28,16001,Baby Park,Dan,2,Baby Luigi,Toad
+16001_81001_5,16001,Baby Park,JD,2,Paratroopa,Yoshi
+16001_81001_31,16001,Baby Park,Jeran,2,Baby Mario,Toad
+16001_81001_43,16001,Baby Park,Nick,2,Paratroopa,Yoshi
+16001_81001_44,16001,Baby Park,Nick,2,Paratroopa,Yoshi
+16001_81001_4,16001,Baby Park,Jeran,2,Diddy Kong,Toad
+16001_81001_8,16001,Baby Park,Jeran,2,Diddy Kong,Toad
+16001_81001_22,16001,Baby Park,Jeran,2,Baby Mario,Toadette
+16001_81001_41,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81037_4,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_81037_12,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81037_17,16001,Baby Park,Nick,2,Diddy Kong,Paratroopa
+16001_81037_18,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81037_35,16001,Baby Park,Jeran,2,Baby Mario,Toad
+16001_81037_46,16001,Baby Park,JD,2,Daisy,Toad
+16001_81037_1,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_81037_11,16001,Baby Park,Jeran,2,Bowser Jr.,Toadette
+16001_81037_13,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81037_32,16001,Baby Park,Dan,2,Paratroopa,Waluigi
+16001_81037_40,16001,Baby Park,Jeran,2,Baby Mario,Toad
+16001_81037_45,16001,Baby Park,JD,2,Daisy,Toad
+16001_81037_50,16001,Baby Park,JD,2,Daisy,Toad
+16001_81037_2,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_81037_3,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_81037_7,16001,Baby Park,JD,2,Bowser Jr.,Koopa
+16001_81037_8,16001,Baby Park,Jeran,2,Diddy Kong,Toadette
+16001_81037_20,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81037_14,16001,Baby Park,JD,2,Luigi,Waluigi
+16001_81037_15,16001,Baby Park,JD,2,Luigi,Waluigi
+16001_81037_16,16001,Baby Park,Tom,2,Koopa,Toad
+16001_81037_31,16001,Baby Park,Dan,2,Paratroopa,Waluigi
+16001_81037_19,16001,Baby Park,JD,2,Luigi,Waluigi
+16001_81037_39,16001,Baby Park,Dan,2,Paratroopa,Waluigi
+16001_93002_36,16001,Baby Park,JD,2,Baby Mario,Toad
+16001_93002_38,16001,Baby Park,Nick,2,Baby Luigi,Paratroopa
+16001_93002_49,16001,Baby Park,Jeran,2,Diddy Kong,Koopa
+16001_93002_4,16001,Baby Park,Jeran,2,Baby Luigi,Toad
+16001_93002_22,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_93002_23,16001,Baby Park,Tom,2,Baby Mario,Toadette
+16001_93002_28,16001,Baby Park,Tom,2,Baby Mario,Toadette
+16001_93002_41,16001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+16001_93002_9,16001,Baby Park,Jeran,2,Baby Luigi,Toad
+16001_93002_13,16001,Baby Park,Jeran,2,Baby Luigi,Toadette
+16001_93002_25,16001,Baby Park,Tom,2,Baby Mario,Toadette
+16001_93002_35,16001,Baby Park,Nick,2,Baby Luigi,Paratroopa
+16001_93002_45,16001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+16001_93002_21,16001,Baby Park,JD,2,Baby Luigi,Toad
+16001_93002_32,16001,Baby Park,JD,2,Baby Mario,Toad
+16001_93002_33,16001,Baby Park,JD,2,Baby Mario,Toad
+16001_93002_42,16001,Baby Park,Jeran,2,Diddy Kong,Koopa
+16001_93002_50,16001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+16001_93002_24,16001,Baby Park,Dan,2,Diddy Kong,Koopa
+16001_93002_27,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_93002_29,16001,Baby Park,Tom,2,Baby Mario,Toadette
+16001_93002_39,16001,Baby Park,Nick,2,Baby Luigi,Paratroopa
+16001_93002_46,16001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+16001_93002_11,16001,Baby Park,Jeran,2,Baby Luigi,Toadette
+16001_93002_26,16001,Baby Park,Dan,2,Diddy Kong,Koopa
+16001_93002_30,16001,Baby Park,JD,2,Baby Luigi,Toad
+16001_93002_34,16001,Baby Park,Dan,2,Bowser Jr.,Toadette
+16001_93002_40,16001,Baby Park,Nick,2,Baby Luigi,Paratroopa
+16001_93002_43,16001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+16001_93002_44,16001,Baby Park,Dan,2,Toadette,Waluigi
+16001_93002_47,16001,Baby Park,Tom,2,Bowser Jr.,Paratroopa
+16001_93002_7,16001,Baby Park,Jeran,2,Baby Luigi,Toad
+16001_93002_19,16001,Baby Park,Jeran,2,Baby Luigi,Toadette
+16001_93002_31,16001,Baby Park,Dan,2,Bowser Jr.,Toadette
+16001_104001_4,16001,Baby Park,Tom,2,Baby Luigi,Toad
+16001_104001_10,16001,Baby Park,Tom,2,Baby Luigi,Toad
+16001_104001_26,16001,Baby Park,Nick,2,Baby Luigi,Paratroopa
+16001_104001_50,16001,Baby Park,Tom,2,Baby Luigi,Toad
+16001_104001_9,16001,Baby Park,Tom,2,Baby Luigi,Toad
+16001_104001_17,16001,Baby Park,Jeran,2,Koopa,Toadette
+16001_104001_33,16001,Baby Park,Tom,2,Diddy Kong,Paratroopa
+16001_104001_35,16001,Baby Park,Tom,2,Diddy Kong,Paratroopa
+16001_104001_48,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_104001_1,16001,Baby Park,Tom,2,Baby Luigi,Toad
+16001_104001_5,16001,Baby Park,Tom,2,Baby Luigi,Toad
+16001_104001_41,16001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+16001_104001_43,16001,Baby Park,Tom,2,Baby Luigi,Toad
+16001_104001_13,16001,Baby Park,JD,2,Baby Luigi,Toad
+16001_104001_46,16001,Baby Park,JD,2,Diddy Kong,Koopa
+17001_6001_2,17001,Baby Park,Dan,2,Diddy Kong,Koopa
+17001_6001_3,17001,Baby Park,Dan,2,Diddy Kong,Koopa
+17001_6001_4,17001,Baby Park,JD,2,Bowser Jr.,Toadette
+17001_22002_21,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_16,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_22002_36,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_54,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_12,17001,Baby Park,JD,2,Bowser Jr.,Toad
+17001_22002_2,17001,Baby Park,JD,2,Bowser Jr.,Yoshi
+17001_22002_23,17001,Baby Park,JD,2,Bowser Jr.,Toad
+17001_22002_28,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_5,17001,Baby Park,JD,2,Bowser Jr.,Yoshi
+17001_22002_32,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_40,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_52,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_25,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_43,17001,Baby Park,Nick,2,Koopa,Toad
+17001_22002_7,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_22002_13,17001,Baby Park,JD,2,Bowser Jr.,Toad
+17001_22002_53,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_50,17001,Baby Park,Nick,2,Koopa,Toad
+17001_22002_10,17001,Baby Park,JD,2,Bowser Jr.,Toad
+17001_22002_46,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_11,17001,Baby Park,JD,2,Bowser Jr.,Toad
+17001_22002_38,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_14,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_22002_48,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_15,17001,Baby Park,Nick,2,Baby Mario,Paratroopa
+17001_22002_24,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_34,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_19,17001,Baby Park,JD,2,Bowser Jr.,Toad
+17001_22002_37,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_31,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_47,17001,Baby Park,Nick,2,Koopa,Toad
+17001_22002_26,17001,Baby Park,JD,2,Bowser Jr.,Toad
+17001_22002_33,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_56,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_44,17001,Baby Park,Dan,2,Diddy Kong,Waluigi
+17001_22002_42,17001,Baby Park,Tom,2,Paratroopa,Toadette
+17001_22002_39,17001,Baby Park,JD,2,Bowser Jr.,Yoshi
+17001_22002_49,17001,Baby Park,Nick,2,Koopa,Toad
+17001_22002_41,17001,Baby Park,JD,2,Bowser Jr.,Yoshi
+17001_22002_45,17001,Baby Park,JD,2,Bowser Jr.,Yoshi
+17001_22002_55,17001,Baby Park,Nick,2,Koopa,Toad
+17001_22002_51,17001,Baby Park,JD,2,Bowser Jr.,Yoshi
+17001_143001_24,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_143001_9,17001,Baby Park,Tom,2,Baby Mario,Koopa
+17001_143001_28,17001,Baby Park,JD,2,Peach,Toad
+17001_143001_23,17001,Baby Park,JD,2,Peach,Toad
+17001_143001_34,17001,Baby Park,Dan,2,Toadette,Waluigi
+17001_143001_25,17001,Baby Park,JD,2,Peach,Toad
+17001_143001_31,17001,Baby Park,Dan,2,Toadette,Waluigi
+17001_143001_3,17001,Baby Park,Tom,2,Baby Mario,Koopa
+17001_143001_7,17001,Baby Park,Tom,2,Baby Mario,Koopa
+17001_143001_12,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_143001_27,17001,Baby Park,Tom,2,Bowser Jr.,Koopa
+17001_143001_36,17001,Baby Park,Dan,2,Toadette,Waluigi
+17001_143001_17,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_143001_39,17001,Baby Park,Dan,2,Toadette,Waluigi
+17001_143001_40,17001,Baby Park,Dan,2,Toadette,Waluigi
+17001_155021_10,17001,Baby Park,Jeran,2,Diddy Kong,Paratroopa
+17001_155021_12,17001,Baby Park,JD,2,Bowser Jr.,Peach
+17001_155021_15,17001,Baby Park,Jeran,2,Diddy Kong,Koopa
+17001_155021_16,17001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+17001_155021_18,17001,Baby Park,JD,2,Bowser Jr.,Peach
+17001_155021_7,17001,Baby Park,JD,2,Koopa,Peach
+17001_155021_9,17001,Baby Park,Jeran,2,Diddy Kong,Paratroopa
+17001_155021_8,17001,Baby Park,Jeran,2,Diddy Kong,Paratroopa
+17001_167001_14,17001,Baby Park,JD,2,Bowser Jr.,Paratroopa
+17001_167001_15,17001,Baby Park,JD,2,Bowser Jr.,Paratroopa
+17001_167001_19,17001,Baby Park,JD,2,Bowser Jr.,Paratroopa
+17001_167001_21,17001,Baby Park,JD,2,Koopa,Peach
+17001_167001_22,17001,Baby Park,Tom,2,Bowser Jr.,Toad
+17001_167001_28,17001,Baby Park,Tom,2,Bowser Jr.,Toad
+17001_167001_38,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_167001_13,17001,Baby Park,Jeran,2,Mario,Toad
+17001_167001_25,17001,Baby Park,Tom,2,Bowser Jr.,Toad
+17001_167001_33,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_167001_11,17001,Baby Park,Jeran,2,Mario,Toad
+17001_167001_18,17001,Baby Park,Jeran,2,Mario,Toad
+17001_167001_30,17001,Baby Park,Tom,2,Bowser Jr.,Toad
+17001_167001_32,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_167001_27,17001,Baby Park,Tom,2,Bowser Jr.,Toad
+17001_173001_25,17001,Baby Park,JD,2,Baby Luigi,Toad
+17001_173001_3,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_173001_24,17001,Baby Park,Nick,2,Bowser Jr.,Paratroopa
+17001_173001_5,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_173001_2,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_173001_21,17001,Baby Park,JD,2,Baby Luigi,Toad
+17001_173001_23,17001,Baby Park,Tom,2,Baby Mario,Toadette
+17001_173001_17,17001,Baby Park,Jeran,2,Diddy Kong,Koopa
+17001_173001_20,17001,Baby Park,Jeran,2,Diddy Kong,Koopa
+17001_173001_22,17001,Baby Park,Jeran,2,Diddy Kong,Koopa
+17001_173001_18,17001,Baby Park,Tom,2,Baby Luigi,Toadette
+17001_173001_19,17001,Baby Park,Jeran,2,Diddy Kong,Koopa
+17001_184001_21,17001,Baby Park,Nick,2,Baby Luigi,Wario
+17001_184001_37,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_10,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_184001_36,17001,Baby Park,Tom,2,Koopa,Toad
+17001_184001_46,17001,Baby Park,Nick,2,Baby Luigi,Paratroopa
+17001_184001_6,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_184001_7,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_184001_32,17001,Baby Park,Jeran,2,Paratroopa,Toadette
+17001_184001_8,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_184001_13,17001,Baby Park,Nick,2,Paratroopa,Toadette
+17001_184001_26,17001,Baby Park,JD,2,Peach,Waluigi
+17001_184001_14,17001,Baby Park,Nick,2,Paratroopa,Toadette
+17001_184001_42,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_184001_11,17001,Baby Park,Nick,2,Paratroopa,Toadette
+17001_184001_31,17001,Baby Park,Dan,2,Baby Luigi,Toad
+17001_184001_33,17001,Baby Park,Dan,2,Baby Luigi,Toad
+17001_184001_40,17001,Baby Park,Jeran,2,Diddy Kong,Toadette
+17001_184001_41,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+17001_184001_9,17001,Baby Park,Tom,2,Baby Mario,Toad
+17001_184001_39,17001,Baby Park,Tom,2,Koopa,Toad
+17001_184001_34,17001,Baby Park,Jesse,2,Baby Mario,Diddy Kong
+17001_184001_45,17001,Baby Park,Jeran,2,Baby Mario,Toadette
+18001_6001_1,18001,Dry Dry Desert,Dan,2,Koopa,Toadette
+18001_6001_6,18001,Peach Beach,Nick,2,Baby Mario,Paratroopa
+18001_6001_3,18001,Wario Colosseum,Dan,2,Koopa,Toadette
+18001_6001_2,18001,Dino Dino Jungle,Dan,2,Koopa,Toadette
+18001_6001_4,18001,Mario Circuit,Dan,2,Koopa,Toadette
+18001_6001_5,18001,Mushroom Bridge,JD,2,Bowser Jr.,Toad
+18001_6001_7,18001,Luigi Circuit,Dan,2,Koopa,Toadette
+18001_35001_8,18001,Baby Park,Jeran,2,Paratroopa,Toad
+18001_35001_10,18001,Waluigi Stadium,Dan,2,Diddy Kong,Koopa
+18001_35001_16,18001,Rainbow Road,Dan,2,Diddy Kong,Koopa
+18001_35001_1,18001,Luigi Circuit,Jeran,2,Paratroopa,Toad
+18001_35001_2,18001,Mario Circuit,Dan,2,Diddy Kong,Koopa
+18001_35001_3,18001,DK Mountain,Jeran,2,Paratroopa,Toad
+18001_35001_12,18001,Yoshi Circuit,Dan,2,Diddy Kong,Koopa
+18001_35001_4,18001,Bowser Castle,Dan,2,Diddy Kong,Koopa
+18001_35001_5,18001,Sherbet Land,Dan,2,Diddy Kong,Koopa
+18001_35001_14,18001,Dino Dino Jungle,Jeran,2,Paratroopa,Toad
+18001_35001_6,18001,Peach Beach,Dan,2,Diddy Kong,Koopa
+18001_35001_7,18001,Daisy Cruiser,Jeran,2,Paratroopa,Toad
+18001_35001_15,18001,Dry Dry Desert,Jeran,2,Paratroopa,Toad
+19001_4001_1,19001,Luigi Circuit,Dan,2,Diddy Kong,Paratroopa
+19001_4001_2,19001,Peach Beach,Dan,2,Diddy Kong,Paratroopa
+19001_4001_5,19001,Sherbet Land,Tom,2,Bowser Jr.,Koopa
+19001_4001_7,19001,Wario Colosseum,Tom,2,Bowser Jr.,Koopa
+19001_4001_14,19001,Dry Dry Desert,Dan,2,Diddy Kong,Paratroopa
+19001_4001_10,19001,Mushroom Bridge,Dan,2,Diddy Kong,Paratroopa
+19001_4001_11,19001,Baby Park,Dan,2,Diddy Kong,Paratroopa
+19001_4001_12,19001,Yoshi Circuit,Dan,2,Diddy Kong,Paratroopa
+19001_4001_13,19001,Daisy Cruiser,Dan,2,Diddy Kong,Paratroopa
+19001_4001_15,19001,Bowser Castle,Dan,2,Diddy Kong,Paratroopa
+11001_4001_2,11001,Baby Park,Tom,3,Diddy Kong,Koopa
+11001_4001_13,11001,Peach Beach,Tom,3,Diddy Kong,Koopa
+11001_94005_14,11001,Baby Park,Tom,3,Diddy Kong,Waluigi
+11001_94005_16,11001,Rainbow Road,Tom,3,Diddy Kong,Waluigi
+11001_169003_16,11001,Rainbow Road,Tom,3,Koopa,Toad
+11001_369001_5,11001,Dino Dino Jungle,Nick,3,Paratroopa,Toad
+11001_369001_9,11001,Mushroom City,Nick,3,Paratroopa,Toad
+11001_369001_13,11001,Peach Beach,Nick,3,Paratroopa,Toad
+11001_412001_7,11001,Waluigi Stadium,Nick,3,Paratroopa,Toad
+11001_443001_10,11001,Mario Circuit,Nick,3,Paratroopa,Toad
+11001_481001_15,11001,Mushroom Bridge,Tom,3,Bowser Jr.,Koopa
+11001_580001_5,11001,DK Mountain,Nick,3,Paratroopa,Toad
+16001_7001_26,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_8,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_1,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_11,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_30,16001,Baby Park,Tom,3,Bowser Jr.,Koopa
+16001_7001_2,16001,Baby Park,Tom,3,Bowser Jr.,Diddy Kong
+16001_7001_3,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_45,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_31,16001,Baby Park,Tom,3,Diddy Kong,Koopa
+16001_7001_12,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_4,16001,Baby Park,Nick,3,Koopa,Paratroopa
+16001_7001_44,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_15,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_5,16001,Baby Park,Nick,3,Koopa,Paratroopa
+16001_7001_6,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_25,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_43,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_7001_7,16001,Baby Park,Tom,3,Bowser Jr.,Diddy Kong
+16001_7001_9,16001,Baby Park,Nick,3,Koopa,Paratroopa
+16001_7001_42,16001,Baby Park,Dan,3,Toad,Waluigi
+16001_7001_13,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_16,16001,Baby Park,Tom,3,Bowser Jr.,Koopa
+16001_7001_46,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_7001_10,16001,Baby Park,Tom,3,Bowser Jr.,Diddy Kong
+16001_7001_50,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_7001_19,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_39,16001,Baby Park,Dan,3,Toad,Waluigi
+16001_7001_14,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_17,16001,Baby Park,Tom,3,Bowser Jr.,Koopa
+16001_7001_18,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_27,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_32,16001,Baby Park,Tom,3,Diddy Kong,Koopa
+16001_7001_20,16001,Baby Park,JD,3,Toad,Yoshi
+16001_7001_48,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_41,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_49,16001,Baby Park,Nick,3,Baby Mario,Paratroopa
+16001_7001_47,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_7001_36,16001,Baby Park,Tom,3,Diddy Kong,Koopa
+16001_81001_26,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81001_34,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81001_40,16001,Baby Park,JD,3,Koopa,Waluigi
+16001_81001_16,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_81001_33,16001,Baby Park,Tom,3,Bowser Jr.,Toadette
+16001_81001_36,16001,Baby Park,Tom,3,Bowser Jr.,Toadette
+16001_81001_38,16001,Baby Park,JD,3,Koopa,Waluigi
+16001_81001_1,16001,Baby Park,Dan,3,Bowser Jr.,Waluigi
+16001_81001_3,16001,Baby Park,Tom,3,Koopa,Toadette
+16001_81001_17,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_81001_47,16001,Baby Park,Dan,3,Diddy Kong,Toadette
+16001_81001_12,16001,Baby Park,Tom,3,Koopa,Toad
+16001_81001_19,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_81001_11,16001,Baby Park,Tom,3,Koopa,Toad
+16001_81001_28,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81001_37,16001,Baby Park,Tom,3,Bowser Jr.,Toadette
+16001_81001_5,16001,Baby Park,Dan,3,Bowser Jr.,Waluigi
+16001_81001_31,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81001_35,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81001_44,16001,Baby Park,Dan,3,Diddy Kong,Toadette
+16001_81001_4,16001,Baby Park,Tom,3,Koopa,Toadette
+16001_81001_8,16001,Baby Park,Tom,3,Koopa,Toadette
+16001_81037_4,16001,Baby Park,Dan,3,Luigi,Waluigi
+16001_81037_30,16001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+16001_81037_47,16001,Baby Park,Tom,3,Diddy Kong,Toadette
+16001_81037_24,16001,Baby Park,JD,3,Daisy,Waluigi
+16001_81037_34,16001,Baby Park,Tom,3,Bowser Jr.,Toadette
+16001_81037_41,16001,Baby Park,Nick,3,Paratroopa,Waluigi
+16001_81037_48,16001,Baby Park,Nick,3,Paratroopa,Waluigi
+16001_81037_21,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_81037_23,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_81037_46,16001,Baby Park,Tom,3,Diddy Kong,Toadette
+16001_81037_1,16001,Baby Park,Dan,3,Luigi,Waluigi
+16001_81037_28,16001,Baby Park,Jeran,3,Toad,Toadette
+16001_81037_32,16001,Baby Park,Tom,3,Bowser Jr.,Toadette
+16001_81037_40,16001,Baby Park,Nick,3,Diddy Kong,Koopa
+16001_81037_45,16001,Baby Park,Tom,3,Diddy Kong,Toadette
+16001_81037_50,16001,Baby Park,Tom,3,Diddy Kong,Toadette
+16001_81037_3,16001,Baby Park,Tom,3,Paratroopa,Toad
+16001_81037_8,16001,Baby Park,Tom,3,Paratroopa,Toad
+16001_81037_25,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_81037_26,16001,Baby Park,JD,3,Daisy,Waluigi
+16001_81037_29,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_81037_9,16001,Baby Park,Tom,3,Paratroopa,Toad
+16001_81037_27,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_81037_31,16001,Baby Park,Nick,3,Diddy Kong,Koopa
+16001_81037_22,16001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+16001_81037_39,16001,Baby Park,Tom,3,Bowser Jr.,Toadette
+16001_81037_42,16001,Baby Park,Dan,3,Bowser Jr.,Koopa
+16001_93002_38,16001,Baby Park,Jeran,3,Diddy Kong,Koopa
+16001_93002_2,16001,Baby Park,Dan,3,Baby Mario,Toadette
+16001_93002_4,16001,Baby Park,Dan,3,Baby Mario,Toadette
+16001_93002_10,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_93002_18,16001,Baby Park,JD,3,Diddy Kong,Koopa
+16001_93002_5,16001,Baby Park,Dan,3,Baby Mario,Toadette
+16001_93002_9,16001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+16001_93002_13,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_20,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_35,16001,Baby Park,Jeran,3,Diddy Kong,Koopa
+16001_93002_45,16001,Baby Park,Nick,3,Baby Luigi,Toad
+16001_93002_11,16001,Baby Park,Tom,3,Toad,Waluigi
+16001_93002_14,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_15,16001,Baby Park,JD,3,Diddy Kong,Koopa
+16001_93002_17,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_40,16001,Baby Park,Jeran,3,Diddy Kong,Koopa
+16001_93002_44,16001,Baby Park,Nick,3,Baby Luigi,Toad
+16001_93002_7,16001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+16001_93002_16,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_19,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_104001_4,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_104001_8,16001,Baby Park,JD,3,Paratroopa,Waluigi
+16001_104001_10,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_104001_26,16001,Baby Park,Tom,3,Bowser Jr.,Toad
+16001_104001_36,16001,Baby Park,Dan,3,Baby Luigi,Toadette
+16001_104001_39,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_104001_9,16001,Baby Park,JD,3,Paratroopa,Waluigi
+16001_104001_16,16001,Baby Park,Nick,3,Baby Mario,Bowser Jr.
+16001_104001_33,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_104001_6,16001,Baby Park,Jeran,3,Diddy Kong,Toadette
+16001_104001_7,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_104001_15,16001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+16001_104001_29,16001,Baby Park,Tom,3,Bowser Jr.,Toad
+16001_104001_35,16001,Baby Park,Jeran,3,Baby Mario,Toad
+16001_104001_1,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_104001_5,16001,Baby Park,Nick,3,Bowser Jr.,Koopa
+16001_104001_12,16001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+16001_104001_21,16001,Baby Park,Dan,3,Diddy Kong,Waluigi
+16001_104001_23,16001,Baby Park,Jeran,3,Koopa,Toadette
+16001_104001_41,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_104001_28,16001,Baby Park,Jeran,3,Koopa,Toadette
+16001_104001_30,16001,Baby Park,Tom,3,Bowser Jr.,Toad
+16001_104001_13,16001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+16001_104001_14,16001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+16001_104001_25,16001,Baby Park,Dan,3,Diddy Kong,Waluigi
+16001_104001_34,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_104001_37,16001,Baby Park,Jeran,3,Baby Mario,Toad
+16001_104001_46,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_117001_1,16001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_6001_1,17001,Baby Park,Tom,3,Toad,Waluigi
+17001_6001_2,17001,Baby Park,Tom,3,Toad,Waluigi
+17001_6001_3,17001,Baby Park,Tom,3,Toad,Waluigi
+17001_6001_4,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_22002_36,17001,Baby Park,Nick,3,Baby Luigi,Koopa
+17001_22002_2,17001,Baby Park,Nick,3,Paratroopa,Toad
+17001_22002_23,17001,Baby Park,Nick,3,Baby Luigi,Koopa
+17001_22002_4,17001,Baby Park,Nick,3,Paratroopa,Toad
+17001_22002_5,17001,Baby Park,Nick,3,Paratroopa,Toad
+17001_22002_25,17001,Baby Park,Nick,3,Baby Luigi,Koopa
+17001_22002_7,17001,Baby Park,Tom,3,Baby Luigi,Koopa
+17001_22002_13,17001,Baby Park,Dan,3,Diddy Kong,Toadette
+17001_22002_14,17001,Baby Park,Tom,3,Baby Luigi,Koopa
+17001_22002_24,17001,Baby Park,Nick,3,Baby Luigi,Koopa
+17001_22002_34,17001,Baby Park,Nick,3,Baby Luigi,Koopa
+17001_22002_31,17001,Baby Park,Nick,3,Baby Luigi,Koopa
+17001_22002_26,17001,Baby Park,Nick,3,Baby Luigi,Koopa
+17001_25001_1,17001,Baby Park,Tom,3,Koopa,Waluigi
+17001_25001_2,17001,Baby Park,Nick,3,Paratroopa,Toad
+17001_25001_3,17001,Baby Park,Dan,3,Diddy Kong,Toadette
+17001_25001_4,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_143001_5,17001,Baby Park,Jeran,3,Diddy Kong,Toad
+17001_143001_8,17001,Baby Park,Dan,3,Paratroopa,Waluigi
+17001_143001_9,17001,Baby Park,Dan,3,Paratroopa,Waluigi
+17001_143001_15,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_143001_28,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_143001_23,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_143001_32,17001,Baby Park,JD,3,Bowser Jr.,Peach
+17001_143001_6,17001,Baby Park,JD,3,Bowser Jr.,Toadette
+17001_143001_2,17001,Baby Park,JD,3,Bowser Jr.,Toadette
+17001_143001_13,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_143001_34,17001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+17001_143001_14,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_143001_16,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_143001_31,17001,Baby Park,Jeran,3,Koopa,Toad
+17001_143001_3,17001,Baby Park,JD,3,Bowser Jr.,Toadette
+17001_143001_7,17001,Baby Park,Dan,3,Paratroopa,Waluigi
+17001_143001_4,17001,Baby Park,JD,3,Bowser Jr.,Toadette
+17001_143001_11,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_143001_12,17001,Baby Park,Tom,3,Toad,Waluigi
+17001_143001_20,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_143001_36,17001,Baby Park,Jeran,3,Koopa,Toad
+17001_143001_17,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_143001_39,17001,Baby Park,Jeran,3,Koopa,Toad
+17001_143001_40,17001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+17001_155021_10,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_155021_5,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_155021_15,17001,Baby Park,Tom,3,Toadette,Waluigi
+17001_155021_16,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_155021_18,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_155021_1,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_155021_4,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_155021_2,17001,Baby Park,JD,3,Peach,Toad
+17001_155021_3,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_155021_14,17001,Baby Park,Dan,3,Paratroopa,Toad
+17001_167001_14,17001,Baby Park,Tom,3,Diddy Kong,Koopa
+17001_167001_36,17001,Baby Park,Dan,3,Bowser Jr.,Paratroopa
+17001_167001_19,17001,Baby Park,Tom,3,Diddy Kong,Koopa
+17001_167001_29,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_167001_7,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_167001_22,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_167001_38,17001,Baby Park,Dan,3,Bowser Jr.,Paratroopa
+17001_167001_1,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_167001_3,17001,Baby Park,Tom,3,Baby Luigi,Paratroopa
+17001_167001_9,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_167001_13,17001,Baby Park,Tom,3,Diddy Kong,Koopa
+17001_167001_23,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_167001_25,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_167001_33,17001,Baby Park,Dan,3,Bowser Jr.,Paratroopa
+17001_167001_10,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_167001_11,17001,Baby Park,Dan,3,Toadette,Waluigi
+17001_167001_30,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_167001_32,17001,Baby Park,Dan,3,Bowser Jr.,Paratroopa
+17001_167001_39,17001,Baby Park,Dan,3,Bowser Jr.,Paratroopa
+17001_167001_5,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_167001_6,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_167001_8,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_167001_27,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_167001_40,17001,Baby Park,Dan,3,Bowser Jr.,Paratroopa
+17001_173001_6,17001,Baby Park,Dan,3,Diddy Kong,Koopa
+17001_173001_10,17001,Baby Park,Nick,3,Paratroopa,Waluigi
+17001_173001_3,17001,Baby Park,Nick,3,Bowser Jr.,Koopa
+17001_173001_4,17001,Baby Park,Nick,3,Bowser Jr.,Koopa
+17001_173001_5,17001,Baby Park,Nick,3,Bowser Jr.,Koopa
+17001_173001_7,17001,Baby Park,Dan,3,Diddy Kong,Koopa
+17001_173001_11,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_173001_12,17001,Baby Park,Jeran,3,Diddy Kong,Koopa
+17001_173001_2,17001,Baby Park,Nick,3,Bowser Jr.,Koopa
+17001_173001_8,17001,Baby Park,Dan,3,Diddy Kong,Koopa
+17001_173001_15,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_173001_17,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_173001_20,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_184001_21,17001,Baby Park,Dan,3,Bowser Jr.,Toadette
+17001_184001_37,17001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+17001_184001_3,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_184001_27,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_184001_36,17001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+17001_184001_46,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_184001_17,17001,Baby Park,JD,3,Bowser Jr.,Toadette
+17001_184001_25,17001,Baby Park,JD,3,Koopa,Paratroopa
+17001_184001_50,17001,Baby Park,JD,3,Bowser Jr.,Koopa
+17001_184001_1,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_184001_60,17001,Baby Park,Tom,3,Bowser Jr.,Paratroopa
+17001_184001_2,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_184001_4,17001,Baby Park,Jeran,3,Diddy Kong,Toadette
+17001_184001_55,17001,Baby Park,Tom,3,Diddy Kong,Toadette
+17001_184001_24,17001,Baby Park,Tom,3,Diddy Kong,Toadette
+17001_184001_24,17001,Baby Park,Tom,3,Diddy Kong,Toadette
+17001_184001_58,17001,Baby Park,Tom,3,Bowser Jr.,Paratroopa
+17001_184001_52,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_184001_56,17001,Baby Park,Dan,3,Koopa,Toad
+17001_184001_5,17001,Baby Park,Dan,3,Toad,Waluigi
+17001_184001_42,17001,Baby Park,Nick,3,Diddy Kong,Koopa
+17001_184001_51,17001,Baby Park,Dan,3,Bowser Jr.,Koopa
+17001_184001_11,17001,Baby Park,Jesse,3,Baby Luigi,Baby Mario
+17001_184001_18,17001,Baby Park,Nick,3,Koopa,Paratroopa
+17001_184001_19,17001,Baby Park,Nick,3,Koopa,Paratroopa
+17001_184001_43,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_184001_31,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_184001_33,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_184001_40,17001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+17001_184001_41,17001,Baby Park,Nick,3,Diddy Kong,Koopa
+17001_184001_54,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_184001_16,17001,Baby Park,Nick,3,Koopa,Paratroopa
+17001_184001_39,17001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+17001_184001_53,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_184001_45,17001,Baby Park,Nick,3,Diddy Kong,Koopa
+18001_6001_3,18001,Wario Colosseum,Tom,3,Diddy Kong,Waluigi
+18001_6001_2,18001,Dino Dino Jungle,Tom,3,Diddy Kong,Waluigi
+18001_6001_7,18001,Luigi Circuit,Tom,3,Diddy Kong,Waluigi
+18001_35001_10,18001,Waluigi Stadium,Tom,3,Baby Mario,Toadette
+18001_35001_16,18001,Rainbow Road,Tom,3,Baby Mario,Toadette
+18001_35001_1,18001,Luigi Circuit,JD,3,Bowser Jr.,Peach
+18001_35001_2,18001,Mario Circuit,Tom,3,Baby Mario,Toadette
+18001_35001_3,18001,DK Mountain,Tom,3,Baby Mario,Toadette
+18001_35001_12,18001,Yoshi Circuit,Tom,3,Baby Mario,Toadette
+18001_35001_14,18001,Dino Dino Jungle,Tom,3,Baby Mario,Toadette
+18001_35001_6,18001,Peach Beach,JD,3,Bowser Jr.,Peach
+19001_42001_13,19001,Dino Dino Jungle,Dan,3,King Boo,Waluigi
+19001_42001_14,19001,Baby Park,Dan,3,King Boo,Waluigi
+19001_42001_2,19001,Bowser Castle,Dan,3,King Boo,Waluigi
+19001_42001_15,19001,Mario Circuit,Dan,3,King Boo,Waluigi
+19001_42001_10,19001,Peach Beach,Dan,3,King Boo,Waluigi
+19001_42001_12,19001,Waluigi Stadium,Dan,3,King Boo,Waluigi
+11001_4001_8,11001,Bowser Castle,Nick,3,Baby Mario,Paratroopa
+11001_4001_7,11001,Sherbet Land,Nick,3,Baby Mario,Paratroopa
+11001_37001_11,11001,DK Mountain,Nick,3,Baby Mario,Paratroopa
+11001_54001_8,11001,Mario Circuit,Tom,3,Diddy Kong,Waluigi
+11001_54001_14,11001,Baby Park,Nick,3,Baby Mario,Paratroopa
+11001_54001_3,11001,Sherbet Land,Nick,3,Baby Mario,Paratroopa
+11001_54001_5,11001,Mushroom Bridge,Nick,3,Baby Mario,Paratroopa
+11001_54001_10,11001,Wario Colosseum,Tom,3,Diddy Kong,Waluigi
+11001_67002_16,11001,Rainbow Road,Nick,3,Baby Mario,Paratroopa
+11001_69001_14,11001,Sherbet Land,Nick,3,Baby Mario,Paratroopa
+11001_94005_7,11001,Waluigi Stadium,Nick,3,Baby Mario,Paratroopa
+11001_103001_16,11001,Rainbow Road,Tom,3,Diddy Kong,Waluigi
+11001_103001_6,11001,Wario Colosseum,Tom,3,Diddy Kong,Waluigi
+11001_103001_3,11001,Waluigi Stadium,Tom,3,Diddy Kong,Waluigi
+11001_103001_4,11001,Bowser Castle,Tom,3,Diddy Kong,Waluigi
+11001_103001_9,11001,DK Mountain,Tom,3,Diddy Kong,Waluigi
+11001_103001_14,11001,Sherbet Land,Nick,3,Baby Mario,Paratroopa
+11001_114003_1,11001,Luigi Circuit,Tom,3,Diddy Kong,Waluigi
+11001_114003_9,11001,Mario Circuit,Nick,3,Baby Mario,Paratroopa
+11001_114003_3,11001,Yoshi Circuit,Tom,3,Diddy Kong,Waluigi
+11001_133003_6,11001,Peach Beach,Tom,3,Diddy Kong,Waluigi
+11001_133003_7,11001,Sherbet Land,Nick,3,Baby Mario,Paratroopa
+11001_137001_5,11001,Mario Circuit,Nick,3,Baby Mario,Paratroopa
+11001_137001_13,11001,Bowser Castle,Nick,3,Baby Mario,Paratroopa
+11001_137001_16,11001,Rainbow Road,Tom,3,Diddy Kong,Waluigi
+11001_137001_10,11001,Mushroom City,Nick,3,Baby Mario,Paratroopa
+11001_137001_6,11001,Mushroom Bridge,Nick,3,Baby Mario,Paratroopa
+11001_137001_2,11001,Waluigi Stadium,Tom,3,Diddy Kong,Waluigi
+11001_169003_4,11001,Mario Circuit,Nick,3,Baby Mario,Paratroopa
+11001_220002_2,11001,Mario Circuit,Tom,3,Diddy Kong,Waluigi
+11001_280001_11,11001,DK Mountain,Tom,3,Bowser Jr.,Koopa
+11001_323001_5,11001,Mario Circuit,Tom,3,Bowser Jr.,Koopa
+11001_323001_9,11001,Waluigi Stadium,Tom,3,Bowser Jr.,Koopa
+11001_338002_16,11001,Rainbow Road,Tom,3,Diddy Kong,Koopa
+11001_369001_1,11001,Luigi Circuit,Tom,3,Bowser Jr.,Koopa
+11001_481001_16,11001,Rainbow Road,Nick,3,Paratroopa,Toad
+11001_481001_12,11001,Waluigi Stadium,Nick,3,Paratroopa,Toad
+11001_514001_6,11001,Waluigi Stadium,Tom,3,Bowser Jr.,Koopa
+11001_514001_3,11001,Peach Beach,Tom,3,Bowser Jr.,Koopa
+11001_551001_15,11001,Baby Park,Tom,3,Diddy Kong,Koopa
+11001_551001_6,11001,Mario Circuit,Tom,3,Diddy Kong,Koopa
+11001_650001_13,11001,Mushroom City,Tom,3,Bowser Jr.,Koopa
+11001_650001_6,11001,Bowser Castle,Tom,3,Bowser Jr.,Koopa
+11001_650001_8,11001,Baby Park,Tom,3,Bowser Jr.,Koopa
+11001_650001_14,11001,DK Mountain,Tom,3,Bowser Jr.,Koopa
+11001_687001_4,11001,Peach Beach,Nick,3,Diddy Kong,Paratroopa
+11001_687001_13,11001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+11001_687001_16,11001,Rainbow Road,Tom,3,Bowser Jr.,Koopa
+11001_729001_3,11001,Waluigi Stadium,Nick,3,Diddy Kong,Paratroopa
+11001_729001_5,11001,Sherbet Land,Nick,3,Diddy Kong,Paratroopa
+11001_729001_13,11001,Wario Colosseum,Nick,3,Diddy Kong,Paratroopa
+11001_812001_6,11001,DK Mountain,Nick,3,Bowser Jr.,Koopa
+11001_812001_4,11001,Mario Circuit,Nick,3,Bowser Jr.,Koopa
+11001_818004_11,11001,Waluigi Stadium,Nick,3,Bowser Jr.,Paratroopa
+16001_7001_37,16001,Baby Park,JD,3,Baby Luigi,Bowser Jr.
+16001_7001_23,16001,Baby Park,Dan,3,Baby Luigi,Toadette
+16001_7001_22,16001,Baby Park,Dan,3,Baby Luigi,Toadette
+16001_7001_29,16001,Baby Park,Dan,3,Baby Luigi,Toadette
+16001_7001_21,16001,Baby Park,Dan,3,Baby Luigi,Toadette
+16001_7001_33,16001,Baby Park,JD,3,Baby Luigi,Bowser Jr.
+16001_7001_35,16001,Baby Park,JD,3,Baby Luigi,Bowser Jr.
+16001_7001_38,16001,Baby Park,JD,3,Baby Luigi,Bowser Jr.
+16001_7001_24,16001,Baby Park,Dan,3,Baby Luigi,Toadette
+16001_7001_28,16001,Baby Park,Jeran,3,Diddy Kong,Toad
+16001_7001_34,16001,Baby Park,Jeran,3,Paratroopa,Toadette
+16001_7001_40,16001,Baby Park,Jeran,3,Paratroopa,Toadette
+16001_81001_13,16001,Baby Park,Jeran,3,Diddy Kong,Toadette
+16001_81001_30,16001,Baby Park,Dan,3,Baby Luigi,Toad
+16001_81001_48,16001,Baby Park,JD,3,Bowser Jr.,Waluigi
+16001_81001_49,16001,Baby Park,Tom,3,Koopa,Toad
+16001_81001_9,16001,Baby Park,Jeran,3,Diddy Kong,Toad
+16001_81001_14,16001,Baby Park,Dan,3,Mario,Waluigi
+16001_81001_45,16001,Baby Park,Nick,3,Paratroopa,Yoshi
+16001_81001_7,16001,Baby Park,JD,3,Paratroopa,Yoshi
+16001_81001_10,16001,Baby Park,Jeran,3,Diddy Kong,Toad
+16001_81001_15,16001,Baby Park,Dan,3,Mario,Waluigi
+16001_81001_18,16001,Baby Park,Dan,3,Mario,Waluigi
+16001_81001_21,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_81001_39,16001,Baby Park,Jeran,3,Baby Mario,Toad
+16001_81001_23,16001,Baby Park,Dan,3,Baby Luigi,Toad
+16001_81001_27,16001,Baby Park,Dan,3,Baby Luigi,Toad
+16001_81001_29,16001,Baby Park,Dan,3,Baby Luigi,Toad
+16001_81001_46,16001,Baby Park,Nick,3,Paratroopa,Yoshi
+16001_81001_42,16001,Baby Park,Nick,3,Paratroopa,Yoshi
+16001_81001_2,16001,Baby Park,JD,3,Paratroopa,Yoshi
+16001_81001_6,16001,Baby Park,JD,3,Paratroopa,Yoshi
+16001_81001_50,16001,Baby Park,Tom,3,Koopa,Toad
+16001_81001_25,16001,Baby Park,Dan,3,Baby Luigi,Toad
+16001_81001_32,16001,Baby Park,Jeran,3,Baby Mario,Toad
+16001_81001_43,16001,Baby Park,JD,3,Bowser Jr.,Waluigi
+16001_81001_20,16001,Baby Park,Dan,3,Mario,Waluigi
+16001_81001_22,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_81001_24,16001,Baby Park,Jeran,3,Baby Mario,Toadette
+16001_81001_41,16001,Baby Park,JD,3,Bowser Jr.,Waluigi
+16001_81037_12,16001,Baby Park,JD,3,Luigi,Waluigi
+16001_81037_6,16001,Baby Park,Jeran,3,Diddy Kong,Toadette
+16001_81037_17,16001,Baby Park,Jeran,3,Bowser Jr.,Toadette
+16001_81037_36,16001,Baby Park,Jeran,3,Baby Mario,Toad
+16001_81037_5,16001,Baby Park,Jeran,3,Diddy Kong,Toadette
+16001_81037_18,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81037_33,16001,Baby Park,Jeran,3,Baby Mario,Toad
+16001_81037_35,16001,Baby Park,Dan,3,Paratroopa,Waluigi
+16001_81037_38,16001,Baby Park,Jeran,3,Baby Mario,Toad
+16001_81037_37,16001,Baby Park,Dan,3,Paratroopa,Waluigi
+16001_81037_11,16001,Baby Park,JD,3,Luigi,Waluigi
+16001_81037_13,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81037_43,16001,Baby Park,JD,3,Daisy,Toad
+16001_81037_44,16001,Baby Park,JD,3,Daisy,Toad
+16001_81037_2,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_81037_7,16001,Baby Park,Jeran,3,Diddy Kong,Toadette
+16001_81037_20,16001,Baby Park,Jeran,3,Bowser Jr.,Toadette
+16001_81037_10,16001,Baby Park,JD,3,Bowser Jr.,Koopa
+16001_81037_14,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_81037_15,16001,Baby Park,Jeran,3,Bowser Jr.,Toadette
+16001_81037_16,16001,Baby Park,JD,3,Luigi,Waluigi
+16001_81037_49,16001,Baby Park,JD,3,Daisy,Toad
+16001_81037_19,16001,Baby Park,Nick,3,Diddy Kong,Paratroopa
+16001_93002_36,16001,Baby Park,Dan,3,Bowser Jr.,Toadette
+16001_93002_1,16001,Baby Park,Jeran,3,Baby Luigi,Toad
+16001_93002_49,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_93002_22,16001,Baby Park,Tom,3,Baby Mario,Toadette
+16001_93002_23,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_28,16001,Baby Park,JD,3,Baby Luigi,Toad
+16001_93002_41,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_93002_48,16001,Baby Park,Jeran,3,Diddy Kong,Koopa
+16001_93002_25,16001,Baby Park,JD,3,Baby Luigi,Toad
+16001_93002_6,16001,Baby Park,Jeran,3,Baby Luigi,Toad
+16001_93002_21,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_32,16001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+16001_93002_33,16001,Baby Park,Dan,3,Bowser Jr.,Toadette
+16001_93002_37,16001,Baby Park,Dan,3,Bowser Jr.,Toadette
+16001_93002_42,16001,Baby Park,Tom,3,Bowser Jr.,Paratroopa
+16001_93002_50,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_93002_3,16001,Baby Park,Jeran,3,Baby Luigi,Toad
+16001_93002_24,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_27,16001,Baby Park,JD,3,Baby Luigi,Toad
+16001_93002_29,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_39,16001,Baby Park,JD,3,Baby Mario,Toad
+16001_93002_46,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_93002_26,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_30,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_93002_34,16001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+16001_93002_43,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_93002_47,16001,Baby Park,Dan,3,Toadette,Waluigi
+16001_93002_8,16001,Baby Park,Jeran,3,Baby Luigi,Toad
+16001_93002_12,16001,Baby Park,Jeran,3,Baby Luigi,Toadette
+16001_93002_31,16001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+16001_104001_18,16001,Baby Park,JD,3,Baby Luigi,Toad
+16001_104001_27,16001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+16001_104001_42,16001,Baby Park,JD,3,Diddy Kong,Koopa
+16001_104001_50,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_104001_17,16001,Baby Park,JD,3,Baby Luigi,Toad
+16001_104001_22,16001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+16001_104001_40,16001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+16001_104001_32,16001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+16001_104001_38,16001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+16001_104001_48,16001,Baby Park,JD,3,Diddy Kong,Koopa
+16001_104001_2,16001,Baby Park,Tom,3,Baby Luigi,Toad
+16001_104001_11,16001,Baby Park,JD,3,Baby Luigi,Toad
+16001_104001_43,16001,Baby Park,JD,3,Diddy Kong,Koopa
+16001_104001_45,16001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+16001_104001_3,16001,Baby Park,Tom,3,Baby Luigi,Toad
+16001_104001_44,16001,Baby Park,Tom,3,Baby Luigi,Toad
+16001_104001_49,16001,Baby Park,Tom,3,Baby Luigi,Toad
+16001_104001_19,16001,Baby Park,JD,3,Baby Luigi,Toad
+16001_104001_20,16001,Baby Park,Jeran,3,Koopa,Toadette
+16001_104001_31,16001,Baby Park,Tom,3,Diddy Kong,Paratroopa
+16001_104001_47,16001,Baby Park,JD,3,Diddy Kong,Koopa
+16001_104001_24,16001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+17001_22002_21,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_22002_16,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_22002_54,17001,Baby Park,Nick,3,Koopa,Toad
+17001_22002_12,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_22002_1,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_22002_18,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_22002_27,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_3,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_22002_28,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_32,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_40,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_6,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_22002_52,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_22002_29,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_43,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_9,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_22002_20,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_22002_53,17001,Baby Park,Nick,3,Koopa,Toad
+17001_22002_8,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_22002_50,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_10,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_22002_46,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_22002_11,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_22002_38,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_22002_48,17001,Baby Park,JD,3,Bowser Jr.,Yoshi
+17001_22002_15,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_22002_30,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_17,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_22002_19,17001,Baby Park,Nick,3,Baby Mario,Paratroopa
+17001_22002_37,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_22,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_47,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_33,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_56,17001,Baby Park,Nick,3,Koopa,Toad
+17001_22002_35,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_22002_44,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_42,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_39,17001,Baby Park,Nick,3,Koopa,Toad
+17001_22002_49,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_41,17001,Baby Park,Tom,3,Paratroopa,Toadette
+17001_22002_45,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_55,17001,Baby Park,Dan,3,Diddy Kong,Waluigi
+17001_22002_51,17001,Baby Park,Nick,3,Koopa,Toad
+17001_143001_24,17001,Baby Park,JD,3,Peach,Toad
+17001_143001_33,17001,Baby Park,Dan,3,Toadette,Waluigi
+17001_143001_22,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_143001_38,17001,Baby Park,Dan,3,Toadette,Waluigi
+17001_143001_1,17001,Baby Park,Tom,3,Baby Mario,Koopa
+17001_143001_21,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_143001_30,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_143001_37,17001,Baby Park,Dan,3,Toadette,Waluigi
+17001_143001_18,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_143001_25,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_143001_26,17001,Baby Park,Tom,3,Bowser Jr.,Koopa
+17001_143001_10,17001,Baby Park,Tom,3,Baby Mario,Koopa
+17001_143001_19,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_143001_27,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_143001_29,17001,Baby Park,JD,3,Peach,Toad
+17001_143001_35,17001,Baby Park,Dan,3,Toadette,Waluigi
+17001_155021_12,17001,Baby Park,Jeran,3,Diddy Kong,Koopa
+17001_155021_17,17001,Baby Park,JD,3,Bowser Jr.,Peach
+17001_155021_20,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_155021_6,17001,Baby Park,Jeran,3,Diddy Kong,Paratroopa
+17001_155021_13,17001,Baby Park,Jeran,3,Diddy Kong,Koopa
+17001_155021_7,17001,Baby Park,Jeran,3,Diddy Kong,Paratroopa
+17001_155021_9,17001,Baby Park,JD,3,Koopa,Peach
+17001_155021_11,17001,Baby Park,Jeran,3,Diddy Kong,Koopa
+17001_155021_8,17001,Baby Park,JD,3,Koopa,Peach
+17001_155021_19,17001,Baby Park,Dan,3,Diddy Kong,Paratroopa
+17001_167001_2,17001,Baby Park,Jeran,3,Diddy Kong,Toadette
+17001_167001_15,17001,Baby Park,Jeran,3,Mario,Toad
+17001_167001_35,17001,Baby Park,Tom,3,Baby Mario,Toad
+17001_167001_37,17001,Baby Park,Tom,3,Baby Mario,Toad
+17001_167001_17,17001,Baby Park,JD,3,Bowser Jr.,Paratroopa
+17001_167001_41,17001,Baby Park,Tom,3,Baby Mario,Toad
+17001_167001_21,17001,Baby Park,Tom,3,Bowser Jr.,Toad
+17001_167001_28,17001,Baby Park,JD,3,Koopa,Peach
+17001_167001_34,17001,Baby Park,Tom,3,Baby Mario,Toad
+17001_167001_4,17001,Baby Park,Jeran,3,Diddy Kong,Toadette
+17001_167001_24,17001,Baby Park,JD,3,Koopa,Peach
+17001_167001_18,17001,Baby Park,JD,3,Bowser Jr.,Paratroopa
+17001_167001_31,17001,Baby Park,Tom,3,Bowser Jr.,Toad
+17001_167001_16,17001,Baby Park,Jeran,3,Mario,Toad
+17001_167001_20,17001,Baby Park,Jeran,3,Mario,Toad
+17001_167001_12,17001,Baby Park,JD,3,Bowser Jr.,Paratroopa
+17001_173001_14,17001,Baby Park,Tom,3,Bowser Jr.,Toadette
+17001_173001_25,17001,Baby Park,Tom,3,Baby Mario,Toadette
+17001_173001_1,17001,Baby Park,Jeran,3,Baby Mario,Toadette
+17001_173001_9,17001,Baby Park,JD,3,Peach,Toad
+17001_173001_13,17001,Baby Park,Tom,3,Bowser Jr.,Toadette
+17001_173001_24,17001,Baby Park,Tom,3,Baby Mario,Toadette
+17001_173001_16,17001,Baby Park,JD,3,Bowser Jr.,Paratroopa
+17001_173001_21,17001,Baby Park,Tom,3,Baby Mario,Toadette
+17001_173001_23,17001,Baby Park,Jeran,3,Diddy Kong,Koopa
+17001_173001_22,17001,Baby Park,JD,3,Baby Luigi,Toad
+17001_173001_18,17001,Baby Park,Jeran,3,Diddy Kong,Koopa
+17001_173001_19,17001,Baby Park,Tom,3,Baby Luigi,Toadette
+17001_184001_12,17001,Baby Park,Nick,3,Paratroopa,Toadette
+17001_184001_35,17001,Baby Park,Jeran,3,Paratroopa,Toadette
+17001_184001_49,17001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+17001_184001_47,17001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+17001_184001_10,17001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+17001_184001_29,17001,Baby Park,Dan,3,Paratroopa,Toad
+17001_184001_22,17001,Baby Park,Nick,3,Baby Luigi,Wario
+17001_184001_48,17001,Baby Park,Nick,3,Baby Luigi,Paratroopa
+17001_184001_6,17001,Baby Park,Jesse,3,Baby Luigi,Toadette
+17001_184001_7,17001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+17001_184001_23,17001,Baby Park,Nick,3,Baby Luigi,Wario
+17001_184001_32,17001,Baby Park,Dan,3,Baby Luigi,Toad
+17001_184001_8,17001,Baby Park,Nick,3,Bowser Jr.,Paratroopa
+17001_184001_13,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_184001_15,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_184001_28,17001,Baby Park,Dan,3,Paratroopa,Toad
+17001_184001_26,17001,Baby Park,Dan,3,Paratroopa,Toad
+17001_184001_57,17001,Baby Park,JD,3,Peach,Waluigi
+17001_184001_14,17001,Baby Park,JD,3,Bowser Jr.,Toad
+17001_184001_44,17001,Baby Park,Jesse,3,Baby Luigi,Paratroopa
+17001_184001_59,17001,Baby Park,JD,3,Peach,Waluigi
+17001_184001_24,17001,Baby Park,Nick,3,Baby Luigi,Wario
+17001_184001_24,17001,Baby Park,Nick,3,Baby Luigi,Wario
+17001_184001_30,17001,Baby Park,JD,3,Peach,Waluigi
+17001_184001_9,17001,Baby Park,Jesse,3,Baby Luigi,Toadette
+17001_184001_34,17001,Baby Park,Dan,3,Baby Luigi,Toad
+17001_184001_38,17001,Baby Park,Tom,3,Koopa,Toad
+18001_6001_1,18001,Dry Dry Desert,Nick,3,Baby Mario,Paratroopa
+18001_6001_6,18001,Peach Beach,JD,3,Bowser Jr.,Toad
+18001_6001_4,18001,Mario Circuit,Nick,3,Baby Mario,Paratroopa
+18001_6001_5,18001,Mushroom Bridge,Nick,3,Baby Mario,Paratroopa
+18001_35001_8,18001,Baby Park,Dan,3,Diddy Kong,Koopa
+18001_35001_9,18001,Mushroom Bridge,Dan,3,Diddy Kong,Koopa
+18001_35001_11,18001,Mushroom City,Jeran,3,Paratroopa,Toad
+18001_35001_4,18001,Bowser Castle,Jeran,3,Paratroopa,Toad
+18001_35001_5,18001,Sherbet Land,Jeran,3,Paratroopa,Toad
+18001_35001_13,18001,Wario Colosseum,Jeran,3,Paratroopa,Toad
+18001_35001_7,18001,Daisy Cruiser,Dan,3,Diddy Kong,Koopa
+18001_35001_15,18001,Dry Dry Desert,Dan,3,Diddy Kong,Koopa
+19001_4001_6,19001,Waluigi Stadium,Dan,3,Diddy Kong,Paratroopa
+19001_4001_9,19001,DK Mountain,Dan,3,Diddy Kong,Paratroopa
+19001_4001_16,19001,Rainbow Road,Tom,3,Bowser Jr.,Koopa
+11001_94005_1,11001,Luigi Circuit,Tom,4,Diddy Kong,Waluigi
+11001_280001_8,11001,Dry Dry Desert,Nick,4,Paratroopa,Toad
+11001_443001_16,11001,Rainbow Road,Tom,4,Bowser Jr.,Koopa
+11001_580001_9,11001,Baby Park,Nick,4,Paratroopa,Toad
+11001_580001_16,11001,Rainbow Road,Tom,4,Bowser Jr.,Koopa
+11001_821002_10,11001,Waluigi Stadium,Tom,4,Diddy Kong,Koopa
+16001_7001_8,16001,Baby Park,Nick,4,Koopa,Paratroopa
+16001_7001_1,16001,Baby Park,Nick,4,Koopa,Paratroopa
+16001_7001_11,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_2,16001,Baby Park,Nick,4,Koopa,Paratroopa
+16001_7001_3,16001,Baby Park,Tom,4,Bowser Jr.,Diddy Kong
+16001_7001_12,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_4,16001,Baby Park,Jeran,4,Baby Luigi,Toadette
+16001_7001_44,16001,Baby Park,Dan,4,Toad,Waluigi
+16001_7001_5,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_29,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_6,16001,Baby Park,Nick,4,Koopa,Paratroopa
+16001_7001_21,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_43,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_7,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_9,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_42,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_13,16001,Baby Park,Tom,4,Bowser Jr.,Koopa
+16001_7001_16,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_46,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_10,16001,Baby Park,Jeran,4,Baby Luigi,Toadette
+16001_7001_50,16001,Baby Park,Dan,4,Toad,Waluigi
+16001_7001_19,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_14,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_17,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_18,16001,Baby Park,JD,4,Toad,Yoshi
+16001_7001_20,16001,Baby Park,Tom,4,Bowser Jr.,Koopa
+16001_7001_48,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_7001_24,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_28,16001,Baby Park,Nick,4,Baby Mario,Paratroopa
+16001_7001_49,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81001_13,16001,Baby Park,Tom,4,Koopa,Toad
+16001_81001_34,16001,Baby Park,JD,4,Koopa,Waluigi
+16001_81001_9,16001,Baby Park,Tom,4,Koopa,Toadette
+16001_81001_14,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_81001_7,16001,Baby Park,Tom,4,Koopa,Toadette
+16001_81001_10,16001,Baby Park,Tom,4,Koopa,Toadette
+16001_81001_15,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_81001_18,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_81001_21,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81001_33,16001,Baby Park,JD,4,Koopa,Waluigi
+16001_81001_36,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81001_38,16001,Baby Park,Tom,4,Bowser Jr.,Toadette
+16001_81001_39,16001,Baby Park,JD,4,Koopa,Waluigi
+16001_81001_17,16001,Baby Park,Tom,4,Koopa,Toad
+16001_81001_27,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81001_46,16001,Baby Park,Dan,4,Diddy Kong,Toadette
+16001_81001_12,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_81001_37,16001,Baby Park,JD,4,Koopa,Waluigi
+16001_81001_5,16001,Baby Park,Tom,4,Koopa,Toadette
+16001_81001_31,16001,Baby Park,JD,4,Koopa,Waluigi
+16001_81001_32,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81001_35,16001,Baby Park,JD,4,Koopa,Waluigi
+16001_81001_43,16001,Baby Park,Dan,4,Diddy Kong,Toadette
+16001_81001_20,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_81001_22,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81037_30,16001,Baby Park,Nick,4,Bowser Jr.,Koopa
+16001_81037_24,16001,Baby Park,Nick,4,Bowser Jr.,Koopa
+16001_81037_5,16001,Baby Park,Tom,4,Paratroopa,Toad
+16001_81037_33,16001,Baby Park,Nick,4,Diddy Kong,Koopa
+16001_81037_35,16001,Baby Park,Nick,4,Diddy Kong,Koopa
+16001_81037_21,16001,Baby Park,JD,4,Daisy,Waluigi
+16001_81037_23,16001,Baby Park,JD,4,Daisy,Waluigi
+16001_81037_37,16001,Baby Park,Nick,4,Diddy Kong,Koopa
+16001_81037_46,16001,Baby Park,Nick,4,Paratroopa,Waluigi
+16001_81037_28,16001,Baby Park,JD,4,Daisy,Waluigi
+16001_81037_32,16001,Baby Park,Nick,4,Diddy Kong,Koopa
+16001_81037_43,16001,Baby Park,Dan,4,Bowser Jr.,Koopa
+16001_81037_44,16001,Baby Park,Tom,4,Diddy Kong,Toadette
+16001_81037_45,16001,Baby Park,Nick,4,Paratroopa,Waluigi
+16001_81037_50,16001,Baby Park,Nick,4,Paratroopa,Waluigi
+16001_81037_2,16001,Baby Park,Tom,4,Paratroopa,Toad
+16001_81037_7,16001,Baby Park,Tom,4,Paratroopa,Toad
+16001_81037_25,16001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+16001_81037_26,16001,Baby Park,Nick,4,Bowser Jr.,Koopa
+16001_81037_29,16001,Baby Park,JD,4,Daisy,Waluigi
+16001_81037_27,16001,Baby Park,JD,4,Daisy,Waluigi
+16001_81037_31,16001,Baby Park,Tom,4,Bowser Jr.,Toadette
+16001_81037_49,16001,Baby Park,Nick,4,Paratroopa,Waluigi
+16001_81037_22,16001,Baby Park,Jeran,4,Toad,Toadette
+16001_81037_39,16001,Baby Park,Nick,4,Diddy Kong,Koopa
+16001_93002_1,16001,Baby Park,Tom,4,Diddy Kong,Paratroopa
+16001_93002_49,16001,Baby Park,Nick,4,Baby Luigi,Toad
+16001_93002_4,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_93002_10,16001,Baby Park,Dan,4,Baby Mario,Toadette
+16001_93002_18,16001,Baby Park,Tom,4,Toad,Waluigi
+16001_93002_41,16001,Baby Park,Nick,4,Baby Luigi,Toad
+16001_93002_9,16001,Baby Park,Dan,4,Baby Mario,Toadette
+16001_93002_13,16001,Baby Park,Tom,4,Toad,Waluigi
+16001_93002_20,16001,Baby Park,Tom,4,Toad,Waluigi
+16001_93002_6,16001,Baby Park,Dan,4,Baby Mario,Toadette
+16001_93002_32,16001,Baby Park,Jeran,4,Diddy Kong,Koopa
+16001_93002_42,16001,Baby Park,Nick,4,Baby Luigi,Toad
+16001_93002_3,16001,Baby Park,Tom,4,Diddy Kong,Paratroopa
+16001_93002_11,16001,Baby Park,JD,4,Diddy Kong,Koopa
+16001_93002_14,16001,Baby Park,JD,4,Diddy Kong,Koopa
+16001_93002_15,16001,Baby Park,Tom,4,Toad,Waluigi
+16001_93002_17,16001,Baby Park,Tom,4,Toad,Waluigi
+16001_93002_43,16001,Baby Park,Nick,4,Baby Luigi,Toad
+16001_93002_47,16001,Baby Park,Nick,4,Baby Luigi,Toad
+16001_93002_7,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_93002_8,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_93002_12,16001,Baby Park,JD,4,Diddy Kong,Koopa
+16001_93002_16,16001,Baby Park,Tom,4,Toad,Waluigi
+16001_93002_19,16001,Baby Park,Tom,4,Toad,Waluigi
+16001_104001_4,16001,Baby Park,JD,4,Paratroopa,Waluigi
+16001_104001_8,16001,Baby Park,Nick,4,Bowser Jr.,Koopa
+16001_104001_10,16001,Baby Park,JD,4,Paratroopa,Waluigi
+16001_104001_18,16001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+16001_104001_26,16001,Baby Park,Jeran,4,Koopa,Toadette
+16001_104001_27,16001,Baby Park,Dan,4,Diddy Kong,Waluigi
+16001_104001_36,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_104001_39,16001,Baby Park,Dan,4,Baby Luigi,Toadette
+16001_104001_9,16001,Baby Park,Nick,4,Bowser Jr.,Koopa
+16001_104001_17,16001,Baby Park,Nick,4,Baby Mario,Bowser Jr.
+16001_104001_22,16001,Baby Park,Dan,4,Diddy Kong,Waluigi
+16001_104001_33,16001,Baby Park,Dan,4,Baby Luigi,Toadette
+16001_104001_40,16001,Baby Park,Jeran,4,Baby Mario,Toad
+16001_104001_6,16001,Baby Park,Nick,4,Bowser Jr.,Koopa
+16001_104001_7,16001,Baby Park,JD,4,Paratroopa,Waluigi
+16001_104001_32,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_104001_35,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_104001_38,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_104001_48,16001,Baby Park,Dan,4,Toadette,Waluigi
+16001_104001_1,16001,Baby Park,JD,4,Paratroopa,Waluigi
+16001_104001_2,16001,Baby Park,Nick,4,Bowser Jr.,Koopa
+16001_104001_5,16001,Baby Park,JD,4,Paratroopa,Waluigi
+16001_104001_11,16001,Baby Park,Nick,4,Baby Mario,Bowser Jr.
+16001_104001_21,16001,Baby Park,Tom,4,Bowser Jr.,Toad
+16001_104001_3,16001,Baby Park,JD,4,Paratroopa,Waluigi
+16001_104001_13,16001,Baby Park,Nick,4,Baby Mario,Bowser Jr.
+16001_104001_19,16001,Baby Park,Nick,4,Baby Mario,Bowser Jr.
+16001_104001_31,16001,Baby Park,Jeran,4,Baby Mario,Toad
+16001_104001_24,16001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_6001_2,17001,Baby Park,Nick,4,Baby Mario,Paratroopa
+17001_6001_3,17001,Baby Park,Nick,4,Baby Mario,Paratroopa
+17001_6001_4,17001,Baby Park,Tom,4,Toad,Waluigi
+17001_22002_21,17001,Baby Park,Nick,4,Baby Luigi,Koopa
+17001_22002_16,17001,Baby Park,Tom,4,Baby Luigi,Koopa
+17001_22002_12,17001,Baby Park,Dan,4,Diddy Kong,Toadette
+17001_22002_1,17001,Baby Park,Nick,4,Paratroopa,Toad
+17001_22002_2,17001,Baby Park,Tom,4,Baby Luigi,Koopa
+17001_22002_3,17001,Baby Park,Nick,4,Paratroopa,Toad
+17001_22002_5,17001,Baby Park,Tom,4,Baby Luigi,Koopa
+17001_22002_32,17001,Baby Park,Nick,4,Baby Luigi,Koopa
+17001_22002_6,17001,Baby Park,Nick,4,Paratroopa,Toad
+17001_22002_9,17001,Baby Park,Tom,4,Baby Luigi,Koopa
+17001_22002_10,17001,Baby Park,Dan,4,Diddy Kong,Toadette
+17001_22002_11,17001,Baby Park,Tom,4,Baby Luigi,Koopa
+17001_22002_15,17001,Baby Park,Dan,4,Diddy Kong,Toadette
+17001_22002_17,17001,Baby Park,Tom,4,Baby Luigi,Koopa
+17001_22002_19,17001,Baby Park,Dan,4,Diddy Kong,Toadette
+17001_25001_1,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_25001_2,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_25001_3,17001,Baby Park,Tom,4,Koopa,Waluigi
+17001_25001_4,17001,Baby Park,Tom,4,Koopa,Waluigi
+17001_143001_33,17001,Baby Park,Tom,4,Diddy Kong,Paratroopa
+17001_143001_9,17001,Baby Park,JD,4,Bowser Jr.,Toadette
+17001_143001_38,17001,Baby Park,Jeran,4,Koopa,Toad
+17001_143001_1,17001,Baby Park,Jeran,4,Diddy Kong,Toad
+17001_143001_13,17001,Baby Park,JD,4,Bowser Jr.,Koopa
+17001_143001_34,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_143001_37,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_143001_14,17001,Baby Park,Tom,4,Toad,Waluigi
+17001_143001_18,17001,Baby Park,JD,4,Bowser Jr.,Koopa
+17001_143001_25,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_143001_31,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_143001_3,17001,Baby Park,Jeran,4,Diddy Kong,Toad
+17001_143001_7,17001,Baby Park,JD,4,Bowser Jr.,Toadette
+17001_143001_10,17001,Baby Park,Dan,4,Paratroopa,Waluigi
+17001_143001_4,17001,Baby Park,Dan,4,Paratroopa,Waluigi
+17001_143001_11,17001,Baby Park,JD,4,Bowser Jr.,Koopa
+17001_143001_12,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_143001_19,17001,Baby Park,JD,4,Bowser Jr.,Koopa
+17001_143001_27,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_143001_36,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_143001_17,17001,Baby Park,Tom,4,Toad,Waluigi
+17001_143001_39,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_143001_40,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_143001_35,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_155021_5,17001,Baby Park,JD,4,Peach,Toad
+17001_155021_12,17001,Baby Park,Dan,4,Paratroopa,Toad
+17001_155021_1,17001,Baby Park,JD,4,Peach,Toad
+17001_155021_4,17001,Baby Park,JD,4,Peach,Toad
+17001_155021_17,17001,Baby Park,Tom,4,Koopa,Toad
+17001_155021_2,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_155021_13,17001,Baby Park,Tom,4,Toadette,Waluigi
+17001_155021_3,17001,Baby Park,Tom,4,Bowser Jr.,Koopa
+17001_155021_7,17001,Baby Park,Tom,4,Bowser Jr.,Toadette
+17001_155021_9,17001,Baby Park,Tom,4,Bowser Jr.,Toadette
+17001_155021_8,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_167001_2,17001,Baby Park,JD,4,Bowser Jr.,Koopa
+17001_167001_14,17001,Baby Park,Dan,4,Toadette,Waluigi
+17001_167001_15,17001,Baby Park,Dan,4,Toadette,Waluigi
+17001_167001_19,17001,Baby Park,Dan,4,Toadette,Waluigi
+17001_167001_21,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_167001_28,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_167001_4,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_167001_24,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_167001_1,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_167001_3,17001,Baby Park,JD,4,Bowser Jr.,Koopa
+17001_167001_9,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_167001_10,17001,Baby Park,Tom,4,Baby Luigi,Paratroopa
+17001_167001_18,17001,Baby Park,Tom,4,Diddy Kong,Koopa
+17001_167001_5,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_167001_6,17001,Baby Park,Tom,4,Baby Luigi,Paratroopa
+17001_167001_16,17001,Baby Park,Dan,4,Toadette,Waluigi
+17001_167001_12,17001,Baby Park,Dan,4,Toadette,Waluigi
+17001_173001_14,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_173001_1,17001,Baby Park,Nick,4,Bowser Jr.,Koopa
+17001_173001_3,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_173001_9,17001,Baby Park,Nick,4,Paratroopa,Waluigi
+17001_173001_13,17001,Baby Park,Jeran,4,Diddy Kong,Koopa
+17001_173001_4,17001,Baby Park,JD,4,Toad,Waluigi
+17001_173001_5,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_173001_7,17001,Baby Park,Tom,4,Bowser Jr.,Toadette
+17001_173001_11,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_173001_12,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_173001_2,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_173001_15,17001,Baby Park,Jeran,4,Diddy Kong,Koopa
+17001_173001_19,17001,Baby Park,Dan,4,Toad,Waluigi
+17001_184001_21,17001,Baby Park,Tom,4,Diddy Kong,Toad
+17001_184001_49,17001,Baby Park,Jesse,4,Baby Mario,Toadette
+17001_184001_47,17001,Baby Park,Jesse,4,Baby Mario,Toadette
+17001_184001_22,17001,Baby Park,JD,4,Koopa,Paratroopa
+17001_184001_46,17001,Baby Park,Jesse,4,Baby Mario,Toadette
+17001_184001_48,17001,Baby Park,Jesse,4,Baby Mario,Toadette
+17001_184001_23,17001,Baby Park,JD,4,Koopa,Paratroopa
+17001_184001_50,17001,Baby Park,Jesse,4,Baby Mario,Toadette
+17001_184001_13,17001,Baby Park,Jesse,4,Baby Luigi,Baby Mario
+17001_184001_55,17001,Baby Park,JD,4,Baby Luigi,Toad
+17001_184001_26,17001,Baby Park,Tom,4,Bowser Jr.,Koopa
+17001_184001_57,17001,Baby Park,Dan,4,Koopa,Toad
+17001_184001_14,17001,Baby Park,Jesse,4,Baby Luigi,Baby Mario
+17001_184001_44,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_184001_52,17001,Baby Park,Tom,4,Diddy Kong,Toadette
+17001_184001_59,17001,Baby Park,Tom,4,Bowser Jr.,Paratroopa
+17001_184001_51,17001,Baby Park,Nick,4,Baby Mario,Paratroopa
+17001_184001_24,17001,Baby Park,Tom,4,Diddy Kong,Toadette
+17001_184001_24,17001,Baby Park,Tom,4,Diddy Kong,Toadette
+17001_184001_30,17001,Baby Park,Tom,4,Bowser Jr.,Koopa
+17001_184001_54,17001,Baby Park,JD,4,Baby Luigi,Toad
+17001_184001_53,17001,Baby Park,JD,4,Baby Luigi,Toad
+17001_184001_34,17001,Baby Park,Tom,4,Bowser Jr.,Koopa
+18001_35001_8,18001,Baby Park,JD,4,Bowser Jr.,Peach
+18001_35001_10,18001,Waluigi Stadium,JD,4,Bowser Jr.,Peach
+18001_35001_16,18001,Rainbow Road,JD,4,Bowser Jr.,Peach
+18001_35001_1,18001,Luigi Circuit,Tom,4,Baby Mario,Toadette
+18001_35001_2,18001,Mario Circuit,JD,4,Bowser Jr.,Peach
+18001_35001_3,18001,DK Mountain,JD,4,Bowser Jr.,Peach
+18001_35001_9,18001,Mushroom Bridge,JD,4,Bowser Jr.,Peach
+18001_35001_11,18001,Mushroom City,JD,4,Bowser Jr.,Peach
+18001_35001_12,18001,Yoshi Circuit,JD,4,Bowser Jr.,Peach
+18001_35001_4,18001,Bowser Castle,JD,4,Bowser Jr.,Peach
+18001_35001_5,18001,Sherbet Land,JD,4,Bowser Jr.,Peach
+18001_35001_13,18001,Wario Colosseum,JD,4,Bowser Jr.,Peach
+18001_35001_14,18001,Dino Dino Jungle,JD,4,Bowser Jr.,Peach
+18001_35001_6,18001,Peach Beach,Tom,4,Baby Mario,Toadette
+18001_35001_7,18001,Daisy Cruiser,JD,4,Bowser Jr.,Peach
+18001_35001_15,18001,Dry Dry Desert,JD,4,Bowser Jr.,Peach
+19001_42001_16,19001,Rainbow Road,Dan,4,King Boo,Waluigi
+11001_4001_16,11001,Rainbow Road,Nick,4,Baby Mario,Paratroopa
+11001_37001_13,11001,Baby Park,Tom,4,Bowser Jr.,Waluigi
+11001_69001_2,11001,Daisy Cruiser,Nick,4,Baby Mario,Paratroopa
+11001_103001_16,11001,Rainbow Road,Nick,4,Baby Mario,Paratroopa
+11001_103001_5,11001,Baby Park,Nick,4,Baby Mario,Paratroopa
+11001_114003_12,11001,Waluigi Stadium,Tom,4,Diddy Kong,Waluigi
+11001_114003_10,11001,Sherbet Land,Nick,4,Baby Mario,Paratroopa
+11001_137001_7,11001,DK Mountain,Tom,4,Diddy Kong,Waluigi
+11001_137001_15,11001,Wario Colosseum,Tom,4,Diddy Kong,Waluigi
+11001_137001_3,11001,Dry Dry Desert,Tom,4,Diddy Kong,Waluigi
+11001_161001_1,11001,Luigi Circuit,Tom,4,Diddy Kong,Waluigi
+11001_514001_1,11001,Luigi Circuit,Tom,4,Bowser Jr.,Koopa
+11001_551001_16,11001,Rainbow Road,Tom,4,Diddy Kong,Koopa
+11001_650001_5,11001,Wario Colosseum,Tom,4,Bowser Jr.,Koopa
+11001_729001_6,11001,Peach Beach,Nick,4,Diddy Kong,Paratroopa
+11001_729001_4,11001,Mario Circuit,Nick,4,Diddy Kong,Paratroopa
+11001_812001_1,11001,Luigi Circuit,Tom,4,Diddy Kong,Paratroopa
+16001_7001_26,16001,Baby Park,Dan,4,Baby Luigi,Toadette
+16001_7001_37,16001,Baby Park,Jeran,4,Paratroopa,Toadette
+16001_7001_30,16001,Baby Park,Jeran,4,Diddy Kong,Toad
+16001_7001_23,16001,Baby Park,Jeran,4,Diddy Kong,Toad
+16001_7001_45,16001,Baby Park,Jeran,4,Diddy Kong,Toadette
+16001_7001_31,16001,Baby Park,JD,4,Baby Luigi,Bowser Jr.
+16001_7001_15,16001,Baby Park,Dan,4,Diddy Kong,Toadette
+16001_7001_22,16001,Baby Park,Jeran,4,Diddy Kong,Toad
+16001_7001_25,16001,Baby Park,Dan,4,Baby Luigi,Toadette
+16001_7001_33,16001,Baby Park,Jeran,4,Paratroopa,Toadette
+16001_7001_35,16001,Baby Park,Jeran,4,Paratroopa,Toadette
+16001_7001_39,16001,Baby Park,JD,4,Baby Luigi,Bowser Jr.
+16001_7001_38,16001,Baby Park,Jeran,4,Paratroopa,Toadette
+16001_7001_27,16001,Baby Park,Jeran,4,Diddy Kong,Toad
+16001_7001_32,16001,Baby Park,JD,4,Baby Luigi,Bowser Jr.
+16001_7001_41,16001,Baby Park,Jeran,4,Diddy Kong,Toadette
+16001_7001_34,16001,Baby Park,JD,4,Baby Luigi,Bowser Jr.
+16001_7001_47,16001,Baby Park,Jeran,4,Diddy Kong,Toadette
+16001_7001_36,16001,Baby Park,JD,4,Baby Luigi,Bowser Jr.
+16001_7001_40,16001,Baby Park,JD,4,Baby Luigi,Bowser Jr.
+16001_81001_26,16001,Baby Park,Dan,4,Baby Luigi,Toad
+16001_81001_30,16001,Baby Park,Jeran,4,Baby Mario,Toadette
+16001_81001_40,16001,Baby Park,Jeran,4,Baby Mario,Toad
+16001_81001_48,16001,Baby Park,Nick,4,Paratroopa,Yoshi
+16001_81001_49,16001,Baby Park,Nick,4,Paratroopa,Yoshi
+16001_81001_16,16001,Baby Park,Dan,4,Mario,Waluigi
+16001_81001_45,16001,Baby Park,JD,4,Bowser Jr.,Waluigi
+16001_81001_1,16001,Baby Park,Jeran,4,Diddy Kong,Toad
+16001_81001_3,16001,Baby Park,JD,4,Paratroopa,Yoshi
+16001_81001_23,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81001_29,16001,Baby Park,Jeran,4,Baby Mario,Toadette
+16001_81001_47,16001,Baby Park,JD,4,Bowser Jr.,Waluigi
+16001_81001_19,16001,Baby Park,Dan,4,Mario,Waluigi
+16001_81001_42,16001,Baby Park,JD,4,Bowser Jr.,Waluigi
+16001_81001_2,16001,Baby Park,Jeran,4,Diddy Kong,Toad
+16001_81001_6,16001,Baby Park,Jeran,4,Diddy Kong,Toad
+16001_81001_11,16001,Baby Park,Dan,4,Mario,Waluigi
+16001_81001_28,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81001_50,16001,Baby Park,JD,4,Bowser Jr.,Waluigi
+16001_81001_25,16001,Baby Park,Jeran,4,Baby Mario,Toadette
+16001_81001_44,16001,Baby Park,JD,4,Bowser Jr.,Waluigi
+16001_81001_4,16001,Baby Park,JD,4,Paratroopa,Yoshi
+16001_81001_8,16001,Baby Park,JD,4,Paratroopa,Yoshi
+16001_81001_24,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81001_41,16001,Baby Park,Nick,4,Paratroopa,Yoshi
+16001_81037_4,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81037_12,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81037_47,16001,Baby Park,JD,4,Daisy,Toad
+16001_81037_6,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81037_17,16001,Baby Park,JD,4,Luigi,Waluigi
+16001_81037_34,16001,Baby Park,Dan,4,Paratroopa,Waluigi
+16001_81037_36,16001,Baby Park,Dan,4,Paratroopa,Waluigi
+16001_81037_18,16001,Baby Park,JD,4,Luigi,Waluigi
+16001_81037_38,16001,Baby Park,Dan,4,Paratroopa,Waluigi
+16001_81037_41,16001,Baby Park,JD,4,Daisy,Toad
+16001_81037_48,16001,Baby Park,JD,4,Daisy,Toad
+16001_81037_1,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81037_11,16001,Baby Park,Tom,4,Koopa,Toad
+16001_81037_13,16001,Baby Park,JD,4,Luigi,Waluigi
+16001_81037_40,16001,Baby Park,Dan,4,Paratroopa,Waluigi
+16001_81037_3,16001,Baby Park,Jeran,4,Diddy Kong,Toadette
+16001_81037_8,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81037_20,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81037_9,16001,Baby Park,JD,4,Bowser Jr.,Koopa
+16001_81037_10,16001,Baby Park,Jeran,4,Diddy Kong,Toadette
+16001_81037_14,16001,Baby Park,Tom,4,Koopa,Toad
+16001_81037_15,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81037_16,16001,Baby Park,Nick,4,Diddy Kong,Paratroopa
+16001_81037_19,16001,Baby Park,Jeran,4,Bowser Jr.,Toadette
+16001_81037_42,16001,Baby Park,JD,4,Daisy,Toad
+16001_93002_36,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_93002_38,16001,Baby Park,Dan,4,Bowser Jr.,Toadette
+16001_93002_2,16001,Baby Park,Jeran,4,Baby Luigi,Toad
+16001_93002_22,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_93002_23,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_93002_28,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_93002_48,16001,Baby Park,Tom,4,Bowser Jr.,Paratroopa
+16001_93002_5,16001,Baby Park,Jeran,4,Baby Luigi,Toad
+16001_93002_25,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_93002_35,16001,Baby Park,JD,4,Baby Mario,Toad
+16001_93002_45,16001,Baby Park,Dan,4,Toadette,Waluigi
+16001_93002_21,16001,Baby Park,Dan,4,Diddy Kong,Koopa
+16001_93002_33,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_93002_37,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_93002_50,16001,Baby Park,Jeran,4,Diddy Kong,Koopa
+16001_93002_24,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_93002_27,16001,Baby Park,Tom,4,Baby Mario,Toadette
+16001_93002_29,16001,Baby Park,Dan,4,Diddy Kong,Koopa
+16001_93002_39,16001,Baby Park,Dan,4,Bowser Jr.,Toadette
+16001_93002_46,16001,Baby Park,Jeran,4,Diddy Kong,Koopa
+16001_93002_26,16001,Baby Park,Tom,4,Baby Mario,Toadette
+16001_93002_30,16001,Baby Park,Dan,4,Diddy Kong,Koopa
+16001_93002_34,16001,Baby Park,JD,4,Baby Mario,Toad
+16001_93002_40,16001,Baby Park,Dan,4,Bowser Jr.,Toadette
+16001_93002_44,16001,Baby Park,Jeran,4,Diddy Kong,Koopa
+16001_93002_31,16001,Baby Park,JD,4,Baby Mario,Toad
+16001_104001_42,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_104001_50,16001,Baby Park,JD,4,Diddy Kong,Koopa
+16001_104001_16,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_104001_15,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_104001_29,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_104001_12,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_104001_23,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_104001_41,16001,Baby Park,JD,4,Diddy Kong,Koopa
+16001_104001_43,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_104001_45,16001,Baby Park,JD,4,Diddy Kong,Koopa
+16001_104001_28,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_104001_30,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_104001_44,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_104001_49,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_104001_14,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_104001_20,16001,Baby Park,JD,4,Baby Luigi,Toad
+16001_104001_47,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_104001_25,16001,Baby Park,Nick,4,Baby Luigi,Paratroopa
+16001_104001_34,16001,Baby Park,Tom,4,Diddy Kong,Paratroopa
+16001_104001_37,16001,Baby Park,Tom,4,Diddy Kong,Paratroopa
+16001_104001_46,16001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+16001_117001_1,16001,Baby Park,Jesse,4,Paratroopa,Yoshi
+17001_6001_1,17001,Baby Park,Dan,4,Diddy Kong,Koopa
+17001_22002_36,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_54,17001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_22002_18,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_27,17001,Baby Park,Tom,4,Paratroopa,Toadette
+17001_22002_23,17001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_22002_28,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_4,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_40,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_52,17001,Baby Park,Nick,4,Koopa,Toad
+17001_22002_25,17001,Baby Park,Tom,4,Paratroopa,Toadette
+17001_22002_29,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_43,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_7,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_13,17001,Baby Park,Nick,4,Baby Mario,Paratroopa
+17001_22002_20,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_53,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_8,17001,Baby Park,Nick,4,Baby Mario,Paratroopa
+17001_22002_50,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_46,17001,Baby Park,Nick,4,Koopa,Toad
+17001_22002_38,17001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_22002_14,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_48,17001,Baby Park,Nick,4,Koopa,Toad
+17001_22002_30,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_24,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_34,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_37,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_31,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_22,17001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_22002_47,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_26,17001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_22002_33,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_22002_56,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_35,17001,Baby Park,Tom,4,Paratroopa,Toadette
+17001_22002_44,17001,Baby Park,Nick,4,Koopa,Toad
+17001_22002_42,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_39,17001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_22002_49,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_41,17001,Baby Park,Nick,4,Koopa,Toad
+17001_22002_45,17001,Baby Park,Nick,4,Koopa,Toad
+17001_22002_55,17001,Baby Park,JD,4,Bowser Jr.,Yoshi
+17001_22002_51,17001,Baby Park,Dan,4,Diddy Kong,Waluigi
+17001_143001_5,17001,Baby Park,Tom,4,Baby Mario,Koopa
+17001_143001_8,17001,Baby Park,Tom,4,Baby Mario,Koopa
+17001_143001_24,17001,Baby Park,Jeran,4,Baby Mario,Toadette
+17001_143001_15,17001,Baby Park,Jeran,4,Baby Mario,Toadette
+17001_143001_22,17001,Baby Park,JD,4,Peach,Toad
+17001_143001_28,17001,Baby Park,Tom,4,Bowser Jr.,Koopa
+17001_143001_23,17001,Baby Park,Tom,4,Bowser Jr.,Koopa
+17001_143001_32,17001,Baby Park,Dan,4,Toadette,Waluigi
+17001_143001_6,17001,Baby Park,Tom,4,Baby Mario,Koopa
+17001_143001_2,17001,Baby Park,Tom,4,Baby Mario,Koopa
+17001_143001_21,17001,Baby Park,Jeran,4,Baby Mario,Toadette
+17001_143001_30,17001,Baby Park,Jeran,4,Baby Mario,Toadette
+17001_143001_16,17001,Baby Park,Jeran,4,Baby Mario,Toadette
+17001_143001_26,17001,Baby Park,JD,4,Peach,Toad
+17001_143001_20,17001,Baby Park,Jeran,4,Baby Mario,Toadette
+17001_143001_29,17001,Baby Park,Jeran,4,Baby Mario,Toadette
+17001_155021_10,17001,Baby Park,JD,4,Koopa,Peach
+17001_155021_15,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_155021_16,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_155021_18,17001,Baby Park,Dan,4,Diddy Kong,Paratroopa
+17001_155021_20,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_155021_6,17001,Baby Park,JD,4,Koopa,Peach
+17001_155021_11,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_155021_14,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_155021_19,17001,Baby Park,JD,4,Bowser Jr.,Peach
+17001_167001_35,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_36,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_37,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_17,17001,Baby Park,Jeran,4,Mario,Toad
+17001_167001_29,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_41,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_7,17001,Baby Park,Jeran,4,Diddy Kong,Toadette
+17001_167001_22,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_34,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_38,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_13,17001,Baby Park,JD,4,Bowser Jr.,Paratroopa
+17001_167001_23,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_25,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_33,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_11,17001,Baby Park,JD,4,Bowser Jr.,Paratroopa
+17001_167001_30,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_31,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_32,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_39,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_8,17001,Baby Park,Jeran,4,Diddy Kong,Toadette
+17001_167001_20,17001,Baby Park,JD,4,Bowser Jr.,Paratroopa
+17001_167001_27,17001,Baby Park,JD,4,Koopa,Peach
+17001_167001_40,17001,Baby Park,JD,4,Koopa,Peach
+17001_173001_6,17001,Baby Park,JD,4,Peach,Toad
+17001_173001_10,17001,Baby Park,JD,4,Peach,Toad
+17001_173001_25,17001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+17001_173001_24,17001,Baby Park,JD,4,Baby Luigi,Toad
+17001_173001_16,17001,Baby Park,Jeran,4,Diddy Kong,Koopa
+17001_173001_8,17001,Baby Park,JD,4,Peach,Toad
+17001_173001_21,17001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+17001_173001_23,17001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+17001_173001_17,17001,Baby Park,JD,4,Bowser Jr.,Paratroopa
+17001_173001_20,17001,Baby Park,Tom,4,Baby Luigi,Toadette
+17001_173001_22,17001,Baby Park,Tom,4,Baby Mario,Toadette
+17001_173001_18,17001,Baby Park,JD,4,Bowser Jr.,Paratroopa
+17001_184001_12,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_184001_35,17001,Baby Park,Jesse,4,Baby Mario,Diddy Kong
+17001_184001_37,17001,Baby Park,Jesse,4,Baby Luigi,Baby Mario
+17001_184001_3,17001,Baby Park,Jesse,4,Paratroopa,Yoshi
+17001_184001_10,17001,Baby Park,Jesse,4,Baby Luigi,Toadette
+17001_184001_29,17001,Baby Park,JD,4,Peach,Waluigi
+17001_184001_27,17001,Baby Park,JD,4,Peach,Waluigi
+17001_184001_36,17001,Baby Park,Jesse,4,Baby Luigi,Baby Mario
+17001_184001_6,17001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+17001_184001_7,17001,Baby Park,Jesse,4,Baby Luigi,Toadette
+17001_184001_17,17001,Baby Park,Jesse,4,Baby Luigi,Wario
+17001_184001_25,17001,Baby Park,Nick,4,Baby Luigi,Wario
+17001_184001_32,17001,Baby Park,Jesse,4,Baby Mario,Diddy Kong
+17001_184001_1,17001,Baby Park,Jesse,4,Paratroopa,Yoshi
+17001_184001_8,17001,Baby Park,Jesse,4,Baby Luigi,Toadette
+17001_184001_60,17001,Baby Park,JD,4,Peach,Waluigi
+17001_184001_2,17001,Baby Park,Jesse,4,Paratroopa,Yoshi
+17001_184001_4,17001,Baby Park,Jesse,4,Paratroopa,Yoshi
+17001_184001_15,17001,Baby Park,Nick,4,Paratroopa,Toadette
+17001_184001_28,17001,Baby Park,JD,4,Peach,Waluigi
+17001_184001_24,17001,Baby Park,Nick,4,Baby Luigi,Wario
+17001_184001_24,17001,Baby Park,Nick,4,Baby Luigi,Wario
+17001_184001_58,17001,Baby Park,JD,4,Peach,Waluigi
+17001_184001_56,17001,Baby Park,JD,4,Peach,Waluigi
+17001_184001_5,17001,Baby Park,Jesse,4,Paratroopa,Yoshi
+17001_184001_42,17001,Baby Park,Jesse,4,Baby Luigi,Paratroopa
+17001_184001_11,17001,Baby Park,JD,4,Bowser Jr.,Toad
+17001_184001_18,17001,Baby Park,Jesse,4,Baby Luigi,Wario
+17001_184001_19,17001,Baby Park,Jesse,4,Baby Luigi,Wario
+17001_184001_43,17001,Baby Park,Jesse,4,Baby Luigi,Paratroopa
+17001_184001_31,17001,Baby Park,Jesse,4,Baby Mario,Diddy Kong
+17001_184001_33,17001,Baby Park,Jesse,4,Baby Mario,Diddy Kong
+17001_184001_40,17001,Baby Park,Jesse,4,Baby Luigi,Baby Mario
+17001_184001_41,17001,Baby Park,Jesse,4,Baby Luigi,Paratroopa
+17001_184001_9,17001,Baby Park,Nick,4,Bowser Jr.,Paratroopa
+17001_184001_16,17001,Baby Park,Jesse,4,Baby Luigi,Wario
+17001_184001_39,17001,Baby Park,Jesse,4,Baby Luigi,Baby Mario
+17001_184001_38,17001,Baby Park,Jesse,4,Baby Luigi,Baby Mario
+17001_184001_45,17001,Baby Park,Jesse,4,Baby Luigi,Paratroopa
+18001_6001_1,18001,Dry Dry Desert,JD,4,Bowser Jr.,Toad
+18001_6001_6,18001,Peach Beach,Dan,4,Koopa,Toadette
+18001_6001_3,18001,Wario Colosseum,JD,4,Bowser Jr.,Toad
+18001_6001_2,18001,Dino Dino Jungle,JD,4,Bowser Jr.,Toad
+18001_6001_4,18001,Mario Circuit,JD,4,Bowser Jr.,Toad
+18001_6001_5,18001,Mushroom Bridge,Dan,4,Koopa,Toadette
+18001_6001_7,18001,Luigi Circuit,JD,4,Bowser Jr.,Toad
+19001_4001_4,19001,Mario Circuit,Dan,4,Diddy Kong,Paratroopa
+19001_4001_16,19001,Rainbow Road,Dan,4,Diddy Kong,Paratroopa

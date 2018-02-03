@@ -1,0 +1,383 @@
+# If you have module(s) with your model classes, add them here. Also
+# change the kind properties to model_class.
+python_preamble:
+- import: base64
+- import: re
+- import: google.appengine.ext.bulkload.transform
+- import: google.appengine.ext.bulkload.bulkloader_wizard
+- import: google.appengine.ext.db
+- import: google.appengine.api.datastore
+- import: google.appengine.api.users
+
+transformers:
+
+- kind: Cluster
+  connector: csv
+  connector_options:
+    print_export_header_row: true
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      export:
+        - external_name: league_id
+          export_transform: transform.key_id_or_name_as_string_n(0)
+        - external_name: season_id
+          export_transform: transform.key_id_or_name_as_string_n(1)
+        - external_name: cluster_id
+          export_transform: transform.key_id_or_name_as_string_n(2)
+
+    - property: activeFlag
+      external_name: activeFlag
+      # Type: Boolean Stats: 52 properties of this type in this kind.
+      import_transform: transform.regexp_bool('true', re.IGNORECASE)
+
+    - property: seq
+      external_name: seq
+      # Type: Integer Stats: 52 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: startDate
+      external_name: startDate
+      # Type: Date/Time Stats: 52 properties of this type in this kind.
+      import_transform: transform.import_date_time('%Y-%m-%dT%H:%M:%S')
+      export_transform: transform.export_date_time('%Y-%m-%dT%H:%M:%S')
+
+    - property: venue
+      external_name: venue_id
+      # Type: Key Stats: 52 properties of this type in this kind.
+      import_transform: transform.create_foreign_key('Venue')
+      export_transform: transform.key_id_or_name_as_string_n(1)
+
+
+- kind: LeagueLogin
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      external_name: key
+      export_transform: transform.key_id_or_name_as_string
+
+    - property: date
+      external_name: date
+      # Type: Date/Time Stats: 75 properties of this type in this kind.
+      import_transform: transform.import_date_time('%Y-%m-%dT%H:%M:%S')
+      export_transform: transform.export_date_time('%Y-%m-%dT%H:%M:%S')
+
+    - property: logins_INTEGER_IDX
+      external_name: logins_INTEGER_IDX
+      # Type: Integer Stats: 75 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: user
+      external_name: user
+      # Type: User Stats: 75 properties of this type in this kind.
+      import_transform: transform.none_if_empty(users.User)  # Assumes email address
+
+
+- kind: League
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      external_name: league_id
+      export_transform: transform.key_id_or_name_as_string
+
+    - property: courses
+      external_name: courses
+      # Type: String Stats: 51 properties of this type in this kind.
+
+    - property: engineClass
+      external_name: engineClass
+      # Type: String Stats: 6 properties of this type in this kind.
+
+    - property: itemsSetting
+      external_name: itemsSetting
+      # Type: String Stats: 6 properties of this type in this kind.
+
+    - property: lapsPerRace
+      external_name: lapsPerRace
+      # Type: Integer Stats: 6 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: name
+      external_name: name
+      # Type: String Stats: 6 properties of this type in this kind.
+
+    - property: numberOfPlayers
+      external_name: numberOfPlayers
+      # Type: Integer Stats: 6 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: numberOfTotalRacers
+      external_name: numberOfTotalRacers
+      # Type: Integer Stats: 6 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: owner
+      external_name: owner
+      # Type: User Stats: 6 properties of this type in this kind.
+      import_transform: transform.none_if_empty(users.User)  # Assumes email address
+
+    - property: password
+      external_name: password
+      # Type: String Stats: 6 properties of this type in this kind.
+
+    - property: racesPerCluster
+      external_name: racesPerCluster
+      # Type: Integer Stats: 6 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: specifications
+      external_name: specifications
+      # Type: Text Stats: 6 properties of this type in this kind.
+      import_transform: db.Text
+
+    - property: users
+      external_name: users
+      # Type: User Stats: 1 properties of this type in this kind.
+      import_transform: transform.none_if_empty(users.User)  # Assumes email address
+
+    - property: winPointValues
+      external_name: winPointValues
+      # Type: Integer Stats: 30 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+
+- kind: Match
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      export:
+        - external_name: league_id
+          export_transform: transform.key_id_or_name_as_string_n(0)
+        - external_name: season_id
+          export_transform: transform.key_id_or_name_as_string_n(1)
+        - external_name: cluster_id
+          export_transform: transform.key_id_or_name_as_string_n(2)
+        - external_name: match_id
+          export_transform: transform.key_id_or_name_as_string_n(3)
+
+    - property: course
+      external_name: course
+      # Type: String Stats: 1101 properties of this type in this kind.
+
+    - property: notes
+      external_name: notes
+      # Type: Text Stats: 112 properties of this type in this kind.
+      import_transform: db.Text
+
+    - property: seq
+      external_name: seq
+      # Type: Integer Stats: 1101 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: submitDate
+      external_name: submitDate
+      # Type: Date/Time Stats: 1101 properties of this type in this kind.
+      import_transform: transform.import_date_time('%Y-%m-%dT%H:%M:%S')
+      export_transform: transform.export_date_time('%Y-%m-%dT%H:%M:%S')
+
+
+- kind: Perf
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      export: 
+      - external_name: league_id
+        export_transform: transform.key_id_or_name_as_string_n(0)
+      - external_name: season_id
+        export_transform: transform.key_id_or_name_as_string_n(1)
+      - external_name: cluster_id
+        export_transform: transform.key_id_or_name_as_string_n(2)
+      - external_name: match_id
+        export_transform: transform.key_id_or_name_as_string_n(3)
+      - external_name: perf_id
+        export_transform: transform.key_id_or_name_as_string_n(4)
+
+    - property: drivers
+      external_name: drivers
+      # Type: String Stats: 6496 properties of this type in this kind.
+
+    - property: finishPos
+      external_name: finishPos
+      # Type: Integer Stats: 3248 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: kart
+      external_name: kart
+      # Type: String Stats: 3248 properties of this type in this kind.
+
+    - property: player
+      external_name: player_id
+      # Type: Key Stats: 3248 properties of this type in this kind.
+      import_transform: transform.create_foreign_key('Player')
+      export_transform: transform.key_id_or_name_as_string_n(1)
+
+
+- kind: Player
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      export:
+        - external_name: league_id
+          export_transform: transform.key_id_or_name_as_string_n(0)
+        - external_name: player_id
+          export_transform: transform.key_id_or_name_as_string_n(1)
+
+    - property: name
+      external_name: name
+      # Type: String Stats: 24 properties of this type in this kind.
+
+
+- kind: Season
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      export:
+        - external_name: league_id
+          export_transform: transform.key_id_or_name_as_string_n(0)
+        - external_name: season_id
+          export_transform: transform.key_id_or_name_as_string_n(1)
+
+    - property: name
+      external_name: name
+      # Type: String Stats: 14 properties of this type in this kind.
+
+    - property: seq
+      external_name: seq
+      # Type: Integer Stats: 14 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+
+- kind: Venue
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      export:
+        - external_name: league_id
+          export_transform: transform.key_id_or_name_as_string_n(0)
+        - external_name: venue_id
+          export_transform: transform.key_id_or_name_as_string_n(1)
+
+    - property: name
+      external_name: name
+      # Type: String Stats: 14 properties of this type in this kind.
+
+
+- kind: _AE_Backup_Information_Kind_Files
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      external_name: key
+      export_transform: transform.key_id_or_name_as_string
+
+    - property: files
+      external_name: files
+      # Type: String Stats: 25 properties of this type in this kind.
+
+
+- kind: _AE_Backup_Information_Kind_Type_Info
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      external_name: key
+      export_transform: transform.key_id_or_name_as_string
+
+    - property: entity_type_info
+      external_name: entity_type_info
+      # Type: Text Stats: 25 properties of this type in this kind.
+      import_transform: db.Text
+
+
+- kind: _AE_Backup_Information
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      external_name: key
+      export_transform: transform.key_id_or_name_as_string
+
+    - property: complete_time
+      external_name: complete_time
+      # Type: Date/Time Stats: 1 properties of this type in this kind.
+      import_transform: transform.import_date_time('%Y-%m-%dT%H:%M:%S')
+      export_transform: transform.export_date_time('%Y-%m-%dT%H:%M:%S')
+
+    - property: completed_jobs
+      external_name: completed_jobs
+      # Type: String Stats: 8 properties of this type in this kind.
+
+    - property: filesystem
+      external_name: filesystem
+      # Type: String Stats: 1 properties of this type in this kind.
+
+    - property: kinds
+      external_name: kinds
+      # Type: String Stats: 8 properties of this type in this kind.
+
+    - property: name
+      external_name: name
+      # Type: String Stats: 1 properties of this type in this kind.
+
+    - property: start_time
+      external_name: start_time
+      # Type: Date/Time Stats: 1 properties of this type in this kind.
+      import_transform: transform.import_date_time('%Y-%m-%dT%H:%M:%S')
+      export_transform: transform.export_date_time('%Y-%m-%dT%H:%M:%S')
+
+
+- kind: _AE_DatastoreAdmin_Operation
+  connector: csv
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: __key__
+      external_name: key
+      export_transform: transform.key_id_or_name_as_string
+
+    - property: active_jobs
+      external_name: active_jobs
+      # Type: Integer Stats: 1 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: completed_jobs
+      external_name: completed_jobs
+      # Type: Integer Stats: 1 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
+
+    - property: description
+      external_name: description
+      # Type: Text Stats: 1 properties of this type in this kind.
+      import_transform: db.Text
+
+    - property: last_updated
+      external_name: last_updated
+      # Type: Date/Time Stats: 1 properties of this type in this kind.
+      import_transform: transform.import_date_time('%Y-%m-%dT%H:%M:%S')
+      export_transform: transform.export_date_time('%Y-%m-%dT%H:%M:%S')
+
+    - property: status
+      external_name: status
+      # Type: String Stats: 1 properties of this type in this kind.
+
+    - property: status_info
+      external_name: status_info
+      # Type: String Stats: 1 properties of this type in this kind.
+
