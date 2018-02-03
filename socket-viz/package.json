@@ -1,0 +1,46 @@
+{
+  "name": "socket-viz",
+  "version": "0.0.0",
+  "description": "second screen websocket viz app consuming redis pub-sub",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "NODE_ENV=development supervisor -n exit -i public -e js,coffee,jade,scss index",
+    "test": "./node_modules/.bin/mocha",
+    "demo": "node_modules/.bin/coffee test/helpers/redis-pub-sim.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tphummel/socket-viz.git"
+  },
+  "author": "Tom Hummel",
+  "maintainers": [
+    "Tom Hummel"
+  ],
+  "license": "BSD",
+  "devDependencies": {
+    "mocha": "~1.13.0",
+    "chai": "~1.8.1",
+    "deadreload": "0.0.0"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "dependencies": {
+    "coffee-script": "~1.6.3",
+    "socket.io": "~0.9.16",
+    "connect-health-check": "~0.2.0",
+    "express": "~3.4.0",
+    "browserify": "~2.34.0",
+    "coffeeify": "~0.5.1",
+    "jade": "~0.35.0",
+    "socket.io-client": "~0.9.16",
+    "sassify": "~0.1.1",
+    "redis": "~0.8.6",
+    "simple-jadeify": "~2.0.1",
+    "d3": "~3.3.9"
+  }
+}

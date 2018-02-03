@@ -1,0 +1,17 @@
+html {
+  padding: 10px;
+}
+
+body {
+  padding-bottom: 70px;
+  background-color: mintcream;
+}
+
+.or {
+  margin: 0 10px;
+}
+
+.container {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
