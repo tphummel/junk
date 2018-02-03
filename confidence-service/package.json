@@ -1,0 +1,43 @@
+{
+  "name": "confidence-service",
+  "private": true,
+  "version": "0.0.0",
+  "description": "compare a/b test results as-a-service",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test node test",
+    "start": "node index.js",
+    "dev": "NODE_ENV=development supervisor -n exit -i public -e js,coffee index"
+  },
+  "author": {
+    "name": "Tom Hummel",
+    "email": "tphummel@gmail.com",
+    "url": "tomhummel.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tphummel/confidence-service.git"
+  },
+  "keywords": [
+    "ab testing",
+    "confidence.js",
+    "web service"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/tphummel/confidence-service",
+  "bugs": {
+    "url": "https://github.com/tphummel/confidence-service/issues"
+  },
+  "dependencies": {
+    "restify": "^2.7.0",
+    "coffee-script": "^1.7.1",
+    "confidence.js": "0.0.0"
+  },
+  "devDependencies": {
+    "tape": "*",
+    "supervisor": "^0.5.7"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
