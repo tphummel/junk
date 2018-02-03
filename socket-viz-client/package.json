@@ -1,0 +1,82 @@
+{
+  "name": "socket-viz-client",
+  "version": "0.0.0",
+  "description": "node-browserify starter app boilerplate",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test node test/ | tspec",
+    "dev-server": "supervisor -n exit -i build/ -e js,json dev/server.js",
+    "build-jade": "jade views/* -P -o build/",
+    "watch-jade": "jade views/* -P -w -o build/",
+    "build-js": "browserify lib/entry.coffee | uglifyjs -mc > build/main.js",
+    "watch-js": "watchify lib/entry.coffee -o build/main.js -dv",
+    "build": "npm run build-jade && npm run build-js",
+    "dev": "npm run watch-jade & npm run watch-js & npm run dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tphummel/socket-viz-client.git"
+  },
+  "keywords": [
+    "boilerplate",
+    "starter",
+    "quickstart",
+    "template",
+    "browserify"
+  ],
+  "author": {
+    "name": "Tom Hummel",
+    "email": "tphummel@gmail.com",
+    "url": "tomhummel.com"
+  },
+  "license": "MIT",
+  "bugs": "http://github.com/tphummel/node-bify-app/issues",
+  "homepage": "https://github.com/tphummel/node-bify-app",
+  "devDependencies": {
+    "jadeify": "~2.1.1",
+    "watchify": "~0.6.1",
+    "uglify-js": "~2.4.12",
+    "coffeeify": "~0.6.0",
+    "jade": "~1.1.5",
+    "browserify": "~3.30.0",
+    "sassify": "~0.1.2",
+    "supervisor": "~0.5.6",
+    "coffee-script": "~1.7.1",
+    "tap-spec": "^0.1.3",
+    "tape": "^2.7.1",
+    "redis": "^0.10.1",
+    "socket.io": "^0.9.16"
+  },
+  "browserify": {
+    "transform": [
+      "coffeeify",
+      "sassify",
+      "jadeify"
+    ]
+  },
+  "testling": {
+    "files": "test/index.js",
+    "browsers": [
+      "iexplore/7.0",
+      "iexplore/8.0",
+      "iexplore/9.0",
+      "iexplore/10.0",
+      "chrome/28.0",
+      "chrome/30.0",
+      "chrome/31.0",
+      "firefox/22.0",
+      "firefox/24.0",
+      "firefox/25.0",
+      "safari/5.1",
+      "safari/6.0"
+    ]
+  },
+  "dependencies": {
+    "style-bootstrap": "0.0.2",
+    "socket.io-client": "^0.9.16",
+    "d3": "^3.4.3"
+  }
+}

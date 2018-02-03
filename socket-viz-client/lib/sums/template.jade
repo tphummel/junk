@@ -1,0 +1,11 @@
+table
+  thead
+    tr
+      for title in titles
+        th=title
+  tbody
+    for sum, statName in sums
+      tr
+        td=statName
+        each val, key in sum
+          td=val

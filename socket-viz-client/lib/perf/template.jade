@@ -1,0 +1,14 @@
+for stats, cat in marks
+  table
+    caption=cat
+    thead
+      tr
+        - var heads = ["stat", "name", "mark", "delta", "age"]
+        each head in heads
+          th=head
+    tbody
+        each detail, stat in stats
+          tr(class="#{[cat, stat].join(' ')}")
+            td=stat
+            each field in detail
+              td=field
