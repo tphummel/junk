@@ -1,0 +1,32 @@
+{
+  "name": "@tphummel/app-scaffold",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "lint": "standard",
+    "lint-fix": "standard --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "passwordless-memorystore": "0.0.1",
+    "proxyquire": "^1.8.0",
+    "standard": "^10.0.2",
+    "tap": "^10.3.3"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.67.0",
+    "body-parser": "^1.17.2",
+    "bole": "^3.0.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.3",
+    "express-session": "^1.15.3",
+    "morgan": "^1.8.2",
+    "passwordless": "^1.1.2",
+    "pug": "^2.0.0-rc.2"
+  }
+}

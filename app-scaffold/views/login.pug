@@ -1,0 +1,7 @@
+include partials/head.pug
+p Login
+form(action='/login' method='post')
+  label(for='user') Email:
+  input(id='user' type='text' name='user')
+  input(type='submit' value='Save')
+include partials/foot.pug
