@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "repository": "https://github.com/tphummel/node-retrosheet",
   "dependencies": {
-    "moment": "~1.7.2",
+    "moment": "~2.24.0",
     "walk": "~2.2.1",
     "request": "~2.21.0",
     "node-zip": "~1.0.1"
