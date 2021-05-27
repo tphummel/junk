@@ -76,7 +76,7 @@
   },
   "dependencies": {
     "style-bootstrap": "0.0.2",
-    "socket.io-client": "^0.9.16",
+    "socket.io-client": "^1.0.1",
     "d3": "^3.4.3"
   }
 }
