@@ -27,6 +27,6 @@
     "express-session": "^1.15.3",
     "morgan": "^1.8.2",
     "passwordless": "^1.1.2",
-    "pug": "^2.0.0-rc.2"
+    "pug": "^3.0.0"
   }
 }
