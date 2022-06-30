@@ -13,7 +13,7 @@
   "license": "BSD-2-Clause",
   "dependencies": {
     "xml2js": "0.2.8",
-    "request": "2.27.0"
+    "request": "2.87.0"
   },
   "keywords": [
     "waze",
