@@ -12,7 +12,7 @@
   ],
   "license": "BSD-2-Clause",
   "dependencies": {
-    "xml2js": "0.2.8",
+    "xml2js": "0.5.0",
     "request": "2.27.0"
   },
   "keywords": [
