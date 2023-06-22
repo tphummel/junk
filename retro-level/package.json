@@ -19,7 +19,7 @@
   "author": "Tom Hummel",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "levelup": "~0.17.0",
+    "levelup": "~2.0.0",
     "level-sublevel": "~5.1.1",
     "leveldown": "~0.9.2",
     "levelhud": "~0.1.3",
