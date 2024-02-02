@@ -36,7 +36,7 @@
     "express": "~3.4.0",
     "browserify": "~2.34.0",
     "coffeeify": "~0.5.1",
-    "jade": "~0.35.0",
+    "jade": "~1.11.0",
     "socket.io-client": "~0.9.16",
     "sassify": "~0.1.1",
     "redis": "~0.8.6",
