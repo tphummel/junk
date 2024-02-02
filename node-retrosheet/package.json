@@ -7,7 +7,7 @@
   "dependencies": {
     "moment": "~1.7.2",
     "walk": "~2.2.1",
-    "request": "~2.21.0",
+    "request": "~2.88.2",
     "node-zip": "~1.0.1"
   },
   "devDependencies": {
