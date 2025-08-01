@@ -38,7 +38,7 @@
     "coffeeify": "~0.5.1",
     "jade": "~0.35.0",
     "socket.io-client": "~0.9.16",
-    "sassify": "~0.1.1",
+    "sassify": "~0.5.3",
     "redis": "~0.8.6",
     "simple-jadeify": "~2.0.1",
     "d3": "~3.3.9"
