@@ -18,7 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run tests
-        run: php fast-note/tests/basic.php
+        run: |
+          php -l fast-note/index.php
+          php fast-note/tests/basic.php
 
   build:
     if: github.event_name == 'push'
