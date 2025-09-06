@@ -17,13 +17,12 @@ in a single SQLite file.
 # Build image
 docker build -t fast-note .
 
-# Run PHP-FPM container with persistent storage
+# Run container with persistent storage
 touch notes.sqlite
-docker run -p 9000:9000 -v $(pwd)/notes.sqlite:/var/www/html/notes.sqlite --name fast-note fast-note
+docker run -p 8080:8080 -v $(pwd)/notes.sqlite:/var/www/html/notes.sqlite --name fast-note fast-note
 ```
 
-This image only provides PHP-FPM. Pair it with a web server such as Nginx or
-Caddy and proxy requests to `fast-note:9000`.
+The application runs on port 8080 and includes Apache web server.
 
 The application stores notes in `notes.sqlite`. The volume mount above ensures
 the database survives container restarts.
