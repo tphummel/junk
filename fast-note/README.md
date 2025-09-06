@@ -18,13 +18,13 @@ in a single SQLite file.
 docker build -t fast-note .
 
 # Run container with persistent storage
-touch notes.sqlite
-docker run -p 8080:8080 -v $(pwd)/notes.sqlite:/var/www/html/notes.sqlite --name fast-note fast-note
+mkdir -p data
+docker run -p 8080:8080 -v $(pwd)/data:/var/www/html/data --name fast-note fast-note
 ```
 
 The application runs on port 8080 and includes Apache web server.
 
-The application stores notes in `notes.sqlite`. The volume mount above ensures
+The application stores notes in `data/notes.sqlite`. The volume mount above ensures
 the database survives container restarts.
 
 ### Configuration
