@@ -11,8 +11,11 @@ if (!isset($GLOBALS['db'])) {
 }
 $db = $GLOBALS['db'];
 
+$uri = $_SERVER['REQUEST_URI'] ?? '/';
+$path = parse_url($uri, PHP_URL_PATH);
+
 // Health check endpoint
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && (($_SERVER['REQUEST_URI'] ?? '') === '/status')) {
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $path === '/status') {
     $check = $db->query('SELECT 1');
     if ($check === false) {
         http_response_code(500);
@@ -22,6 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (($_SERVER['REQUEST_URI'] ?? '') ===
         header('Content-Type: text/plain');
         echo 'ok';
     }
+    exit;
+}
+
+if ($path !== '/') {
+    http_response_code(404);
+    header('Content-Type: text/plain');
+    echo 'Not Found';
     exit;
 }
 
