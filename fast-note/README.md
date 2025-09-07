@@ -4,6 +4,11 @@ Fast Note is a tiny PHP web application for quickly sharing text snippets.
 All notes are stored in a SQLite database and identified by a simple `note`
 query parameter. No authentication is provided.
 
+## Status endpoint
+
+Fast Note exposes a health check at `/status` which runs a simple database
+query and responds with `ok` when the service is healthy.
+
 ## Motivation and design trade-offs
 
 Fast Note targets small, trusted networks where a quick shared scratch pad is useful.

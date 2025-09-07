@@ -11,6 +11,20 @@ if (!isset($GLOBALS['db'])) {
 }
 $db = $GLOBALS['db'];
 
+// Health check endpoint
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && (($_SERVER['REQUEST_URI'] ?? '') === '/status')) {
+    $check = $db->query('SELECT 1');
+    if ($check === false) {
+        http_response_code(500);
+        header('Content-Type: text/plain');
+        echo 'error';
+    } else {
+        header('Content-Type: text/plain');
+        echo 'ok';
+    }
+    exit;
+}
+
 $id = $_GET['note'] ?? 'home';
 if (!preg_match('/^[A-Za-z0-9_-]+$/', $id)) {
     http_response_code(400);
