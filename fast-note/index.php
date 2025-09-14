@@ -12,29 +12,30 @@ if (!isset($GLOBALS['db'])) {
 $db = $GLOBALS['db'];
 
 if (!function_exists("render_markdown")) {
-function render_markdown(string $text): string {
-    // Escape HTML first
-    $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-    // Headings
-    $text = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $text);
-    $text = preg_replace('/^## (.+)$/m', '<h2>$1</h2>', $text);
-    $text = preg_replace('/^# (.+)$/m', '<h1>$1</h1>', $text);
-    // Bold and italic
-    $text = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $text);
-    $text = preg_replace('/\*(.+?)\*/s', '<em>$1</em>', $text);
-    // Paragraphs
-    $lines = explode("\n", $text);
-    $html = '';
-    foreach ($lines as $line) {
-        if ($line === '') { continue; }
-        if (preg_match('/^<h[1-3]>/', $line)) {
-            $html .= $line . "\n";
-        } else {
-            $html .= '<p>' . $line . '</p>' . "\n";
+    // Defined inside a guard so tests can include this file multiple times.
+    function render_markdown(string $text): string {
+        // Escape HTML first
+        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+        // Headings
+        $text = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $text);
+        $text = preg_replace('/^## (.+)$/m', '<h2>$1</h2>', $text);
+        $text = preg_replace('/^# (.+)$/m', '<h1>$1</h1>', $text);
+        // Bold and italic
+        $text = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $text);
+        $text = preg_replace('/\*(.+?)\*/s', '<em>$1</em>', $text);
+        // Paragraphs
+        $lines = explode("\n", $text);
+        $html = '';
+        foreach ($lines as $line) {
+            if ($line === '') { continue; }
+            if (preg_match('/^<h[1-3]>/', $line)) {
+                $html .= $line . "\n";
+            } else {
+                $html .= '<p>' . $line . '</p>' . "\n";
+            }
         }
+        return $html;
     }
-    return $html;
-}
 }
 
 $uri = $_SERVER['REQUEST_URI'] ?? '/';
