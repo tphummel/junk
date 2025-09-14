@@ -39,6 +39,7 @@ function render_markdown(string $text): string {
 
 $uri = $_SERVER['REQUEST_URI'] ?? '/';
 $path = parse_url($uri, PHP_URL_PATH);
+parse_str(parse_url($uri, PHP_URL_QUERY) ?? '', $query);
 
 // Health check endpoint
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $path === '/status') {
@@ -54,15 +55,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $path === '/status') {
     return;
 }
 
-$parts = explode('/', trim($path, '/'));
-if ($parts[0] !== 'notes' || !isset($parts[1])) {
+// Only root path serves notes
+if ($path !== '/') {
     http_response_code(404);
     header('Content-Type: text/plain');
     echo 'Not Found';
     return;
 }
 
-$id = $parts[1];
+if (!isset($query['note'])) {
+    http_response_code(404);
+    header('Content-Type: text/plain');
+    echo 'Not Found';
+    return;
+}
+
+$id = $query['note'];
 if (!preg_match('/^[A-Za-z0-9_-]+$/', $id)) {
     http_response_code(400);
     header('Content-Type: text/plain');
@@ -70,7 +78,7 @@ if (!preg_match('/^[A-Za-z0-9_-]+$/', $id)) {
     return;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && count($parts) === 2) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $content = $_POST['content'] ?? '';
     $stmt = $db->prepare('REPLACE INTO notes (id, content) VALUES (:id, :content)');
     $stmt->bindValue(':id', $id, SQLITE3_TEXT);
@@ -85,7 +93,7 @@ $result = $stmt->execute();
 $row = $result->fetchArray(SQLITE3_ASSOC);
 $content = $row['content'] ?? '';
 
-$editing = (isset($parts[2]) && $parts[2] === 'edit' && $_SERVER['REQUEST_METHOD'] === 'GET');
+$editing = ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($query['edit']));
 
 ?>
 <!doctype html>
@@ -104,9 +112,9 @@ $editing = (isset($parts[2]) && $parts[2] === 'edit' && $_SERVER['REQUEST_METHOD
 </head>
 <body>
 <?php if ($editing): ?>
-    <form method="post" action="/notes/<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">
+    <form method="post" action="?note=<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">
         <textarea id="editor" name="content"><?php echo htmlspecialchars($content, ENT_QUOTES); ?></textarea>
-        <p><button type="submit">Save</button> <a href="/notes/<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">Cancel</a></p>
+        <p><button type="submit">Save</button> <a href="?note=<?php echo htmlspecialchars($id, ENT_QUOTES); ?>">Cancel</a></p>
     </form>
     <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
     <script>new EasyMDE({ element: document.getElementById('editor') });</script>
@@ -114,7 +122,7 @@ $editing = (isset($parts[2]) && $parts[2] === 'edit' && $_SERVER['REQUEST_METHOD
     <article>
         <?php echo render_markdown($content); ?>
     </article>
-    <p><a href="/notes/<?php echo htmlspecialchars($id, ENT_QUOTES); ?>/edit">Edit</a></p>
+    <p><a href="?note=<?php echo htmlspecialchars($id, ENT_QUOTES); ?>&edit=1">Edit</a></p>
 <?php endif; ?>
 </body>
 </html>

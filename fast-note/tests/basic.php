@@ -4,7 +4,7 @@ $GLOBALS['db']->exec('CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY, con
 
 // First request: save note
 $_SERVER['REQUEST_METHOD'] = 'POST';
-$_SERVER['REQUEST_URI'] = '/notes/test';
+$_SERVER['REQUEST_URI'] = '/?note=test';
 $_POST['content'] = 'hello';
 ob_start();
 include __DIR__ . '/../index.php';
@@ -12,7 +12,7 @@ ob_end_clean();
 
 // Second request: read note back
 $_SERVER['REQUEST_METHOD'] = 'GET';
-$_SERVER['REQUEST_URI'] = '/notes/test';
+$_SERVER['REQUEST_URI'] = '/?note=test';
 $_POST = [];
 ob_start();
 include __DIR__ . '/../index.php';

@@ -1,9 +1,9 @@
 # Fast Note
 
 Fast Note is a tiny PHP web application for quickly sharing text snippets.
-Each note lives at a stable URL like `/notes/hello` and is stored in a
+Each note lives at a stable URL like `/?note=hello` and is stored in a
 SQLite database. Notes are written in Markdown and rendered to HTML on read.
-Anyone can click the **Edit** link (`/notes/hello/edit`) to update the raw
+Anyone can click the **Edit** link (`/?note=hello&edit=1`) to update the raw
 Markdown. No authentication is provided.
 
 ## Status endpoint
