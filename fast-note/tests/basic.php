@@ -4,7 +4,7 @@ $GLOBALS['db']->exec('CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY, con
 
 // First request: save note
 $_SERVER['REQUEST_METHOD'] = 'POST';
-$_GET['note'] = 'test';
+$_SERVER['REQUEST_URI'] = '/notes/test';
 $_POST['content'] = 'hello';
 ob_start();
 include __DIR__ . '/../index.php';
@@ -12,14 +12,14 @@ ob_end_clean();
 
 // Second request: read note back
 $_SERVER['REQUEST_METHOD'] = 'GET';
+$_SERVER['REQUEST_URI'] = '/notes/test';
 $_POST = [];
 ob_start();
 include __DIR__ . '/../index.php';
 $out = ob_get_clean();
 
-if (strpos($out, 'hello') === false) {
+if (strpos($out, '<p>hello</p>') === false) {
     throw new Exception('content mismatch');
 }
 
 echo "basic test passed\n";
-

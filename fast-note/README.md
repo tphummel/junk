@@ -1,8 +1,10 @@
 # Fast Note
 
 Fast Note is a tiny PHP web application for quickly sharing text snippets.
-All notes are stored in a SQLite database and identified by a simple `note`
-query parameter. No authentication is provided.
+Each note lives at a stable URL like `/notes/hello` and is stored in a
+SQLite database. Notes are written in Markdown and rendered to HTML on read.
+Anyone can click the **Edit** link (`/notes/hello/edit`) to update the raw
+Markdown. No authentication is provided.
 
 ## Status endpoint
 
@@ -12,8 +14,8 @@ query and responds with `ok` when the service is healthy.
 ## Motivation and design trade-offs
 
 Fast Note targets small, trusted networks where a quick shared scratch pad is useful.
-To stay lightweight it intentionally omits user accounts, authentication and third-party
-libraries. Anyone with access can read or overwrite any note and everything is persisted
+To stay lightweight it intentionally omits user accounts, authentication and heavy third-party libraries.
+Anyone with access can read or overwrite any note and everything is persisted
 in a single SQLite file.
 
 ## Running with Docker
