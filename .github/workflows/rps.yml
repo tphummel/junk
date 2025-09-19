@@ -1,0 +1,45 @@
+name: rps
+
+on:
+  push:
+    paths:
+      - 'rps/**'
+  pull_request:
+    paths:
+      - 'rps/**'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run lint
+        run: |
+          php -l rps/index.php
+
+  build:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set build vars
+        id: vars
+        run: |
+          echo "date=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+          echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Build image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/rps:${{ steps.vars.outputs.date }}-${{ steps.vars.outputs.sha }} rps
+      - name: Log in to GHCR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Push image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/rps:${{ steps.vars.outputs.date }}-${{ steps.vars.outputs.sha }}
