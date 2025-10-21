@@ -1,4 +1,4 @@
-FROM ghcr.io/dunglas/frankenphp:1.1-php8.3
+FROM dunglas/frankenphp:1.9.1-php8.2.29-alpine
 
 WORKDIR /app
 

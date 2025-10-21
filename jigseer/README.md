@@ -12,7 +12,7 @@ The built-in development server will serve the application on port 8080.
 
 ## Docker
 
-A Dockerfile based on the official FrankenPHP image is provided. To build the container locally:
+A Dockerfile based on the `dunglas/frankenphp:1.9.1-php8.2.29-alpine` image is provided. To build the container locally:
 
 ```bash
 docker build -t jigseer:local jigseer
