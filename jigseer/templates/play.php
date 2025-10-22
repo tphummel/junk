@@ -6,10 +6,14 @@
     <title><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?> &middot; Jigseer</title>
     <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" integrity="sha384-T7n0ANKPOuUMGAfJOyrUo9qeycGQ21MCH2RKDWEUtNdz/BPZt6r9Ga6IpiOb8t6V" crossorigin="anonymous">
     <style>
-        .players { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
-        .player-card { padding: 1.5rem; border-radius: 0.75rem; background: #f4f4f4; text-align: center; }
+        .players { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; align-items: stretch; }
+        .player-card-form { margin: 0; }
+        .player-card { display: block; width: 100%; padding: 1.5rem; border-radius: 0.75rem; background: #f4f4f4; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; }
+        .player-card:hover,
+        .player-card:focus-visible { background: #eaeaea; transform: translateY(-2px); }
         .progress { margin: 1.5rem 0; }
         .banner { background: #fff4d0; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; }
+        .new-player-form { margin-top: 1rem; }
         button { width: 100%; padding: 1rem; font-size: 1.1rem; }
     </style>
 </head>
@@ -29,32 +33,37 @@
     </section>
 
     <section>
-        <h2>Record a hit</h2>
-        <form method="post" action="<?= '/p/' . urlencode($puzzle['id']) . '/hits' ?>">
-            <label for="player_name">Player name</label>
-            <input id="player_name" name="player_name" type="text" required placeholder="Player name" />
-
-            <label for="connection_count">Connections</label>
-            <input id="connection_count" name="connection_count" type="number" value="1" min="1" />
-
-            <button type="submit">Record hit</button>
-        </form>
-    </section>
-
-    <section>
-        <h2>Recent players</h2>
+        <h2>Players</h2>
+        <?php if (!empty($leaderboard)): ?>
+            <p>Click a player to record another connection.</p>
+        <?php endif; ?>
         <div class="players">
             <?php if (empty($leaderboard)): ?>
-                <p>No hits yet. Be the first!</p>
+                <p>No players yet. Add someone below to get started!</p>
             <?php else: ?>
                 <?php foreach ($leaderboard as $entry): ?>
-                    <div class="player-card">
-                        <strong><?= htmlspecialchars($entry['player_name'], ENT_QUOTES) ?></strong>
-                        <p><?= (int) $entry['hits'] ?> hits</p>
-                    </div>
+                    <form method="post" action="<?= '/p/' . urlencode($puzzle['id']) . '/hits' ?>" class="player-card-form">
+                        <input type="hidden" name="player_name" value="<?= htmlspecialchars($entry['player_name'], ENT_QUOTES) ?>" />
+                        <input type="hidden" name="connection_count" value="1" />
+                        <button type="submit" class="player-card">
+                            <strong><?= htmlspecialchars($entry['player_name'], ENT_QUOTES) ?></strong>
+                            <p><?= (int) $entry['hits'] ?> hits</p>
+                        </button>
+                    </form>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
+    </section>
+
+    <section>
+        <h2>Add a new player</h2>
+        <form method="post" action="<?= '/p/' . urlencode($puzzle['id']) . '/hits' ?>" class="new-player-form">
+            <label for="player_name">Player name</label>
+            <input id="player_name" name="player_name" type="text" required placeholder="Player name" />
+            <input type="hidden" name="connection_count" value="1" />
+
+            <button type="submit">Add player</button>
+        </form>
     </section>
 </body>
 </html>
