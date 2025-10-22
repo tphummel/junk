@@ -15,11 +15,33 @@
         .banner { background: #fff4d0; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; }
         .new-player-form { margin-top: 1rem; }
         button { width: 100%; padding: 1rem; font-size: 1.1rem; }
+        .qr-share { margin: 1.5rem 0; padding: 1rem; border: 2px dashed #ccc; border-radius: 0.75rem; text-align: center; }
+        .qr-share img { display: block; margin: 0.5rem auto; background: #fff; padding: 0.5rem; border-radius: 0.5rem; }
+        .qr-share .qr-url { word-break: break-all; font-size: 0.9rem; }
     </style>
 </head>
 <body>
+    <?php
+        $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        $scheme = $isHttps ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $port = $_SERVER['SERVER_PORT'] ?? '';
+        $defaultPort = $isHttps ? '443' : '80';
+        if ($port !== '' && $port !== $defaultPort && !str_contains($host, ':')) {
+            $host .= ':' . $port;
+        }
+        $puzzlePath = '/p/' . rawurlencode($puzzle['id']) . '/play';
+        $puzzleUrl = $scheme . '://' . $host . $puzzlePath;
+    ?>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'play'; require __DIR__ . '/partials/nav.php'; ?>
+
+    <section class="qr-share">
+        <h2>Share this puzzle</h2>
+        <p>Scan the QR code to open the tracker on your device.</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=<?= urlencode($puzzleUrl) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
+        <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
+    </section>
 
     <?php if ($progress['total'] === null): ?>
         <div class="banner">
