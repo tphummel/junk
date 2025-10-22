@@ -2,6 +2,17 @@
 
 Jigseer is a FrankenPHP + Caddy application for tracking collaborative jigsaw puzzle progress. The service is designed to run on a phone or tablet next to an in-progress physical puzzle so everyone can record their contributions as connections are made.
 
+## Quick start
+
+Spin up the latest prebuilt image from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/tphummel/jigseer:latest
+docker run --rm -p 8080:8080 ghcr.io/tphummel/jigseer:latest
+```
+
+Then visit http://localhost:8080 to create your first puzzle.
+
 ## Feature overview
 
 - **Puzzle lifecycle** – create a puzzle with an optional total piece count and receive a short code for revisiting it later.
