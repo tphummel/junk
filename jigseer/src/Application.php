@@ -95,7 +95,7 @@ class Application
             'play' => $this->renderPlay($request, $puzzle),
             'leaderboard' => $this->renderLeaderboard($puzzle),
             'transcript' => $this->renderTranscript($puzzle),
-            'settings' => $this->renderSettings($puzzle),
+            'settings' => $this->renderSettings($request, $puzzle),
             default => Response::html($this->renderer->render('404.php'), 404),
         };
     }
@@ -134,10 +134,12 @@ class Application
         ]));
     }
 
-    private function renderSettings(array $puzzle): Response
+    private function renderSettings(Request $request, array $puzzle): Response
     {
         return Response::html($this->renderer->render('settings.php', [
             'puzzle' => $puzzle,
+            'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
+            'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
         ]));
     }
 
