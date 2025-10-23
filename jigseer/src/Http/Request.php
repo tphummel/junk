@@ -59,4 +59,53 @@ class Request
     {
         return $this->server['HTTP_USER_AGENT'] ?? null;
     }
+
+    public function scheme(): string
+    {
+        $https = $this->server['HTTPS'] ?? null;
+        $forwardedProto = $this->server['HTTP_X_FORWARDED_PROTO'] ?? null;
+
+        $isHttps = false;
+        if (is_string($https)) {
+            $isHttps = $https !== '' && strtolower($https) !== 'off';
+        }
+
+        if (!$isHttps && is_string($forwardedProto)) {
+            $isHttps = strtolower($forwardedProto) === 'https';
+        }
+
+        if (!$isHttps) {
+            $isHttps = ($this->server['SERVER_PORT'] ?? null) === '443';
+        }
+
+        return $isHttps ? 'https' : 'http';
+    }
+
+    public function host(): string
+    {
+        $host = $this->server['HTTP_HOST'] ?? ($this->server['SERVER_NAME'] ?? 'localhost');
+
+        if (str_contains($host, ':')) {
+            return $host;
+        }
+
+        $port = $this->server['SERVER_PORT'] ?? '';
+        $scheme = $this->scheme();
+        $defaultPort = $scheme === 'https' ? '443' : '80';
+
+        if ($port !== '' && $port !== $defaultPort) {
+            $host .= ':' . $port;
+        }
+
+        return $host;
+    }
+
+    public function absoluteUrl(string $path): string
+    {
+        if ($path === '' || $path[0] !== '/') {
+            $path = '/' . ltrim($path, '/');
+        }
+
+        return $this->scheme() . '://' . $this->host() . $path;
+    }
 }
