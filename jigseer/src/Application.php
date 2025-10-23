@@ -288,14 +288,42 @@ class Application
             return Response::html('Failed to prepare QR code image.', 500);
         }
 
+        $stat = @stat($filePath);
+        if ($stat === false) {
+            return Response::html('Failed to inspect QR code image.', 500);
+        }
+
+        $lastModified = gmdate('D, d M Y H:i:s', (int) $stat['mtime']) . ' GMT';
+        $etag = sprintf('W/"%x-%x"', (int) $stat['mtime'], (int) $stat['size']);
+
+        $cacheHeaders = [
+            'Cache-Control' => 'public, max-age=31536000, immutable',
+            'ETag' => $etag,
+            'Last-Modified' => $lastModified,
+        ];
+
+        $ifNoneMatch = $request->header('If-None-Match');
+        if ($ifNoneMatch !== null) {
+            $clientEtags = array_map('trim', explode(',', $ifNoneMatch));
+            if (in_array('*', $clientEtags, true) || in_array($etag, $clientEtags, true)) {
+                return new Response(304, $cacheHeaders, '');
+            }
+        }
+
+        $ifModifiedSince = $request->header('If-Modified-Since');
+        if ($ifModifiedSince !== null) {
+            $since = strtotime($ifModifiedSince);
+            if ($since !== false && (int) $stat['mtime'] <= $since) {
+                return new Response(304, $cacheHeaders, '');
+            }
+        }
+
         $contents = @file_get_contents($filePath);
         if ($contents === false) {
             return Response::html('Failed to read QR code image.', 500);
         }
 
-        return Response::file($contents, 'image/png', [
-            'Cache-Control' => 'public, max-age=300',
-        ]);
+        return Response::file($contents, 'image/png', $cacheHeaders);
     }
 
     private function ensureQrCodeImage(Request $request, array $puzzle): string

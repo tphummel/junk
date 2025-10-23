@@ -38,6 +38,13 @@ function assertSame(mixed $expected, mixed $actual, string $message = ''): void
     }
 }
 
+function assertNotEmpty(mixed $value, string $message = 'Failed asserting that value is not empty'): void
+{
+    if (empty($value)) {
+        throw new RuntimeException($message);
+    }
+}
+
 function makeApp(string $dbPath): Application
 {
     $renderer = new TemplateRenderer(__DIR__ . '/../templates');
@@ -163,8 +170,24 @@ test('qr endpoint caches generated images and serves them as png', function (): 
     assertSame(200, $response->status());
     $headers = $response->headers();
     assertSame('image/png', $headers['Content-Type'] ?? '');
+    assertSame('public, max-age=31536000, immutable', $headers['Cache-Control'] ?? '');
+    assertNotEmpty($headers['ETag'] ?? '', 'QR response should include an ETag header.');
+    assertNotEmpty($headers['Last-Modified'] ?? '', 'QR response should include a Last-Modified header.');
     assertTrue(strlen($response->body()) > 0, 'QR response body should not be empty.');
     assertTrue(file_exists($qrPath), 'QR image was not stored on disk.');
+
+    $etag = $headers['ETag'];
+
+    $notModified = $app->handle(new Request('GET', '/p/' . $puzzleId . '/qr', [], [], [
+        'HTTP_HOST' => 'example.com',
+        'HTTP_IF_NONE_MATCH' => $etag,
+    ]));
+
+    assertSame(304, $notModified->status());
+    assertSame('', $notModified->body(), '304 QR response should not include a body.');
+    $notModifiedHeaders = $notModified->headers();
+    assertSame($etag, $notModifiedHeaders['ETag'] ?? '', '304 response should echo original ETag.');
+    assertSame('public, max-age=31536000, immutable', $notModifiedHeaders['Cache-Control'] ?? '');
 
     @unlink($qrPath);
 });
