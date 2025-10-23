@@ -61,4 +61,14 @@ class Response
 
         return new self(200, $headers, $contents);
     }
+
+    public static function file(string $contents, string $contentType = 'application/octet-stream', array $headers = []): self
+    {
+        $headers = array_merge([
+            'Content-Type' => $contentType,
+            'Content-Length' => (string) strlen($contents),
+        ], $headers);
+
+        return new self(200, $headers, $contents);
+    }
 }

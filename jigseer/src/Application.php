@@ -6,6 +6,7 @@ namespace Jigseer;
 
 use Jigseer\Http\Request;
 use Jigseer\Http\Response;
+use function Jigseer\ensure_directory;
 
 class Application
 {
@@ -86,8 +87,12 @@ class Application
             return $this->exportPuzzleData($puzzle);
         }
 
+        if ($method === 'GET' && $tab === 'qr') {
+            return $this->servePuzzleQr($request, $puzzle);
+        }
+
         return match ($tab) {
-            'play' => $this->renderPlay($puzzle),
+            'play' => $this->renderPlay($request, $puzzle),
             'leaderboard' => $this->renderLeaderboard($puzzle),
             'transcript' => $this->renderTranscript($puzzle),
             'settings' => $this->renderSettings($puzzle),
@@ -95,7 +100,7 @@ class Application
         };
     }
 
-    private function renderPlay(array $puzzle): Response
+    private function renderPlay(Request $request, array $puzzle): Response
     {
         $progress = $this->database->completionProgress($puzzle['id']);
         $leaderboard = $this->database->leaderboard($puzzle['id']);
@@ -104,6 +109,8 @@ class Application
             'puzzle' => $puzzle,
             'progress' => $progress,
             'leaderboard' => $leaderboard,
+            'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
+            'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
         ]));
     }
 
@@ -206,6 +213,108 @@ class Application
         $filename = sprintf('puzzle-%s-export.zip', $puzzle['id']);
 
         return Response::download($filename, $contents, 'application/zip');
+    }
+
+    private function servePuzzleQr(Request $request, array $puzzle): Response
+    {
+        try {
+            $filePath = $this->ensureQrCodeImage($request, $puzzle);
+        } catch (\Throwable $exception) {
+            return Response::html('Failed to prepare QR code image.', 500);
+        }
+
+        $contents = @file_get_contents($filePath);
+        if ($contents === false) {
+            return Response::html('Failed to read QR code image.', 500);
+        }
+
+        return Response::file($contents, 'image/png', [
+            'Cache-Control' => 'public, max-age=300',
+        ]);
+    }
+
+    private function ensureQrCodeImage(Request $request, array $puzzle): string
+    {
+        $directory = $this->qrStorageDirectory();
+        ensure_directory($directory);
+
+        $filePath = $directory . '/' . $puzzle['id'] . '.png';
+        if (!is_file($filePath)) {
+            $this->writeQrCode($this->puzzleUrl($request, $puzzle), $filePath);
+        }
+
+        return $filePath;
+    }
+
+    private function qrStorageDirectory(): string
+    {
+        return dirname(__DIR__) . '/var/qr';
+    }
+
+    private function puzzleUrl(Request $request, array $puzzle): string
+    {
+        $path = '/p/' . rawurlencode($puzzle['id']) . '/play';
+
+        return $request->absoluteUrl($path);
+    }
+
+    private function writeQrCode(string $puzzleUrl, string $filePath): void
+    {
+        $endpoint = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . rawurlencode($puzzleUrl);
+        $context = stream_context_create([
+            'http' => ['timeout' => 5],
+        ]);
+
+        $qrImage = @file_get_contents($endpoint, false, $context);
+        if ($qrImage !== false) {
+            if (@file_put_contents($filePath, $qrImage) === false) {
+                throw new \RuntimeException('Unable to store QR code image.');
+            }
+
+            return;
+        }
+
+        $this->createPlaceholderQr($filePath, $puzzleUrl);
+    }
+
+    private function createPlaceholderQr(string $filePath, string $puzzleUrl): void
+    {
+        $size = 200;
+        $image = imagecreatetruecolor($size, $size);
+        if ($image === false) {
+            throw new \RuntimeException('Unable to allocate placeholder image resource.');
+        }
+
+        $background = imagecolorallocate($image, 255, 255, 255);
+        $border = imagecolorallocate($image, 200, 200, 200);
+        $textColor = imagecolorallocate($image, 60, 60, 60);
+
+        imagefilledrectangle($image, 0, 0, $size - 1, $size - 1, $background);
+        imagerectangle($image, 0, 0, $size - 1, $size - 1, $border);
+
+        $message = 'QR unavailable';
+        $font = 3;
+        $messageWidth = imagefontwidth($font) * strlen($message);
+        $messageHeight = imagefontheight($font);
+        $messageX = max(0, (int) (($size - $messageWidth) / 2));
+        $messageY = (int) (($size - $messageHeight) / 2) - 8;
+        imagestring($image, $font, $messageX, max(0, $messageY), $message, $textColor);
+
+        $fontSmall = 2;
+        $maxChars = 24;
+        $displayUrl = strlen($puzzleUrl) > $maxChars ? substr($puzzleUrl, 0, $maxChars - 1) . '…' : $puzzleUrl;
+        $urlWidth = imagefontwidth($fontSmall) * strlen($displayUrl);
+        $urlHeight = imagefontheight($fontSmall);
+        $urlX = max(0, (int) (($size - $urlWidth) / 2));
+        $urlY = min($size - $urlHeight - 4, (int) (($size + $messageHeight) / 2));
+        imagestring($image, $fontSmall, $urlX, max(0, $urlY), $displayUrl, $textColor);
+
+        if (!imagepng($image, $filePath)) {
+            imagedestroy($image);
+            throw new \RuntimeException('Unable to write placeholder QR image.');
+        }
+
+        imagedestroy($image);
     }
 
     /**

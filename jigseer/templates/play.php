@@ -21,25 +21,13 @@
     </style>
 </head>
 <body>
-    <?php
-        $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-        $scheme = $isHttps ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $port = $_SERVER['SERVER_PORT'] ?? '';
-        $defaultPort = $isHttps ? '443' : '80';
-        if ($port !== '' && $port !== $defaultPort && !str_contains($host, ':')) {
-            $host .= ':' . $port;
-        }
-        $puzzlePath = '/p/' . rawurlencode($puzzle['id']) . '/play';
-        $puzzleUrl = $scheme . '://' . $host . $puzzlePath;
-    ?>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'play'; require __DIR__ . '/partials/nav.php'; ?>
 
     <section class="qr-share">
         <h2>Share this puzzle</h2>
         <p>Scan the QR code to open the tracker on your device.</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=<?= urlencode($puzzleUrl) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
+        <img src="<?= htmlspecialchars($qrPath, ENT_QUOTES) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
         <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
     </section>
 

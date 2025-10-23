@@ -145,6 +145,30 @@ test('exporting puzzle data produces a zip containing puzzle and hits csv files'
     assertSame(['Avery', 'Blake'], $players);
 });
 
+test('qr endpoint caches generated images and serves them as png', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('QR Test');
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+
+    $qrPath = dirname(__DIR__) . '/var/qr/' . $puzzleId . '.png';
+    if (is_file($qrPath)) {
+        unlink($qrPath);
+    }
+
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/qr', [], [], [
+        'HTTP_HOST' => 'example.com',
+    ]));
+
+    assertSame(200, $response->status());
+    $headers = $response->headers();
+    assertSame('image/png', $headers['Content-Type'] ?? '');
+    assertTrue(strlen($response->body()) > 0, 'QR response body should not be empty.');
+    assertTrue(file_exists($qrPath), 'QR image was not stored on disk.');
+
+    @unlink($qrPath);
+});
+
 $passed = 0;
 $total = count($tests);
 $failures = [];
