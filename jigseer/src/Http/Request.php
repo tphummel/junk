@@ -52,7 +52,45 @@ class Request
 
     public function ipAddress(): ?string
     {
-        return $this->server['REMOTE_ADDR'] ?? null;
+        $headerCandidates = [
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_REAL_IP',
+            'HTTP_CLIENT_IP',
+            'HTTP_CF_CONNECTING_IP',
+            'HTTP_TRUE_CLIENT_IP',
+        ];
+
+        foreach ($headerCandidates as $key) {
+            $value = $this->server[$key] ?? null;
+
+            if (!is_string($value) || trim($value) === '') {
+                continue;
+            }
+
+            if ($key === 'HTTP_X_FORWARDED_FOR') {
+                $addresses = array_map('trim', explode(',', $value));
+                foreach ($addresses as $address) {
+                    if ($address !== '') {
+                        return $address;
+                    }
+                }
+
+                continue;
+            }
+
+            return trim($value);
+        }
+
+        $remoteAddr = $this->server['REMOTE_ADDR'] ?? null;
+
+        if (is_string($remoteAddr)) {
+            $remoteAddr = trim($remoteAddr);
+            if ($remoteAddr !== '') {
+                return $remoteAddr;
+            }
+        }
+
+        return null;
     }
 
     public function userAgent(): ?string
