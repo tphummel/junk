@@ -84,6 +84,21 @@ test('recording a hit stores the entry and redirects back to play tab', function
     assertSame(1, $count, 'Hit was not persisted');
 });
 
+test('request ipAddress prefers forwarded headers when present', function (): void {
+    $request = new Request('POST', '/example', [], [], [
+        'HTTP_X_FORWARDED_FOR' => '203.0.113.4, 198.51.100.7',
+        'REMOTE_ADDR' => '192.0.2.1',
+    ]);
+
+    assertSame('203.0.113.4', $request->ipAddress());
+
+    $request = new Request('POST', '/example', [], [], [
+        'HTTP_X_REAL_IP' => '198.51.100.42',
+    ]);
+
+    assertSame('198.51.100.42', $request->ipAddress());
+});
+
 test('leaderboard view renders the player name', function (): void {
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);
