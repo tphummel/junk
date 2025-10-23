@@ -99,6 +99,44 @@ test('request ipAddress prefers forwarded headers when present', function (): vo
     assertSame('198.51.100.42', $request->ipAddress());
 });
 
+test('puzzle share url omits default ports on play and settings pages', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Share URL Test');
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/play', [], [], [
+        'HTTP_HOST' => 'example.com:80',
+        'SERVER_PORT' => '80',
+    ]));
+
+    assertSame(200, $response->status());
+    $body = $response->body();
+    $expectedUrl = 'http://example.com/p/' . $puzzleId . '/play';
+    assertTrue(str_contains($body, $expectedUrl), 'Expected sanitized HTTP share URL');
+    assertTrue(!str_contains($body, 'http://example.com:80'), 'HTTP default port should be hidden');
+
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/settings', [], [], [
+        'HTTP_HOST' => 'example.com:443',
+        'SERVER_PORT' => '443',
+        'HTTPS' => 'on',
+    ]));
+
+    assertSame(200, $response->status());
+    $body = $response->body();
+    $expectedUrl = 'https://example.com/p/' . $puzzleId . '/play';
+    assertTrue(str_contains($body, $expectedUrl), 'Expected sanitized HTTPS share URL');
+    assertTrue(!str_contains($body, 'https://example.com:443'), 'HTTPS default port should be hidden');
+
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/play', [], [], [
+        'HTTP_HOST' => 'example.com:8080',
+        'SERVER_PORT' => '8080',
+    ]));
+
+    assertSame(200, $response->status());
+    assertTrue(str_contains($response->body(), 'http://example.com:8080/p/' . $puzzleId . '/play'), 'Non-default ports must remain visible');
+});
+
 test('leaderboard view renders the player name', function (): void {
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);

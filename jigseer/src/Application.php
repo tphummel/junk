@@ -327,7 +327,45 @@ class Application
     {
         $path = '/p/' . rawurlencode($puzzle['id']) . '/play';
 
-        return $request->absoluteUrl($path);
+        return $this->withoutDefaultPort($request->absoluteUrl($path));
+    }
+
+    private function withoutDefaultPort(string $url): string
+    {
+        $components = parse_url($url);
+
+        if ($components === false) {
+            return $url;
+        }
+
+        $scheme = $components['scheme'] ?? null;
+        $port = $components['port'] ?? null;
+
+        $isHttpDefault = $scheme === 'http' && $port === 80;
+        $isHttpsDefault = $scheme === 'https' && $port === 443;
+
+        if (!$isHttpDefault && !$isHttpsDefault) {
+            return $url;
+        }
+
+        unset($components['port']);
+
+        return $this->buildUrl($components);
+    }
+
+    private function buildUrl(array $components): string
+    {
+        $scheme = isset($components['scheme']) ? $components['scheme'] . '://' : '';
+        $user = $components['user'] ?? '';
+        $pass = $components['pass'] ?? '';
+        $auth = $user !== '' ? $user . ($pass !== '' ? ':' . $pass : '') . '@' : '';
+        $host = $components['host'] ?? '';
+        $port = isset($components['port']) ? ':' . $components['port'] : '';
+        $path = $components['path'] ?? '';
+        $query = isset($components['query']) ? '?' . $components['query'] : '';
+        $fragment = isset($components['fragment']) ? '#' . $components['fragment'] : '';
+
+        return $scheme . $auth . $host . $port . $path . $query . $fragment;
     }
 
     private function writeQrCode(string $puzzleUrl, string $filePath): void
