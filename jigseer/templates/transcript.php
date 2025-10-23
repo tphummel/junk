@@ -9,6 +9,8 @@
     <style>
         .hit { padding: 1rem 0; border-bottom: 1px solid #ddd; }
         .hit:last-child { border-bottom: none; }
+        .hit-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+        .hit-tooltip { cursor: help; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -21,10 +23,25 @@
             <p>No entries yet.</p>
         <?php else: ?>
             <?php foreach ($hits as $hit): ?>
+                <?php
+                $tooltipParts = [];
+                if (!empty($hit['ip_address'])) {
+                    $tooltipParts[] = 'IP address: ' . $hit['ip_address'];
+                }
+                if (!empty($hit['user_agent'])) {
+                    $tooltipParts[] = 'User agent: ' . $hit['user_agent'];
+                }
+                $tooltip = implode("\n", $tooltipParts);
+                ?>
                 <article class="hit">
-                    <strong><?= htmlspecialchars($hit['player_name'], ENT_QUOTES) ?></strong>
-                    recorded <strong><?= (int) $hit['connection_count'] ?></strong> connection(s)
-                    <time datetime="<?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?>">on <?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?></time>
+                    <div class="hit-summary">
+                        <strong><?= htmlspecialchars($hit['player_name'], ENT_QUOTES) ?></strong>
+                        recorded <strong><?= (int) $hit['connection_count'] ?></strong> connection(s)
+                        <time datetime="<?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?>">on <?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?></time>
+                        <?php if ($tooltip !== ''): ?>
+                            <span class="hit-tooltip" title="<?= htmlspecialchars($tooltip, ENT_QUOTES) ?>" aria-label="Connection details">ℹ️</span>
+                        <?php endif; ?>
+                    </div>
                 </article>
             <?php endforeach; ?>
         <?php endif; ?>
