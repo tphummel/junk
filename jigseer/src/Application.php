@@ -294,7 +294,8 @@ class Application
         }
 
         $lastModified = gmdate('D, d M Y H:i:s', (int) $stat['mtime']) . ' GMT';
-        $etag = sprintf('W/"%x-%x"', (int) $stat['mtime'], (int) $stat['size']);
+        $weakEtag = sprintf('%x-%x', (int) $stat['mtime'], (int) $stat['size']);
+        $etag = sprintf('W/"%s"', $weakEtag);
 
         $cacheHeaders = [
             'Cache-Control' => 'public, max-age=31536000, immutable',
