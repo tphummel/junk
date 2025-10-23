@@ -22,5 +22,13 @@
             <button type="submit">Save settings</button>
         </form>
     </section>
+
+    <section>
+        <h2>Export data</h2>
+        <p>Download the puzzle details and all recorded hits as CSV files in a ZIP archive.</p>
+        <form method="get" action="<?= '/p/' . urlencode($puzzle['id']) . '/settings/export' ?>">
+            <button type="submit">Download export</button>
+        </form>
+    </section>
 </body>
 </html>

@@ -44,4 +44,21 @@ class Response
     {
         return new self($status, ['Content-Type' => 'application/json'], json_encode($payload, JSON_PRETTY_PRINT));
     }
+
+    public static function download(string $filename, string $contents, string $contentType = 'application/octet-stream'): self
+    {
+        $disposition = sprintf(
+            'attachment; filename="%s"; filename*=UTF-8\'\'%s',
+            addcslashes($filename, "\\\""),
+            rawurlencode($filename)
+        );
+
+        $headers = [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => $disposition,
+            'Content-Length' => (string) strlen($contents),
+        ];
+
+        return new self(200, $headers, $contents);
+    }
 }
