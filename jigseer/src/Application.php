@@ -72,6 +72,7 @@ class Application
     {
         $method = $request->method();
         $tab = $tail[0] ?? 'play';
+        $action = $tail[1] ?? null;
 
         if ($method === 'POST' && $tab === 'hits') {
             return $this->storeHit($request, $puzzle);
@@ -79,6 +80,10 @@ class Application
 
         if ($method === 'POST' && $tab === 'settings') {
             return $this->updateSettings($request, $puzzle);
+        }
+
+        if ($method === 'GET' && $tab === 'settings' && $action === 'export') {
+            return $this->exportPuzzleData($puzzle);
         }
 
         return match ($tab) {
@@ -163,5 +168,72 @@ class Application
         ]);
 
         return Response::redirect('/p/' . $puzzle['id'] . '/settings');
+    }
+
+    private function exportPuzzleData(array $puzzle): Response
+    {
+        $puzzleColumns = ['id', 'name', 'total_pieces', 'notes', 'image_path', 'created_at', 'updated_at'];
+        $hitsColumns = ['id', 'puzzle_id', 'player_name', 'connection_count', 'ip_address', 'user_agent', 'created_at', 'updated_at'];
+
+        $puzzleCsv = $this->buildCsv([$puzzle], $puzzleColumns);
+        $hits = $this->database->transcript($puzzle['id']);
+        $hitsCsv = $this->buildCsv($hits, $hitsColumns);
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'jigseer_export_');
+        if ($tempFile === false) {
+            return Response::html('Failed to create export archive.', 500);
+        }
+
+        $zip = new \ZipArchive();
+        $openResult = $zip->open($tempFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        if ($openResult !== true) {
+            @unlink($tempFile);
+
+            return Response::html('Failed to create export archive.', 500);
+        }
+
+        $zip->addFromString('puzzle.csv', $puzzleCsv);
+        $zip->addFromString('hits.csv', $hitsCsv);
+        $zip->close();
+
+        $contents = file_get_contents($tempFile);
+        @unlink($tempFile);
+
+        if ($contents === false) {
+            return Response::html('Failed to read export archive.', 500);
+        }
+
+        $filename = sprintf('puzzle-%s-export.zip', $puzzle['id']);
+
+        return Response::download($filename, $contents, 'application/zip');
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     * @param string[] $columns
+     */
+    private function buildCsv(array $rows, array $columns): string
+    {
+        $handle = fopen('php://temp', 'r+');
+        if ($handle === false) {
+            return '';
+        }
+
+        fputcsv($handle, $columns, ',', '"', '\\');
+
+        foreach ($rows as $row) {
+            $line = [];
+            foreach ($columns as $column) {
+                $value = $row[$column] ?? null;
+                $line[] = is_bool($value) ? ($value ? '1' : '0') : $value;
+            }
+            fputcsv($handle, $line, ',', '"', '\\');
+        }
+
+        rewind($handle);
+        $contents = stream_get_contents($handle);
+        fclose($handle);
+
+        return $contents === false ? '' : $contents;
     }
 }

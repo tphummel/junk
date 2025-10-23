@@ -96,6 +96,55 @@ test('leaderboard view renders the player name', function (): void {
     assertTrue(str_contains($response->body(), 'Morgan'));
 });
 
+test('exporting puzzle data produces a zip containing puzzle and hits csv files', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Export Test', 1000);
+    $database->recordHit($puzzleId, 'Avery', 2, '127.0.0.1', 'phpunit');
+    $database->recordHit($puzzleId, 'Blake', 1, '127.0.0.2', 'phpunit');
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/settings/export', [], [], []));
+
+    assertSame(200, $response->status());
+    $headers = $response->headers();
+    assertSame('application/zip', $headers['Content-Type'] ?? '');
+    assertTrue(isset($headers['Content-Disposition']) && str_contains($headers['Content-Disposition'], 'attachment'));
+
+    $temp = tempnam(sys_get_temp_dir(), 'jigseer_export_test_');
+    if ($temp === false) {
+        throw new RuntimeException('Unable to create temp file for zip test');
+    }
+
+    file_put_contents($temp, $response->body());
+    $zip = new ZipArchive();
+    assertTrue($zip->open($temp) === true, 'Unable to open export zip');
+
+    $puzzleCsv = $zip->getFromName('puzzle.csv');
+    $hitsCsv = $zip->getFromName('hits.csv');
+    $zip->close();
+    unlink($temp);
+
+    assertTrue($puzzleCsv !== false, 'puzzle.csv missing from export');
+    assertTrue($hitsCsv !== false, 'hits.csv missing from export');
+
+    $puzzleLines = array_map(
+        fn (string $line) => str_getcsv($line, ',', '"', '\\'),
+        array_filter(explode("\n", trim($puzzleCsv)))
+    );
+    assertSame('name', $puzzleLines[0][1] ?? null);
+    assertSame('Export Test', $puzzleLines[1][1] ?? null);
+
+    $hitsLines = array_map(
+        fn (string $line) => str_getcsv($line, ',', '"', '\\'),
+        array_filter(explode("\n", trim($hitsCsv)))
+    );
+    assertSame('player_name', $hitsLines[0][2] ?? null);
+    $players = [$hitsLines[1][2] ?? null, $hitsLines[2][2] ?? null];
+    sort($players);
+    assertSame(['Avery', 'Blake'], $players);
+});
+
 $passed = 0;
 $total = count($tests);
 $failures = [];
