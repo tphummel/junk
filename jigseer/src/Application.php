@@ -22,7 +22,7 @@ class Application
         $path = rtrim($request->path(), '/') ?: '/';
 
         if ($method === 'GET' && $path === '/') {
-            return $this->home();
+            return $this->home($request);
         }
 
         if ($method === 'POST' && $path === '/puzzles') {
@@ -48,8 +48,13 @@ class Application
         return Response::html($this->renderer->render('404.php'), 404);
     }
 
-    private function home(): Response
+    private function home(Request $request): Response
     {
+        $code = trim((string) $request->query('code', ''));
+        if ($code !== '') {
+            return Response::redirect('/p/' . rawurlencode($code) . '/play');
+        }
+
         return Response::html($this->renderer->render('home.php'));
     }
 
