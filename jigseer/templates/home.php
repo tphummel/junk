@@ -43,9 +43,6 @@
             <input id="puzzle_id" name="code" type="text" placeholder="Enter code" />
             <button type="submit">Open puzzle</button>
         </form>
-        <?php if (!empty($_GET['code'])): ?>
-            <p>Open <a href="<?= '/p/' . urlencode($_GET['code']) ?>">/p/<?= htmlspecialchars($_GET['code'], ENT_QUOTES) ?></a></p>
-        <?php endif; ?>
     </section>
 </body>
 </html>
