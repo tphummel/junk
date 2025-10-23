@@ -179,33 +179,98 @@ class Application
         $hits = $this->database->transcript($puzzle['id']);
         $hitsCsv = $this->buildCsv($hits, $hitsColumns);
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'jigseer_export_');
-        if ($tempFile === false) {
+        $archiveContents = $this->createZipArchive([
+            'puzzle.csv' => $puzzleCsv,
+            'hits.csv' => $hitsCsv,
+        ]);
+
+        if ($archiveContents === null) {
             return Response::html('Failed to create export archive.', 500);
         }
 
-        $zip = new \ZipArchive();
-        $openResult = $zip->open($tempFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-        if ($openResult !== true) {
-            @unlink($tempFile);
-
-            return Response::html('Failed to create export archive.', 500);
-        }
-
-        $zip->addFromString('puzzle.csv', $puzzleCsv);
-        $zip->addFromString('hits.csv', $hitsCsv);
-        $zip->close();
-
-        $contents = file_get_contents($tempFile);
-        @unlink($tempFile);
-
-        if ($contents === false) {
+        if ($archiveContents === '') {
             return Response::html('Failed to read export archive.', 500);
         }
 
         $filename = sprintf('puzzle-%s-export.zip', $puzzle['id']);
 
-        return Response::download($filename, $contents, 'application/zip');
+        return Response::download($filename, $archiveContents, 'application/zip');
+    }
+
+    /**
+     * @param array<string, string> $files
+     */
+    private function createZipArchive(array $files): ?string
+    {
+        $localFileData = '';
+        $centralDirectory = '';
+        $offset = 0;
+
+        foreach ($files as $name => $contents) {
+            $name = str_replace('\\', '/', $name);
+            $contentLength = strlen($contents);
+            $crc = crc32($contents);
+            if ($crc < 0) {
+                $crc = (int) sprintf('%u', $crc);
+            }
+
+            $fileNameLength = strlen($name);
+
+            $dosTime = 0;
+            $dosDate = 0;
+
+            $localHeader = pack('VvvvvvVVVvv',
+                0x04034b50,
+                20,
+                0,
+                0,
+                $dosTime,
+                $dosDate,
+                $crc,
+                $contentLength,
+                $contentLength,
+                $fileNameLength,
+                0,
+            );
+
+            $localRecord = $localHeader . $name . $contents;
+            $localFileData .= $localRecord;
+
+            $centralDirectory .= pack('VvvvvvvVVVvvvvvVV',
+                0x02014b50,
+                20,
+                20,
+                0,
+                0,
+                $dosTime,
+                $dosDate,
+                $crc,
+                $contentLength,
+                $contentLength,
+                $fileNameLength,
+                0,
+                0,
+                0,
+                0,
+                32,
+                $offset,
+            ) . $name;
+
+            $offset += strlen($localRecord);
+        }
+
+        $endOfCentralDirectory = pack('VvvvvVVv',
+            0x06054b50,
+            0,
+            0,
+            count($files),
+            count($files),
+            strlen($centralDirectory),
+            strlen($localFileData),
+            0,
+        );
+
+        return $localFileData . $centralDirectory . $endOfCentralDirectory;
     }
 
     /**
