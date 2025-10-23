@@ -9,7 +9,7 @@
     <style>
         .players { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; align-items: stretch; }
         .player-card-form { margin: 0; }
-        .player-card { display: block; width: 100%; padding: 1.5rem; border-radius: 0.75rem; background: #f4f4f4; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; }
+        .player-card { display: block; width: 100%; padding: 1.5rem; border-radius: 0.75rem; background: #f4f4f4; color: #000; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; }
         .player-card:hover,
         .player-card:focus-visible { background: #eaeaea; transform: translateY(-2px); }
         .progress { margin: 1.5rem 0; }
