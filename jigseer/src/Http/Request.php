@@ -138,6 +138,25 @@ class Request
         return $host;
     }
 
+    public function header(string $name): ?string
+    {
+        $normalized = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+
+        if (isset($this->server[$normalized])) {
+            return $this->server[$normalized];
+        }
+
+        if ($normalized === 'HTTP_CONTENT_TYPE') {
+            return $this->server['CONTENT_TYPE'] ?? null;
+        }
+
+        if ($normalized === 'HTTP_CONTENT_LENGTH') {
+            return $this->server['CONTENT_LENGTH'] ?? null;
+        }
+
+        return null;
+    }
+
     public function absoluteUrl(string $path): string
     {
         if ($path === '' || $path[0] !== '/') {
