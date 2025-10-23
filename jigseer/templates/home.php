@@ -4,15 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Jigseer</title>
-    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" integrity="sha384-T7n0ANKPOuUMGAfJOyrUo9qeycGQ21MCH2RKDWEUtNdz/BPZt6r9Ga6IpiOb8t6V" crossorigin="anonymous">
-    <style>
-        body { max-width: 720px; margin: 0 auto; padding: 1.5rem; }
-        form { margin-bottom: 2rem; }
-        label { display: block; margin-bottom: 0.5rem; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 0.75rem; margin-bottom: 1rem; }
-        button { width: 100%; padding: 1rem; font-size: 1.1rem; }
-        .error { background: #ffe6e6; color: #980000; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
-    </style>
+    <link rel="stylesheet" href="/assets/styles/main.css">
 </head>
 <body>
     <h1>Jigseer</h1>

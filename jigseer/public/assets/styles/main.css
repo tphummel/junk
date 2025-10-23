@@ -1,0 +1,158 @@
+:root {
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 1rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  background: #fff;
+  color: #000;
+}
+
+@media (min-width: 768px) {
+  body {
+    padding: 2rem;
+  }
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+  margin-top: 0;
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+a {
+  color: inherit;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #000;
+  background: #fff;
+}
+
+button {
+  border: 1px solid #000;
+  background: #fff;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+.players {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.player-card-form {
+  margin: 0;
+}
+
+.player-card {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #000;
+  background: #fff;
+  text-align: center;
+}
+
+.player-card p {
+  margin: 0.25rem 0 0;
+}
+
+.tab-nav {
+  margin: 1.5rem 0;
+}
+
+.tab-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tab-nav__link {
+  display: inline-block;
+  border: 1px solid #000;
+  padding: 0.35rem 0.75rem;
+  text-decoration: none;
+}
+
+.tab-nav__link--active {
+  background: #000;
+  color: #fff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #000;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+thead th {
+  background: #000;
+  color: #fff;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  background: #f0f0f0;
+  padding: 0 0.25rem;
+}

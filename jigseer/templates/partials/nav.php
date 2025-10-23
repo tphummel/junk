@@ -1,5 +1,5 @@
-<nav>
-    <ul style="display:flex; gap: 0.75rem; list-style: none; padding: 0;">
+<nav class="tab-nav">
+    <ul class="tab-nav__list">
         <?php
         $tabs = [
             'play' => 'Play',
@@ -11,7 +11,11 @@
             $href = '/p/' . urlencode($puzzle['id']) . '/' . $key;
             $isActive = ($activeTab ?? 'play') === $key;
         ?>
-        <li><a href="<?= $href ?>" style="<?= $isActive ? 'font-weight: bold; text-decoration: underline;' : '' ?>"><?= htmlspecialchars($label, ENT_QUOTES) ?></a></li>
+        <li>
+            <a class="tab-nav__link<?= $isActive ? ' tab-nav__link--active' : '' ?>" href="<?= $href ?>">
+                <?= htmlspecialchars($label, ENT_QUOTES) ?>
+            </a>
+        </li>
         <?php endforeach; ?>
     </ul>
 </nav>

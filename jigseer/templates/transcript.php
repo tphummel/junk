@@ -4,11 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Transcript &middot; <?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></title>
-    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" integrity="sha384-T7n0ANKPOuUMGAfJOyrUo9qeycGQ21MCH2RKDWEUtNdz/BPZt6r9Ga6IpiOb8t6V" crossorigin="anonymous">
-    <style>
-        .hit { padding: 1rem 0; border-bottom: 1px solid #ddd; }
-        .hit:last-child { border-bottom: none; }
-    </style>
+    <link rel="stylesheet" href="/assets/styles/main.css">
 </head>
 <body>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>

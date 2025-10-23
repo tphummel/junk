@@ -4,21 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?> &middot; Jigseer</title>
-    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" integrity="sha384-T7n0ANKPOuUMGAfJOyrUo9qeycGQ21MCH2RKDWEUtNdz/BPZt6r9Ga6IpiOb8t6V" crossorigin="anonymous">
-    <style>
-        .players { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; align-items: stretch; }
-        .player-card-form { margin: 0; }
-        .player-card { display: block; width: 100%; padding: 1.5rem; border-radius: 0.75rem; background: #f4f4f4; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; }
-        .player-card:hover,
-        .player-card:focus-visible { background: #eaeaea; transform: translateY(-2px); }
-        .progress { margin: 1.5rem 0; }
-        .banner { background: #fff4d0; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; }
-        .new-player-form { margin-top: 1rem; }
-        button { width: 100%; padding: 1rem; font-size: 1.1rem; }
-        .qr-share { margin: 1.5rem 0; padding: 1rem; border: 2px dashed #ccc; border-radius: 0.75rem; text-align: center; }
-        .qr-share img { display: block; margin: 0.5rem auto; background: #fff; padding: 0.5rem; border-radius: 0.5rem; }
-        .qr-share .qr-url { word-break: break-all; font-size: 0.9rem; }
-    </style>
+    <link rel="stylesheet" href="/assets/styles/main.css">
 </head>
 <body>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
