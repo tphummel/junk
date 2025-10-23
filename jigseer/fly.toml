@@ -22,3 +22,4 @@ primary_region = 'lax'
   cpu_kind = 'shared'
   cpus = 1
   memory_mb = 256
+  persist_rootfs = 'always'
