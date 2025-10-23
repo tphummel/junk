@@ -25,13 +25,6 @@
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'play'; require __DIR__ . '/partials/nav.php'; ?>
 
-    <section class="qr-share">
-        <h2>Share this puzzle</h2>
-        <p>Scan the QR code to open the tracker on your device.</p>
-        <img src="<?= htmlspecialchars($qrPath, ENT_QUOTES) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
-        <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
-    </section>
-
     <?php if ($progress['total'] === null): ?>
         <div class="banner">
             Set a total puzzle piece count in <a href="<?= '/p/' . urlencode($puzzle['id']) . '/settings' ?>">settings</a> to track completion progress.
@@ -75,6 +68,13 @@
 
             <button type="submit">Add player</button>
         </form>
+    </section>
+
+    <section class="qr-share">
+        <h2>Share this puzzle</h2>
+        <p>Scan the QR code to open the tracker on your device.</p>
+        <img src="<?= htmlspecialchars($qrPath, ENT_QUOTES) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
+        <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
     </section>
 </body>
 </html>

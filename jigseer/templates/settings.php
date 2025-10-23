@@ -6,6 +6,11 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧩%3C/text%3E%3C/svg%3E">
     <title>Settings &middot; <?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></title>
     <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" integrity="sha384-T7n0ANKPOuUMGAfJOyrUo9qeycGQ21MCH2RKDWEUtNdz/BPZt6r9Ga6IpiOb8t6V" crossorigin="anonymous">
+    <style>
+        .qr-share { margin: 2rem 0 0; padding: 1rem; border: 2px dashed #ccc; border-radius: 0.75rem; text-align: center; }
+        .qr-share img { display: block; margin: 0.5rem auto; background: #fff; padding: 0.5rem; border-radius: 0.5rem; }
+        .qr-share .qr-url { word-break: break-all; font-size: 0.9rem; }
+    </style>
 </head>
 <body>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
@@ -30,6 +35,13 @@
         <form method="get" action="<?= '/p/' . urlencode($puzzle['id']) . '/settings/export' ?>">
             <button type="submit">Download export</button>
         </form>
+    </section>
+
+    <section class="qr-share">
+        <h2>Share this puzzle</h2>
+        <p>Scan the QR code to open the tracker on your device.</p>
+        <img src="<?= htmlspecialchars($qrPath, ENT_QUOTES) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
+        <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
     </section>
 </body>
 </html>
