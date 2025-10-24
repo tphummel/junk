@@ -96,6 +96,10 @@ class Application
             return $this->servePuzzleQr($request, $puzzle);
         }
 
+        if ($method === 'GET' && $tab === 'events') {
+            return $this->streamPuzzleEvents($request, $puzzle);
+        }
+
         return match ($tab) {
             'play' => $this->renderPlay($request, $puzzle),
             'leaderboard' => $this->renderLeaderboard($puzzle),
@@ -116,6 +120,7 @@ class Application
             'leaderboard' => $leaderboard,
             'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
             'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
+            'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]));
     }
 
@@ -126,6 +131,7 @@ class Application
         return Response::html($this->renderer->render('leaderboard.php', [
             'puzzle' => $puzzle,
             'leaderboard' => $leaderboard,
+            'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]));
     }
 
@@ -136,6 +142,7 @@ class Application
         return Response::html($this->renderer->render('transcript.php', [
             'puzzle' => $puzzle,
             'hits' => $hits,
+            'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]));
     }
 
@@ -146,6 +153,43 @@ class Application
             'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
             'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
         ]));
+    }
+
+    private function streamPuzzleEvents(Request $request, array $puzzle): Response
+    {
+        $lastEventId = $request->header('Last-Event-ID');
+        if ($lastEventId === null) {
+            $querySince = $request->query('since');
+            if (is_string($querySince) && trim($querySince) !== '') {
+                $lastEventId = $querySince;
+            }
+        }
+
+        $knownTimestamp = $this->parseEventId($lastEventId);
+        if ($knownTimestamp === null) {
+            $currentValue = $this->database->latestHitUpdatedAt($puzzle['id']);
+            $knownTimestamp = $this->parseEventId($currentValue);
+        }
+
+        $deadline = microtime(true) + 60;
+
+        while (microtime(true) < $deadline) {
+            $latestValue = $this->database->latestHitUpdatedAt($puzzle['id']);
+            $latestTimestamp = $this->parseEventId($latestValue);
+
+            if ($latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
+                $body = "retry: 2000\n"
+                    . 'id: ' . $latestValue . "\n"
+                    . "event: hit\n"
+                    . "data: refresh\n\n";
+
+                return Response::eventStream($body);
+            }
+
+            usleep(250000);
+        }
+
+        return Response::eventStream("retry: 5000\n: keep-alive\n\n");
     }
 
     private function storeHit(Request $request, array $puzzle): Response
@@ -182,6 +226,25 @@ class Application
         ]);
 
         return Response::redirect('/p/' . $puzzle['id'] . '/settings');
+    }
+
+    private function parseEventId(?string $value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return null;
+        }
+
+        return $timestamp;
     }
 
     private function exportPuzzleData(array $puzzle): Response

@@ -42,5 +42,7 @@
             </table>
         <?php endif; ?>
     </section>
+
+    <?php require __DIR__ . '/partials/live-reload.php'; ?>
 </body>
 </html>
