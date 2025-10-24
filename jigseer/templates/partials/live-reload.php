@@ -13,6 +13,62 @@ if ($initialEventId !== '') {
 
     const eventsUrl = <?= json_encode($eventsPath, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     let reloaded = false;
+    let toastTimeoutId;
+
+    const ensureToastSupport = () => {
+        if (document.getElementById('live-update-toast-style')) {
+            return;
+        }
+
+        const style = document.createElement('style');
+        style.id = 'live-update-toast-style';
+        style.textContent = `
+            .live-update-toast {
+                position: fixed;
+                top: 1.5rem;
+                left: 50%;
+                transform: translate(-50%, -200%);
+                background: #1f1b3a;
+                color: #fff;
+                padding: 0.85rem 1.5rem;
+                border-radius: 999px;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+                box-shadow: 0 18px 35px rgba(31, 27, 58, 0.25);
+                opacity: 0;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                z-index: 9999;
+                pointer-events: none;
+            }
+
+            .live-update-toast.visible {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        `;
+        document.head.appendChild(style);
+    };
+
+    const showToast = (message) => {
+        ensureToastSupport();
+        let toast = document.querySelector('.live-update-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.className = 'live-update-toast';
+            document.body.appendChild(toast);
+        }
+
+        toast.textContent = message;
+        toast.classList.add('visible');
+
+        if (toastTimeoutId) {
+            clearTimeout(toastTimeoutId);
+        }
+
+        toastTimeoutId = window.setTimeout(() => {
+            toast.classList.remove('visible');
+        }, 2000);
+    };
 
     console.log('[live-reload] connecting to', eventsUrl);
 
@@ -27,8 +83,11 @@ if ($initialEventId !== '') {
             return;
         }
         reloaded = true;
-        source.close();
-        window.location.reload();
+        showToast('New progress just landed! Updating…');
+        window.setTimeout(() => {
+            source.close();
+            window.location.reload();
+        }, 1200);
     };
 
     source.addEventListener('hit', (event) => {
