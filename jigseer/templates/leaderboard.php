@@ -19,9 +19,11 @@
         .progress-note { margin-top: 0.75rem; color: #555; font-size: 0.95rem; }
         .leaderboard-table { border-radius: 0.75rem; overflow: hidden; }
         .leaderboard-table thead th { background-color: rgba(255, 255, 255, 0.65); font-weight: 700; }
-        .leaderboard-table tbody tr { position: relative; isolation: isolate; --share-ratio: 0; transition: background-color 0.3s ease; }
-        .leaderboard-table tbody tr::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--share-ratio, 0) * 100%); background-color: rgba(92, 109, 244, 0.15); pointer-events: none; z-index: -1; }
-        .leaderboard-table tbody tr:hover::before { background-color: rgba(92, 109, 244, 0.22); }
+        .leaderboard-table tbody tr { position: relative; isolation: isolate; --share-ratio: 0; transition: background-color 0.3s ease; background-color: var(--player-color, transparent); color: var(--player-text-color, inherit); }
+        .leaderboard-table tbody tr td { color: inherit; }
+        .leaderboard-table tbody tr::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--share-ratio, 0) * 100%); background-color: var(--player-color-strong-alpha, rgba(92, 109, 244, 0.15)); pointer-events: none; z-index: -1; }
+        .leaderboard-table tbody tr:hover { background-color: var(--player-color-hover, rgba(0, 0, 0, 0.04)); }
+        .leaderboard-table tbody tr:hover::before { background-color: var(--player-color-strong-alpha-hover, rgba(92, 109, 244, 0.22)); }
         .leaderboard-table tbody tr:last-child td { border-bottom: none; }
         .timestamp { display: flex; flex-direction: column; gap: 0.25rem; }
         .timestamp time { font-weight: 600; }
@@ -39,6 +41,7 @@
 <body>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'leaderboard'; require __DIR__ . '/partials/nav.php'; ?>
+    <?php require_once __DIR__ . '/partials/player_colors.php'; ?>
 
     <section class="progress-card" aria-label="Collaborative progress">
         <div class="progress-details">
@@ -82,8 +85,19 @@
                         $shareRatio = $totalHits > 0 ? max(min($hits / $totalHits, 1), 0) : 0;
                         $firstHitIso = trim((string) $entry['first_hit']);
                         $lastHitIso = trim((string) $entry['last_hit']);
+                        $palette = player_color_palette((string) $entry['player_name']);
+                        $rowStyle = sprintf(
+                            '--share-ratio:%s;--player-color:%s;--player-color-hover:%s;--player-color-strong:%s;--player-color-strong-alpha:%s;--player-color-strong-alpha-hover:%s;--player-text-color:%s;',
+                            number_format($shareRatio, 4, '.', ''),
+                            $palette['base'],
+                            $palette['hover'],
+                            $palette['strong'],
+                            $palette['strong_alpha'],
+                            $palette['strong_alpha_hover'],
+                            $palette['text']
+                        );
                         ?>
-                        <tr style="--share-ratio: <?= htmlspecialchars(number_format($shareRatio, 4, '.', ''), ENT_QUOTES) ?>;">
+                        <tr style="<?= htmlspecialchars($rowStyle, ENT_QUOTES) ?>">
                             <td><?= htmlspecialchars($entry['player_name'], ENT_QUOTES) ?></td>
                             <td><?= number_format($hits) ?></td>
                             <td class="timestamp">
