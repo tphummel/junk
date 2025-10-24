@@ -12,9 +12,12 @@ primary_region = 'lax'
 [env]
   JIGSEER_DB_PATH = "/data/jigseer.sqlite"
 
-[[mounts]]
+[mounts]
   source = "jigsee"
   destination = "/data"
+  processes = ["app"] # optional - attach volumes to Machines that belong to one or more process groups
+  initial_size = "1gb" # optional - the size of the volume created on first deploy
+
 
 [http_service]
   internal_port = 8080
