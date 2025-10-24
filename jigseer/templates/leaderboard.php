@@ -20,8 +20,8 @@
         .leaderboard-table { border-radius: 0.75rem; overflow: hidden; }
         .leaderboard-table thead th { background-color: rgba(255, 255, 255, 0.65); font-weight: 700; }
         .leaderboard-table tbody tr { position: relative; isolation: isolate; --share-ratio: 0; transition: background-color 0.3s ease; }
-        .leaderboard-table tbody tr::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--share-ratio, 0) * 100%); background: linear-gradient(90deg, rgba(92, 109, 244, 0.18), rgba(154, 78, 241, 0.12)); pointer-events: none; z-index: -1; }
-        .leaderboard-table tbody tr:hover::before { background: linear-gradient(90deg, rgba(92, 109, 244, 0.28), rgba(154, 78, 241, 0.22)); }
+        .leaderboard-table tbody tr::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--share-ratio, 0) * 100%); background-color: rgba(92, 109, 244, 0.15); pointer-events: none; z-index: -1; }
+        .leaderboard-table tbody tr:hover::before { background-color: rgba(92, 109, 244, 0.22); }
         .leaderboard-table tbody tr:last-child td { border-bottom: none; }
         .timestamp { display: flex; flex-direction: column; gap: 0.25rem; }
         .timestamp time { font-weight: 600; }
@@ -30,6 +30,7 @@
         @media (max-width: 600px) {
             .progress-card { padding: 1.25rem; }
             .progress-details { flex-direction: column; align-items: flex-start; }
+            .progress-bar { width: 100%; max-width: none; }
             .progress-summary { font-size: 0.95rem; }
             .timestamp { align-items: flex-start; }
         }
