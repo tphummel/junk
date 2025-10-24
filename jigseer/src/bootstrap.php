@@ -18,6 +18,21 @@ function jigseer_bootstrap(): Application
     $databasePath = getenv('JIGSEER_DB_PATH') ?: dirname(__DIR__) . '/var/database.sqlite';
     $renderer = new TemplateRenderer(dirname(__DIR__) . '/templates');
     $database = new Database($databasePath);
+    $version = getenv('JIGSEER_VERSION');
+    if (is_string($version)) {
+        $version = trim($version);
+    }
 
-    return new Application($database, $renderer);
+    if (!is_string($version) || $version === '') {
+        $versionFile = dirname(__DIR__) . '/VERSION';
+        if (is_file($versionFile)) {
+            $version = trim((string) file_get_contents($versionFile));
+        }
+    }
+
+    if (!is_string($version) || $version === '') {
+        $version = 'dev';
+    }
+
+    return new Application($database, $renderer, $version);
 }

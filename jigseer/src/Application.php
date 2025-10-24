@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Jigseer;
 
+use DateTimeImmutable;
 use Jigseer\Http\Request;
 use Jigseer\Http\Response;
 use function Jigseer\ensure_directory;
@@ -12,7 +13,8 @@ class Application
 {
     public function __construct(
         private readonly Database $database,
-        private readonly TemplateRenderer $renderer
+        private readonly TemplateRenderer $renderer,
+        private readonly string $version
     ) {
     }
 
@@ -33,19 +35,51 @@ class Application
             return Response::json(['status' => 'ok']);
         }
 
+        if ($method === 'GET' && $path === '/health') {
+            return $this->health();
+        }
+
         $segments = array_values(array_filter(explode('/', $path)));
         if (($segments[0] ?? null) === 'p' && isset($segments[1])) {
             $puzzleId = $segments[1];
             $puzzle = $this->database->findPuzzle($puzzleId);
             if ($puzzle === null) {
-                return Response::html($this->renderer->render('404.php', ['puzzleId' => $puzzleId]), 404);
+                return $this->html('404.php', ['puzzleId' => $puzzleId], 404);
             }
 
             $tail = array_slice($segments, 2);
             return $this->handlePuzzleRequest($request, $puzzle, $tail);
         }
 
-        return Response::html($this->renderer->render('404.php'), 404);
+        return $this->html('404.php', [], 404);
+    }
+
+    private function renderTemplate(string $template, array $data = []): string
+    {
+        return $this->renderer->render($template, array_merge(['appVersion' => $this->version], $data));
+    }
+
+    private function html(string $template, array $data = [], int $status = 200): Response
+    {
+        return Response::html($this->renderTemplate($template, $data), $status);
+    }
+
+    private function health(): Response
+    {
+        $databaseHealthy = $this->database->isHealthy();
+        $status = $databaseHealthy ? 200 : 500;
+
+        $payload = [
+            'status' => $databaseHealthy ? 'ok' : 'error',
+            'version' => $this->version,
+            'database' => [
+                'path' => $this->database->path(),
+                'healthy' => $databaseHealthy,
+            ],
+            'timestamp' => (new DateTimeImmutable())->format(DATE_ATOM),
+        ];
+
+        return Response::json($payload, $status);
     }
 
     private function home(Request $request): Response
@@ -55,16 +89,16 @@ class Application
             return Response::redirect('/p/' . rawurlencode($code) . '/play');
         }
 
-        return Response::html($this->renderer->render('home.php'));
+        return $this->html('home.php');
     }
 
     private function createPuzzle(Request $request): Response
     {
         $name = trim((string) $request->body('name', '')); 
         if ($name === '') {
-            return Response::html($this->renderer->render('home.php', [
+            return $this->html('home.php', [
                 'error' => 'Please provide a puzzle name.',
-            ]), 400);
+            ], 400);
         }
 
         $totalPieces = $request->body('total_pieces');
@@ -105,7 +139,7 @@ class Application
             'leaderboard' => $this->renderLeaderboard($puzzle),
             'transcript' => $this->renderTranscript($puzzle),
             'settings' => $this->renderSettings($request, $puzzle),
-            default => Response::html($this->renderer->render('404.php'), 404),
+            default => $this->html('404.php', [], 404),
         };
     }
 
@@ -114,45 +148,45 @@ class Application
         $progress = $this->database->completionProgress($puzzle['id']);
         $leaderboard = $this->database->leaderboard($puzzle['id']);
 
-        return Response::html($this->renderer->render('play.php', [
+        return $this->html('play.php', [
             'puzzle' => $puzzle,
             'progress' => $progress,
             'leaderboard' => $leaderboard,
             'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
             'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
-        ]));
+        ]);
     }
 
     private function renderLeaderboard(array $puzzle): Response
     {
         $leaderboard = $this->database->leaderboard($puzzle['id']);
 
-        return Response::html($this->renderer->render('leaderboard.php', [
+        return $this->html('leaderboard.php', [
             'puzzle' => $puzzle,
             'leaderboard' => $leaderboard,
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
-        ]));
+        ]);
     }
 
     private function renderTranscript(array $puzzle): Response
     {
         $hits = $this->database->transcript($puzzle['id']);
 
-        return Response::html($this->renderer->render('transcript.php', [
+        return $this->html('transcript.php', [
             'puzzle' => $puzzle,
             'hits' => $hits,
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
-        ]));
+        ]);
     }
 
     private function renderSettings(Request $request, array $puzzle): Response
     {
-        return Response::html($this->renderer->render('settings.php', [
+        return $this->html('settings.php', [
             'puzzle' => $puzzle,
             'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
             'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
-        ]));
+        ]);
     }
 
     private function streamPuzzleEvents(Request $request, array $puzzle): Response

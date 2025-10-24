@@ -9,6 +9,7 @@
     <style>
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.75rem; border-bottom: 1px solid #ddd; text-align: left; }
+        .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -43,6 +44,7 @@
         <?php endif; ?>
     </section>
 
+    <?php require __DIR__ . '/partials/footer.php'; ?>
     <?php require __DIR__ . '/partials/live-reload.php'; ?>
 </body>
 </html>
