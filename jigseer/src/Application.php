@@ -42,12 +42,18 @@ class Application
         $segments = array_values(array_filter(explode('/', $path)));
         if (($segments[0] ?? null) === 'p' && isset($segments[1])) {
             $puzzleId = $segments[1];
+            $tail = array_slice($segments, 2);
+            $tab = $tail[0] ?? 'play';
+
             $puzzle = $this->database->findPuzzle($puzzleId);
             if ($puzzle === null) {
+                if ($tab === 'events') {
+                    return Response::eventStream("retry: 10000\n: puzzle-missing\n\n", [], 404);
+                }
+
                 return $this->html('404.php', ['puzzleId' => $puzzleId], 404);
             }
 
-            $tail = array_slice($segments, 2);
             return $this->handlePuzzleRequest($request, $puzzle, $tail);
         }
 
@@ -205,22 +211,16 @@ class Application
             $knownTimestamp = $this->parseEventId($currentValue);
         }
 
-        $deadline = microtime(true) + 60;
+        $latestValue = $this->database->latestHitUpdatedAt($puzzle['id']);
+        $latestTimestamp = $this->parseEventId($latestValue);
 
-        while (microtime(true) < $deadline) {
-            $latestValue = $this->database->latestHitUpdatedAt($puzzle['id']);
-            $latestTimestamp = $this->parseEventId($latestValue);
+        if ($latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
+            $body = "retry: 2000\n"
+                . 'id: ' . $latestValue . "\n"
+                . "event: hit\n"
+                . "data: refresh\n\n";
 
-            if ($latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
-                $body = "retry: 2000\n"
-                    . 'id: ' . $latestValue . "\n"
-                    . "event: hit\n"
-                    . "data: refresh\n\n";
-
-                return Response::eventStream($body);
-            }
-
-            usleep(250000);
+            return Response::eventStream($body);
         }
 
         return Response::eventStream("retry: 5000\n: keep-alive\n\n");
