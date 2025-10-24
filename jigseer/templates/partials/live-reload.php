@@ -1,5 +1,9 @@
 <?php
 $eventsPath = '/p/' . rawurlencode($puzzle['id']) . '/events';
+$initialEventId = isset($latestHitUpdatedAt) ? trim((string) $latestHitUpdatedAt) : '';
+if ($initialEventId !== '') {
+    $eventsPath .= '?since=' . rawurlencode($initialEventId);
+}
 ?>
 <script>
 (() => {

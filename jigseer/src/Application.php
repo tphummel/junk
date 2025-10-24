@@ -120,6 +120,7 @@ class Application
             'leaderboard' => $leaderboard,
             'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
             'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
+            'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]));
     }
 
@@ -130,6 +131,7 @@ class Application
         return Response::html($this->renderer->render('leaderboard.php', [
             'puzzle' => $puzzle,
             'leaderboard' => $leaderboard,
+            'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]));
     }
 
@@ -140,6 +142,7 @@ class Application
         return Response::html($this->renderer->render('transcript.php', [
             'puzzle' => $puzzle,
             'hits' => $hits,
+            'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]));
     }
 
