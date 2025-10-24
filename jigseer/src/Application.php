@@ -167,10 +167,12 @@ class Application
     private function renderLeaderboard(array $puzzle): Response
     {
         $leaderboard = $this->database->leaderboard($puzzle['id']);
+        $progress = $this->database->completionProgress($puzzle['id']);
 
         return $this->html('leaderboard.php', [
             'puzzle' => $puzzle,
             'leaderboard' => $leaderboard,
+            'progress' => $progress,
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]);
     }
