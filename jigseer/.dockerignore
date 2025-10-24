@@ -1,0 +1,7 @@
+# Exclude development and metadata files from the Docker build context
+.git
+.gitignore
+README.md
+fly.toml
+tests/
+var/
