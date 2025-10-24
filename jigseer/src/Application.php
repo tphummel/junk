@@ -171,7 +171,7 @@ class Application
             $knownTimestamp = $this->parseEventId($currentValue);
         }
 
-        $deadline = microtime(true) + 25;
+        $deadline = microtime(true) + 60;
 
         while (microtime(true) < $deadline) {
             $latestValue = $this->database->latestHitUpdatedAt($puzzle['id']);
