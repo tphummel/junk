@@ -135,6 +135,18 @@ test('puzzle share url omits default ports on play and settings pages', function
     assertTrue(str_contains($body, $expectedUrl), 'Expected sanitized HTTPS share URL');
     assertTrue(!str_contains($body, 'https://example.com:443'), 'HTTPS default port should be hidden');
 
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/settings', [], [], [
+        'HTTP_HOST' => 'example.com',
+        'SERVER_PORT' => '80',
+        'HTTP_X_FORWARDED_PROTO' => 'https',
+    ]));
+
+    assertSame(200, $response->status());
+    $body = $response->body();
+    $expectedForwardedUrl = 'https://example.com/p/' . $puzzleId . '/play';
+    assertTrue(str_contains($body, $expectedForwardedUrl), 'Expected forwarded HTTPS share URL without backend port');
+    assertTrue(!str_contains($body, 'https://example.com:80'), 'Forwarded HTTPS port 80 should be hidden');
+
     $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/play', [], [], [
         'HTTP_HOST' => 'example.com:8080',
         'SERVER_PORT' => '8080',
