@@ -367,13 +367,15 @@ class Application
             return $url;
         }
 
-        $scheme = $components['scheme'] ?? null;
         $port = $components['port'] ?? null;
 
-        $isHttpDefault = $scheme === 'http' && $port === 80;
-        $isHttpsDefault = $scheme === 'https' && $port === 443;
+        if ($port === null) {
+            return $url;
+        }
 
-        if (!$isHttpDefault && !$isHttpsDefault) {
+        $portNumber = is_int($port) ? $port : (int) $port;
+
+        if ($portNumber !== 80 && $portNumber !== 443) {
             return $url;
         }
 
