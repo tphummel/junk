@@ -9,6 +9,13 @@ primary_region = 'lax'
 [build]
   image = "ghcr.io/tphummel/jigseer:latest"
 
+[env]
+  JIGSEER_DB_PATH = "/data/jigseer.sqlite"
+
+[[mounts]]
+  source = "jigsee"
+  destination = "/data"
+
 [http_service]
   internal_port = 8080
   force_https = true
@@ -18,8 +25,6 @@ primary_region = 'lax'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '256'
   cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 256
-  persist_rootfs = 'always'
