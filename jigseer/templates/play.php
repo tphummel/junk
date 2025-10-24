@@ -12,8 +12,6 @@
         .player-card { display: block; width: 100%; padding: 1.5rem; border-radius: 0.75rem; background: #f4f4f4; color: #000; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; }
         .player-card:hover,
         .player-card:focus-visible { background: #eaeaea; transform: translateY(-2px); }
-        .progress { margin: 1.5rem 0; }
-        .banner { background: #fff4d0; padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem; }
         .new-player-form { margin-top: 1rem; }
         button { width: 100%; padding: 1rem; font-size: 1.1rem; }
         .qr-share { margin: 1.5rem 0; padding: 1rem; border: 2px dashed #ccc; border-radius: 0.75rem; text-align: center; }
@@ -25,17 +23,6 @@
 <body>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'play'; require __DIR__ . '/partials/nav.php'; ?>
-
-    <?php if ($progress['total'] === null): ?>
-        <div class="banner">
-            Set a total puzzle piece count in <a href="<?= '/p/' . urlencode($puzzle['id']) . '/settings' ?>">settings</a> to track completion progress.
-        </div>
-    <?php endif; ?>
-
-    <section class="progress">
-        <h2>Progress</h2>
-        <p><strong><?= $progress['completed'] ?></strong> connections logged<?php if ($progress['total'] !== null): ?> of <?= $progress['total'] ?> (<?= number_format($progress['percentage'], 1) ?>%)<?php endif; ?>.</p>
-    </section>
 
     <section>
         <h2>Players</h2>
