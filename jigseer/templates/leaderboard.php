@@ -24,7 +24,6 @@
         .leaderboard-table tbody tr:hover { background-color: var(--player-color-hover, rgba(0, 0, 0, 0.04)); }
         .leaderboard-table tbody tr:last-child td { border-bottom: none; }
         .leaderboard-table .numeric { text-align: right; white-space: nowrap; }
-        .timestamp { display: block; }
         .timestamp time { display: block; font-weight: 600; }
         .timestamp .relative-time { display: block; margin-top: 0.25rem; }
         .relative-time { font-size: 0.85rem; color: #555; }
