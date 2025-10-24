@@ -24,8 +24,9 @@
         .leaderboard-table tbody tr:hover { background-color: var(--player-color-hover, rgba(0, 0, 0, 0.04)); }
         .leaderboard-table tbody tr:last-child td { border-bottom: none; }
         .leaderboard-table .numeric { text-align: right; white-space: nowrap; }
-        .timestamp { display: flex; flex-direction: column; gap: 0.25rem; }
-        .timestamp time { font-weight: 600; }
+        .timestamp { display: block; }
+        .timestamp time { display: block; font-weight: 600; }
+        .timestamp .relative-time { display: block; margin-top: 0.25rem; }
         .relative-time { font-size: 0.85rem; color: #555; }
         .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
         @media (max-width: 600px) {
@@ -33,7 +34,6 @@
             .progress-details { flex-direction: column; align-items: flex-start; }
             .progress-bar { width: 100%; max-width: none; }
             .progress-summary { font-size: 0.95rem; }
-            .timestamp { align-items: flex-start; }
         }
     </style>
 </head>
