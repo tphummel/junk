@@ -120,6 +120,21 @@ class Database
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function latestHitUpdatedAt(string $puzzleId): ?string
+    {
+        $statement = $this->pdo->prepare('SELECT MAX(updated_at) FROM hits WHERE puzzle_id = :puzzle_id');
+        $statement->execute(['puzzle_id' => $puzzleId]);
+
+        $value = $statement->fetchColumn();
+        if ($value === false) {
+            return null;
+        }
+
+        $stringValue = is_string($value) ? $value : null;
+
+        return $stringValue !== null && $stringValue !== '' ? $stringValue : null;
+    }
+
     public function completionProgress(string $puzzleId): array
     {
         $puzzle = $this->findPuzzle($puzzleId);

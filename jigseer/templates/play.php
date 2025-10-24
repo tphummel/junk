@@ -76,5 +76,7 @@
         <img src="<?= htmlspecialchars($qrPath, ENT_QUOTES) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
         <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
     </section>
+
+    <?php require __DIR__ . '/partials/live-reload.php'; ?>
 </body>
 </html>

@@ -96,6 +96,10 @@ class Application
             return $this->servePuzzleQr($request, $puzzle);
         }
 
+        if ($method === 'GET' && $tab === 'events') {
+            return $this->streamPuzzleEvents($request, $puzzle);
+        }
+
         return match ($tab) {
             'play' => $this->renderPlay($request, $puzzle),
             'leaderboard' => $this->renderLeaderboard($puzzle),
@@ -148,6 +152,44 @@ class Application
         ]));
     }
 
+    private function streamPuzzleEvents(Request $request, array $puzzle): Response
+    {
+        $lastEventId = $request->header('Last-Event-ID');
+        if ($lastEventId === null) {
+            $querySince = $request->query('since');
+            if (is_string($querySince) && trim($querySince) !== '') {
+                $lastEventId = $querySince;
+            }
+        }
+
+        $knownTimestamp = $this->parseEventId($lastEventId);
+        $deadline = microtime(true) + 25;
+        $latestValue = null;
+        $latestTimestamp = null;
+
+        do {
+            $latestValue = $this->database->latestHitUpdatedAt($puzzle['id']);
+            $latestTimestamp = $this->parseEventId($latestValue);
+
+            if ($latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
+                break;
+            }
+
+            usleep(250000);
+        } while (microtime(true) < $deadline);
+
+        if ($latestValue !== null && $latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
+            $body = "retry: 2000\n"
+                . 'id: ' . $latestValue . "\n"
+                . "event: hit\n"
+                . "data: refresh\n\n";
+
+            return Response::eventStream($body);
+        }
+
+        return Response::eventStream("retry: 5000\n: keep-alive\n\n");
+    }
+
     private function storeHit(Request $request, array $puzzle): Response
     {
         $player = trim((string) $request->body('player_name', ''));
@@ -182,6 +224,25 @@ class Application
         ]);
 
         return Response::redirect('/p/' . $puzzle['id'] . '/settings');
+    }
+
+    private function parseEventId(?string $value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return null;
+        }
+
+        return $timestamp;
     }
 
     private function exportPuzzleData(array $puzzle): Response
