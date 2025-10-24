@@ -72,7 +72,7 @@ class Response
         return new self(200, $headers, $contents);
     }
 
-    public static function eventStream(string $body, array $headers = []): self
+    public static function eventStream(string $body, array $headers = [], int $status = 200): self
     {
         $headers = array_merge([
             'Content-Type' => 'text/event-stream',
@@ -81,6 +81,6 @@ class Response
             'X-Accel-Buffering' => 'no',
         ], $headers);
 
-        return new self(200, $headers, $body);
+        return new self($status, $headers, $body);
     }
 }
