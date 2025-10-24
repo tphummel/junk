@@ -166,28 +166,27 @@ class Application
         }
 
         $knownTimestamp = $this->parseEventId($lastEventId);
-        $deadline = microtime(true) + 25;
-        $latestValue = null;
-        $latestTimestamp = null;
+        if ($knownTimestamp === null) {
+            $currentValue = $this->database->latestHitUpdatedAt($puzzle['id']);
+            $knownTimestamp = $this->parseEventId($currentValue);
+        }
 
-        do {
+        $deadline = microtime(true) + 25;
+
+        while (microtime(true) < $deadline) {
             $latestValue = $this->database->latestHitUpdatedAt($puzzle['id']);
             $latestTimestamp = $this->parseEventId($latestValue);
 
             if ($latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
-                break;
+                $body = "retry: 2000\n"
+                    . 'id: ' . $latestValue . "\n"
+                    . "event: hit\n"
+                    . "data: refresh\n\n";
+
+                return Response::eventStream($body);
             }
 
             usleep(250000);
-        } while (microtime(true) < $deadline);
-
-        if ($latestValue !== null && $latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
-            $body = "retry: 2000\n"
-                . 'id: ' . $latestValue . "\n"
-                . "event: hit\n"
-                . "data: refresh\n\n";
-
-            return Response::eventStream($body);
         }
 
         return Response::eventStream("retry: 5000\n: keep-alive\n\n");
