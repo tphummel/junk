@@ -10,6 +10,7 @@
         .qr-share { margin: 2rem 0 0; padding: 1rem; border: 2px dashed #ccc; border-radius: 0.75rem; text-align: center; }
         .qr-share img { display: block; margin: 0.5rem auto; background: #fff; padding: 0.5rem; border-radius: 0.5rem; }
         .qr-share .qr-url { word-break: break-all; font-size: 0.9rem; }
+        .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -43,5 +44,7 @@
         <img src="<?= htmlspecialchars($qrPath, ENT_QUOTES) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
         <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
     </section>
+
+    <?php require __DIR__ . '/partials/footer.php'; ?>
 </body>
 </html>

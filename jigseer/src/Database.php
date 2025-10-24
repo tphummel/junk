@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jigseer;
 
 use PDO;
+use PDOException;
 
 class Database
 {
@@ -25,6 +26,22 @@ class Database
     public function connection(): PDO
     {
         return $this->pdo;
+    }
+
+    public function path(): string
+    {
+        return $this->path;
+    }
+
+    public function isHealthy(): bool
+    {
+        try {
+            $statement = $this->pdo->query('SELECT 1');
+
+            return $statement !== false;
+        } catch (PDOException) {
+            return false;
+        }
     }
 
     private function initialiseSchema(): void

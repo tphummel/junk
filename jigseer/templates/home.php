@@ -13,6 +13,7 @@
         input[type="text"], input[type="number"] { width: 100%; padding: 0.75rem; margin-bottom: 1rem; }
         button { width: 100%; padding: 1rem; font-size: 1.1rem; }
         .error { background: #ffe6e6; color: #980000; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+        .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -44,5 +45,6 @@
             <button type="submit">Open puzzle</button>
         </form>
     </section>
+    <?php require __DIR__ . '/partials/footer.php'; ?>
 </body>
 </html>

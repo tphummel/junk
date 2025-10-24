@@ -15,6 +15,8 @@ use Jigseer\Database;
 use Jigseer\TemplateRenderer;
 use Jigseer\Http\Request;
 
+const TEST_VERSION = 'test-version';
+
 $tests = [];
 
 function test(string $description, callable $callback): void
@@ -50,7 +52,7 @@ function makeApp(string $dbPath): Application
     $renderer = new TemplateRenderer(__DIR__ . '/../templates');
     $database = new Database($dbPath);
 
-    return new Application($database, $renderer);
+    return new Application($database, $renderer, TEST_VERSION);
 }
 
 test('creating a puzzle persists a record and redirects to the puzzle page', function (): void {
@@ -76,7 +78,7 @@ test('recording a hit stores the entry and redirects back to play tab', function
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);
     $puzzleId = $database->createPuzzle('Hit Test');
-    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
 
     $request = new Request('POST', '/p/' . $puzzleId . '/hits', [], [
         'player_name' => 'Jamie',
@@ -89,6 +91,21 @@ test('recording a hit stores the entry and redirects back to play tab', function
 
     $count = (int) $database->connection()->query('SELECT COUNT(*) FROM hits WHERE puzzle_id = ' . $database->connection()->quote($puzzleId))->fetchColumn();
     assertSame(1, $count, 'Hit was not persisted');
+});
+
+test('health endpoint reports ok status with database metadata', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $app = makeApp($dbPath);
+
+    $response = $app->handle(new Request('GET', '/health', [], [], []));
+    assertSame(200, $response->status(), 'Health check should return HTTP 200 when healthy');
+
+    $payload = json_decode($response->body(), true);
+    assertTrue(is_array($payload), 'Health response must be valid JSON');
+    assertSame('ok', $payload['status'] ?? null);
+    assertSame(TEST_VERSION, $payload['version'] ?? null);
+    assertTrue(($payload['database']['healthy'] ?? false) === true, 'Database health flag should be true');
+    assertSame($dbPath, $payload['database']['path'] ?? null);
 });
 
 test('request ipAddress prefers forwarded headers when present', function (): void {
@@ -110,7 +127,7 @@ test('puzzle share url omits default ports on play and settings pages', function
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);
     $puzzleId = $database->createPuzzle('Share URL Test');
-    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
 
     $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/play', [], [], [
         'HTTP_HOST' => 'example.com:80',
@@ -161,7 +178,7 @@ test('leaderboard view renders the player name', function (): void {
     $database = new Database($dbPath);
     $puzzleId = $database->createPuzzle('Leaderboard Test');
     $database->recordHit($puzzleId, 'Morgan', 2);
-    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
 
     $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/leaderboard', [], [], []));
     assertSame(200, $response->status());
@@ -174,7 +191,7 @@ test('exporting puzzle data produces a zip containing puzzle and hits csv files'
     $puzzleId = $database->createPuzzle('Export Test', 1000);
     $database->recordHit($puzzleId, 'Avery', 2, '127.0.0.1', 'phpunit');
     $database->recordHit($puzzleId, 'Blake', 1, '127.0.0.2', 'phpunit');
-    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
 
     $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/settings/export', [], [], []));
 
@@ -221,7 +238,7 @@ test('qr endpoint caches generated images and serves them as png', function (): 
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);
     $puzzleId = $database->createPuzzle('QR Test');
-    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'));
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
 
     $qrPath = dirname(__DIR__) . '/var/qr/' . $puzzleId . '.png';
     if (is_file($qrPath)) {

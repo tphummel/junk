@@ -19,6 +19,7 @@
         .qr-share { margin: 1.5rem 0; padding: 1rem; border: 2px dashed #ccc; border-radius: 0.75rem; text-align: center; }
         .qr-share img { display: block; margin: 0.5rem auto; background: #fff; padding: 0.5rem; border-radius: 0.5rem; }
         .qr-share .qr-url { word-break: break-all; font-size: 0.9rem; }
+        .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -77,6 +78,7 @@
         <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
     </section>
 
+    <?php require __DIR__ . '/partials/footer.php'; ?>
     <?php require __DIR__ . '/partials/live-reload.php'; ?>
 </body>
 </html>

@@ -11,6 +11,7 @@
         .hit:last-child { border-bottom: none; }
         .hit-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
         .hit-tooltip { cursor: help; font-size: 0.9em; }
+        .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -47,6 +48,7 @@
         <?php endif; ?>
     </section>
 
+    <?php require __DIR__ . '/partials/footer.php'; ?>
     <?php require __DIR__ . '/partials/live-reload.php'; ?>
 </body>
 </html>
