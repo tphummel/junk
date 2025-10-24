@@ -19,12 +19,11 @@
         .progress-note { margin-top: 0.75rem; color: #555; font-size: 0.95rem; }
         .leaderboard-table { border-radius: 0.75rem; overflow: hidden; }
         .leaderboard-table thead th { background-color: rgba(255, 255, 255, 0.65); font-weight: 700; }
-        .leaderboard-table tbody tr { position: relative; isolation: isolate; --share-ratio: 0; transition: background-color 0.3s ease; background-color: var(--player-color, transparent); color: var(--player-text-color, inherit); }
+        .leaderboard-table tbody tr { transition: background-color 0.3s ease; background-color: var(--player-color, transparent); color: var(--player-text-color, inherit); }
         .leaderboard-table tbody tr td { color: inherit; }
-        .leaderboard-table tbody tr::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--share-ratio, 0) * 100%); background-color: var(--player-color-strong-alpha, rgba(92, 109, 244, 0.15)); pointer-events: none; z-index: -1; }
         .leaderboard-table tbody tr:hover { background-color: var(--player-color-hover, rgba(0, 0, 0, 0.04)); }
-        .leaderboard-table tbody tr:hover::before { background-color: var(--player-color-strong-alpha-hover, rgba(92, 109, 244, 0.22)); }
         .leaderboard-table tbody tr:last-child td { border-bottom: none; }
+        .leaderboard-table .numeric { text-align: right; white-space: nowrap; }
         .timestamp { display: flex; flex-direction: column; gap: 0.25rem; }
         .timestamp time { font-weight: 600; }
         .relative-time { font-size: 0.85rem; color: #555; }
@@ -73,7 +72,8 @@
                 <thead>
                     <tr>
                         <th>Player</th>
-                        <th>Hits</th>
+                        <th class="numeric">Hits</th>
+                        <th class="numeric">Share of total</th>
                         <th>First hit</th>
                         <th>Most recent</th>
                     </tr>
@@ -83,23 +83,27 @@
                         <?php
                         $hits = (int) $entry['hits'];
                         $shareRatio = $totalHits > 0 ? max(min($hits / $totalHits, 1), 0) : 0;
+                        $sharePercentage = $totalHits > 0 ? $shareRatio * 100 : null;
                         $firstHitIso = trim((string) $entry['first_hit']);
                         $lastHitIso = trim((string) $entry['last_hit']);
                         $palette = player_color_palette((string) $entry['player_name']);
                         $rowStyle = sprintf(
-                            '--share-ratio:%s;--player-color:%s;--player-color-hover:%s;--player-color-strong:%s;--player-color-strong-alpha:%s;--player-color-strong-alpha-hover:%s;--player-text-color:%s;',
-                            number_format($shareRatio, 4, '.', ''),
+                            '--player-color:%s;--player-color-hover:%s;--player-text-color:%s;',
                             $palette['base'],
                             $palette['hover'],
-                            $palette['strong'],
-                            $palette['strong_alpha'],
-                            $palette['strong_alpha_hover'],
                             $palette['text']
                         );
                         ?>
                         <tr style="<?= htmlspecialchars($rowStyle, ENT_QUOTES) ?>">
                             <td><?= htmlspecialchars($entry['player_name'], ENT_QUOTES) ?></td>
-                            <td><?= number_format($hits) ?></td>
+                            <td class="numeric"><?= number_format($hits) ?></td>
+                            <td class="numeric">
+                                <?php if ($sharePercentage !== null): ?>
+                                    <?= number_format($sharePercentage, $sharePercentage < 1 ? 2 : 1) ?>%
+                                <?php else: ?>
+                                    &mdash;
+                                <?php endif; ?>
+                            </td>
                             <td class="timestamp">
                                 <time class="local-time" datetime="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>" data-iso="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>">
                                     <?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>
