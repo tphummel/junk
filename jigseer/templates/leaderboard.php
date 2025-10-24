@@ -49,7 +49,7 @@
             <p class="progress-summary">
                 <strong><?= (int) $progress['completed'] ?></strong>
                 <?php if ($progress['total'] !== null): ?>
-                    of <?= (int) $progress['total'] ?> pieces placed
+                    of <?= (int) $progress['total'] ?>
                     (<?= number_format(min(max($progress['percentage'], 0), 100), 1) ?>%)
                 <?php else: ?>
                     connections logged so far
@@ -73,8 +73,8 @@
                         <th>Player</th>
                         <th class="numeric">Hits</th>
                         <th class="numeric">Share of total</th>
-                        <th>First hit</th>
-                        <th>Most recent</th>
+                        <th>Most Recent</th>
+                        <th>First</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,15 +104,15 @@
                                 <?php endif; ?>
                             </td>
                             <td class="timestamp">
-                                <time class="local-time" datetime="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>" data-iso="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>">
-                                    <?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>
-                                </time>
-                            </td>
-                            <td class="timestamp">
                                 <time class="local-time" datetime="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>" data-iso="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>">
                                     <?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>
                                 </time>
                                 <span class="relative-time" data-iso="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>"></span>
+                            </td>
+                            <td class="timestamp">
+                                <time class="local-time" datetime="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>" data-iso="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>">
+                                    <?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>
+                                </time>
                             </td>
                         </tr>
                     <?php endforeach; ?>
