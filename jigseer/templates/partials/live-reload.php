@@ -28,7 +28,7 @@ if ($initialEventId !== '') {
                 top: 1.5rem;
                 left: 50%;
                 transform: translate(-50%, -200%);
-                background: #1f1b3a;
+                background: linear-gradient(90deg, #5c6df4, #9a4ef1);
                 color: #fff;
                 padding: 0.85rem 1.5rem;
                 border-radius: 999px;
