@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Jigseer\Http;
 
+use Closure;
+
 class Response
 {
     public function __construct(
         private readonly int $status,
         private readonly array $headers,
-        private readonly string $body
+        private readonly string $body,
+        private readonly ?Closure $emitter = null
     ) {
     }
 
@@ -26,6 +29,11 @@ class Response
     public function body(): string
     {
         return $this->body;
+    }
+
+    public function emitter(): ?Closure
+    {
+        return $this->emitter;
     }
 
     public static function html(string $body, int $status = 200, array $headers = []): self
@@ -72,7 +80,7 @@ class Response
         return new self(200, $headers, $contents);
     }
 
-    public static function eventStream(string $body, array $headers = [], int $status = 200): self
+    public static function eventStream(string|callable $body, array $headers = [], int $status = 200): self
     {
         $headers = array_merge([
             'Content-Type' => 'text/event-stream',
@@ -81,6 +89,12 @@ class Response
             'X-Accel-Buffering' => 'no',
         ], $headers);
 
-        return new self($status, $headers, $body);
+        if (is_string($body)) {
+            return new self($status, $headers, $body);
+        }
+
+        $emitter = $body instanceof Closure ? $body : Closure::fromCallable($body);
+
+        return new self($status, $headers, '', $emitter);
     }
 }

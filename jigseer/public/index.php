@@ -15,4 +15,10 @@ foreach ($response->headers() as $name => $value) {
     header($name . ': ' . $value);
 }
 
+$emitter = $response->emitter();
+if ($emitter !== null) {
+    $emitter();
+    return;
+}
+
 echo $response->body();

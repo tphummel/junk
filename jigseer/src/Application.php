@@ -213,19 +213,62 @@ class Application
             $knownTimestamp = $this->parseEventId($currentValue);
         }
 
-        $latestValue = $this->database->latestHitUpdatedAt($puzzle['id']);
-        $latestTimestamp = $this->parseEventId($latestValue);
+        $puzzleId = $puzzle['id'];
+        $initialTimestamp = $knownTimestamp;
 
-        if ($latestTimestamp !== null && ($knownTimestamp === null || $latestTimestamp > $knownTimestamp)) {
-            $body = "retry: 2000\n"
-                . 'id: ' . $latestValue . "\n"
-                . "event: hit\n"
-                . "data: refresh\n\n";
+        return Response::eventStream(function () use ($puzzleId, $initialTimestamp): void {
+            $timeoutSeconds = 60;
+            $heartbeatSeconds = 15;
+            $pollIntervalMicroseconds = 250_000;
+            $known = $initialTimestamp;
+            $startedAt = microtime(true);
+            $lastHeartbeatAt = 0.0;
 
-            return Response::eventStream($body);
-        }
+            $emit = static function (string $chunk): void {
+                echo $chunk;
+                if (function_exists('ob_get_level') && ob_get_level() > 0) {
+                    @ob_flush();
+                }
 
-        return Response::eventStream("retry: 5000\n: keep-alive\n\n");
+                if (function_exists('flush')) {
+                    @flush();
+                }
+            };
+
+            if (function_exists('set_time_limit')) {
+                @set_time_limit(0);
+            }
+
+            $emit("retry: 5000\n: stream-open\n\n");
+            $lastHeartbeatAt = microtime(true);
+
+            while ((microtime(true) - $startedAt) < $timeoutSeconds) {
+                if (function_exists('connection_aborted') && connection_aborted()) {
+                    break;
+                }
+
+                $latestValue = $this->database->latestHitUpdatedAt($puzzleId);
+                $latestTimestamp = $this->parseEventId($latestValue);
+
+                if ($latestTimestamp !== null && ($known === null || $latestTimestamp > $known)) {
+                    $known = $latestTimestamp;
+                    $emit(
+                        "retry: 2000\n"
+                        . 'id: ' . $latestValue . "\n"
+                        . "event: hit\n"
+                        . "data: refresh\n\n"
+                    );
+                    $lastHeartbeatAt = microtime(true);
+                } elseif ((microtime(true) - $lastHeartbeatAt) >= $heartbeatSeconds) {
+                    $emit("retry: 5000\n: keep-alive\n\n");
+                    $lastHeartbeatAt = microtime(true);
+                }
+
+                usleep($pollIntervalMicroseconds);
+            }
+
+            $emit(": stream-complete\n\n");
+        });
     }
 
     private function storeHit(Request $request, array $puzzle): Response
