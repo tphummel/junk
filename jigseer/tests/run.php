@@ -185,6 +185,42 @@ test('leaderboard view renders the player name', function (): void {
     assertTrue(str_contains($response->body(), 'Morgan'));
 });
 
+test('deleting a puzzle requires typing delete as confirmation', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Delete Me');
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
+
+    $response = $app->handle(new Request('POST', '/p/' . $puzzleId . '/settings/delete', [], [
+        'delete_confirmation' => 'nope',
+    ], []));
+
+    assertSame(200, $response->status(), 'Deletion without confirmation should re-render settings.');
+    assertTrue(str_contains($response->body(), 'Type “delete” to confirm puzzle removal.'), 'Expected delete error message.');
+    assertNotEmpty($database->findPuzzle($puzzleId), 'Puzzle should still exist when confirmation fails.');
+});
+
+test('confirming delete removes the puzzle and its hits', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Danger Zone');
+    $database->recordHit($puzzleId, 'Taylor', 1);
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
+
+    $response = $app->handle(new Request('POST', '/p/' . $puzzleId . '/settings/delete', [], [
+        'delete_confirmation' => 'delete',
+    ], []));
+
+    assertSame(302, $response->status(), 'Successful deletion should redirect.');
+    assertSame('/', $response->headers()['Location'] ?? null);
+    assertSame(null, $database->findPuzzle($puzzleId), 'Puzzle should be deleted.');
+
+    $statement = $database->connection()->prepare('SELECT COUNT(*) FROM hits WHERE puzzle_id = :id');
+    $statement->execute(['id' => $puzzleId]);
+    $remainingHits = (int) $statement->fetchColumn();
+    assertSame(0, $remainingHits, 'Associated hits should be removed.');
+});
+
 test('exporting puzzle data produces a zip containing puzzle and hits csv files', function (): void {
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);

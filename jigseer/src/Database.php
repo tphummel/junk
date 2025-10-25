@@ -172,4 +172,10 @@ class Database
             'percentage' => $percentage,
         ];
     }
+
+    public function deletePuzzle(string $id): void
+    {
+        $statement = $this->pdo->prepare('DELETE FROM puzzles WHERE id = :id');
+        $statement->execute(['id' => $id]);
+    }
 }

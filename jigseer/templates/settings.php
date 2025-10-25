@@ -11,6 +11,14 @@
         .qr-share img { display: block; margin: 0.5rem auto; background: #fff; padding: 0.5rem; border-radius: 0.5rem; }
         .qr-share .qr-url { word-break: break-all; font-size: 0.9rem; }
         .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
+        .danger-divider { margin: 3rem 0 1.5rem; border: none; height: 4px; background: linear-gradient(90deg, #b00020, #ff6b6b); }
+        .danger-zone { padding: 1.5rem; border: 2px solid #b00020; border-radius: 0.75rem; background: #fff5f5; }
+        .danger-zone h2 { margin-top: 0; color: #8c0015; }
+        .danger-zone p { margin-top: 0.5rem; }
+        .danger-zone label { font-weight: bold; display: block; margin-top: 1rem; }
+        .danger-button { background-color: #b00020; border-color: #b00020; }
+        .danger-button:hover, .danger-button:focus { background-color: #8c0015; border-color: #8c0015; }
+        .danger-error { color: #8c0015; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -43,6 +51,21 @@
         <p>Scan the QR code to open the tracker on your device.</p>
         <img src="<?= htmlspecialchars($qrPath, ENT_QUOTES) ?>" alt="QR code linking to <?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?>" width="200" height="200" loading="lazy" />
         <p class="qr-url"><code><?= htmlspecialchars($puzzleUrl, ENT_QUOTES) ?></code></p>
+    </section>
+
+    <hr class="danger-divider" />
+
+    <section class="danger-zone">
+        <h2>Delete puzzle</h2>
+        <?php if (!empty($deleteError)): ?>
+            <p class="danger-error"><?= htmlspecialchars($deleteError, ENT_QUOTES) ?></p>
+        <?php endif; ?>
+        <p>Deleting this puzzle will permanently remove the puzzle details and all recorded hits. This action cannot be undone.</p>
+        <form method="post" action="<?= '/p/' . urlencode($puzzle['id']) . '/settings/delete' ?>">
+            <label for="delete_confirmation">Type <code>delete</code> to confirm</label>
+            <input id="delete_confirmation" name="delete_confirmation" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            <button type="submit" class="danger-button">Delete this puzzle</button>
+        </form>
     </section>
 
     <?php require __DIR__ . '/partials/footer.php'; ?>
