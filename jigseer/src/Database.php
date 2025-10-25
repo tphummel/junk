@@ -118,13 +118,34 @@ class Database
     public function leaderboard(string $puzzleId): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT player_name, SUM(connection_count) AS hits, MIN(created_at) AS first_hit, MAX(created_at) AS last_hit
-             FROM hits
-             WHERE puzzle_id = :puzzle_id
-             GROUP BY player_name
-             ORDER BY hits DESC, player_name ASC'
+            'WITH totals AS (
+                SELECT player_name, SUM(connection_count) AS hits, MAX(created_at) AS last_hit
+                FROM hits
+                WHERE puzzle_id = :puzzle_id
+                GROUP BY player_name
+            ), recent_source AS (
+                SELECT player_name, connection_count
+                FROM hits
+                WHERE puzzle_id = :puzzle_id_recent
+                ORDER BY created_at DESC, id DESC
+                LIMIT 100
+            ), recent AS (
+                SELECT player_name, SUM(connection_count) AS recent_hits
+                FROM recent_source
+                GROUP BY player_name
+            )
+            SELECT totals.player_name,
+                   totals.hits,
+                   totals.last_hit,
+                   COALESCE(recent.recent_hits, 0) AS recent_hits
+            FROM totals
+            LEFT JOIN recent ON recent.player_name = totals.player_name
+            ORDER BY totals.hits DESC, totals.player_name ASC'
         );
-        $statement->execute(['puzzle_id' => $puzzleId]);
+        $statement->execute([
+            'puzzle_id' => $puzzleId,
+            'puzzle_id_recent' => $puzzleId,
+        ]);
 
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }

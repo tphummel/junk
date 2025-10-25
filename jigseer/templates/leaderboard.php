@@ -74,7 +74,7 @@
                         <th class="numeric">Hits</th>
                         <th class="numeric">Share of total</th>
                         <th>Most Recent</th>
-                        <th>First</th>
+                        <th class="numeric">Last 100 hits</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,8 +83,8 @@
                         $hits = (int) $entry['hits'];
                         $shareRatio = $totalHits > 0 ? max(min($hits / $totalHits, 1), 0) : 0;
                         $sharePercentage = $totalHits > 0 ? $shareRatio * 100 : null;
-                        $firstHitIso = trim((string) $entry['first_hit']);
                         $lastHitIso = trim((string) $entry['last_hit']);
+                        $recentHits = (int) ($entry['recent_hits'] ?? 0);
                         $palette = player_color_palette((string) $entry['player_name']);
                         $rowStyle = sprintf(
                             '--player-color:%s;--player-color-hover:%s;--player-text-color:%s;',
@@ -109,11 +109,7 @@
                                 </time>
                                 <span class="relative-time" data-iso="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>"></span>
                             </td>
-                            <td class="timestamp">
-                                <time class="local-time" datetime="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>" data-iso="<?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>">
-                                    <?= htmlspecialchars($firstHitIso, ENT_QUOTES) ?>
-                                </time>
-                            </td>
+                            <td class="numeric"><?= number_format($recentHits) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
