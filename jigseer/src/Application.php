@@ -124,7 +124,11 @@ class Application
             return $this->storeHit($request, $puzzle);
         }
 
-        if ($method === 'POST' && $tab === 'settings') {
+        if ($method === 'POST' && $tab === 'settings' && $action === 'delete') {
+            return $this->deletePuzzle($request, $puzzle);
+        }
+
+        if ($method === 'POST' && $tab === 'settings' && $action === null) {
             return $this->updateSettings($request, $puzzle);
         }
 
@@ -188,13 +192,13 @@ class Application
         ]);
     }
 
-    private function renderSettings(Request $request, array $puzzle): Response
+    private function renderSettings(Request $request, array $puzzle, array $extra = []): Response
     {
-        return $this->html('settings.php', [
+        return $this->html('settings.php', array_merge([
             'puzzle' => $puzzle,
             'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
             'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
-        ]);
+        ], $extra));
     }
 
     private function streamPuzzleEvents(Request $request, array $puzzle): Response
@@ -262,6 +266,20 @@ class Application
         ]);
 
         return Response::redirect('/p/' . $puzzle['id'] . '/settings');
+    }
+
+    private function deletePuzzle(Request $request, array $puzzle): Response
+    {
+        $confirmation = trim((string) $request->body('delete_confirmation', ''));
+        if ($confirmation !== 'delete') {
+            return $this->renderSettings($request, $puzzle, [
+                'deleteError' => 'Type “delete” to confirm puzzle removal.',
+            ]);
+        }
+
+        $this->database->deletePuzzle($puzzle['id']);
+
+        return Response::redirect('/');
     }
 
     private function parseEventId(?string $value): ?int
