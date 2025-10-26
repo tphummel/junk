@@ -52,11 +52,9 @@
                 <thead>
                     <tr>
                         <th>Player</th>
-                        <th class="numeric">Hits</th>
-                        <th class="numeric">Share of total</th>
-                        <th class="numeric">Active time</th>
-                        <th>Most Recent</th>
-                        <th class="numeric">Last 100 hits</th>
+                        <th class="numeric">Total Hits</th>
+                        <th class="numeric">Total Time</th>
+                        <th class="numeric">Last 100</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,7 +63,6 @@
                         $hits = (int) $entry['hits'];
                         $shareRatio = $totalHits > 0 ? max(min($hits / $totalHits, 1), 0) : 0;
                         $sharePercentage = $totalHits > 0 ? $shareRatio * 100 : null;
-                        $lastHitIso = trim((string) $entry['last_hit']);
                         $recentHits = (int) ($entry['recent_hits'] ?? 0);
                         $palette = player_color_palette((string) $entry['player_name']);
                         $rowStyle = sprintf(
@@ -77,21 +74,17 @@
                         ?>
                         <tr style="<?= htmlspecialchars($rowStyle, ENT_QUOTES) ?>">
                             <td><?= htmlspecialchars($entry['player_name'], ENT_QUOTES) ?></td>
-                            <td class="numeric"><?= number_format($hits) ?></td>
                             <td class="numeric">
-                                <?php if ($sharePercentage !== null): ?>
-                                    <?= number_format($sharePercentage, $sharePercentage < 1 ? 2 : 1) ?>%
-                                <?php else: ?>
-                                    &mdash;
-                                <?php endif; ?>
+                                <?php
+                                $totalHitsLabel = number_format($hits);
+                                if ($sharePercentage !== null) {
+                                    $formattedShare = number_format($sharePercentage, $sharePercentage < 1 ? 2 : 1);
+                                    $totalHitsLabel .= sprintf(' (%s%%)', $formattedShare);
+                                }
+                                ?>
+                                <?= htmlspecialchars($totalHitsLabel, ENT_QUOTES) ?>
                             </td>
                             <td class="numeric"><?= htmlspecialchars($entry['active_duration'] ?? '0s', ENT_QUOTES) ?></td>
-                            <td class="timestamp">
-                                <time class="local-time" datetime="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>" data-iso="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>">
-                                    <?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>
-                                </time>
-                                <span class="relative-time" data-iso="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>"></span>
-                            </td>
                             <td class="numeric"><?= number_format($recentHits) ?></td>
                         </tr>
                     <?php endforeach; ?>
