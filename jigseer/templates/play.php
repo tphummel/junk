@@ -20,9 +20,21 @@
         .qr-share img { display: block; margin: 0.5rem auto; background: #fff; padding: 0.5rem; border-radius: 0.5rem; }
         .qr-share .qr-url { word-break: break-all; font-size: 0.9rem; }
         .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
+        .breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .breadcrumb a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .breadcrumb a:hover, .breadcrumb a:focus { text-decoration: underline; }
+        .breadcrumb .breadcrumb-home { font-size: 1.25rem; line-height: 1; }
+        .breadcrumb .breadcrumb-separator { color: #888; }
+        .breadcrumb .breadcrumb-current { font-weight: 600; }
     </style>
 </head>
 <body>
+    <?php
+    $breadcrumbPuzzleName = $puzzle['name'];
+    $breadcrumbPuzzleUrl = '/p/' . urlencode($puzzle['id']);
+    $breadcrumbCurrentLabel = null;
+    require __DIR__ . '/partials/breadcrumb.php';
+    ?>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'play'; require __DIR__ . '/partials/nav.php'; ?>
     <?php require_once __DIR__ . '/partials/player_colors.php'; ?>
