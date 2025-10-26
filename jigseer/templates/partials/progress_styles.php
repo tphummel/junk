@@ -7,18 +7,14 @@
         .progress-summary { margin: 0; font-size: 1rem; color: #333; }
         .progress-summary strong { font-size: 1.2rem; }
         .progress-note { margin-top: 0.75rem; color: #555; font-size: 0.95rem; }
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .progress-card { padding: 1.25rem; }
             .progress-details { flex-direction: column; align-items: flex-start; }
-            .progress-bar { width: 100%; max-width: none; }
+            .progress-bar { display: none; }
             .progress-summary { font-size: 0.95rem; }
         }
 
         @media (max-width: 420px) {
             .progress-details { gap: 0.5rem; }
-            .progress-bar { display: none; }
-            .progress-summary {
-                font-size: 1rem;
-                width: 100%;
-            }
+            .progress-summary { font-size: 1rem; width: 100%; }
         }
