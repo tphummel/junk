@@ -154,7 +154,7 @@ test('player views include formatted active durations', function (): void {
 
     assertSame(200, $response->status());
     $body = $response->body();
-    assertTrue(str_contains($body, 'Active 5m'), 'Expected rendered active duration on play view');
+    assertTrue(str_contains($body, 'class="player-duration">5m'), 'Expected rendered duration on play view');
 
     $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/leaderboard', [], [], []));
     assertSame(200, $response->status());
