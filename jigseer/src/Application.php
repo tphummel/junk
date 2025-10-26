@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Jigseer\Http\Request;
 use Jigseer\Http\Response;
 use function Jigseer\ensure_directory;
+use function Jigseer\format_duration;
 
 class Application
 {
@@ -186,7 +187,7 @@ class Application
     private function renderPlay(Request $request, array $puzzle): Response
     {
         $progress = $this->database->completionProgress($puzzle['id']);
-        $leaderboard = $this->database->leaderboard($puzzle['id']);
+        $leaderboard = $this->leaderboardEntries($puzzle['id']);
 
         return $this->html('play.php', [
             'puzzle' => $puzzle,
@@ -200,7 +201,7 @@ class Application
 
     private function renderLeaderboard(array $puzzle): Response
     {
-        $leaderboard = $this->database->leaderboard($puzzle['id']);
+        $leaderboard = $this->leaderboardEntries($puzzle['id']);
         $progress = $this->database->completionProgress($puzzle['id']);
 
         return $this->html('leaderboard.php', [
@@ -209,6 +210,28 @@ class Application
             'progress' => $progress,
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function leaderboardEntries(string $puzzleId): array
+    {
+        $entries = $this->database->leaderboard($puzzleId);
+
+        return array_map(static function (array $entry): array {
+            $activeSeconds = isset($entry['active_seconds']) ? max(0, (int) $entry['active_seconds']) : 0;
+            $entry['active_seconds'] = $activeSeconds;
+            $entry['active_duration'] = format_duration($activeSeconds);
+
+            $firstHit = $entry['first_hit'] ?? null;
+            $entry['first_hit'] = is_string($firstHit) && trim($firstHit) !== '' ? $firstHit : null;
+
+            $lastHit = $entry['last_hit'] ?? null;
+            $entry['last_hit'] = is_string($lastHit) && trim($lastHit) !== '' ? $lastHit : null;
+
+            return $entry;
+        }, $entries);
     }
 
     private function renderTranscript(array $puzzle): Response

@@ -54,6 +54,7 @@
                         <th>Player</th>
                         <th class="numeric">Hits</th>
                         <th class="numeric">Share of total</th>
+                        <th class="numeric">Active time</th>
                         <th>Most Recent</th>
                         <th class="numeric">Last 100 hits</th>
                     </tr>
@@ -84,6 +85,7 @@
                                     &mdash;
                                 <?php endif; ?>
                             </td>
+                            <td class="numeric"><?= htmlspecialchars($entry['active_duration'] ?? '0s', ENT_QUOTES) ?></td>
                             <td class="timestamp">
                                 <time class="local-time" datetime="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>" data-iso="<?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>">
                                     <?= htmlspecialchars($lastHitIso, ENT_QUOTES) ?>
