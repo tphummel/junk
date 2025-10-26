@@ -407,6 +407,81 @@ test('exporting puzzle data produces a zip containing puzzle and hits csv files'
     assertSame(['Avery', 'Blake'], $players);
 });
 
+test('admin view lists puzzles with aggregated stats', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleA = $database->createPuzzle('Admin Alpha');
+    $puzzleB = $database->createPuzzle('Admin Beta');
+
+    $pdo = $database->connection();
+    $updatePuzzle = $pdo->prepare('UPDATE puzzles SET created_at = :created_at, updated_at = :updated_at WHERE id = :id');
+    $updatePuzzle->execute([
+        'created_at' => '2024-01-01T00:00:00+00:00',
+        'updated_at' => '2024-01-02T00:00:00+00:00',
+        'id' => $puzzleA,
+    ]);
+    $updatePuzzle->execute([
+        'created_at' => '2024-01-03T00:00:00+00:00',
+        'updated_at' => '2024-01-10T12:00:00+00:00',
+        'id' => $puzzleB,
+    ]);
+
+    $insertHit = $pdo->prepare('INSERT INTO hits (puzzle_id, player_name, connection_count, ip_address, user_agent, created_at, updated_at) VALUES (:puzzle_id, :player_name, :connection_count, NULL, NULL, :created_at, :updated_at)');
+    $insertHit->execute([
+        'puzzle_id' => $puzzleA,
+        'player_name' => 'Avery',
+        'connection_count' => 3,
+        'created_at' => '2024-01-05T10:00:00+00:00',
+        'updated_at' => '2024-01-05T10:00:00+00:00',
+    ]);
+    $insertHit->execute([
+        'puzzle_id' => $puzzleA,
+        'player_name' => 'Blake',
+        'connection_count' => 1,
+        'created_at' => '2024-01-05T15:00:00+00:00',
+        'updated_at' => '2024-01-05T15:00:00+00:00',
+    ]);
+    $insertHit->execute([
+        'puzzle_id' => $puzzleB,
+        'player_name' => 'Casey',
+        'connection_count' => 2,
+        'created_at' => '2024-01-04T08:00:00+00:00',
+        'updated_at' => '2024-01-04T08:00:00+00:00',
+    ]);
+
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
+    $response = $app->handle(new Request('GET', '/admin', [], [], []));
+
+    assertSame(200, $response->status());
+    $body = $response->body();
+    assertTrue(str_contains($body, htmlspecialchars($puzzleA, ENT_QUOTES)), 'Admin view should list the first puzzle code.');
+    assertTrue(str_contains($body, htmlspecialchars($puzzleB, ENT_QUOTES)), 'Admin view should list the second puzzle code.');
+    assertTrue(str_contains($body, 'data-label="Total hits">4<'), 'Admin view should show aggregated hits for first puzzle.');
+    assertTrue(str_contains($body, 'data-label="Players">2<'), 'Admin view should show aggregated players for first puzzle.');
+    assertTrue(str_contains($body, 'data-label="Updated at">2024-01-05T15:00:00+00:00<'), 'Updated at should reflect most recent hit.');
+    assertTrue(str_contains($body, 'data-label="Updated at">2024-01-10T12:00:00+00:00<'), 'Updated at should use puzzle timestamp when it is more recent.');
+});
+
+test('admin database download returns sqlite file contents', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $app = makeApp($dbPath);
+
+    $response = $app->handle(new Request('GET', '/admin/database', [], [], []));
+
+    assertSame(200, $response->status());
+    $headers = $response->headers();
+    assertSame('application/vnd.sqlite3', $headers['Content-Type'] ?? '', 'Download should have sqlite content type.');
+    $disposition = $headers['Content-Disposition'] ?? '';
+    assertTrue(str_contains($disposition, 'attachment; filename="'), 'Download should include attachment disposition.');
+
+    $size = filesize($dbPath);
+    assertTrue($size !== false, 'Database file should exist on disk.');
+    assertSame((string) $size, $headers['Content-Length'] ?? '', 'Download should include file size header.');
+    $fileContents = file_get_contents($dbPath);
+    assertTrue($fileContents !== false, 'Database contents should be readable.');
+    assertSame($fileContents, $response->body(), 'Download response should stream the database file.');
+});
+
 test('qr endpoint caches generated images and serves them as png', function (): void {
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);

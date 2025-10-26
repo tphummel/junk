@@ -100,6 +100,54 @@ class Database
         return $row ?: null;
     }
 
+    public function allPuzzlesWithStats(): array
+    {
+        $statement = $this->pdo->query(
+            'SELECT
+                p.id,
+                p.name,
+                p.created_at,
+                p.updated_at AS puzzle_updated_at,
+                COALESCE(aggregated.total_hits, 0) AS total_hits,
+                COALESCE(aggregated.player_count, 0) AS player_count,
+                aggregated.last_hit_at
+            FROM puzzles p
+            LEFT JOIN (
+                SELECT
+                    puzzle_id,
+                    SUM(connection_count) AS total_hits,
+                    COUNT(DISTINCT player_name) AS player_count,
+                    MAX(updated_at) AS last_hit_at
+                FROM hits
+                GROUP BY puzzle_id
+            ) AS aggregated ON aggregated.puzzle_id = p.id
+            ORDER BY p.created_at DESC, p.id ASC'
+        );
+
+        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(
+            static function (array $row): array {
+                $updatedAt = $row['puzzle_updated_at'];
+                $lastHitAt = $row['last_hit_at'] ?? null;
+
+                if ($lastHitAt !== null && $lastHitAt > $updatedAt) {
+                    $updatedAt = $lastHitAt;
+                }
+
+                return [
+                    'id' => $row['id'],
+                    'name' => $row['name'],
+                    'created_at' => $row['created_at'],
+                    'updated_at' => $updatedAt,
+                    'total_hits' => (int) ($row['total_hits'] ?? 0),
+                    'player_count' => (int) ($row['player_count'] ?? 0),
+                ];
+            },
+            $rows
+        );
+    }
+
     public function recordHit(string $puzzleId, string $playerName, int $connections, ?string $ipAddress = null, ?string $userAgent = null): void
     {
         $now = (new \DateTimeImmutable())->format(DATE_ATOM);
