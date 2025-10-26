@@ -158,6 +158,15 @@ class Database
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function deleteHit(string $puzzleId, int $hitId): void
+    {
+        $statement = $this->pdo->prepare('DELETE FROM hits WHERE puzzle_id = :puzzle_id AND id = :id');
+        $statement->execute([
+            'puzzle_id' => $puzzleId,
+            'id' => $hitId,
+        ]);
+    }
+
     public function latestHitUpdatedAt(string $puzzleId): ?string
     {
         $statement = $this->pdo->prepare('SELECT MAX(updated_at) FROM hits WHERE puzzle_id = :puzzle_id');
