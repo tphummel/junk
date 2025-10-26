@@ -7,14 +7,25 @@
     <title>Transcript &middot; <?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></title>
     <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" integrity="sha384-T7n0ANKPOuUMGAfJOyrUo9qeycGQ21MCH2RKDWEUtNdz/BPZt6r9Ga6IpiOb8t6V" crossorigin="anonymous">
     <style>
-        .hit { padding: 1rem 0; border-bottom: 1px solid #ddd; }
-        .hit:last-child { border-bottom: none; }
-        .hit-summary { display: flex; align-items: center; gap: 0.5rem; }
-        .hit-details { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
-        .hit-delete-form { margin-left: 1rem; }
-        .hit-delete-button { border: none; background: none; color: #c00; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
-        .hit-delete-button:hover, .hit-delete-button:focus { text-decoration: underline; }
-        .hit-tooltip { cursor: help; font-size: 0.9em; }
+        .transcript-table-wrapper { overflow-x: auto; }
+        .transcript-table { width: 100%; border-collapse: collapse; min-width: 100%; }
+        .transcript-table th,
+        .transcript-table td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
+        .transcript-table tbody tr:last-child th,
+        .transcript-table tbody tr:last-child td { border-bottom: none; }
+        .transcript-table th { font-weight: 600; white-space: nowrap; font-size: 0.95rem; }
+        .transcript-table td.time-column time { white-space: nowrap; }
+        .transcript-table td.actions-column { width: 1%; }
+        .transcript-table td.actions-column form { display: inline; }
+        .transcript-delete-button { border: none; background: none; color: #c00; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+        .transcript-delete-button:hover,
+        .transcript-delete-button:focus { text-decoration: underline; }
+        .transcript-tooltip { cursor: help; font-size: 0.9em; }
+        @media (max-width: 640px) {
+            .transcript-table { font-size: 0.9rem; }
+            .transcript-table th,
+            .transcript-table td { padding: 0.4rem 0.5rem; }
+        }
         .app-footer { margin-top: 3rem; text-align: center; color: #777; font-size: 0.85rem; }
         .breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
         .breadcrumb a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; }
@@ -80,37 +91,77 @@
 
                 return $timestamp;
             };
+
+            $totalHits = count($hits);
+            $playerHitCounts = [];
+            foreach ($hits as $hit) {
+                $playerNameKey = (string) ($hit['player_name'] ?? '');
+                $playerHitCounts[$playerNameKey] = ($playerHitCounts[$playerNameKey] ?? 0) + 1;
+            }
             ?>
-            <?php foreach ($hits as $hit): ?>
-                <?php
-                $tooltipParts = [];
-                if (!empty($hit['ip_address'])) {
-                    $tooltipParts[] = 'IP address: ' . $hit['ip_address'];
-                }
-                if (!empty($hit['user_agent'])) {
-                    $tooltipParts[] = 'User agent: ' . $hit['user_agent'];
-                }
-                $tooltip = implode("\n", $tooltipParts);
-                ?>
-                <article class="hit">
-                    <div class="hit-summary">
-                        <div class="hit-details">
-                            <strong><?= htmlspecialchars($hit['player_name'], ENT_QUOTES) ?></strong>
-                            recorded <strong><?= (int) $hit['connection_count'] ?></strong> connection(s)
-                            <time datetime="<?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?>" title="<?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?>">
-                                <?= htmlspecialchars($relativeTime($hit['created_at']), ENT_QUOTES) ?>
-                            </time>
-                            <?php if ($tooltip !== ''): ?>
-                                <span class="hit-tooltip" title="<?= htmlspecialchars($tooltip, ENT_QUOTES) ?>" aria-label="Connection details">ℹ️</span>
-                            <?php endif; ?>
-                        </div>
-                        <form method="post" action="/p/<?= rawurlencode($puzzle['id']) ?>/transcript/delete" class="hit-delete-form">
-                            <input type="hidden" name="hit_id" value="<?= (int) $hit['id'] ?>">
-                            <button type="submit" class="hit-delete-button" aria-label="Delete entry">×</button>
-                        </form>
-                    </div>
-                </article>
-            <?php endforeach; ?>
+            <div class="transcript-table-wrapper">
+                <table class="transcript-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Player hit</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Player</th>
+                            <th scope="col">IP address</th>
+                            <th scope="col" class="actions-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($hits as $index => $hit): ?>
+                        <?php
+                        $playerName = (string) ($hit['player_name'] ?? '');
+                        $playerHitNumber = $playerHitCounts[$playerName] ?? null;
+                        if ($playerHitNumber !== null) {
+                            $playerHitCounts[$playerName]--;
+                        }
+
+                        $overallSequenceNumber = $totalHits - $index;
+                        $ipAddress = $hit['ip_address'] ?? null;
+                        $userAgent = $hit['user_agent'] ?? null;
+                        $ipTitleParts = [];
+                        if ($userAgent !== null && $userAgent !== '') {
+                            $ipTitleParts[] = 'User agent: ' . $userAgent;
+                        }
+                        $ipTitle = implode("\n", $ipTitleParts);
+                        ?>
+                        <tr>
+                            <td><?= htmlspecialchars((string) $overallSequenceNumber, ENT_QUOTES) ?></td>
+                            <td>
+                                <?php if ($playerHitNumber !== null): ?>
+                                    <?= htmlspecialchars((string) $playerHitNumber, ENT_QUOTES) ?>
+                                <?php else: ?>
+                                    &mdash;
+                                <?php endif; ?>
+                            </td>
+                            <td class="time-column">
+                                <time datetime="<?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?>" title="<?= htmlspecialchars($hit['created_at'], ENT_QUOTES) ?>">
+                                    <?= htmlspecialchars($relativeTime($hit['created_at']), ENT_QUOTES) ?>
+                                </time>
+                            </td>
+                            <td><?= htmlspecialchars($playerName, ENT_QUOTES) ?></td>
+                            <td>
+                                <?php if ($ipAddress !== null && $ipAddress !== ''): ?>
+                                    <span<?php if ($ipTitle !== ''): ?> class="transcript-tooltip" title="<?= htmlspecialchars($ipTitle, ENT_QUOTES) ?>"<?php endif; ?>><?= htmlspecialchars($ipAddress, ENT_QUOTES) ?></span>
+                                <?php else: ?>
+                                    &mdash;
+                                <?php endif; ?>
+                            </td>
+                            <td class="actions-column">
+                                <form method="post" action="/p/<?= rawurlencode($puzzle['id']) ?>/transcript/delete">
+                                    <input type="hidden" name="hit_id" value="<?= (int) $hit['id'] ?>">
+                                    <button type="submit" class="transcript-delete-button" aria-label="Delete entry">×</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif; ?>
     </section>
 
