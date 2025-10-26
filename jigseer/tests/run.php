@@ -108,6 +108,45 @@ test('health endpoint reports ok status with database metadata', function (): vo
     assertSame($dbPath, $payload['database']['path'] ?? null);
 });
 
+test('health endpoint includes Fly environment metadata when available', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $app = makeApp($dbPath);
+
+    $variables = [
+        'FLY_APP_NAME' => 'demo-app',
+        'FLY_REGION' => 'iad',
+        'PRIMARY_REGION' => 'iad',
+    ];
+
+    $originals = [];
+    foreach ($variables as $name => $value) {
+        $originals[$name] = getenv($name);
+        putenv($name . '=' . $value);
+        $_ENV[$name] = $value;
+    }
+
+    try {
+        $response = $app->handle(new Request('GET', '/health', [], [], []));
+        $payload = json_decode($response->body(), true);
+
+        assertTrue(is_array($payload), 'Health response must be valid JSON');
+        foreach ($variables as $name => $value) {
+            assertSame($value, $payload['environment'][$name] ?? null, sprintf('Expected %s to be reported', $name));
+        }
+    } finally {
+        foreach ($variables as $name => $_) {
+            $original = $originals[$name];
+            if ($original === false) {
+                putenv($name);
+                unset($_ENV[$name]);
+            } else {
+                putenv($name . '=' . $original);
+                $_ENV[$name] = $original;
+            }
+        }
+    }
+});
+
 test('request ipAddress prefers forwarded headers when present', function (): void {
     $request = new Request('POST', '/example', [], [], [
         'HTTP_X_FORWARDED_FOR' => '203.0.113.4, 198.51.100.7',
