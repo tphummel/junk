@@ -13,3 +13,12 @@
             .progress-bar { width: 100%; max-width: none; }
             .progress-summary { font-size: 0.95rem; }
         }
+
+        @media (max-width: 420px) {
+            .progress-details { gap: 0.5rem; }
+            .progress-bar { display: none; }
+            .progress-summary {
+                font-size: 1rem;
+                width: 100%;
+            }
+        }
