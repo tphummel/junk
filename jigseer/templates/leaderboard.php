@@ -34,9 +34,21 @@
             .progress-bar { width: 100%; max-width: none; }
             .progress-summary { font-size: 0.95rem; }
         }
+        .breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .breadcrumb a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .breadcrumb a:hover, .breadcrumb a:focus { text-decoration: underline; }
+        .breadcrumb .breadcrumb-home { font-size: 1.25rem; line-height: 1; }
+        .breadcrumb .breadcrumb-separator { color: #888; }
+        .breadcrumb .breadcrumb-current { font-weight: 600; }
     </style>
 </head>
 <body>
+    <?php
+    $breadcrumbPuzzleName = $puzzle['name'];
+    $breadcrumbPuzzleUrl = '/p/' . urlencode($puzzle['id']);
+    $breadcrumbCurrentLabel = 'Leaderboard';
+    require __DIR__ . '/partials/breadcrumb.php';
+    ?>
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'leaderboard'; require __DIR__ . '/partials/nav.php'; ?>
     <?php require_once __DIR__ . '/partials/player_colors.php'; ?>
