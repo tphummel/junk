@@ -185,6 +185,35 @@ test('leaderboard view renders the player name', function (): void {
     assertTrue(str_contains($response->body(), 'Morgan'));
 });
 
+test('transcript entries can be deleted', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Transcript Delete Test');
+    $database->recordHit($puzzleId, 'Alex', 1);
+    $database->recordHit($puzzleId, 'Bryn', 2);
+
+    $ids = $database->connection()->query(
+        'SELECT id FROM hits WHERE puzzle_id = ' . $database->connection()->quote($puzzleId) . ' ORDER BY id ASC'
+    )->fetchAll(PDO::FETCH_COLUMN);
+    assertSame(2, count($ids), 'Expected two hits before deletion');
+
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
+    $hitIdToDelete = (string) $ids[0];
+
+    $response = $app->handle(new Request('POST', '/p/' . $puzzleId . '/transcript/delete', [], [
+        'hit_id' => $hitIdToDelete,
+    ], []));
+
+    assertSame(302, $response->status());
+    assertSame('/p/' . $puzzleId . '/transcript', $response->headers()['Location'] ?? '');
+
+    $remainingIds = $database->connection()->query(
+        'SELECT id FROM hits WHERE puzzle_id = ' . $database->connection()->quote($puzzleId)
+    )->fetchAll(PDO::FETCH_COLUMN);
+
+    assertSame([ (int) $ids[1] ], array_map('intval', $remainingIds), 'Only the second hit should remain');
+});
+
 test('deleting a puzzle requires typing delete as confirmation', function (): void {
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);

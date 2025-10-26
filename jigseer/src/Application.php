@@ -136,6 +136,10 @@ class Application
             return $this->exportPuzzleData($puzzle);
         }
 
+        if ($method === 'POST' && $tab === 'transcript' && $action === 'delete') {
+            return $this->deleteTranscriptEntry($request, $puzzle);
+        }
+
         if ($method === 'GET' && $tab === 'qr') {
             return $this->servePuzzleQr($request, $puzzle);
         }
@@ -190,6 +194,25 @@ class Application
             'hits' => $hits,
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]);
+    }
+
+    private function deleteTranscriptEntry(Request $request, array $puzzle): Response
+    {
+        $hitId = $request->body('hit_id');
+        $redirect = '/p/' . rawurlencode($puzzle['id']) . '/transcript';
+
+        if (!is_scalar($hitId)) {
+            return Response::redirect($redirect);
+        }
+
+        $hitIdString = trim((string) $hitId);
+        if ($hitIdString === '' || !ctype_digit($hitIdString)) {
+            return Response::redirect($redirect);
+        }
+
+        $this->database->deleteHit($puzzle['id'], (int) $hitIdString);
+
+        return Response::redirect($redirect);
     }
 
     private function renderSettings(Request $request, array $puzzle, array $extra = []): Response
