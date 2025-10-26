@@ -85,6 +85,32 @@ class Application
             'timestamp' => (new DateTimeImmutable())->format(DATE_ATOM),
         ];
 
+        $flyEnvVars = [
+            'FLY_APP_NAME',
+            'FLY_MACHINE_ID',
+            'FLY_ALLOC_ID',
+            'FLY_REGION',
+            'FLY_PUBLIC_IP',
+            'FLY_IMAGE_REF',
+            'FLY_MACHINE_VERSION',
+            'FLY_PRIVATE_IP',
+            'FLY_PROCESS_GROUP',
+            'FLY_VM_MEMORY_MB',
+            'PRIMARY_REGION',
+        ];
+
+        $environment = [];
+        foreach ($flyEnvVars as $variable) {
+            $value = getenv($variable);
+            if ($value !== false && $value !== '') {
+                $environment[$variable] = $value;
+            }
+        }
+
+        if ($environment !== []) {
+            $payload['environment'] = $environment;
+        }
+
         return Response::json($payload, $status);
     }
 
