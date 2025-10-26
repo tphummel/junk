@@ -26,6 +26,7 @@
         .breadcrumb .breadcrumb-home { font-size: 1.25rem; line-height: 1; }
         .breadcrumb .breadcrumb-separator { color: #888; }
         .breadcrumb .breadcrumb-current { font-weight: 600; }
+        <?php require __DIR__ . '/partials/progress_styles.php'; ?>
     </style>
 </head>
 <body>
@@ -38,6 +39,10 @@
     <h1><?= htmlspecialchars($puzzle['name'], ENT_QUOTES) ?></h1>
     <?php $activeTab = 'play'; require __DIR__ . '/partials/nav.php'; ?>
     <?php require_once __DIR__ . '/partials/player_colors.php'; ?>
+
+    <?php if ($progress['total'] !== null): ?>
+        <?php require __DIR__ . '/partials/progress_card.php'; ?>
+    <?php endif; ?>
 
     <section>
         <h2>Players</h2>
