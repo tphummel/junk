@@ -21,6 +21,7 @@
         .transcript-delete-button:hover,
         .transcript-delete-button:focus { text-decoration: underline; }
         .transcript-tooltip { cursor: help; font-size: 0.9em; }
+        .transcript-duplicate-flag { margin-left: 0.35rem; font-size: 1.1rem; vertical-align: middle; }
         @media (max-width: 640px) {
             .transcript-table { font-size: 0.9rem; }
             .transcript-table th,
@@ -94,9 +95,57 @@
 
             $totalHits = count($hits);
             $playerHitCounts = [];
+            $hitsGroupedByPlayer = [];
             foreach ($hits as $hit) {
                 $playerNameKey = (string) ($hit['player_name'] ?? '');
                 $playerHitCounts[$playerNameKey] = ($playerHitCounts[$playerNameKey] ?? 0) + 1;
+                $hitsGroupedByPlayer[$playerNameKey][] = $hit;
+            }
+
+            $duplicateCandidateHitIds = [];
+            foreach ($hitsGroupedByPlayer as $playerHits) {
+                $playerHitsCount = count($playerHits);
+                for ($i = 0; $i < $playerHitsCount; $i++) {
+                    $hitA = $playerHits[$i];
+
+                    $hitAId = $hitA['id'] ?? null;
+                    if (!is_scalar($hitAId)) {
+                        continue;
+                    }
+
+                    $timeAString = $hitA['created_at'] ?? null;
+                    $timeA = is_string($timeAString) && trim($timeAString) !== '' ? strtotime($timeAString) : false;
+                    if ($timeA === false) {
+                        continue;
+                    }
+
+                    for ($j = $i + 1; $j < $playerHitsCount; $j++) {
+                        $hitB = $playerHits[$j];
+
+                        $hitBId = $hitB['id'] ?? null;
+                        if (!is_scalar($hitBId)) {
+                            continue;
+                        }
+
+                        $timeBString = $hitB['created_at'] ?? null;
+                        $timeB = is_string($timeBString) && trim($timeBString) !== '' ? strtotime($timeBString) : false;
+                        if ($timeB === false) {
+                            continue;
+                        }
+
+                        if (abs($timeA - $timeB) > 10) {
+                            continue;
+                        }
+
+                        $userAgentDifferent = ($hitA['user_agent'] ?? null) !== ($hitB['user_agent'] ?? null);
+                        $ipDifferent = ($hitA['ip_address'] ?? null) !== ($hitB['ip_address'] ?? null);
+
+                        if ($userAgentDifferent || $ipDifferent) {
+                            $duplicateCandidateHitIds[(string) $hitAId] = true;
+                            $duplicateCandidateHitIds[(string) $hitBId] = true;
+                        }
+                    }
+                }
             }
             ?>
             <div class="transcript-table-wrapper">
@@ -128,6 +177,9 @@
                             $ipTitleParts[] = 'User agent: ' . $userAgent;
                         }
                         $ipTitle = implode("\n", $ipTitleParts);
+                        $hitIdForDisplay = $hit['id'] ?? null;
+                        $hitIdString = is_scalar($hitIdForDisplay) ? (string) $hitIdForDisplay : null;
+                        $isDuplicateCandidate = $hitIdString !== null && isset($duplicateCandidateHitIds[$hitIdString]);
                         ?>
                         <tr>
                             <td><?= htmlspecialchars((string) $overallSequenceNumber, ENT_QUOTES) ?></td>
@@ -155,6 +207,9 @@
                                 <form method="post" action="/p/<?= rawurlencode($puzzle['id']) ?>/transcript/delete">
                                     <input type="hidden" name="hit_id" value="<?= (int) $hit['id'] ?>">
                                     <button type="submit" class="transcript-delete-button" aria-label="Delete entry">×</button>
+                                    <?php if ($isDuplicateCandidate): ?>
+                                        <span class="transcript-duplicate-flag" role="img" aria-label="Potential duplicate entry" title="Potential duplicate entry">👯</span>
+                                    <?php endif; ?>
                                 </form>
                             </td>
                         </tr>
