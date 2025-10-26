@@ -17,11 +17,26 @@ if (!function_exists('player_color_palette')) {
         }
 
         $hash = crc32($normalized);
+
+        // Use different portions of the hash so that players with close names still
+        // receive noticeably different palettes while keeping the values stable.
         $hue = (int) ($hash % 360);
-        $saturation = 65;
-        $baseLightness = 88;
-        $hoverLightness = max(min($baseLightness - 6, 96), 20);
-        $strongLightness = max(min($baseLightness - 24, 80), 15);
+        $hash = intdiv($hash, 360);
+
+        $saturationRange = 30; // results in 55% - 84%
+        $saturation = 55 + ($hash % $saturationRange);
+        $hash = intdiv($hash, $saturationRange);
+
+        $baseLightnessRange = 12; // results in 78% - 89%
+        $baseLightness = 78 + ($hash % $baseLightnessRange);
+        $hash = intdiv($hash, $baseLightnessRange);
+
+        $hoverOffset = 7 + ($hash % 5); // 7% - 11%
+        $hash = intdiv($hash, 5);
+        $strongOffset = 18 + ($hash % 8); // 18% - 25%
+
+        $hoverLightness = max(min($baseLightness - $hoverOffset, 96), 20);
+        $strongLightness = max(min($baseLightness - $strongOffset, 85), 15);
 
         $base = sprintf('hsl(%d, %d%%, %d%%)', $hue, $saturation, $baseLightness);
         $hover = sprintf('hsl(%d, %d%%, %d%%)', $hue, $saturation, $hoverLightness);
