@@ -7,6 +7,7 @@ namespace Jigseer;
 use DateTimeImmutable;
 use Jigseer\Http\Request;
 use Jigseer\Http\Response;
+use RuntimeException;
 use function Jigseer\ensure_directory;
 use function Jigseer\format_duration;
 
@@ -38,6 +39,14 @@ class Application
 
         if ($method === 'GET' && $path === '/health') {
             return $this->health();
+        }
+
+        if ($method === 'GET' && $path === '/admin') {
+            return $this->renderAdmin();
+        }
+
+        if ($method === 'GET' && $path === '/admin/database') {
+            return $this->downloadDatabase();
         }
 
         $segments = array_values(array_filter(explode('/', $path)));
@@ -123,6 +132,47 @@ class Application
         }
 
         return $this->html('home.php');
+    }
+
+    private function renderAdmin(): Response
+    {
+        $puzzles = $this->database->allPuzzlesWithStats();
+        $databasePath = $this->database->path();
+        $databaseSize = null;
+
+        if (is_file($databasePath)) {
+            $size = filesize($databasePath);
+            if ($size !== false) {
+                $databaseSize = $size;
+            }
+        }
+
+        return $this->html('admin.php', [
+            'puzzles' => $puzzles,
+            'databaseFilename' => basename($databasePath),
+            'databaseSizeBytes' => $databaseSize,
+            'databaseDownloadPath' => '/admin/database',
+        ]);
+    }
+
+    private function downloadDatabase(): Response
+    {
+        $path = $this->database->path();
+
+        if (!is_file($path)) {
+            return $this->html('404.php', [], 404);
+        }
+
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            throw new RuntimeException(sprintf('Unable to read database file at %s', $path));
+        }
+
+        return Response::download(
+            basename($path),
+            $contents,
+            'application/vnd.sqlite3'
+        );
     }
 
     private function createPuzzle(Request $request): Response
