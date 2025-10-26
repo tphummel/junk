@@ -14,6 +14,7 @@
         .player-card:focus-visible { background-color: var(--player-color-hover, #eaeaea); transform: translateY(-2px); outline: 3px solid var(--player-color-strong, rgba(92, 109, 244, 0.45)); outline-offset: 2px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--player-color-strong, rgba(0, 0, 0, 0.12)); }
         .player-card strong { display: block; font-size: 1.05rem; margin-bottom: 0.4rem; }
         .player-card .player-count { margin: 0; font-size: 1.85rem; font-weight: 700; letter-spacing: -0.02em; }
+        .player-card .player-duration { margin: 0.35rem 0 0; font-size: 0.95rem; color: rgba(0, 0, 0, 0.7); }
         .new-player-form { margin-top: 1rem; }
         button { width: 100%; padding: 1rem; font-size: 1.1rem; }
         .qr-share { margin: 1.5rem 0; padding: 1rem; border: 2px dashed #ccc; border-radius: 0.75rem; text-align: center; }
@@ -72,6 +73,7 @@
                         <button type="submit" class="player-card" style="<?= htmlspecialchars($playerStyle, ENT_QUOTES) ?>">
                             <strong><?= htmlspecialchars($entry['player_name'], ENT_QUOTES) ?></strong>
                             <p class="player-count"><?= number_format((int) $entry['hits']) ?></p>
+                            <p class="player-duration">Active <?= htmlspecialchars($entry['active_duration'] ?? '0s', ENT_QUOTES) ?></p>
                         </button>
                     </form>
                 <?php endforeach; ?>

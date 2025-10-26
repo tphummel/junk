@@ -26,3 +26,36 @@ function generate_code(int $length = 6): string
 
     return $result;
 }
+
+function format_duration(int $seconds): string
+{
+    $seconds = max(0, $seconds);
+
+    $units = [
+        'd' => 86_400,
+        'h' => 3_600,
+        'm' => 60,
+        's' => 1,
+    ];
+
+    $parts = [];
+    foreach ($units as $suffix => $unitSeconds) {
+        if ($seconds < $unitSeconds) {
+            continue;
+        }
+
+        $value = intdiv($seconds, $unitSeconds);
+        $seconds -= $value * $unitSeconds;
+        $parts[] = $value . $suffix;
+
+        if (count($parts) === 2) {
+            break;
+        }
+    }
+
+    if ($parts === []) {
+        return '0s';
+    }
+
+    return implode(' ', $parts);
+}

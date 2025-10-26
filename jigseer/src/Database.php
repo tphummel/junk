@@ -118,10 +118,33 @@ class Database
     public function leaderboard(string $puzzleId): array
     {
         $statement = $this->pdo->prepare(
-            'WITH totals AS (
-                SELECT player_name, SUM(connection_count) AS hits, MAX(created_at) AS last_hit
+            'WITH player_hits AS (
+                SELECT
+                    player_name,
+                    connection_count,
+                    created_at,
+                    id,
+                    CAST(strftime(\'%s\', created_at) AS INTEGER) AS created_epoch,
+                    LAG(CAST(strftime(\'%s\', created_at) AS INTEGER)) OVER (
+                        PARTITION BY player_name
+                        ORDER BY created_at ASC, id ASC
+                    ) AS previous_epoch
                 FROM hits
                 WHERE puzzle_id = :puzzle_id
+            ), totals AS (
+                SELECT
+                    player_name,
+                    SUM(connection_count) AS hits,
+                    MIN(created_at) AS first_hit,
+                    MAX(created_at) AS last_hit,
+                    COALESCE(SUM(
+                        CASE
+                            WHEN previous_epoch IS NULL THEN 0
+                            WHEN created_epoch - previous_epoch > 1200 THEN 0
+                            ELSE created_epoch - previous_epoch
+                        END
+                    ), 0) AS active_seconds
+                FROM player_hits
                 GROUP BY player_name
             ), recent_source AS (
                 SELECT player_name, connection_count
@@ -136,7 +159,9 @@ class Database
             )
             SELECT totals.player_name,
                    totals.hits,
+                   totals.first_hit,
                    totals.last_hit,
+                   totals.active_seconds,
                    COALESCE(recent.recent_hits, 0) AS recent_hits
             FROM totals
             LEFT JOIN recent ON recent.player_name = totals.player_name

@@ -93,6 +93,75 @@ test('recording a hit stores the entry and redirects back to play tab', function
     assertSame(1, $count, 'Hit was not persisted');
 });
 
+test('leaderboard aggregates active time excluding long breaks', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Duration Test');
+    $pdo = $database->connection();
+
+    $hits = [
+        ['player' => 'Alex', 'created_at' => '2024-01-01T10:00:00+00:00'],
+        ['player' => 'Alex', 'created_at' => '2024-01-01T10:10:00+00:00'],
+        ['player' => 'Alex', 'created_at' => '2024-01-01T10:35:00+00:00'],
+        ['player' => 'Alex', 'created_at' => '2024-01-01T10:40:00+00:00'],
+        ['player' => 'Blair', 'created_at' => '2024-01-01T11:00:00+00:00'],
+    ];
+
+    $statement = $pdo->prepare('INSERT INTO hits (puzzle_id, player_name, connection_count, ip_address, user_agent, created_at, updated_at) VALUES (:puzzle_id, :player_name, :connection_count, NULL, NULL, :created_at, :created_at)');
+    foreach ($hits as $hit) {
+        $statement->execute([
+            'puzzle_id' => $puzzleId,
+            'player_name' => $hit['player'],
+            'connection_count' => 1,
+            'created_at' => $hit['created_at'],
+        ]);
+    }
+
+    $leaderboard = $database->leaderboard($puzzleId);
+    $byPlayer = [];
+    foreach ($leaderboard as $entry) {
+        $byPlayer[$entry['player_name']] = $entry;
+    }
+
+    assertSame('2024-01-01T10:00:00+00:00', $byPlayer['Alex']['first_hit'] ?? null);
+    assertSame('2024-01-01T10:40:00+00:00', $byPlayer['Alex']['last_hit'] ?? null);
+    assertSame(900, (int) ($byPlayer['Alex']['active_seconds'] ?? 0));
+    assertSame(0, (int) ($byPlayer['Blair']['active_seconds'] ?? -1));
+});
+
+test('player views include formatted active durations', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Duration Display');
+    $pdo = $database->connection();
+
+    $statement = $pdo->prepare('INSERT INTO hits (puzzle_id, player_name, connection_count, ip_address, user_agent, created_at, updated_at) VALUES (:puzzle_id, :player_name, :connection_count, NULL, NULL, :created_at, :created_at)');
+    $statement->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Charlie',
+        'connection_count' => 1,
+        'created_at' => '2024-01-02T09:00:00+00:00',
+    ]);
+    $statement->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Charlie',
+        'connection_count' => 1,
+        'created_at' => '2024-01-02T09:05:00+00:00',
+    ]);
+
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/play', [], [], []));
+
+    assertSame(200, $response->status());
+    $body = $response->body();
+    assertTrue(str_contains($body, 'Active 5m'), 'Expected rendered active duration on play view');
+
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/leaderboard', [], [], []));
+    assertSame(200, $response->status());
+    $body = $response->body();
+    assertTrue(str_contains($body, '>5m<'), 'Expected rendered active duration on leaderboard view');
+});
+
 test('health endpoint reports ok status with database metadata', function (): void {
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $app = makeApp($dbPath);
