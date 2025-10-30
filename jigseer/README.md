@@ -16,13 +16,15 @@ Then visit http://localhost:8080 to create your first puzzle.
 ## Feature overview
 
 - **Puzzle lifecycle** – create a puzzle with an optional total piece count and receive a short code for revisiting it later.
-- **Play tab (`/p/{id}/play`)** – mobile-friendly buttons for each active player sorted by most recent hit, overall progress tracking, and a reminder banner when the total piece count is unknown.
-- **Leaderboard tab (`/p/{id}/leaderboard`)** – aggregate per-player hit counts with totals derived from the `hits` table.
-- **Transcript tab (`/p/{id}/transcript`)** – most recent hit activity first so the team can review progress at a glance.
-- **Settings tab (`/p/{id}/settings`)** – update the total piece count and add general notes about the puzzle.
+- **Play tab (`/p/{id}/play`)** – mobile-friendly buttons for each active player sorted by most recent hit, overall progress tracking, QR code for easy sharing, and a reminder banner when the total piece count is unknown.
+- **Leaderboard tab (`/p/{id}/leaderboard`)** – aggregate per-player hit counts, active duration tracking, and first/last hit timestamps derived from the `hits` table.
+- **Transcript tab (`/p/{id}/transcript`)** – most recent hit activity first with potential duplicate detection, and the ability to delete individual entries.
+- **Settings tab (`/p/{id}/settings`)** – update the total piece count, add general notes, export puzzle data as JSON, and delete the puzzle.
+- **Admin panel (`/admin`)** – read-only overview of all puzzles with stats (player count, total hits, timestamps) and database download capability.
+- **Real-time updates** – Server-Sent Events stream (`/p/{id}/events`) for live progress synchronization across devices.
 - **SQLite persistence** – all puzzle metadata and hits are stored locally so the app can run offline.
 
-The current implementation focuses on the server-rendered flows above. Query-string based sorting/filtering, transcript editing, and puzzle image uploads from the design brief are not yet implemented.
+The current implementation focuses on the server-rendered flows above. Query-string based sorting/filtering and puzzle image uploads from the design brief are not yet implemented.
 
 ## Tech stack
 
@@ -50,9 +52,14 @@ jigseer/
 Two tables are maintained automatically:
 
 - `puzzles` – puzzle id, name, optional `total_pieces`, optional `notes`, timestamps, and future `image_path` support.
-- `hits` – puzzle foreign key, player name, `connection_count`, request IP, user-agent, and timestamps.
+- `hits` – puzzle foreign key, player name, `connection_count`, request IP, user-agent, and timestamps. Individual hits can be deleted via the transcript view, and all hits for a puzzle are removed when the puzzle is deleted.
 
 The default database lives at `var/database.sqlite`. Override with the `JIGSEER_DB_PATH` environment variable if you need to place the file elsewhere.
+
+## Monitoring endpoints
+
+- **`/status`** – simple JSON health check returning `{"status": "ok"}` for uptime monitoring.
+- **`/health`** – detailed health check with database connectivity status, application version, and Fly.io environment variables when deployed.
 
 ## Local development
 
@@ -93,8 +100,27 @@ The container listens on port 8080 inside the image. Caddy serves static assets 
 
 The [`jigseer` GitHub Actions workflow](../.github/workflows/jigseer.yml) triggers on any change under `jigseer/`. It runs the test harness and, on pushes to the repository, builds and publishes a Docker image to GHCR tagged with both `latest` and the commit SHA.
 
-## Deployment notes
+## Deployment
+
+### Fly.io
+
+The included [`fly.toml`](./fly.toml) provides a ready-to-deploy configuration:
+
+- Uses the prebuilt GHCR image tagged `latest`
+- Mounts a persistent 1GB volume at `/data` for the SQLite database
+- Configures `JIGSEER_DB_PATH=/data/jigseer.sqlite`
+- Auto-stops machines when idle and auto-starts on incoming requests
+- Forces HTTPS and runs on port 8080 internally
+
+Deploy with:
+
+```bash
+fly deploy
+```
+
+### General deployment notes
 
 - Ensure the container has write access to the mounted directory backing `JIGSEER_DB_PATH` (defaults to `/app/var`).
 - Provide TLS termination outside the container if the app is exposed publicly.
 - Backup the SQLite database regularly if puzzle history matters to your team.
+- The `/health` endpoint can be used for container orchestration health checks.
