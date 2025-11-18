@@ -1,4 +1,4 @@
-name: Artifact Cache - Build and Push
+name: artifact-cache
 
 on:
   push:
