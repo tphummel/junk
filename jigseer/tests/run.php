@@ -293,6 +293,96 @@ test('leaderboard view renders the player name', function (): void {
     assertTrue(str_contains($response->body(), 'Morgan'));
 });
 
+test('story view clusters sessions and highlights live collaboration', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Story Spotlight');
+    $pdo = $database->connection();
+    $insert = $pdo->prepare('INSERT INTO hits (puzzle_id, player_name, connection_count, ip_address, user_agent, created_at, updated_at) VALUES (:puzzle_id, :player_name, :connection_count, NULL, NULL, :created_at, :created_at)');
+    $now = new \DateTimeImmutable();
+
+    $olderStart = $now->sub(new \DateInterval('PT2H'));
+    $insert->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Jordan',
+        'connection_count' => 1,
+        'created_at' => $olderStart->format(DATE_ATOM),
+    ]);
+    $insert->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Quinn',
+        'connection_count' => 1,
+        'created_at' => $olderStart->add(new \DateInterval('PT5M'))->format(DATE_ATOM),
+    ]);
+
+    $recentA = $now->sub(new \DateInterval('PT5M'));
+    $insert->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Skyler',
+        'connection_count' => 2,
+        'created_at' => $recentA->format(DATE_ATOM),
+    ]);
+    $insert->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Riley',
+        'connection_count' => 1,
+        'created_at' => $recentA->add(new \DateInterval('PT2M'))->format(DATE_ATOM),
+    ]);
+
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/story', [], [], []));
+
+    assertSame(200, $response->status());
+    $body = $response->body();
+    assertTrue(str_contains($body, '🔴 LIVE'), 'Live indicator missing for recent session.');
+    assertTrue(str_contains($body, 'are connecting pieces'), 'Current session should use present tense.');
+    assertTrue(str_contains($body, 'connected'), 'Historical session should use past tense.');
+    assertTrue(str_contains($body, 'Skyler (2)'), 'Per-person breakdown should include connection counts.');
+    assertTrue(str_contains($body, 'session-row current'), 'Current session row should be highlighted.');
+    assertTrue(str_contains($body, 'session-time-range'), 'Time range indicator should be rendered.');
+});
+
+test('story view hides single hits and downgrades stale sessions', function (): void {
+    $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
+    $database = new Database($dbPath);
+    $puzzleId = $database->createPuzzle('Story Filter');
+    $pdo = $database->connection();
+    $insert = $pdo->prepare('INSERT INTO hits (puzzle_id, player_name, connection_count, ip_address, user_agent, created_at, updated_at) VALUES (:puzzle_id, :player_name, :connection_count, NULL, NULL, :created_at, :created_at)');
+    $now = new \DateTimeImmutable();
+
+    $staleStart = $now->sub(new \DateInterval('PT45M'));
+    $insert->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Dakota',
+        'connection_count' => 1,
+        'created_at' => $staleStart->format(DATE_ATOM),
+    ]);
+    $insert->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Emery',
+        'connection_count' => 2,
+        'created_at' => $staleStart->add(new \DateInterval('PT3M'))->format(DATE_ATOM),
+    ]);
+
+    $soloTime = $now->sub(new \DateInterval('PT90M'));
+    $insert->execute([
+        'puzzle_id' => $puzzleId,
+        'player_name' => 'Solo',
+        'connection_count' => 1,
+        'created_at' => $soloTime->format(DATE_ATOM),
+    ]);
+
+    $app = new Application($database, new TemplateRenderer(__DIR__ . '/../templates'), TEST_VERSION);
+    $response = $app->handle(new Request('GET', '/p/' . $puzzleId . '/story', [], [], []));
+
+    assertSame(200, $response->status());
+    $body = $response->body();
+    assertTrue(!str_contains($body, '🔴 LIVE'), 'Stale sessions should not appear live.');
+    $expectedTimeRange = sprintf('%s - %s', $staleStart->format('H:i'), $staleStart->add(new \DateInterval('PT3M'))->format('H:i'));
+    assertTrue(str_contains($body, $expectedTimeRange), 'Rendered session should show its time range.');
+    assertTrue(!str_contains($body, 'Solo'), 'Single-connection activity should be filtered out.');
+});
+
 test('transcript entries can be deleted', function (): void {
     $dbPath = sys_get_temp_dir() . '/jigseer-tests-' . bin2hex(random_bytes(3)) . '.sqlite';
     $database = new Database($dbPath);

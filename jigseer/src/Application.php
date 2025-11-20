@@ -228,6 +228,7 @@ class Application
         return match ($tab) {
             'play' => $this->renderPlay($request, $puzzle),
             'leaderboard' => $this->renderLeaderboard($puzzle),
+            'story' => $this->renderStory($puzzle),
             'transcript' => $this->renderTranscript($puzzle),
             'settings' => $this->renderSettings($request, $puzzle),
             default => $this->html('404.php', [], 404),
@@ -258,6 +259,19 @@ class Application
             'puzzle' => $puzzle,
             'leaderboard' => $leaderboard,
             'progress' => $progress,
+            'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
+        ]);
+    }
+
+    private function renderStory(array $puzzle): Response
+    {
+        $events = $this->database->connectionEvents($puzzle['id']);
+        $sessions = $this->buildStorySessions($events, new DateTimeImmutable());
+
+        return $this->html('story.php', [
+            'puzzle' => $puzzle,
+            'currentSession' => $sessions['current'],
+            'historicalSessions' => $sessions['historical'],
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]);
     }
@@ -293,6 +307,149 @@ class Application
             'hits' => $hits,
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $events
+     * @return array{current: ?array<string, mixed>, historical: array<int, array<string, mixed>>}
+     */
+    private function buildStorySessions(array $events, DateTimeImmutable $now): array
+    {
+        $sessions = [];
+        $currentSession = null;
+
+        foreach ($events as $event) {
+            $timestamp = $this->parseEventId($event['created_at'] ?? null);
+            if ($timestamp === null) {
+                continue;
+            }
+
+            if ($currentSession === null) {
+                $currentSession = [
+                    'start_iso' => null,
+                    'start_epoch' => null,
+                    'end_iso' => null,
+                    'end_epoch' => null,
+                    'per_person' => [],
+                    'total_connections' => 0,
+                ];
+            } elseif ($timestamp - (int) $currentSession['end_epoch'] > 1_200) {
+                $finalised = $this->normaliseStorySession($currentSession);
+                if ($finalised !== null) {
+                    $sessions[] = $finalised;
+                }
+                $currentSession = [
+                    'start_iso' => null,
+                    'start_epoch' => null,
+                    'end_iso' => null,
+                    'end_epoch' => null,
+                    'per_person' => [],
+                    'total_connections' => 0,
+                ];
+            }
+
+            $player = trim((string) ($event['player_name'] ?? ''));
+            if ($player === '') {
+                $player = 'Unknown';
+            }
+
+            $connections = (int) ($event['connection_count'] ?? 1);
+            $connections = max(1, $connections);
+
+            if ($currentSession['start_iso'] === null) {
+                $currentSession['start_iso'] = (string) $event['created_at'];
+                $currentSession['start_epoch'] = $timestamp;
+            }
+
+            $currentSession['end_iso'] = (string) $event['created_at'];
+            $currentSession['end_epoch'] = $timestamp;
+            $currentSession['total_connections'] += $connections;
+            $currentSession['per_person'][$player] = ($currentSession['per_person'][$player] ?? 0) + $connections;
+        }
+
+        if ($currentSession !== null) {
+            $finalised = $this->normaliseStorySession($currentSession);
+            if ($finalised !== null) {
+                $sessions[] = $finalised;
+            }
+        }
+
+        $sessions = array_values(array_filter(
+            $sessions,
+            static fn (array $session): bool => $session['total_connections'] >= 2
+        ));
+
+        if ($sessions === []) {
+            return ['current' => null, 'historical' => []];
+        }
+
+        $nowTimestamp = $now->getTimestamp();
+        $mostRecentIndex = count($sessions) - 1;
+        $current = null;
+        $historical = [];
+        $displayNumber = 1;
+
+        for ($index = $mostRecentIndex; $index >= 0; $index--) {
+            $session = $sessions[$index];
+            $session['session_number'] = $displayNumber++;
+            $session['is_current'] = false;
+            $session['status'] = 'historical';
+            $session['duration_seconds'] = max(0, $session['end_epoch'] - $session['start_epoch']);
+            $session['duration_label'] = format_duration((int) $session['duration_seconds']);
+
+            if ($index === $mostRecentIndex) {
+                $timeSinceLast = $nowTimestamp - $session['end_epoch'];
+                if ($timeSinceLast <= 1_200) {
+                    $session['is_current'] = true;
+                    $session['status'] = 'current';
+                    $session['duration_seconds'] = max(0, $nowTimestamp - $session['start_epoch']);
+                    $session['duration_label'] = format_duration((int) $session['duration_seconds']);
+                    $current = $session;
+                    continue;
+                }
+            }
+
+            $historical[] = $session;
+        }
+
+        return ['current' => $current, 'historical' => $historical];
+    }
+
+    /**
+     * @param array<string, mixed> $session
+     * @return array<string, mixed>|null
+     */
+    private function normaliseStorySession(array $session): ?array
+    {
+        if ($session['start_iso'] === null || $session['end_iso'] === null) {
+            return null;
+        }
+
+        $perPerson = [];
+        foreach ($session['per_person'] as $name => $count) {
+            $perPerson[] = [
+                'name' => (string) $name,
+                'count' => (int) $count,
+            ];
+        }
+
+        usort($perPerson, static function (array $a, array $b): int {
+            if ($a['count'] === $b['count']) {
+                return strcmp($a['name'], $b['name']);
+            }
+
+            return $b['count'] <=> $a['count'];
+        });
+
+        return [
+            'start' => (string) $session['start_iso'],
+            'end' => (string) $session['end_iso'],
+            'start_epoch' => (int) $session['start_epoch'],
+            'end_epoch' => (int) $session['end_epoch'],
+            'total_connections' => (int) $session['total_connections'],
+            'participants' => array_map(static fn (array $entry): string => $entry['name'], $perPerson),
+            'per_person' => $perPerson,
+        ];
     }
 
     private function deleteTranscriptEntry(Request $request, array $puzzle): Response
