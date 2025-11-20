@@ -4,6 +4,7 @@
         $tabs = [
             'play' => 'Play',
             'leaderboard' => 'Leaderboard',
+            'story' => 'Story',
             'transcript' => 'Transcript',
             'settings' => 'Settings',
         ];

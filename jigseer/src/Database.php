@@ -231,6 +231,11 @@ class Database
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function connectionEvents(string $puzzleId): array
+    {
+        return array_reverse($this->transcript($puzzleId));
+    }
+
     public function deleteHit(string $puzzleId, int $hitId): void
     {
         $statement = $this->pdo->prepare('DELETE FROM hits WHERE puzzle_id = :puzzle_id AND id = :id');

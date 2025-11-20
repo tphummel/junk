@@ -18,6 +18,7 @@ Then visit http://localhost:8080 to create your first puzzle.
 - **Puzzle lifecycle** – create a puzzle with an optional total piece count and receive a short code for revisiting it later.
 - **Play tab (`/p/{id}/play`)** – mobile-friendly buttons for each active player sorted by most recent hit, overall progress tracking, QR code for easy sharing, and a reminder banner when the total piece count is unknown.
 - **Leaderboard tab (`/p/{id}/leaderboard`)** – aggregate per-player hit counts, active duration tracking, and first/last hit timestamps derived from the `hits` table.
+- **Story tab (`/p/{id}/story`)** – session-based recap of collaborative bursts with live indicators, per-person breakdowns, and historical summaries grouped by 20-minute gaps.
 - **Transcript tab (`/p/{id}/transcript`)** – most recent hit activity first with potential duplicate detection, and the ability to delete individual entries.
 - **Settings tab (`/p/{id}/settings`)** – update the total piece count, add general notes, export puzzle data as JSON, and delete the puzzle.
 - **Admin panel (`/admin`)** – read-only overview of all puzzles with stats (player count, total hits, timestamps) and database download capability.
