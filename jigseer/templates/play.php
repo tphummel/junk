@@ -56,7 +56,9 @@
             <?php else: ?>
                 <?php foreach ($leaderboard as $entry): ?>
                     <?php
-                    $palette = player_color_palette((string) $entry['player_name']);
+                    $playerName = (string) $entry['player_name'];
+                    $colorIndex = $playerColorMap[$playerName] ?? 0;
+                    $palette = player_color_palette($colorIndex);
                     $playerStyle = sprintf(
                         '--player-color:%s;--player-color-hover:%s;--player-color-strong:%s;--player-color-strong-alpha:%s;--player-color-strong-alpha-hover:%s;--player-text-color:%s;',
                         $palette['base'],

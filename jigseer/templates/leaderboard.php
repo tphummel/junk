@@ -64,7 +64,9 @@
                         $shareRatio = $totalHits > 0 ? max(min($hits / $totalHits, 1), 0) : 0;
                         $sharePercentage = $totalHits > 0 ? $shareRatio * 100 : null;
                         $recentHits = (int) ($entry['recent_hits'] ?? 0);
-                        $palette = player_color_palette((string) $entry['player_name']);
+                        $playerName = (string) $entry['player_name'];
+                        $colorIndex = $playerColorMap[$playerName] ?? 0;
+                        $palette = player_color_palette($colorIndex);
                         $rowStyle = sprintf(
                             '--player-color:%s;--player-color-hover:%s;--player-text-color:%s;',
                             $palette['base'],

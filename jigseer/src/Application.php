@@ -239,11 +239,13 @@ class Application
     {
         $progress = $this->database->completionProgress($puzzle['id']);
         $leaderboard = $this->leaderboardEntries($puzzle['id']);
+        $playerColorMap = $this->database->playerColorOrder($puzzle['id']);
 
         return $this->html('play.php', [
             'puzzle' => $puzzle,
             'progress' => $progress,
             'leaderboard' => $leaderboard,
+            'playerColorMap' => $playerColorMap,
             'puzzleUrl' => $this->puzzleUrl($request, $puzzle),
             'qrPath' => '/p/' . rawurlencode($puzzle['id']) . '/qr',
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
@@ -254,11 +256,13 @@ class Application
     {
         $leaderboard = $this->leaderboardEntries($puzzle['id']);
         $progress = $this->database->completionProgress($puzzle['id']);
+        $playerColorMap = $this->database->playerColorOrder($puzzle['id']);
 
         return $this->html('leaderboard.php', [
             'puzzle' => $puzzle,
             'leaderboard' => $leaderboard,
             'progress' => $progress,
+            'playerColorMap' => $playerColorMap,
             'latestHitUpdatedAt' => $this->database->latestHitUpdatedAt($puzzle['id']),
         ]);
     }
