@@ -66,6 +66,12 @@ def analyze_face(image_path):
     # Analyze facial hair presence from blendshapes
     facial_hair_analysis = analyze_facial_hair(blendshapes_dict, face_landmarks)
 
+    # Analyze eye gaze direction
+    eye_gaze = analyze_eye_gaze(blendshapes_dict)
+
+    # Analyze facial expression
+    facial_expression = analyze_facial_expression(blendshapes_dict)
+
     # Convert all landmarks to list format
     all_landmarks_list = [
         {"x": float(lm.x), "y": float(lm.y), "z": float(lm.z)}
@@ -77,6 +83,8 @@ def analyze_face(image_path):
         "image": str(image_path),
         "face_detected": True,
         "head_pose": head_pose,
+        "eye_gaze": eye_gaze,
+        "facial_expression": facial_expression,
         "key_landmarks": landmarks_dict,
         "all_landmarks": all_landmarks_list,
         "blendshapes": blendshapes_dict,
@@ -174,6 +182,83 @@ def analyze_facial_hair(blendshapes, landmarks):
 
     # You could extend this with texture analysis if needed
     return analysis
+
+
+def analyze_eye_gaze(blendshapes):
+    """Analyze eye gaze direction from blendshapes."""
+    if not blendshapes:
+        return {"gaze_direction": "unknown", "confidence": 0.0}
+
+    # Extract eye look blendshapes
+    look_up = (blendshapes.get("eyeLookUpLeft", 0) + blendshapes.get("eyeLookUpRight", 0)) / 2
+    look_down = (blendshapes.get("eyeLookDownLeft", 0) + blendshapes.get("eyeLookDownRight", 0)) / 2
+    look_in = (blendshapes.get("eyeLookInLeft", 0) + blendshapes.get("eyeLookInRight", 0)) / 2
+    look_out = (blendshapes.get("eyeLookOutLeft", 0) + blendshapes.get("eyeLookOutRight", 0)) / 2
+
+    # Determine dominant direction
+    threshold = 0.3
+    vertical = ""
+    horizontal = ""
+
+    if look_up > threshold:
+        vertical = "up"
+    elif look_down > threshold:
+        vertical = "down"
+
+    if look_out > threshold:
+        horizontal = "left"
+    elif look_in > threshold:
+        horizontal = "right"
+
+    if vertical and horizontal:
+        gaze_direction = f"{vertical}-{horizontal}"
+    elif vertical:
+        gaze_direction = vertical
+    elif horizontal:
+        gaze_direction = horizontal
+    else:
+        gaze_direction = "center"
+
+    max_component = max(look_up, look_down, look_out, look_in)
+    confidence = float(max_component) if max_component > threshold else 0.0
+
+    return {
+        "gaze_direction": gaze_direction,
+        "confidence": confidence,
+        "vertical": float(look_up - look_down),  # positive = up, negative = down
+        "horizontal": float(look_in - look_out),  # positive = right, negative = left
+    }
+
+
+def analyze_facial_expression(blendshapes):
+    """Analyze facial expression indicators from blendshapes."""
+    if not blendshapes:
+        return {}
+
+    # Smile indicators
+    smile_left = blendshapes.get("mouthSmileLeft", 0)
+    smile_right = blendshapes.get("mouthSmileRight", 0)
+    smile_intensity = (smile_left + smile_right) / 2
+
+    # Cheek raise (often accompanies genuine smiles)
+    cheek_squint_left = blendshapes.get("cheekSquintLeft", 0)
+    cheek_squint_right = blendshapes.get("cheekSquintRight", 0)
+    cheek_raise_intensity = (cheek_squint_left + cheek_squint_right) / 2
+
+    # Frown indicators
+    frown_left = blendshapes.get("mouthFrownLeft", 0)
+    frown_right = blendshapes.get("mouthFrownRight", 0)
+    frown_intensity = (frown_left + frown_right) / 2
+
+    # Mouth pucker
+    mouth_pucker = blendshapes.get("mouthPucker", 0)
+
+    return {
+        "smile_intensity": float(smile_intensity),
+        "cheek_raise_intensity": float(cheek_raise_intensity),
+        "frown_intensity": float(frown_intensity),
+        "mouth_pucker": float(mouth_pucker),
+    }
 
 
 def analyze_image_properties(image):
