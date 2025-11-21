@@ -9,6 +9,13 @@ A lightweight containerized utility that uses [MediaPipe](https://developers.goo
 - Provides heuristics for facial hair analysis and high-level image quality measurements (brightness, contrast, sharpness, color balance, resolution).
 - Ships in a Docker image that bundles the MediaPipe face landmarker model for offline use.
 
+## Quick Start
+```bash
+docker run --rm -v "$(pwd):/images:ro" ghcr.io/tphummel/face-analysis:latest /images/photo.jpg > output.json
+```
+
+Replace `photo.jpg` with your image filename. The analysis results will be written to `output.json`.
+
 ## Project layout
 ```
 face-analysis/
