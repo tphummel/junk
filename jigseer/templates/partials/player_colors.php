@@ -4,38 +4,33 @@ if (!function_exists('player_color_palette')) {
     /**
      * @return array{base: string, hover: string, strong: string, strong_alpha: string, strong_alpha_hover: string, text: string}
      */
-    function player_color_palette(string $name): array
+    function player_color_palette(int $colorIndex): array
     {
-        $normalized = trim($name);
-        if (function_exists('mb_strtolower')) {
-            $normalized = mb_strtolower($normalized, 'UTF-8');
-        } else {
-            $normalized = strtolower($normalized);
-        }
-        if ($normalized === '') {
-            $normalized = 'player';
-        }
+        // High contrast color palette with distinct hues
+        $colors = [
+            ['hue' => 210, 'saturation' => 70, 'lightness' => 85], // Blue
+            ['hue' => 150, 'saturation' => 65, 'lightness' => 83], // Green
+            ['hue' => 330, 'saturation' => 75, 'lightness' => 87], // Pink
+            ['hue' => 45,  'saturation' => 70, 'lightness' => 82], // Yellow
+            ['hue' => 270, 'saturation' => 65, 'lightness' => 85], // Purple
+            ['hue' => 25,  'saturation' => 75, 'lightness' => 84], // Orange
+            ['hue' => 180, 'saturation' => 70, 'lightness' => 83], // Cyan
+            ['hue' => 350, 'saturation' => 70, 'lightness' => 86], // Red
+            ['hue' => 120, 'saturation' => 60, 'lightness' => 82], // Lime
+            ['hue' => 290, 'saturation' => 70, 'lightness' => 84], // Violet
+            ['hue' => 195, 'saturation' => 65, 'lightness' => 85], // Sky Blue
+            ['hue' => 160, 'saturation' => 70, 'lightness' => 83], // Teal
+        ];
 
-        $hash = crc32($normalized);
-
-        // Use different portions of the hash so that players with close names still
-        // receive noticeably different palettes while keeping the values stable.
-        $hue = (int) ($hash % 360);
-        $hash = intdiv($hash, 360);
-
-        $saturationRange = 30; // results in 55% - 84%
-        $saturation = 55 + ($hash % $saturationRange);
-        $hash = intdiv($hash, $saturationRange);
-
-        $baseLightnessRange = 12; // results in 78% - 89%
-        $baseLightness = 78 + ($hash % $baseLightnessRange);
-        $hash = intdiv($hash, $baseLightnessRange);
+        $color = $colors[$colorIndex % count($colors)];
+        $hue = $color['hue'];
+        $saturation = $color['saturation'];
+        $baseLightness = $color['lightness'];
 
         $baseLightness = player_adjust_lightness_for_contrast($hue, $saturation, $baseLightness);
 
-        $hoverOffset = 7 + ($hash % 5); // 7% - 11%
-        $hash = intdiv($hash, 5);
-        $strongOffset = 18 + ($hash % 8); // 18% - 25%
+        $hoverOffset = 8;
+        $strongOffset = 22;
 
         $hoverLightness = max(min($baseLightness - $hoverOffset, 96), 20);
         $strongLightness = max(min($baseLightness - $strongOffset, 85), 15);

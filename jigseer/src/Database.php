@@ -286,4 +286,30 @@ class Database
         $statement = $this->pdo->prepare('DELETE FROM puzzles WHERE id = :id');
         $statement->execute(['id' => $id]);
     }
+
+    /**
+     * Get players ordered by their first hit for stable color assignment
+     * @return array<string, int> Map of player_name to color index (0-based)
+     */
+    public function playerColorOrder(string $puzzleId): array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT player_name, MIN(created_at) AS first_hit
+            FROM hits
+            WHERE puzzle_id = :puzzle_id
+            GROUP BY player_name
+            ORDER BY first_hit ASC, player_name ASC'
+        );
+        $statement->execute(['puzzle_id' => $puzzleId]);
+
+        $players = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $colorMap = [];
+        $index = 0;
+
+        foreach ($players as $player) {
+            $colorMap[$player['player_name']] = $index++;
+        }
+
+        return $colorMap;
+    }
 }
