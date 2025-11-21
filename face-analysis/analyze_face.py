@@ -44,9 +44,11 @@ def analyze_face(image_path):
 
     # Calculate head pose (pitch, yaw, roll) from transformation matrix
     head_pose = {}
+    transformation_matrix = None
     if results.facial_transformation_matrixes:
         matrix = results.facial_transformation_matrixes[0]
         head_pose = calculate_head_pose(matrix)
+        transformation_matrix = [float(x) for x in matrix]  # Save raw matrix
 
     # Get specific landmark positions
     landmarks_dict = extract_key_landmarks(face_landmarks)
@@ -66,12 +68,20 @@ def analyze_face(image_path):
     # Analyze facial hair presence from blendshapes
     facial_hair_analysis = analyze_facial_hair(blendshapes_dict, face_landmarks)
 
+    # Convert all landmarks to list format
+    all_landmarks_list = [
+        {"x": float(lm.x), "y": float(lm.y), "z": float(lm.z)}
+        for lm in face_landmarks
+    ]
+
     # Compile results
     analysis = {
         "image": str(image_path),
         "face_detected": True,
         "head_pose": head_pose,
+        "facial_transformation_matrix": transformation_matrix,
         "key_landmarks": landmarks_dict,
+        "all_landmarks": all_landmarks_list,
         "blendshapes": blendshapes_dict,
         "facial_hair_indicators": facial_hair_analysis,
         "image_properties": image_props,
