@@ -64,7 +64,7 @@ def analyze_face(image_path):
     image_props = analyze_image_properties(cv_image)
 
     # Analyze facial hair presence from blendshapes
-    facial_hair_analysis = analyze_facial_hair(blendshapes_dict, face_landmarks)
+    facial_hair_analysis = analyze_facial_hair(blendshapes_dict, face_landmarks, cv_image)
 
     # Analyze eye gaze direction
     eye_gaze = analyze_eye_gaze(blendshapes_dict)
@@ -169,19 +169,121 @@ def get_landmark_avg(landmarks, indices):
     return {"x": float(x), "y": float(y), "z": float(z)}
 
 
-def analyze_facial_hair(blendshapes, landmarks):
-    """Analyze potential facial hair indicators from available data."""
-    # This is a heuristic approach - MediaPipe doesn't directly detect facial hair
-    # but we can look at texture complexity in relevant regions
+def analyze_facial_hair(blendshapes, landmarks, image):
+    """Analyze facial hair using texture analysis in relevant regions."""
+    # Convert to grayscale for texture analysis
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    h, w = gray.shape
+
+    # Get key landmark positions in pixel coordinates
+    nose_tip = landmarks[1]
+    chin = landmarks[152]
+    mouth_top = landmarks[0]  # Upper lip center
+    mouth_bottom = landmarks[17]  # Lower lip center
+    left_mouth = landmarks[61]
+    right_mouth = landmarks[291]
+
+    # Convert normalized coordinates to pixel coordinates
+    def to_pixel(landmark):
+        return int(landmark.x * w), int(landmark.y * h)
+
+    nose_px = to_pixel(nose_tip)
+    chin_px = to_pixel(chin)
+    mouth_top_px = to_pixel(mouth_top)
+    mouth_bottom_px = to_pixel(mouth_bottom)
+    left_mouth_px = to_pixel(left_mouth)
+    right_mouth_px = to_pixel(right_mouth)
+
+    # Define mustache region (between nose and upper lip)
+    mustache_region = extract_region(
+        gray,
+        x_center=(left_mouth_px[0] + right_mouth_px[0]) // 2,
+        y_center=(nose_px[1] + mouth_top_px[1]) // 2,
+        width=int(abs(right_mouth_px[0] - left_mouth_px[0]) * 1.2),
+        height=int(abs(mouth_top_px[1] - nose_px[1]) * 1.5)
+    )
+
+    # Define beard region (below mouth to chin)
+    beard_region = extract_region(
+        gray,
+        x_center=(left_mouth_px[0] + right_mouth_px[0]) // 2,
+        y_center=(mouth_bottom_px[1] + chin_px[1]) // 2,
+        width=int(abs(right_mouth_px[0] - left_mouth_px[0]) * 1.5),
+        height=int(abs(chin_px[1] - mouth_bottom_px[1]) * 1.5)
+    )
+
+    # Analyze texture complexity in each region
+    mustache_score = analyze_hair_texture(mustache_region) if mustache_region is not None else 0.0
+    beard_score = analyze_hair_texture(beard_region) if beard_region is not None else 0.0
 
     analysis = {
-        "note": "Facial hair detection requires additional models. These are heuristic indicators.",
-        "mouth_area_complexity": None,
-        "chin_area_coverage": None,
+        "mustache_probability": float(mustache_score),
+        "beard_probability": float(beard_score),
+        "has_mustache": mustache_score > 0.5,
+        "has_beard": beard_score > 0.5,
+        "method": "texture_analysis"
     }
 
-    # You could extend this with texture analysis if needed
     return analysis
+
+
+def extract_region(image, x_center, y_center, width, height):
+    """Extract a region of interest from the image."""
+    h, w = image.shape
+
+    x1 = max(0, x_center - width // 2)
+    x2 = min(w, x_center + width // 2)
+    y1 = max(0, y_center - height // 2)
+    y2 = min(h, y_center + height // 2)
+
+    if x2 <= x1 or y2 <= y1:
+        return None
+
+    return image[y1:y2, x1:x2]
+
+
+def analyze_hair_texture(region):
+    """Analyze texture complexity to detect facial hair."""
+    if region is None or region.size == 0:
+        return 0.0
+
+    # Normalize region size for consistent analysis
+    if region.shape[0] < 10 or region.shape[1] < 10:
+        return 0.0
+
+    # Apply Gaussian blur to reduce noise
+    blurred = cv2.GaussianBlur(region, (3, 3), 0)
+
+    # Calculate edge density using Canny edge detection
+    edges = cv2.Canny(blurred, 50, 150)
+    edge_density = np.sum(edges > 0) / edges.size
+
+    # Calculate texture variance (high variance = more texture)
+    texture_variance = np.std(region)
+
+    # Calculate local binary pattern-like metric
+    # High frequency changes indicate hair texture
+    dx = cv2.Sobel(blurred, cv2.CV_64F, 1, 0, ksize=3)
+    dy = cv2.Sobel(blurred, cv2.CV_64F, 0, 1, ksize=3)
+    gradient_magnitude = np.sqrt(dx**2 + dy**2)
+    mean_gradient = np.mean(gradient_magnitude)
+
+    # Combine metrics with weights
+    # Edge density: 0-1 range, weight 0.4
+    # Texture variance: normalize to 0-1, weight 0.3
+    # Gradient: normalize to 0-1, weight 0.3
+
+    edge_score = min(edge_density * 15, 1.0)  # Scale edge density
+    variance_score = min(texture_variance / 60, 1.0)  # Normalize variance
+    gradient_score = min(mean_gradient / 40, 1.0)  # Normalize gradient
+
+    # Combined score
+    combined_score = (edge_score * 0.4 + variance_score * 0.3 + gradient_score * 0.3)
+
+    # Apply sigmoid-like transformation for better probability distribution
+    score = 1 / (1 + np.exp(-10 * (combined_score - 0.5)))
+
+    return score
 
 
 def analyze_eye_gaze(blendshapes):
