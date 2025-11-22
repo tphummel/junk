@@ -219,8 +219,8 @@ def analyze_facial_hair(blendshapes, landmarks, image):
     analysis = {
         "mustache_probability": float(mustache_score),
         "beard_probability": float(beard_score),
-        "has_mustache": mustache_score > 0.5,
-        "has_beard": beard_score > 0.5,
+        "has_mustache": bool(mustache_score > 0.5),
+        "has_beard": bool(beard_score > 0.5),
         "method": "texture_analysis"
     }
 
