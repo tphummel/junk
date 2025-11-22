@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 )
@@ -29,10 +30,16 @@ func TestFetch_Success(t *testing.T) {
 	if result == nil {
 		t.Fatal("expected non-nil result")
 	}
+	defer os.Remove(result.TempFile)
 
-	// Verify data
-	if string(result.Data) != string(testData) {
-		t.Errorf("expected data %s, got %s", testData, result.Data)
+	// Verify temp file exists and read data
+	fileData, err := os.ReadFile(result.TempFile)
+	if err != nil {
+		t.Fatalf("failed to read temp file: %v", err)
+	}
+
+	if string(fileData) != string(testData) {
+		t.Errorf("expected data %s, got %s", testData, fileData)
 	}
 
 	// Verify hash
@@ -65,11 +72,12 @@ func TestFetch_UserAgent(t *testing.T) {
 	defer server.Close()
 
 	fetcher := NewFetcher(5*time.Second, expectedUA)
-	_, err := fetcher.Fetch(server.URL)
+	result, err := fetcher.Fetch(server.URL)
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	defer os.Remove(result.TempFile)
 
 	if receivedUA != expectedUA {
 		t.Errorf("expected User-Agent %s, got %s", expectedUA, receivedUA)
@@ -164,9 +172,16 @@ func TestFetch_EmptyResponse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	defer os.Remove(result.TempFile)
 
-	if len(result.Data) != 0 {
-		t.Errorf("expected empty data, got %d bytes", len(result.Data))
+	// Read temp file to verify it's empty
+	fileData, err := os.ReadFile(result.TempFile)
+	if err != nil {
+		t.Fatalf("failed to read temp file: %v", err)
+	}
+
+	if len(fileData) != 0 {
+		t.Errorf("expected empty data, got %d bytes", len(fileData))
 	}
 
 	// Hash of empty content
@@ -196,9 +211,16 @@ func TestFetch_LargeFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	defer os.Remove(result.TempFile)
 
-	if len(result.Data) != len(testData) {
-		t.Errorf("expected %d bytes, got %d", len(testData), len(result.Data))
+	// Read temp file and verify size
+	fileData, err := os.ReadFile(result.TempFile)
+	if err != nil {
+		t.Fatalf("failed to read temp file: %v", err)
+	}
+
+	if len(fileData) != len(testData) {
+		t.Errorf("expected %d bytes, got %d", len(testData), len(fileData))
 	}
 
 	// Verify hash matches
