@@ -5,6 +5,7 @@ import cv2
 import mediapipe as mp
 from pathlib import Path
 import numpy as np
+from insightface.app import FaceAnalysis
 
 
 def analyze_face(image_path):
@@ -72,6 +73,9 @@ def analyze_face(image_path):
     # Analyze facial expression
     facial_expression = analyze_facial_expression(blendshapes_dict)
 
+    # Analyze with InsightFace for gender, age, and embeddings
+    insightface_analysis = analyze_with_insightface(cv_image)
+
     # Convert all landmarks to list format
     all_landmarks_list = [
         {"x": float(lm.x), "y": float(lm.y), "z": float(lm.z)}
@@ -85,6 +89,7 @@ def analyze_face(image_path):
         "head_pose": head_pose,
         "eye_gaze": eye_gaze,
         "facial_expression": facial_expression,
+        "insightface": insightface_analysis,
         "key_landmarks": landmarks_dict,
         "all_landmarks": all_landmarks_list,
         "blendshapes": blendshapes_dict,
@@ -360,6 +365,51 @@ def analyze_facial_expression(blendshapes):
         "cheek_raise_intensity": float(cheek_raise_intensity),
         "frown_intensity": float(frown_intensity),
         "mouth_pucker": float(mouth_pucker),
+    }
+
+
+def analyze_with_insightface(image):
+    """Analyze face using InsightFace for gender, age, and embeddings."""
+    # Initialize InsightFace with buffalo_l model
+    app = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
+    app.prepare(ctx_id=0, det_size=(640, 640))
+
+    # Detect faces
+    faces = app.get(image)
+
+    if not faces:
+        return None
+
+    # Use first detected face
+    face = faces[0]
+
+    # Extract bounding box
+    bbox = face.bbox.astype(int).tolist()  # [x1, y1, x2, y2]
+
+    # Extract gender (0=female, 1=male)
+    gender = "male" if face.gender == 1 else "female"
+
+    # Extract age
+    age = int(face.age)
+
+    # Extract detection score
+    det_score = float(face.det_score)
+
+    # Extract 512-D embedding
+    embedding = face.embedding.tolist()
+
+    return {
+        "gender": gender,
+        "age": age,
+        "bounding_box": {
+            "x1": bbox[0],
+            "y1": bbox[1],
+            "x2": bbox[2],
+            "y2": bbox[3]
+        },
+        "detection_confidence": det_score,
+        "embedding": embedding,
+        "embedding_dimensions": len(embedding)
     }
 
 
