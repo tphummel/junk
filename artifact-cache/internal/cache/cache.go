@@ -1,9 +1,9 @@
 package cache
 
 import (
-	"bytes"
 	"fmt"
 	"io"
+	"os"
 
 	"artifact-cache/internal/db"
 	"artifact-cache/internal/fetcher"
@@ -89,6 +89,8 @@ func (c *Cache) Get(sourceURL string, expectedSHA256 string) (*GetResult, error)
 	if err != nil {
 		return nil, fmt.Errorf("upstream fetch failed: %w", err)
 	}
+	// Ensure temp file cleanup
+	defer os.Remove(result.TempFile)
 
 	// Verify checksum if provided
 	if expectedSHA256 != "" && result.SHA256 != expectedSHA256 {
@@ -99,9 +101,15 @@ func (c *Cache) Get(sourceURL string, expectedSHA256 string) (*GetResult, error)
 		}
 	}
 
-	// Store to disk
-	reader := bytes.NewReader(result.Data)
-	if err := c.storage.Store(result.SHA256, reader); err != nil {
+	// Open temp file for reading
+	tempFile, err := os.Open(result.TempFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open temp file: %w", err)
+	}
+	defer tempFile.Close()
+
+	// Store to disk from temp file
+	if err := c.storage.Store(result.SHA256, tempFile); err != nil {
 		return nil, fmt.Errorf("failed to store artifact: %w", err)
 	}
 
@@ -119,10 +127,14 @@ func (c *Cache) Get(sourceURL string, expectedSHA256 string) (*GetResult, error)
 		return nil, fmt.Errorf("failed to save metadata: %w", err)
 	}
 
-	// Return the data
-	dataReader := bytes.NewReader(result.Data)
+	// Open stored file for reading and streaming to client
+	file, err := c.storage.Open(result.SHA256)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open stored file: %w", err)
+	}
+
 	return &GetResult{
-		Data:        io.NopCloser(dataReader),
+		Data:        file,
 		Hash:        result.SHA256,
 		Size:        result.Size,
 		ContentType: result.ContentType,
