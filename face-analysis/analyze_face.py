@@ -5,6 +5,8 @@ import cv2
 import mediapipe as mp
 from pathlib import Path
 import numpy as np
+import os
+from contextlib import redirect_stdout, redirect_stderr
 from insightface.app import FaceAnalysis
 
 
@@ -370,9 +372,11 @@ def analyze_facial_expression(blendshapes):
 
 def analyze_with_insightface(image):
     """Analyze face using InsightFace for gender, age, and embeddings."""
-    # Initialize InsightFace with buffalo_l model
-    app = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
-    app.prepare(ctx_id=0, det_size=(640, 640))
+    # Initialize InsightFace with buffalo_l model (suppress verbose output)
+    with open(os.devnull, 'w') as devnull:
+        with redirect_stdout(devnull), redirect_stderr(devnull):
+            app = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
+            app.prepare(ctx_id=0, det_size=(640, 640))
 
     # Detect faces
     faces = app.get(image)
