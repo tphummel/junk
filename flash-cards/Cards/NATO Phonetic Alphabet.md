@@ -1,0 +1,28 @@
+# NATO Phonetic Alphabet
+
+- Letter {{c1::A}} is pronounced {{c2::Alfa}}.
+- Letter {{c1::B}} is pronounced {{c2::Bravo}}.
+- Letter {{c1::C}} is pronounced {{c2::Charlie}}.
+- Letter {{c1::D}} is pronounced {{c2::Delta}}.
+- Letter {{c1::E}} is pronounced {{c2::Echo}}.
+- Letter {{c1::F}} is pronounced {{c2::Foxtrot}}.
+- Letter {{c1::G}} is pronounced {{c2::Golf}}.
+- Letter {{c1::H}} is pronounced {{c2::Hotel}}.
+- Letter {{c1::I}} is pronounced {{c2::India}}.
+- Letter {{c1::J}} is pronounced {{c2::Juliett}}.
+- Letter {{c1::K}} is pronounced {{c2::Kilo}}.
+- Letter {{c1::L}} is pronounced {{c2::Lima}}.
+- Letter {{c1::M}} is pronounced {{c2::Mike}}.
+- Letter {{c1::N}} is pronounced {{c2::November}}.
+- Letter {{c1::O}} is pronounced {{c2::Oscar}}.
+- Letter {{c1::P}} is pronounced {{c2::Papa}}.
+- Letter {{c1::Q}} is pronounced {{c2::Quebec}}.
+- Letter {{c1::R}} is pronounced {{c2::Romeo}}.
+- Letter {{c1::S}} is pronounced {{c2::Sierra}}.
+- Letter {{c1::T}} is pronounced {{c2::Tango}}.
+- Letter {{c1::U}} is pronounced {{c2::Uniform}}.
+- Letter {{c1::V}} is pronounced {{c2::Victor}}.
+- Letter {{c1::W}} is pronounced {{c2::Whiskey}}.
+- Letter {{c1::X}} is pronounced {{c2::X-ray}}.
+- Letter {{c1::Y}} is pronounced {{c2::Yankee}}.
+- Letter {{c1::Z}} is pronounced {{c2::Zulu}}.
