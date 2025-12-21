@@ -1,0 +1,48 @@
+# US Presidents
+
+- {{c1::George Washington}} served as U.S. president #{{c2::1}}, holding office {{c3::1789–1797}}.
+- {{c1::John Adams}} served as U.S. president #{{c2::2}}, holding office {{c3::1797–1801}}.
+- {{c1::Thomas Jefferson}} served as U.S. president #{{c2::3}}, holding office {{c3::1801–1809}}.
+- {{c1::James Madison}} served as U.S. president #{{c2::4}}, holding office {{c3::1809–1817}}.
+- {{c1::James Monroe}} served as U.S. president #{{c2::5}}, holding office {{c3::1817–1825}}.
+- {{c1::John Quincy Adams}} served as U.S. president #{{c2::6}}, holding office {{c3::1825–1829}}.
+- {{c1::Andrew Jackson}} served as U.S. president #{{c2::7}}, holding office {{c3::1829–1837}}.
+- {{c1::Martin Van Buren}} served as U.S. president #{{c2::8}}, holding office {{c3::1837–1841}}.
+- {{c1::William Henry Harrison}} served as U.S. president #{{c2::9}}, holding office {{c3::1841}}.
+- {{c1::John Tyler}} served as U.S. president #{{c2::10}}, holding office {{c3::1841–1845}}.
+- {{c1::James K. Polk}} served as U.S. president #{{c2::11}}, holding office {{c3::1845–1849}}.
+- {{c1::Zachary Taylor}} served as U.S. president #{{c2::12}}, holding office {{c3::1849–1850}}.
+- {{c1::Millard Fillmore}} served as U.S. president #{{c2::13}}, holding office {{c3::1850–1853}}.
+- {{c1::Franklin Pierce}} served as U.S. president #{{c2::14}}, holding office {{c3::1853–1857}}.
+- {{c1::James Buchanan}} served as U.S. president #{{c2::15}}, holding office {{c3::1857–1861}}.
+- {{c1::Abraham Lincoln}} served as U.S. president #{{c2::16}}, holding office {{c3::1861–1865}}.
+- {{c1::Andrew Johnson}} served as U.S. president #{{c2::17}}, holding office {{c3::1865–1869}}.
+- {{c1::Ulysses S. Grant}} served as U.S. president #{{c2::18}}, holding office {{c3::1869–1877}}.
+- {{c1::Rutherford B. Hayes}} served as U.S. president #{{c2::19}}, holding office {{c3::1877–1881}}.
+- {{c1::James A. Garfield}} served as U.S. president #{{c2::20}}, holding office {{c3::1881}}.
+- {{c1::Chester A. Arthur}} served as U.S. president #{{c2::21}}, holding office {{c3::1881–1885}}.
+- {{c1::Grover Cleveland}} served as U.S. president #{{c2::22}}, holding his first term {{c3::1885–1889}}.
+- {{c1::Benjamin Harrison}} served as U.S. president #{{c2::23}}, holding office {{c3::1889–1893}}.
+- {{c1::Grover Cleveland}} served as U.S. president #{{c2::24}}, holding his second term {{c3::1893–1897}}.
+- {{c1::William McKinley}} served as U.S. president #{{c2::25}}, holding office {{c3::1897–1901}}.
+- {{c1::Theodore Roosevelt}} served as U.S. president #{{c2::26}}, holding office {{c3::1901–1909}}.
+- {{c1::William Howard Taft}} served as U.S. president #{{c2::27}}, holding office {{c3::1909–1913}}.
+- {{c1::Woodrow Wilson}} served as U.S. president #{{c2::28}}, holding office {{c3::1913–1921}}.
+- {{c1::Warren G. Harding}} served as U.S. president #{{c2::29}}, holding office {{c3::1921–1923}}.
+- {{c1::Calvin Coolidge}} served as U.S. president #{{c2::30}}, holding office {{c3::1923–1929}}.
+- {{c1::Herbert Hoover}} served as U.S. president #{{c2::31}}, holding office {{c3::1929–1933}}.
+- {{c1::Franklin D. Roosevelt}} served as U.S. president #{{c2::32}}, holding office {{c3::1933–1945}}.
+- {{c1::Harry S. Truman}} served as U.S. president #{{c2::33}}, holding office {{c3::1945–1953}}.
+- {{c1::Dwight D. Eisenhower}} served as U.S. president #{{c2::34}}, holding office {{c3::1953–1961}}.
+- {{c1::John F. Kennedy}} served as U.S. president #{{c2::35}}, holding office {{c3::1961–1963}}.
+- {{c1::Lyndon B. Johnson}} served as U.S. president #{{c2::36}}, holding office {{c3::1963–1969}}.
+- {{c1::Richard Nixon}} served as U.S. president #{{c2::37}}, holding office {{c3::1969–1974}}.
+- {{c1::Gerald Ford}} served as U.S. president #{{c2::38}}, holding office {{c3::1974–1977}}.
+- {{c1::Jimmy Carter}} served as U.S. president #{{c2::39}}, holding office {{c3::1977–1981}}.
+- {{c1::Ronald Reagan}} served as U.S. president #{{c2::40}}, holding office {{c3::1981–1989}}.
+- {{c1::George H. W. Bush}} served as U.S. president #{{c2::41}}, holding office {{c3::1989–1993}}.
+- {{c1::Bill Clinton}} served as U.S. president #{{c2::42}}, holding office {{c3::1993–2001}}.
+- {{c1::George W. Bush}} served as U.S. president #{{c2::43}}, holding office {{c3::2001–2009}}.
+- {{c1::Barack Obama}} served as U.S. president #{{c2::44}}, holding office {{c3::2009–2017}}.
+- {{c1::Donald Trump}} served as U.S. president #{{c2::45}}, holding office {{c3::2017–2021}}.
+- {{c1::Joe Biden}} serves as U.S. president #{{c2::46}}, with a term beginning {{c3::2021–present}}.
