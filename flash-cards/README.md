@@ -8,5 +8,6 @@ This directory contains plain-text flash card decks inspired by the [hashcards](
 - `Cards/Units.md` – common measurement units and relationships.
 - `Cards/Docker.md` – Docker command-line reminders.
 - `Cards/US Presidents.md` – cloze-deletion deck of U.S. presidents, including non-consecutive terms.
+- `Cards/Major Metro Airport Codes.md` – major metro airports with their three-letter codes.
 
 Each deck keeps one fact per line to make it easy to parse with text-based tooling.
