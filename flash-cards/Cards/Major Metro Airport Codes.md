@@ -2,13 +2,21 @@
 
 - {{c1::Hartsfield–Jackson Atlanta International Airport}} uses the {{c2::ATL}} code.
 - {{c1::Los Angeles International Airport}} uses the {{c2::LAX}} code.
+- {{c1::San Francisco International Airport}} uses the {{c2::SFO}} code.
+- {{c1::San Diego International Airport}} uses the {{c2::SAN}} code.
+- {{c1::Oakland International Airport}} uses the {{c2::OAK}} code.
+- {{c1::Norman Y. Mineta San Jose International Airport}} uses the {{c2::SJC}} code.
+- {{c1::Sacramento International Airport}} uses the {{c2::SMF}} code.
+- {{c1::Fresno Yosemite International Airport}} uses the {{c2::FAT}} code.
+- {{c1::Ontario International Airport}} uses the {{c2::ONT}} code.
+- {{c1::Palm Springs International Airport}} uses the {{c2::PSP}} code.
+- {{c1::San Bernardino International Airport}} uses the {{c2::SBD}} code.
 - {{c1::Chicago O'Hare International Airport}} uses the {{c2::ORD}} code.
 - {{c1::Dallas/Fort Worth International Airport}} uses the {{c2::DFW}} code.
 - {{c1::Denver International Airport}} uses the {{c2::DEN}} code.
 - {{c1::John F. Kennedy International Airport}} uses the {{c2::JFK}} code.
 - {{c1::Newark Liberty International Airport}} uses the {{c2::EWR}} code.
 - {{c1::LaGuardia Airport}} uses the {{c2::LGA}} code.
-- {{c1::San Francisco International Airport}} uses the {{c2::SFO}} code.
 - {{c1::Seattle–Tacoma International Airport}} uses the {{c2::SEA}} code.
 - {{c1::Miami International Airport}} uses the {{c2::MIA}} code.
 - {{c1::Orlando International Airport}} uses the {{c2::MCO}} code.
