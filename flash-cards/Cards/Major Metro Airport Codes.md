@@ -1,0 +1,37 @@
+# Major Metro Airport Codes
+
+- {{c1::Hartsfield–Jackson Atlanta International Airport}} uses the {{c2::ATL}} code.
+- {{c1::Los Angeles International Airport}} uses the {{c2::LAX}} code.
+- {{c1::San Francisco International Airport}} uses the {{c2::SFO}} code.
+- {{c1::San Diego International Airport}} uses the {{c2::SAN}} code.
+- {{c1::Oakland International Airport}} uses the {{c2::OAK}} code.
+- {{c1::Norman Y. Mineta San Jose International Airport}} uses the {{c2::SJC}} code.
+- {{c1::Sacramento International Airport}} uses the {{c2::SMF}} code.
+- {{c1::Fresno Yosemite International Airport}} uses the {{c2::FAT}} code.
+- {{c1::Ontario International Airport}} uses the {{c2::ONT}} code.
+- {{c1::Palm Springs International Airport}} uses the {{c2::PSP}} code.
+- {{c1::San Bernardino International Airport}} uses the {{c2::SBD}} code.
+- {{c1::Chicago O'Hare International Airport}} uses the {{c2::ORD}} code.
+- {{c1::Dallas/Fort Worth International Airport}} uses the {{c2::DFW}} code.
+- {{c1::Denver International Airport}} uses the {{c2::DEN}} code.
+- {{c1::John F. Kennedy International Airport}} uses the {{c2::JFK}} code.
+- {{c1::Newark Liberty International Airport}} uses the {{c2::EWR}} code.
+- {{c1::LaGuardia Airport}} uses the {{c2::LGA}} code.
+- {{c1::Seattle–Tacoma International Airport}} uses the {{c2::SEA}} code.
+- {{c1::Miami International Airport}} uses the {{c2::MIA}} code.
+- {{c1::Orlando International Airport}} uses the {{c2::MCO}} code.
+- {{c1::Phoenix Sky Harbor International Airport}} uses the {{c2::PHX}} code.
+- {{c1::Minneapolis–Saint Paul International Airport}} uses the {{c2::MSP}} code.
+- {{c1::Detroit Metropolitan Wayne County Airport}} uses the {{c2::DTW}} code.
+- {{c1::Charlotte Douglas International Airport}} uses the {{c2::CLT}} code.
+- {{c1::George Bush Intercontinental Airport}} uses the {{c2::IAH}} code.
+- {{c1::Harry Reid International Airport}} uses the {{c2::LAS}} code.
+- {{c1::Logan International Airport}} uses the {{c2::BOS}} code.
+- {{c1::Toronto Pearson International Airport}} uses the {{c2::YYZ}} code.
+- {{c1::London Heathrow Airport}} uses the {{c2::LHR}} code.
+- {{c1::Charles de Gaulle Airport}} uses the {{c2::CDG}} code.
+- {{c1::Haneda Airport}} uses the {{c2::HND}} code.
+- {{c1::Beijing Capital International Airport}} uses the {{c2::PEK}} code.
+- {{c1::Dubai International Airport}} uses the {{c2::DXB}} code.
+- {{c1::Singapore Changi Airport}} uses the {{c2::SIN}} code.
+- {{c1::Sydney Kingsford Smith Airport}} uses the {{c2::SYD}} code.
