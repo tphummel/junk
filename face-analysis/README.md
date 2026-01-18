@@ -90,6 +90,19 @@ curl -s -X POST http://localhost:8000/analyze \
   -F "file=@/path/to/photo.jpg" | jq .
 ```
 
+Example: curl a local face photo and capture the analysis payload:
+```bash
+curl -s -X POST http://localhost:8000/analyze \
+  -F "file=@/path/to/face.jpg" \
+  -o analysis.json
+```
+
+You can also inspect a few key fields directly:
+```bash
+curl -s -X POST http://localhost:8000/analyze \
+  -F "file=@/path/to/face.jpg" | jq '{face_detected, insightface: {age, gender}, head_pose}'
+```
+
 ### Docker API usage
 Override the container entrypoint to run the API:
 ```bash
