@@ -1,8 +1,11 @@
+import os
 import sys
 import types
 
 import numpy as np
 import pytest
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 sys.modules.setdefault("cv2", types.ModuleType("cv2"))
 sys.modules.setdefault("mediapipe", types.ModuleType("mediapipe"))
