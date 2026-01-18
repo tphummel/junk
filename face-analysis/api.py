@@ -4,9 +4,13 @@ from pathlib import Path
 import shutil
 import tempfile
 
-from analyze_face import analyze_face
-
 app = FastAPI(title="Face Analysis API")
+
+
+def get_analyzer():
+    from analyze_face import analyze_face
+
+    return analyze_face
 
 
 @app.get("/healthz")
@@ -26,7 +30,7 @@ async def analyze(file: UploadFile = File(...)):
         tmp_path = Path(tmp.name)
 
     try:
-        result = analyze_face(tmp_path)
+        result = get_analyzer()(tmp_path)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     finally:

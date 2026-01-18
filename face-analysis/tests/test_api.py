@@ -9,7 +9,7 @@ def test_analyze_success(monkeypatch):
     def fake_analyze_face(path):
         return {"image": str(path), "face_detected": True}
 
-    monkeypatch.setattr(api, "analyze_face", fake_analyze_face)
+    monkeypatch.setattr(api, "get_analyzer", lambda: fake_analyze_face)
     client = TestClient(api.app)
 
     response = client.post(

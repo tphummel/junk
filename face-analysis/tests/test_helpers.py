@@ -1,5 +1,18 @@
+import sys
+import types
+
 import numpy as np
 import pytest
+
+sys.modules.setdefault("cv2", types.ModuleType("cv2"))
+sys.modules.setdefault("mediapipe", types.ModuleType("mediapipe"))
+
+insightface_module = types.ModuleType("insightface")
+insightface_app_module = types.ModuleType("insightface.app")
+insightface_app_module.FaceAnalysis = object
+insightface_module.app = insightface_app_module
+sys.modules.setdefault("insightface", insightface_module)
+sys.modules.setdefault("insightface.app", insightface_app_module)
 
 from analyze_face import calculate_head_pose, extract_region
 
