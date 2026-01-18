@@ -34,7 +34,12 @@ jobs:
       - name: Static analysis
         working-directory: face-analysis
         run: |
-          python -m py_compile analyze_face.py
+          python -m py_compile analyze_face.py api.py
+
+      - name: Run unit tests
+        working-directory: face-analysis
+        run: |
+          pytest
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
