@@ -117,7 +117,7 @@ The script:
 The repository ships with a GitHub Actions workflow that:
 1. Installs Python dependencies and performs a basic compilation check on every push/pull request that touches the `face-analysis` directory.
 2. Builds the Docker image using Buildx to ensure the Dockerfile remains valid.
-3. Publishes the container to GitHub Container Registry (`ghcr.io/<owner>/face-analysis:latest`) whenever the `main` branch is updated.
+3. Publishes the container to GitHub Container Registry (`ghcr.io/<owner>/face-analysis:latest` and `ghcr.io/<owner>/face-analysis:<short-sha>`) whenever the `main` branch is updated.
 
 ## Output
 The CLI prints a JSON document with comprehensive facial analysis data:
