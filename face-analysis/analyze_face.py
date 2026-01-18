@@ -10,6 +10,20 @@ from contextlib import redirect_stdout, redirect_stderr
 from insightface.app import FaceAnalysis
 
 
+def resolve_model_path():
+    """Resolve the MediaPipe face landmarker model path."""
+    env_path = os.environ.get("FACE_LANDMARKER_MODEL")
+    if env_path:
+        return env_path
+
+    default_path = "/app/face_landmarker.task"
+    if Path(default_path).exists():
+        return default_path
+
+    local_path = Path(__file__).with_name("face_landmarker.task")
+    return str(local_path)
+
+
 def analyze_face(image_path):
     """Analyze a face image and return structured data."""
 
@@ -19,7 +33,7 @@ def analyze_face(image_path):
     FaceLandmarkerOptions = mp.tasks.vision.FaceLandmarkerOptions
     VisionRunningMode = mp.tasks.vision.RunningMode
 
-    model_path = '/app/face_landmarker.task'
+    model_path = resolve_model_path()
 
     options = FaceLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=model_path),
@@ -64,6 +78,8 @@ def analyze_face(image_path):
 
     # Analyze image properties
     cv_image = cv2.imread(str(image_path))
+    if cv_image is None:
+        raise ValueError(f"Unable to read image: {image_path}")
     image_props = analyze_image_properties(cv_image)
 
     # Analyze facial hair presence from blendshapes

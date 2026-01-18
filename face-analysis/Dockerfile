@@ -28,6 +28,9 @@ RUN python -c "from insightface.app import FaceAnalysis; app = FaceAnalysis(name
 
 # Copy analysis script
 COPY analyze_face.py .
+COPY api.py .
 RUN chmod +x analyze_face.py
+
+EXPOSE 8000
 
 ENTRYPOINT ["python", "/app/analyze_face.py"]

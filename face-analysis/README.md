@@ -78,6 +78,26 @@ docker build -t face-analyzer ./face-analysis
 docker run --rm -v "$(pwd):/images:ro" face-analyzer /images/photo.jpg > output.json
 ```
 
+## HTTP API
+Run a local API server that accepts an image upload and returns the JSON analysis:
+```bash
+uvicorn api:app --host 0.0.0.0 --port 8000
+```
+
+Send an image for analysis:
+```bash
+curl -s -X POST http://localhost:8000/analyze \
+  -F "file=@/path/to/photo.jpg" | jq .
+```
+
+### Docker API usage
+Override the container entrypoint to run the API:
+```bash
+docker build -t face-analyzer ./face-analysis
+docker run --rm -p 8000:8000 face-analyzer \
+  uvicorn api:app --host 0.0.0.0 --port 8000
+```
+
 ## Visualization
 Use the included `visualize_landmarks.sh` script to overlay all 478 facial landmarks on an image:
 
