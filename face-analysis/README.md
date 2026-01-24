@@ -97,6 +97,16 @@ curl -s -X POST http://localhost:8000/analyze \
   -o analysis.json
 ```
 
+Request the annotated landmark image (PNG) from a separate endpoint:
+```bash
+curl -s -X POST http://localhost:8000/analyze/annotated \
+  -F "file=@/path/to/face.jpg" \
+  -o annotated.png
+```
+
+You can call both endpoints for the same image to retrieve the JSON and the
+visualized landmarks.
+
 You can also inspect a few key fields directly:
 ```bash
 curl -s -X POST http://localhost:8000/analyze \
