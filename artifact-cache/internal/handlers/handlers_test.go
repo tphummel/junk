@@ -277,6 +277,71 @@ func TestHealthHandler(t *testing.T) {
 	}
 }
 
+func TestFetchHandler_Upstream404(t *testing.T) {
+	handler, _ := setupTestHandler(t)
+
+	// Create upstream server that returns 404
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("not found"))
+	}))
+	defer upstream.Close()
+
+	req := httptest.NewRequest("GET", "/fetch?url="+url.QueryEscape(upstream.URL), nil)
+	w := httptest.NewRecorder()
+
+	handler.FetchHandler(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	// Should pass through the 404 status code
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("expected status 404, got %d", resp.StatusCode)
+	}
+
+	var errorResp map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&errorResp)
+
+	if errorResp["error"] != "upstream_error" {
+		t.Errorf("expected error 'upstream_error', got %s", errorResp["error"])
+	}
+
+	if statusCode, ok := errorResp["status_code"].(float64); !ok || int(statusCode) != 404 {
+		t.Errorf("expected status_code 404 in error body, got %v", errorResp["status_code"])
+	}
+}
+
+func TestFetchHandler_Upstream500(t *testing.T) {
+	handler, _ := setupTestHandler(t)
+
+	// Create upstream server that returns 500
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer upstream.Close()
+
+	req := httptest.NewRequest("GET", "/fetch?url="+url.QueryEscape(upstream.URL), nil)
+	w := httptest.NewRecorder()
+
+	handler.FetchHandler(w, req)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	// Should pass through the 500 status code
+	if resp.StatusCode != http.StatusInternalServerError {
+		t.Errorf("expected status 500, got %d", resp.StatusCode)
+	}
+
+	var errorResp map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&errorResp)
+
+	if errorResp["error"] != "upstream_error" {
+		t.Errorf("expected error 'upstream_error', got %s", errorResp["error"])
+	}
+}
+
 func TestGetContentType(t *testing.T) {
 	tests := []struct {
 		input    string

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -10,6 +11,7 @@ import (
 
 	"artifact-cache/internal/cache"
 	"artifact-cache/internal/db"
+	"artifact-cache/internal/fetcher"
 	"artifact-cache/internal/metrics"
 )
 
@@ -146,6 +148,19 @@ func (h *Handler) handleFetchError(w http.ResponseWriter, err error, start time.
 		})
 
 	default:
+		// Check for wrapped upstream HTTP errors
+		var upstreamHTTPErr *fetcher.UpstreamHTTPError
+		if errors.As(err, &upstreamHTTPErr) {
+			// Pass through the upstream status code
+			h.writeErrorJSON(w, upstreamHTTPErr.StatusCode, map[string]interface{}{
+				"error":       "upstream_error",
+				"status_code": upstreamHTTPErr.StatusCode,
+				"upstream_url": upstreamHTTPErr.URL,
+				"message":     fmt.Sprintf("Upstream returned status %d", upstreamHTTPErr.StatusCode),
+			})
+			return
+		}
+
 		// Generic internal server error
 		h.writeError(w, http.StatusInternalServerError, "internal_error", err.Error(), "")
 	}
