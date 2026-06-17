@@ -1,0 +1,72 @@
+{{ define "main" }}
+<h2>{{.Title}}</h2>
+
+<p>{{ partial "breadcrumb.html" . }}</p>
+
+<!-- map -->
+{{ .Scratch.Add "teams" (slice) }}
+{{ range .Data.Pages }}
+  {{ $.Scratch.Add "flat" (slice (dict "name" .Params.awayTeam.name "result" .Params.awayTeam.result "points_won" .Params.awayTeam.perf.summary.pointsWon "points_allowed" .Params.homeTeam.perf.summary.pointsWon)) }}
+  {{ $.Scratch.Add "flat" (slice (dict "name" .Params.homeTeam.name "result" .Params.homeTeam.result "points_won" .Params.homeTeam.perf.summary.pointsWon "points_allowed" .Params.awayTeam.perf.summary.pointsWon)) }}
+  {{ $.Scratch.Add "teams" .Params.homeTeam.name }}
+  {{ $.Scratch.Add "teams" .Params.awayTeam.name }}
+{{ end }}
+
+{{ range (.Scratch.Get "flat") }}
+  <!-- initialize -->
+  <!-- played, wins, losses, ties, scored, allowed -->
+  {{ if not ($.Scratch.Get (printf "%s%s" .name "played")) }}
+    {{ $.Scratch.Set (printf "%s%s" .name "played") 0 }}
+  {{ end }}
+
+  {{ if not ($.Scratch.Get (printf "%s%s" .name "wins")) }}
+    {{ $.Scratch.Set (printf "%s%s" .name "wins") 0 }}
+  {{ end }}
+
+  {{ if not ($.Scratch.Get (printf "%s%s" .name "losses")) }}
+    {{ $.Scratch.Set (printf "%s%s" .name "losses") 0 }}
+  {{ end }}
+
+  {{ if not ($.Scratch.Get (printf "%s%s" .name "ties")) }}
+    {{ $.Scratch.Set (printf "%s%s" .name "ties") 0 }}
+  {{ end }}
+
+  {{ if not ($.Scratch.Get (printf "%s%s" .name "scored")) }}
+    {{ $.Scratch.Set (printf "%s%s" .name "scored") 0 }}
+  {{ end }}
+
+  {{ if not ($.Scratch.Get (printf "%s%s" .name "allowed")) }}
+    {{ $.Scratch.Set (printf "%s%s" .name "allowed") 0 }}
+  {{ end }}
+
+  <!-- summarize -->
+  {{ $.Scratch.Add (printf "%s%s" .name "played") 1 }}
+
+  {{ if eq .result "win" }}
+    {{ $.Scratch.Add (printf "%s%s" .name "wins") 1 }}
+  {{ else if eq .result "loss" }}
+    {{ $.Scratch.Add (printf "%s%s" .name "losses") 1 }}
+  {{ else if eq .result "tie" }}
+    {{ $.Scratch.Add (printf "%s%s" .name "ties") 1 }}
+  {{ end }}
+
+  {{ $.Scratch.Add (printf "%s%s" .name "scored") .points_won }}
+  {{ $.Scratch.Add (printf "%s%s" .name "allowed") .points_allowed }}
+{{ end }}
+
+<!-- sort -->
+<!-- render -->
+
+{{ range ((.Scratch.Get "teams") | uniq) }}
+  <div>
+  {{ . }}
+  played: {{ $.Scratch.Get (printf "%s%s" . "played")}}
+  wins: {{ $.Scratch.Get (printf "%s%s" . "wins")}}
+  losses: {{ $.Scratch.Get (printf "%s%s" . "losses")}}
+  ties: {{ $.Scratch.Get (printf "%s%s" . "ties")}}
+  scored: {{ $.Scratch.Get (printf "%s%s" . "scored")}}
+  allowed: {{ $.Scratch.Get (printf "%s%s" . "allowed")}}
+  </div>
+{{ end }}
+
+{{ end }}

@@ -1,0 +1,13 @@
+{{ define "main" }}
+
+<h1><a href="https://laps.run">laps.run</a> ops panel</h1>
+
+{{ range .Pages.GroupBy "Section" }}
+  <p>{{ .Key }}</p>
+  <p>{{ len .Pages }}</p>
+{{ end }}
+
+<div><a href="{{ $.Site.Params.github_repo }}tree/123456abcdef">123456abcdef</a></div>
+<div>{{ now.Format "2006-01-02T15:04:05-0700" }}</div>
+
+{{ end }}

@@ -1,0 +1,20 @@
+{{ define "main" }}
+<h2>{{.Title}}</h2>
+
+<p>{{ partial "breadcrumb.html" . }}</p>
+
+<table>
+  <tr>
+    <th>title</th>
+  </tr>
+
+{{ range .Data.Pages }}
+
+  <tr>
+    <td><a href="{{ .RelPermalink }}">{{ .Date }}</a></td>
+  </tr>
+{{ end }}
+
+</table>
+
+{{ end }}
