@@ -1,9 +1,11 @@
 // wii-journal extracts the Wii Message Board play-history journal
 // (game sessions + board messages/milestones) from a raw NAND dump.
+// Fully offline: every value comes from data embedded in the NAND
+// itself by the console, the same source the Wii's own Message Board
+// UI reads from -- no external title database involved.
 //
 //	wii-journal nand.bin -o journal.csv
 //	wii-journal nand.bin -o journal.json --format json
-//	wii-journal nand.bin --offline            # skip GameTDB name resolution
 package main
 
 import (
@@ -20,22 +22,23 @@ import (
 const defaultCDBPath = "/title/00000001/00000002/data/cdb.vff"
 
 var csvColumns = []string{
-	"type", "date", "game_code", "game_name", "name_confidence",
+	"type", "date", "game_code", "title_id", "game_name",
 	"duration_seconds", "duration_hms", "title", "body",
-	"edit_count", "vff_path", "block_offset",
+	"edit_count", "console_id", "vff_path", "block_offset",
 }
 
 type row struct {
 	Type            string `json:"type"`
 	Date            string `json:"date"`
 	GameCode        string `json:"game_code,omitempty"`
+	TitleID         string `json:"title_id,omitempty"`
 	GameName        string `json:"game_name,omitempty"`
-	NameConfidence  string `json:"name_confidence,omitempty"`
 	DurationSeconds *int   `json:"duration_seconds,omitempty"`
 	DurationHMS     string `json:"duration_hms,omitempty"`
 	Title           string `json:"title,omitempty"`
 	Body            string `json:"body,omitempty"`
 	EditCount       *int   `json:"edit_count,omitempty"`
+	ConsoleID       string `json:"console_id,omitempty"`
 	VFFPath         string `json:"vff_path,omitempty"`
 	BlockOffset     string `json:"block_offset,omitempty"`
 }
@@ -50,15 +53,12 @@ func fmtHMS(seconds int) string {
 func intPtr(i int) *int { return &i }
 
 type cliArgs struct {
-	nandPath   string
-	output     string
-	format     string
-	cdbPath    string
-	titledb    string
-	refreshTDB bool
-	offline    bool
-	dumpVFF    string
-	help       bool
+	nandPath string
+	output   string
+	format   string
+	cdbPath  string
+	dumpVFF  string
+	help     bool
 }
 
 func parseArgs(argv []string) (*cliArgs, error) {
@@ -97,16 +97,6 @@ func parseArgs(argv []string) (*cliArgs, error) {
 				return nil, err
 			}
 			a.cdbPath = v
-		case "--titledb":
-			v, err := next(arg)
-			if err != nil {
-				return nil, err
-			}
-			a.titledb = v
-		case "--refresh-titledb":
-			a.refreshTDB = true
-		case "--offline":
-			a.offline = true
 		case "--dump-vff":
 			v, err := next(arg)
 			if err != nil {
@@ -154,11 +144,12 @@ func parseArgs(argv []string) (*cliArgs, error) {
 
 func printHelp() {
 	fmt.Print(`usage: wii-journal [-h] [-o OUTPUT] [-f {csv,tsv,json}] [--cdb-path PATH]
-                    [--titledb PATH] [--refresh-titledb] [--offline]
                     [--dump-vff PATH]
                     nand.bin
 
 Extract the Wii Message Board play-history journal from a raw NAND dump.
+Fully offline -- game names, title IDs, and console ID all come from
+data the console itself embedded in the NAND.
 
 positional arguments:
   nand.bin              path to a raw nand.bin dump (old-BootMii format, 553649152 bytes)
@@ -168,9 +159,6 @@ options:
   -o, --output PATH     output file path (default: stdout)
   -f, --format FMT      output format: csv, tsv, or json (default: inferred from --output extension, else csv)
   --cdb-path PATH       VFF path inside the NAND to read (default: ` + defaultCDBPath + `)
-  --titledb PATH        path to a local wiitdb.txt (default: auto-download/cache from GameTDB)
-  --refresh-titledb     force re-download of the GameTDB cache
-  --offline             skip game name resolution entirely (no network access, game_name left blank)
   --dump-vff PATH       also write the raw decrypted cdb.vff to PATH, for debugging
 `)
 }
@@ -195,22 +183,19 @@ func loadCDBVFF(nandPath, cdbPath string) ([]byte, error) {
 	return nand.GetFileData(fst)
 }
 
-func buildRows(v *VFFVolume, titledb *TitleDB, offline bool) []row {
+func buildRows(v *VFFVolume) []row {
 	var rows []row
 
 	for _, e := range parsePlaytimeLogs(v) {
-		name, confidence := "", "offline"
-		if titledb != nil {
-			name, confidence, _ = titledb.Resolve(e.gameCode)
-		}
 		rows = append(rows, row{
 			Type:            "session",
 			Date:            e.date.Format("2006-01-02T15:04:05Z"),
 			GameCode:        e.gameCode,
-			GameName:        name,
-			NameConfidence:  confidence,
+			TitleID:         e.titleID,
+			GameName:        e.gameName,
 			DurationSeconds: intPtr(e.durationSeconds),
 			DurationHMS:     fmtHMS(e.durationSeconds),
+			ConsoleID:       e.consoleID,
 			VFFPath:         e.vffPath,
 			BlockOffset:     fmt.Sprintf("0x%x", e.blockOffset),
 		})
@@ -230,6 +215,7 @@ func buildRows(v *VFFVolume, titledb *TitleDB, offline bool) []row {
 			Title:     r.messageTitle,
 			Body:      r.bodyExcerpt,
 			EditCount: &editCount,
+			ConsoleID: r.consoleID,
 			VFFPath:   r.path,
 		})
 	}
@@ -257,9 +243,9 @@ func writeOutput(rows []row, format string, w io.Writer) error {
 	}
 	for _, r := range rows {
 		record := []string{
-			r.Type, r.Date, r.GameCode, r.GameName, r.NameConfidence,
+			r.Type, r.Date, r.GameCode, r.TitleID, r.GameName,
 			ptrToStr(r.DurationSeconds), r.DurationHMS, r.Title, r.Body,
-			ptrToStr(r.EditCount), r.VFFPath, r.BlockOffset,
+			ptrToStr(r.EditCount), r.ConsoleID, r.VFFPath, r.BlockOffset,
 		}
 		if err := cw.Write(record); err != nil {
 			return err
@@ -306,22 +292,7 @@ func run(argv []string) int {
 		return 1
 	}
 
-	var titledb *TitleDB
-	if !args.offline {
-		path, err := EnsureTitleDB(args.titledb, args.refreshTDB, args.offline)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "warning: could not load GameTDB title database ("+err.Error()+"); game names will be blank")
-		} else if path != "" {
-			db, err := loadTitleDB(path)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "warning: could not parse GameTDB title database ("+err.Error()+"); game names will be blank")
-			} else {
-				titledb = db
-			}
-		}
-	}
-
-	rows := buildRows(vol, titledb, args.offline)
+	rows := buildRows(vol)
 
 	if args.output != "" {
 		f, err := os.Create(args.output)

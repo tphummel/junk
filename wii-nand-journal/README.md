@@ -8,6 +8,11 @@ Supports the "old BootMii" NAND dump format (exactly 553,649,152 bytes,
 with an appended `keys.bin` blob containing the console's AES key) — the
 most common format produced by BootMii's "backup NAND" feature.
 
+Fully offline: no network access, no external title database. Every
+value — game name, title ID, console ID — comes from data the console
+itself embedded in the NAND at logging time, the same data the Wii's
+own Message Board UI reads to display session history.
+
 ## Install
 
 ```
@@ -17,8 +22,8 @@ go build -o wii-journal .
 
 (or run without building: `go run . ...`)
 
-Zero third-party dependencies — everything is Go stdlib (`crypto/aes`,
-`crypto/cipher`, `encoding/binary`, `net/http`, `encoding/csv`,
+Zero dependencies, third-party or otherwise — everything is Go stdlib
+(`crypto/aes`, `crypto/cipher`, `encoding/binary`, `encoding/csv`,
 `encoding/json`).
 
 ## Usage
@@ -26,44 +31,43 @@ Zero third-party dependencies — everything is Go stdlib (`crypto/aes`,
 ```
 wii-journal nand.bin -o journal.csv
 wii-journal nand.bin -o journal.json --format json
-wii-journal nand.bin --offline              # skip GameTDB name lookup, no network
-wii-journal nand.bin --refresh-titledb -o out.tsv --format tsv
+wii-journal nand.bin --format tsv
 ```
 
 Output rows are one of two types:
 
-- `session` — a single game/channel play session: `game_code`,
-  `game_name` (resolved via GameTDB, see below), `duration_seconds`,
+- `session` — a single game/channel play session: `game_code` (4-char),
+  `title_id` (full 6-char disc/channel ID, e.g. `RSBE01`), `game_name`
+  (as authored by the game/channel itself), `duration_seconds`,
   `duration_hms`, `date` (session start, UTC).
 - `message` — a Message Board post/milestone: `title`, `body`,
   `edit_count`, `date` (last edit, UTC).
 
-Every row also includes `vff_path` and `block_offset` for full-fidelity
-traceability back to the source record inside the decrypted `cdb.vff`.
+Every row also includes `console_id` (the source Wii's system ID) and
+`vff_path`/`block_offset` for full-fidelity traceability back to the
+source record inside the decrypted `cdb.vff`.
 
-## Game name resolution
+## Why no title database
 
-4-character game/channel codes (e.g. `RSBE`, `HACA`) are resolved to
-human names via [GameTDB](https://www.gametdb.com)'s plaintext title
-database, auto-downloaded and cached at
-`~/.cache/wii-nand-journal/wiitdb.txt` (refreshed every 30 days, or force
-with `--refresh-titledb`). Each resolved row includes a
-`name_confidence` field:
+Earlier versions of this tool only captured the 4-character game code
+from playtime records and resolved names via GameTDB — an external,
+community-maintained database. That's a lossy approach: the 4-char
+code alone is genuinely ambiguous (e.g. `RSBE` matches dozens of
+`Super Smash Bros. Brawl` ROM hacks in GameTDB, not just the retail
+game), so name resolution needed a confidence tier and could still get
+it wrong.
 
-- `exact_channel_match` — code matched a 4-char system channel ID exactly.
-- `retail_01` — code matched a single unambiguous `<code>01` retail disc ID.
-- `retail_01_ambiguous` — matched `<code>01`, but other 6-char IDs share
-  the same 4-char prefix (usually ROM hacks/fan track packs sharing a
-  game's base code) — the `01` retail entry is used as the best guess.
-- `fallback_variant` — no `01` retail ID exists for this code; the first
-  known variant was used (e.g. a PAL-region `8P` suffix) — least certain.
-- `not_found` — no GameTDB entry for this code at all.
+It turns out the console never stores an ambiguous code. Each `.ptm`
+session entry embeds, at logging time:
 
-Playtime records only capture the 4-character game code, not the full
-6-character disc ID (code + region/maker), so some ambiguity here is
-inherent to the source data, not a limitation of this tool.
+- the full 6-character title ID (game code + maker/region suffix) at
+  offset `+0x70`, not just the 4-character code, and
+- the game's own display name (UTF-16BE, from the game/channel's own
+  banner metadata) at offset `+0x0C`.
 
-Use `--offline` to skip all network access and leave `game_name` blank.
+This is the exact same data the Wii's own Message Board reads to show
+session history, so reading it directly is both simpler and more
+accurate than guessing from an external database.
 
 ## How it works
 
@@ -72,6 +76,6 @@ Use `--offline` to skip all network access and leave `game_name` blank.
    `/title/00000001/00000002/data/cdb.vff` (the System Menu's
    message-board data store).
 2. `vff.go` — parses the VFF (FAT12/16) container and walks it for
-   `CDBFILE` records, pulling playtime sessions out of `.ptm`
-   attachments and message text out of `RIPLBoardRecord`s.
-3. `titledb.go` — resolves game codes to names via GameTDB.
+   `CDBFILE` records, pulling playtime sessions (title ID, embedded
+   game name, duration) out of `.ptm` attachments and message text out
+   of `RIPLBoardRecord`s.

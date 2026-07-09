@@ -11,6 +11,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
@@ -308,6 +309,8 @@ func (v *VFFVolume) walkFiles(predicate func(name string, data []byte) bool) []v
 //
 // CDBFILE struct (from Naim2000/cdbackup source/cdbfile.h):
 //   0x00: "CDBFILE" magic (7 bytes)
+//   0x08: wii_id -- the console's unique system ID (8 bytes), constant
+//         across every record from the same Wii
 //   0x14: description string (e.g. "playtimelog", "ripl_board_record")
 //   0x74: edit_count (u32 BE)
 //   0x7C: last_edit_time (u32 BE, Wii epoch)
@@ -318,11 +321,20 @@ func (v *VFFVolume) walkFiles(predicate func(name string, data []byte) bool) []v
 //   0x128/0x12C/0x130: attachment[0] = { type, offset, size } (u32 BE)
 //
 // .ptm attachment (type=3, magic "03_0") = 8-byte header + N x 136-byte entries:
+//   +0x0C (84 bytes): UTF-16BE game name, null-padded -- written by the
+//                     console itself at logging time from the game/channel's
+//                     own banner metadata. This is what the Wii's own
+//                     Message Board displays, so it's authoritative and
+//                     needs no external database to resolve.
 //   +0x60 (8 bytes): start ticks (BE u64, 60.75MHz Wii timebase)
 //   +0x68 (8 bytes): end ticks (BE u64)
-//   +0x70 (4 bytes): ASCII game code (e.g. "HACA")
+//   +0x70 (16 bytes): ASCII title ID, null-padded (e.g. "RSBE01") -- the
+//                     full 6-char disc/channel ID (4-char game code +
+//                     2-char maker/region), not just the 4-char code
 
 const (
+	cdbfileWiiIDOffset     = 0x08
+	cdbfileWiiIDSize       = 8
 	cdbfileDescOffset      = 0x14
 	cdbfileLastEditOffset  = 0x7C
 	cdbfileEditCountOffset = 0x74
@@ -336,9 +348,12 @@ const (
 	ptmMagic               = 0x30335F30
 	ptmHeaderSize          = 8
 	ptmEntrySize           = 136
+	ptmGameNameOffset      = 0x0C
+	ptmGameNameSize        = 84
 	ptmTicksStartOffset    = 0x60
 	ptmTicksEndOffset      = 0x68
-	ptmGameCodeOffset      = 0x70
+	ptmTitleIDOffset       = 0x70
+	ptmTitleIDSize         = 16
 )
 
 func asciiDecode(data []byte, off, length int) string {
@@ -400,6 +415,7 @@ type cdbRecord struct {
 	editCount    uint32
 	messageTitle string
 	bodyExcerpt  string
+	consoleID    string
 	path         string
 }
 
@@ -414,8 +430,9 @@ func parseCDBRecord(data []byte, path string) *cdbRecord {
 	lastEditTime := binary.BigEndian.Uint32(data[cdbfileLastEditOffset : cdbfileLastEditOffset+4])
 	editCount := binary.BigEndian.Uint32(data[cdbfileEditCountOffset : cdbfileEditCountOffset+4])
 	date := wiiTsToTime(int64(lastEditTime))
+	consoleID := hex.EncodeToString(data[cdbfileWiiIDOffset : cdbfileWiiIDOffset+cdbfileWiiIDSize])
 
-	rec := &cdbRecord{description: description, date: date, editCount: editCount, path: path}
+	rec := &cdbRecord{description: description, date: date, editCount: editCount, consoleID: consoleID, path: path}
 
 	if len(data) >= cdbfileMsgOffset+0x134 {
 		msgMagic := binary.BigEndian.Uint32(data[cdbfileMsgOffset : cdbfileMsgOffset+4])
@@ -448,8 +465,11 @@ func extractCDBRecords(v *VFFVolume) []*cdbRecord {
 
 type playtimeEntry struct {
 	gameCode        string
+	titleID         string
+	gameName        string
 	durationSeconds int
 	date            time.Time
+	consoleID       string
 	blockOffset     int
 	vffPath         string
 }
@@ -463,6 +483,7 @@ func parseCDBPlaytimeFile(data []byte, path string) []playtimeEntry {
 	}
 	lastEditTime := binary.BigEndian.Uint32(data[cdbfileLastEditOffset : cdbfileLastEditOffset+4])
 	fallbackDate := wiiTsToTime(int64(lastEditTime))
+	consoleID := hex.EncodeToString(data[cdbfileWiiIDOffset : cdbfileWiiIDOffset+cdbfileWiiIDSize])
 	msgMagic := binary.BigEndian.Uint32(data[cdbfileMsgOffset : cdbfileMsgOffset+4])
 	if msgMagic != msgMagicRI5 {
 		return nil
@@ -493,14 +514,19 @@ func parseCDBPlaytimeFile(data []byte, path string) []playtimeEntry {
 	var results []playtimeEntry
 	for i := 0; i < numEntries; i++ {
 		entOff := ptmStart + ptmHeaderSize + i*ptmEntrySize
-		gcOff := entOff + ptmGameCodeOffset
-		if gcOff+4 > len(data) {
+		tidOff := entOff + ptmTitleIDOffset
+		if tidOff+4 > len(data) {
 			break
 		}
-		gameCode := asciiDecode(data, gcOff, 4)
+		titleID := asciiDecode(data, tidOff, ptmTitleIDSize)
+		gameCode := titleID
+		if len(gameCode) > 4 {
+			gameCode = gameCode[:4]
+		}
 		if len(gameCode) < 3 || !isUpperAlnum(gameCode) {
 			continue
 		}
+		gameName := utf16beRead(data, entOff+ptmGameNameOffset, ptmGameNameSize)
 		ticksStartOff := entOff + ptmTicksStartOffset
 		ticksEndOff := entOff + ptmTicksEndOffset
 		durationSeconds := 0.0
@@ -523,8 +549,11 @@ func parseCDBPlaytimeFile(data []byte, path string) []playtimeEntry {
 		}
 		results = append(results, playtimeEntry{
 			gameCode:        gameCode,
+			titleID:         titleID,
+			gameName:        gameName,
 			durationSeconds: int(durationSeconds + 0.5),
 			date:            date,
+			consoleID:       consoleID,
 			blockOffset:     entOff,
 			vffPath:         path,
 		})
