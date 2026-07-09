@@ -12,10 +12,14 @@ most common format produced by BootMii's "backup NAND" feature.
 
 ```
 cd wii-nand-journal
-pip install -e .
+go build -o wii-journal .
 ```
 
-(or run without installing: `python3 -m wii_nand_journal.cli ...`)
+(or run without building: `go run . ...`)
+
+Zero third-party dependencies — everything is Go stdlib (`crypto/aes`,
+`crypto/cipher`, `encoding/binary`, `net/http`, `encoding/csv`,
+`encoding/json`).
 
 ## Usage
 
@@ -63,12 +67,11 @@ Use `--offline` to skip all network access and leave `game_name` blank.
 
 ## How it works
 
-1. `wii_nand_journal/nand.py` — parses the NAND's SFFS filesystem
-   (superblock/FAT/FST), decrypts clusters with the console's embedded
-   AES key, and extracts `/title/00000001/00000002/data/cdb.vff` (the
-   System Menu's message-board data store).
-2. `wii_nand_journal/vff.py` — parses the VFF (FAT12/16) container and
-   walks it for `CDBFILE` records, pulling playtime sessions out of
-   `.ptm` attachments and message text out of `RIPLBoardRecord`s.
-3. `wii_nand_journal/titledb.py` — resolves game codes to names via
-   GameTDB.
+1. `nand.go` — parses the NAND's SFFS filesystem (superblock/FAT/FST),
+   decrypts clusters with the console's embedded AES key, and extracts
+   `/title/00000001/00000002/data/cdb.vff` (the System Menu's
+   message-board data store).
+2. `vff.go` — parses the VFF (FAT12/16) container and walks it for
+   `CDBFILE` records, pulling playtime sessions out of `.ptm`
+   attachments and message text out of `RIPLBoardRecord`s.
+3. `titledb.go` — resolves game codes to names via GameTDB.
