@@ -1,0 +1,63 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck:Airport Codes::North America
+{{c1::Hartsfield–Jackson Atlanta International Airport (Georgia, United States)}} uses the {{c2::ATL}} code.
+{{c1::Los Angeles International Airport (California, United States)}} uses the {{c2::LAX}} code.
+{{c1::Chicago O'Hare International Airport (Illinois, United States)}} uses the {{c2::ORD}} code.
+{{c1::Chicago Midway International Airport (Illinois, United States)}} uses the {{c2::MDW}} code.
+{{c1::Dallas/Fort Worth International Airport (Texas, United States)}} uses the {{c2::DFW}} code.
+{{c1::Dallas Love Field (Texas, United States)}} uses the {{c2::DAL}} code.
+{{c1::Denver International Airport (Colorado, United States)}} uses the {{c2::DEN}} code.
+{{c1::John F. Kennedy International Airport (New York, United States)}} uses the {{c2::JFK}} code.
+{{c1::LaGuardia Airport (New York, United States)}} uses the {{c2::LGA}} code.
+{{c1::Newark Liberty International Airport (New Jersey, United States)}} uses the {{c2::EWR}} code.
+{{c1::San Francisco International Airport (California, United States)}} uses the {{c2::SFO}} code.
+{{c1::Seattle-Tacoma International Airport (Washington, United States)}} uses the {{c2::SEA}} code.
+{{c1::Harry Reid International Airport (Nevada, United States)}} uses the {{c2::LAS}} code.
+{{c1::Orlando International Airport (Florida, United States)}} uses the {{c2::MCO}} code.
+{{c1::Miami International Airport (Florida, United States)}} uses the {{c2::MIA}} code.
+{{c1::Phoenix Sky Harbor International Airport (Arizona, United States)}} uses the {{c2::PHX}} code.
+{{c1::George Bush Intercontinental Airport (Texas, United States)}} uses the {{c2::IAH}} code.
+{{c1::William P. Hobby Airport (Texas, United States)}} uses the {{c2::HOU}} code.
+{{c1::Logan International Airport (Massachusetts, United States)}} uses the {{c2::BOS}} code.
+{{c1::Minneapolis–Saint Paul International Airport (Minnesota, United States)}} uses the {{c2::MSP}} code.
+{{c1::Detroit Metropolitan Wayne County Airport (Michigan, United States)}} uses the {{c2::DTW}} code.
+{{c1::Fort Lauderdale–Hollywood International Airport (Florida, United States)}} uses the {{c2::FLL}} code.
+{{c1::Philadelphia International Airport (Pennsylvania, United States)}} uses the {{c2::PHL}} code.
+{{c1::Baltimore/Washington International Thurgood Marshall Airport (Maryland, United States)}} uses the {{c2::BWI}} code.
+{{c1::Salt Lake City International Airport (Utah, United States)}} uses the {{c2::SLC}} code.
+{{c1::Washington Dulles International Airport (Virginia, United States)}} uses the {{c2::IAD}} code.
+{{c1::Ronald Reagan Washington National Airport (Virginia, United States)}} uses the {{c2::DCA}} code.
+{{c1::San Diego International Airport (California, United States)}} uses the {{c2::SAN}} code.
+{{c1::Tampa International Airport (Florida, United States)}} uses the {{c2::TPA}} code.
+{{c1::Austin–Bergstrom International Airport (Texas, United States)}} uses the {{c2::AUS}} code.
+{{c1::Daniel K. Inouye International Airport (Hawaii, United States)}} uses the {{c2::HNL}} code.
+{{c1::Portland International Airport (Oregon, United States)}} uses the {{c2::PDX}} code.
+{{c1::St. Louis Lambert International Airport (Missouri, United States)}} uses the {{c2::STL}} code.
+{{c1::Oakland International Airport (California, United States)}} uses the {{c2::OAK}} code.
+{{c1::Norman Y. Mineta San Jose International Airport (California, United States)}} uses the {{c2::SJC}} code.
+{{c1::Sacramento International Airport (California, United States)}} uses the {{c2::SMF}} code.
+{{c1::Fresno Yosemite International Airport (California, United States)}} uses the {{c2::FAT}} code.
+{{c1::Ontario International Airport (California, United States)}} uses the {{c2::ONT}} code.
+{{c1::Palm Springs International Airport (California, United States)}} uses the {{c2::PSP}} code.
+{{c1::San Bernardino International Airport (California, United States)}} uses the {{c2::SBD}} code.
+{{c1::Raleigh-Durham International Airport (North Carolina, United States)}} uses the {{c2::RDU}} code.
+{{c1::Nashville International Airport (Tennessee, United States)}} uses the {{c2::BNA}} code.
+{{c1::Kansas City International Airport (Missouri, United States)}} uses the {{c2::MCI}} code.
+{{c1::Charlotte Douglas International Airport (North Carolina, United States)}} uses the {{c2::CLT}} code.
+{{c1::Toronto Pearson International Airport (Ontario, Canada)}} uses the {{c2::YYZ}} code.
+{{c1::Vancouver International Airport (British Columbia, Canada)}} uses the {{c2::YVR}} code.
+{{c1::Montréal–Pierre Elliott Trudeau International Airport (Quebec, Canada)}} uses the {{c2::YUL}} code.
+{{c1::Calgary International Airport (Alberta, Canada)}} uses the {{c2::YYC}} code.
+{{c1::Ottawa Macdonald–Cartier International Airport (Ontario, Canada)}} uses the {{c2::YOW}} code.
+{{c1::Edmonton International Airport (Alberta, Canada)}} uses the {{c2::YEG}} code.
+{{c1::Québec City Jean Lesage International Airport (Quebec, Canada)}} uses the {{c2::YQB}} code.
+{{c1::Halifax Stanfield International Airport (Nova Scotia, Canada)}} uses the {{c2::YHZ}} code.
+{{c1::Winnipeg James Armstrong Richardson International Airport (Manitoba, Canada)}} uses the {{c2::YWG}} code.
+{{c1::Licenciado Benito Juárez International Airport (Mexico City, Mexico)}} uses the {{c2::MEX}} code.
+{{c1::Cancún International Airport (Quintana Roo, Mexico)}} uses the {{c2::CUN}} code.
+{{c1::Don Miguel Hidalgo y Costilla International Airport (Jalisco, Mexico)}} uses the {{c2::GDL}} code.
+{{c1::Tocumen International Airport (Panama)}} uses the {{c2::PTY}} code.
+{{c1::Juan Santamaría International Airport (Costa Rica)}} uses the {{c2::SJO}} code.
+{{c1::José Martí International Airport (Cuba)}} uses the {{c2::HAV}} code.

@@ -1,0 +1,30 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck:NATO Phonetic Alphabet
+Letter A is pronounced {{c1::Alfa}}.
+Letter B is pronounced {{c1::Bravo}}.
+Letter C is pronounced {{c1::Charlie}}.
+Letter D is pronounced {{c1::Delta}}.
+Letter E is pronounced {{c1::Echo}}.
+Letter F is pronounced {{c1::Foxtrot}}.
+Letter G is pronounced {{c1::Golf}}.
+Letter H is pronounced {{c1::Hotel}}.
+Letter I is pronounced {{c1::India}}.
+Letter J is pronounced {{c1::Juliett}}.
+Letter K is pronounced {{c1::Kilo}}.
+Letter L is pronounced {{c1::Lima}}.
+Letter M is pronounced {{c1::Mike}}.
+Letter N is pronounced {{c1::November}}.
+Letter O is pronounced {{c1::Oscar}}.
+Letter P is pronounced {{c1::Papa}}.
+Letter Q is pronounced {{c1::Quebec}}.
+Letter R is pronounced {{c1::Romeo}}.
+Letter S is pronounced {{c1::Sierra}}.
+Letter T is pronounced {{c1::Tango}}.
+Letter U is pronounced {{c1::Uniform}}.
+Letter V is pronounced {{c1::Victor}}.
+Letter W is pronounced {{c1::Whiskey}}.
+Letter X is pronounced {{c1::X-ray}}.
+Letter Y is pronounced {{c1::Yankee}}.
+Letter Z is pronounced {{c1::Zulu}}.
