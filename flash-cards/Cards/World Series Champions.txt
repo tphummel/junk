@@ -1,0 +1,70 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck:MLB::World Series
+The {{c1::Pittsburgh Pirates}} won the {{c2::1960}} World Series.
+The {{c1::New York Yankees}} won the {{c2::1961}} World Series.
+The {{c1::New York Yankees}} won the {{c2::1962}} World Series.
+The {{c1::Los Angeles Dodgers}} won the {{c2::1963}} World Series.
+The {{c1::St. Louis Cardinals}} won the {{c2::1964}} World Series.
+The {{c1::Los Angeles Dodgers}} won the {{c2::1965}} World Series.
+The {{c1::Baltimore Orioles}} won the {{c2::1966}} World Series.
+The {{c1::St. Louis Cardinals}} won the {{c2::1967}} World Series.
+The {{c1::Detroit Tigers}} won the {{c2::1968}} World Series.
+The {{c1::New York Mets}} won the {{c2::1969}} World Series.
+The {{c1::Baltimore Orioles}} won the {{c2::1970}} World Series.
+The {{c1::Pittsburgh Pirates}} won the {{c2::1971}} World Series.
+The {{c1::Oakland Athletics}} won the {{c2::1972}} World Series.
+The {{c1::Oakland Athletics}} won the {{c2::1973}} World Series.
+The {{c1::Oakland Athletics}} won the {{c2::1974}} World Series.
+The {{c1::Cincinnati Reds}} won the {{c2::1975}} World Series.
+The {{c1::Cincinnati Reds}} won the {{c2::1976}} World Series.
+The {{c1::New York Yankees}} won the {{c2::1977}} World Series.
+The {{c1::New York Yankees}} won the {{c2::1978}} World Series.
+The {{c1::Pittsburgh Pirates}} won the {{c2::1979}} World Series.
+The {{c1::Philadelphia Phillies}} won the {{c2::1980}} World Series.
+The {{c1::Los Angeles Dodgers}} won the {{c2::1981}} World Series.
+The {{c1::St. Louis Cardinals}} won the {{c2::1982}} World Series.
+The {{c1::Baltimore Orioles}} won the {{c2::1983}} World Series.
+The {{c1::Detroit Tigers}} won the {{c2::1984}} World Series.
+The {{c1::Kansas City Royals}} won the {{c2::1985}} World Series.
+The {{c1::New York Mets}} won the {{c2::1986}} World Series.
+The {{c1::Minnesota Twins}} won the {{c2::1987}} World Series.
+The {{c1::Los Angeles Dodgers}} won the {{c2::1988}} World Series.
+The {{c1::Oakland Athletics}} won the {{c2::1989}} World Series.
+The {{c1::Cincinnati Reds}} won the {{c2::1990}} World Series.
+The {{c1::Minnesota Twins}} won the {{c2::1991}} World Series.
+The {{c1::Toronto Blue Jays}} won the {{c2::1992}} World Series.
+The {{c1::Toronto Blue Jays}} won the {{c2::1993}} World Series.
+The {{c1::1994}} World Series was not played due to a players' strike.
+The {{c1::Atlanta Braves}} won the {{c2::1995}} World Series.
+The {{c1::New York Yankees}} won the {{c2::1996}} World Series.
+The {{c1::Florida Marlins}} won the {{c2::1997}} World Series.
+The {{c1::New York Yankees}} won the {{c2::1998}} World Series.
+The {{c1::New York Yankees}} won the {{c2::1999}} World Series.
+The {{c1::New York Yankees}} won the {{c2::2000}} World Series.
+The {{c1::Arizona Diamondbacks}} won the {{c2::2001}} World Series.
+The {{c1::Anaheim Angels}} won the {{c2::2002}} World Series.
+The {{c1::Florida Marlins}} won the {{c2::2003}} World Series.
+The {{c1::Boston Red Sox}} won the {{c2::2004}} World Series.
+The {{c1::Chicago White Sox}} won the {{c2::2005}} World Series.
+The {{c1::St. Louis Cardinals}} won the {{c2::2006}} World Series.
+The {{c1::Boston Red Sox}} won the {{c2::2007}} World Series.
+The {{c1::Philadelphia Phillies}} won the {{c2::2008}} World Series.
+The {{c1::New York Yankees}} won the {{c2::2009}} World Series.
+The {{c1::San Francisco Giants}} won the {{c2::2010}} World Series.
+The {{c1::St. Louis Cardinals}} won the {{c2::2011}} World Series.
+The {{c1::San Francisco Giants}} won the {{c2::2012}} World Series.
+The {{c1::Boston Red Sox}} won the {{c2::2013}} World Series.
+The {{c1::San Francisco Giants}} won the {{c2::2014}} World Series.
+The {{c1::Kansas City Royals}} won the {{c2::2015}} World Series.
+The {{c1::Chicago Cubs}} won the {{c2::2016}} World Series.
+The {{c1::Houston Astros}} won the {{c2::2017}} World Series.
+The {{c1::Boston Red Sox}} won the {{c2::2018}} World Series.
+The {{c1::Washington Nationals}} won the {{c2::2019}} World Series.
+The {{c1::Los Angeles Dodgers}} won the {{c2::2020}} World Series.
+The {{c1::Atlanta Braves}} won the {{c2::2021}} World Series.
+The {{c1::Houston Astros}} won the {{c2::2022}} World Series.
+The {{c1::Texas Rangers}} won the {{c2::2023}} World Series.
+The {{c1::Los Angeles Dodgers}} won the {{c2::2024}} World Series.
+The {{c1::Los Angeles Dodgers}} won the {{c2::2025}} World Series.

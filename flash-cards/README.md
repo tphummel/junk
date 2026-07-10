@@ -14,5 +14,6 @@ In Anki desktop: **File → Import**, select the `.txt` file. Anki reads the hea
 - `Cards/Units.txt` – common measurement units and relationships.
 - `Cards/US Presidents.txt` – U.S. presidents, including non-consecutive terms.
 - `Cards/Airport Codes.txt` – full airport name ↔ three-letter code, world airports, split by continent into `Airport Codes::North America`, `::South America`, `::Europe`, `::Africa`, `::Asia` (incl. Middle East), and `::Oceania` via the per-row deck column.
+- `Cards/World Series Champions.txt` – MLB World Series champions, 1960–2025.
 
 Each deck keeps one fact per line to make it easy to parse and edit with text-based tooling.
