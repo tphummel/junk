@@ -18,8 +18,8 @@
 {{c1::Orlando International Airport (Florida, United States)}} uses the {{c2::MCO}} code.	Airport Codes::North America
 {{c1::Miami International Airport (Florida, United States)}} uses the {{c2::MIA}} code.	Airport Codes::North America
 {{c1::Phoenix Sky Harbor International Airport (Arizona, United States)}} uses the {{c2::PHX}} code.	Airport Codes::North America
-{{c1::George Bush Intercontinental Airport (Texas, United States)}} uses the {{c2::IAH}} code.	Airport Codes::North America
-{{c1::William P. Hobby Airport (Texas, United States)}} uses the {{c2::HOU}} code.	Airport Codes::North America
+{{c1::George Bush Intercontinental Airport (Houston, Texas, United States)}} uses the {{c2::IAH}} code.	Airport Codes::North America
+{{c1::William P. Hobby Airport (Houston, Texas, United States)}} uses the {{c2::HOU}} code.	Airport Codes::North America
 {{c1::Logan International Airport (Massachusetts, United States)}} uses the {{c2::BOS}} code.	Airport Codes::North America
 {{c1::Minneapolis–Saint Paul International Airport (Minnesota, United States)}} uses the {{c2::MSP}} code.	Airport Codes::North America
 {{c1::Detroit Metropolitan Wayne County Airport (Michigan, United States)}} uses the {{c2::DTW}} code.	Airport Codes::North America
