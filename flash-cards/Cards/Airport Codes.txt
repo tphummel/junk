@@ -1,0 +1,220 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck column:2
+{{c1::Hartsfield–Jackson Atlanta International Airport (Georgia, United States)}} uses the {{c2::ATL}} code.	Airport Codes::North America
+{{c1::Los Angeles International Airport (California, United States)}} uses the {{c2::LAX}} code.	Airport Codes::North America
+{{c1::Chicago O'Hare International Airport (Illinois, United States)}} uses the {{c2::ORD}} code.	Airport Codes::North America
+{{c1::Chicago Midway International Airport (Illinois, United States)}} uses the {{c2::MDW}} code.	Airport Codes::North America
+{{c1::Dallas/Fort Worth International Airport (Texas, United States)}} uses the {{c2::DFW}} code.	Airport Codes::North America
+{{c1::Dallas Love Field (Texas, United States)}} uses the {{c2::DAL}} code.	Airport Codes::North America
+{{c1::Denver International Airport (Colorado, United States)}} uses the {{c2::DEN}} code.	Airport Codes::North America
+{{c1::John F. Kennedy International Airport (New York, United States)}} uses the {{c2::JFK}} code.	Airport Codes::North America
+{{c1::LaGuardia Airport (New York, United States)}} uses the {{c2::LGA}} code.	Airport Codes::North America
+{{c1::Newark Liberty International Airport (New Jersey, United States)}} uses the {{c2::EWR}} code.	Airport Codes::North America
+{{c1::San Francisco International Airport (California, United States)}} uses the {{c2::SFO}} code.	Airport Codes::North America
+{{c1::Seattle-Tacoma International Airport (Washington, United States)}} uses the {{c2::SEA}} code.	Airport Codes::North America
+{{c1::Harry Reid International Airport (Nevada, United States)}} uses the {{c2::LAS}} code.	Airport Codes::North America
+{{c1::Orlando International Airport (Florida, United States)}} uses the {{c2::MCO}} code.	Airport Codes::North America
+{{c1::Miami International Airport (Florida, United States)}} uses the {{c2::MIA}} code.	Airport Codes::North America
+{{c1::Phoenix Sky Harbor International Airport (Arizona, United States)}} uses the {{c2::PHX}} code.	Airport Codes::North America
+{{c1::George Bush Intercontinental Airport (Texas, United States)}} uses the {{c2::IAH}} code.	Airport Codes::North America
+{{c1::William P. Hobby Airport (Texas, United States)}} uses the {{c2::HOU}} code.	Airport Codes::North America
+{{c1::Logan International Airport (Massachusetts, United States)}} uses the {{c2::BOS}} code.	Airport Codes::North America
+{{c1::Minneapolis–Saint Paul International Airport (Minnesota, United States)}} uses the {{c2::MSP}} code.	Airport Codes::North America
+{{c1::Detroit Metropolitan Wayne County Airport (Michigan, United States)}} uses the {{c2::DTW}} code.	Airport Codes::North America
+{{c1::Fort Lauderdale–Hollywood International Airport (Florida, United States)}} uses the {{c2::FLL}} code.	Airport Codes::North America
+{{c1::Philadelphia International Airport (Pennsylvania, United States)}} uses the {{c2::PHL}} code.	Airport Codes::North America
+{{c1::Baltimore/Washington International Thurgood Marshall Airport (Maryland, United States)}} uses the {{c2::BWI}} code.	Airport Codes::North America
+{{c1::Salt Lake City International Airport (Utah, United States)}} uses the {{c2::SLC}} code.	Airport Codes::North America
+{{c1::Washington Dulles International Airport (Virginia, United States)}} uses the {{c2::IAD}} code.	Airport Codes::North America
+{{c1::Ronald Reagan Washington National Airport (Virginia, United States)}} uses the {{c2::DCA}} code.	Airport Codes::North America
+{{c1::San Diego International Airport (California, United States)}} uses the {{c2::SAN}} code.	Airport Codes::North America
+{{c1::Tampa International Airport (Florida, United States)}} uses the {{c2::TPA}} code.	Airport Codes::North America
+{{c1::Austin–Bergstrom International Airport (Texas, United States)}} uses the {{c2::AUS}} code.	Airport Codes::North America
+{{c1::Daniel K. Inouye International Airport (Hawaii, United States)}} uses the {{c2::HNL}} code.	Airport Codes::North America
+{{c1::Portland International Airport (Oregon, United States)}} uses the {{c2::PDX}} code.	Airport Codes::North America
+{{c1::St. Louis Lambert International Airport (Missouri, United States)}} uses the {{c2::STL}} code.	Airport Codes::North America
+{{c1::Oakland International Airport (California, United States)}} uses the {{c2::OAK}} code.	Airport Codes::North America
+{{c1::Norman Y. Mineta San Jose International Airport (California, United States)}} uses the {{c2::SJC}} code.	Airport Codes::North America
+{{c1::Sacramento International Airport (California, United States)}} uses the {{c2::SMF}} code.	Airport Codes::North America
+{{c1::Fresno Yosemite International Airport (California, United States)}} uses the {{c2::FAT}} code.	Airport Codes::North America
+{{c1::Ontario International Airport (California, United States)}} uses the {{c2::ONT}} code.	Airport Codes::North America
+{{c1::Palm Springs International Airport (California, United States)}} uses the {{c2::PSP}} code.	Airport Codes::North America
+{{c1::San Bernardino International Airport (California, United States)}} uses the {{c2::SBD}} code.	Airport Codes::North America
+{{c1::Raleigh-Durham International Airport (North Carolina, United States)}} uses the {{c2::RDU}} code.	Airport Codes::North America
+{{c1::Nashville International Airport (Tennessee, United States)}} uses the {{c2::BNA}} code.	Airport Codes::North America
+{{c1::Kansas City International Airport (Missouri, United States)}} uses the {{c2::MCI}} code.	Airport Codes::North America
+{{c1::Charlotte Douglas International Airport (North Carolina, United States)}} uses the {{c2::CLT}} code.	Airport Codes::North America
+{{c1::Toronto Pearson International Airport (Ontario, Canada)}} uses the {{c2::YYZ}} code.	Airport Codes::North America
+{{c1::Vancouver International Airport (British Columbia, Canada)}} uses the {{c2::YVR}} code.	Airport Codes::North America
+{{c1::Montréal–Pierre Elliott Trudeau International Airport (Quebec, Canada)}} uses the {{c2::YUL}} code.	Airport Codes::North America
+{{c1::Calgary International Airport (Alberta, Canada)}} uses the {{c2::YYC}} code.	Airport Codes::North America
+{{c1::Ottawa Macdonald–Cartier International Airport (Ontario, Canada)}} uses the {{c2::YOW}} code.	Airport Codes::North America
+{{c1::Edmonton International Airport (Alberta, Canada)}} uses the {{c2::YEG}} code.	Airport Codes::North America
+{{c1::Québec City Jean Lesage International Airport (Quebec, Canada)}} uses the {{c2::YQB}} code.	Airport Codes::North America
+{{c1::Halifax Stanfield International Airport (Nova Scotia, Canada)}} uses the {{c2::YHZ}} code.	Airport Codes::North America
+{{c1::Winnipeg James Armstrong Richardson International Airport (Manitoba, Canada)}} uses the {{c2::YWG}} code.	Airport Codes::North America
+{{c1::Licenciado Benito Juárez International Airport (Mexico City, Mexico)}} uses the {{c2::MEX}} code.	Airport Codes::North America
+{{c1::Cancún International Airport (Quintana Roo, Mexico)}} uses the {{c2::CUN}} code.	Airport Codes::North America
+{{c1::Don Miguel Hidalgo y Costilla International Airport (Jalisco, Mexico)}} uses the {{c2::GDL}} code.	Airport Codes::North America
+{{c1::Tocumen International Airport (Panama)}} uses the {{c2::PTY}} code.	Airport Codes::North America
+{{c1::Juan Santamaría International Airport (Costa Rica)}} uses the {{c2::SJO}} code.	Airport Codes::North America
+{{c1::José Martí International Airport (Cuba)}} uses the {{c2::HAV}} code.	Airport Codes::North America
+{{c1::Guarulhos – Governador André Franco Montoro International Airport (São Paulo, Brazil)}} uses the {{c2::GRU}} code.	Airport Codes::South America
+{{c1::Galeão–Tom Jobim International Airport (Rio de Janeiro, Brazil)}} uses the {{c2::GIG}} code.	Airport Codes::South America
+{{c1::Brasília–Presidente Juscelino Kubitschek International Airport (Federal District, Brazil)}} uses the {{c2::BSB}} code.	Airport Codes::South America
+{{c1::Ministro Pistarini International Airport (Buenos Aires Province, Argentina)}} uses the {{c2::EZE}} code.	Airport Codes::South America
+{{c1::Comodoro Arturo Merino Benítez International Airport (Chile)}} uses the {{c2::SCL}} code.	Airport Codes::South America
+{{c1::Jorge Chávez International Airport (Peru)}} uses the {{c2::LIM}} code.	Airport Codes::South America
+{{c1::El Dorado International Airport (Colombia)}} uses the {{c2::BOG}} code.	Airport Codes::South America
+{{c1::Mariscal Sucre International Airport (Ecuador)}} uses the {{c2::UIO}} code.	Airport Codes::South America
+{{c1::London Heathrow Airport (England, United Kingdom)}} uses the {{c2::LHR}} code.	Airport Codes::Europe
+{{c1::London Gatwick Airport (England, United Kingdom)}} uses the {{c2::LGW}} code.	Airport Codes::Europe
+{{c1::London Stansted Airport (England, United Kingdom)}} uses the {{c2::STN}} code.	Airport Codes::Europe
+{{c1::Manchester Airport (England, United Kingdom)}} uses the {{c2::MAN}} code.	Airport Codes::Europe
+{{c1::Edinburgh Airport (Scotland, United Kingdom)}} uses the {{c2::EDI}} code.	Airport Codes::Europe
+{{c1::Dublin Airport (Ireland)}} uses the {{c2::DUB}} code.	Airport Codes::Europe
+{{c1::Charles de Gaulle Airport (Île-de-France, France)}} uses the {{c2::CDG}} code.	Airport Codes::Europe
+{{c1::Paris-Orly Airport (Île-de-France, France)}} uses the {{c2::ORY}} code.	Airport Codes::Europe
+{{c1::Nice Côte d'Azur Airport (Provence-Alpes-Côte d'Azur, France)}} uses the {{c2::NCE}} code.	Airport Codes::Europe
+{{c1::Lyon–Saint-Exupéry Airport (Auvergne-Rhône-Alpes, France)}} uses the {{c2::LYS}} code.	Airport Codes::Europe
+{{c1::Frankfurt Airport (Hesse, Germany)}} uses the {{c2::FRA}} code.	Airport Codes::Europe
+{{c1::Munich Franz Josef Strauss Airport (Bavaria, Germany)}} uses the {{c2::MUC}} code.	Airport Codes::Europe
+{{c1::Berlin Brandenburg Airport "Willy Brandt" (Brandenburg, Germany)}} uses the {{c2::BER}} code.	Airport Codes::Europe
+{{c1::Düsseldorf Airport (North Rhine-Westphalia, Germany)}} uses the {{c2::DUS}} code.	Airport Codes::Europe
+{{c1::Hamburg Airport "Helmut Schmidt" (Hamburg, Germany)}} uses the {{c2::HAM}} code.	Airport Codes::Europe
+{{c1::Amsterdam Airport Schiphol (North Holland, Netherlands)}} uses the {{c2::AMS}} code.	Airport Codes::Europe
+{{c1::Brussels Airport (Flemish Brabant, Belgium)}} uses the {{c2::BRU}} code.	Airport Codes::Europe
+{{c1::Zurich Airport (Zurich, Switzerland)}} uses the {{c2::ZRH}} code.	Airport Codes::Europe
+{{c1::Geneva Airport (Geneva, Switzerland)}} uses the {{c2::GVA}} code.	Airport Codes::Europe
+{{c1::Vienna International Airport (Lower Austria, Austria)}} uses the {{c2::VIE}} code.	Airport Codes::Europe
+{{c1::Adolfo Suárez Madrid–Barajas Airport (Community of Madrid, Spain)}} uses the {{c2::MAD}} code.	Airport Codes::Europe
+{{c1::Josep Tarradellas Barcelona-El Prat Airport (Catalonia, Spain)}} uses the {{c2::BCN}} code.	Airport Codes::Europe
+{{c1::Humberto Delgado Airport (Lisbon Portela) (Lisbon District, Portugal)}} uses the {{c2::LIS}} code.	Airport Codes::Europe
+{{c1::Francisco de Sá Carneiro Airport (Porto District, Portugal)}} uses the {{c2::OPO}} code.	Airport Codes::Europe
+{{c1::Leonardo da Vinci–Fiumicino Airport (Lazio, Italy)}} uses the {{c2::FCO}} code.	Airport Codes::Europe
+{{c1::Milan Malpensa Airport (Lombardy, Italy)}} uses the {{c2::MXP}} code.	Airport Codes::Europe
+{{c1::Venice Marco Polo Airport (Veneto, Italy)}} uses the {{c2::VCE}} code.	Airport Codes::Europe
+{{c1::Naples International Airport (Campania, Italy)}} uses the {{c2::NAP}} code.	Airport Codes::Europe
+{{c1::Athens International Airport "Eleftherios Venizelos" (Attica, Greece)}} uses the {{c2::ATH}} code.	Airport Codes::Europe
+{{c1::Istanbul Airport (Istanbul Province, Turkey)}} uses the {{c2::IST}} code.	Airport Codes::Europe
+{{c1::Sabiha Gökçen International Airport (Istanbul Province, Turkey)}} uses the {{c2::SAW}} code.	Airport Codes::Europe
+{{c1::Copenhagen Airport (Capital Region, Denmark)}} uses the {{c2::CPH}} code.	Airport Codes::Europe
+{{c1::Oslo Airport, Gardermoen (Viken, Norway)}} uses the {{c2::OSL}} code.	Airport Codes::Europe
+{{c1::Stockholm Arlanda Airport (Stockholm County, Sweden)}} uses the {{c2::ARN}} code.	Airport Codes::Europe
+{{c1::Helsinki Airport (Uusimaa, Finland)}} uses the {{c2::HEL}} code.	Airport Codes::Europe
+{{c1::Keflavík International Airport (Southern Peninsula, Iceland)}} uses the {{c2::KEF}} code.	Airport Codes::Europe
+{{c1::Warsaw Chopin Airport (Masovian Voivodeship, Poland)}} uses the {{c2::WAW}} code.	Airport Codes::Europe
+{{c1::Václav Havel Airport Prague (Prague, Czech Republic)}} uses the {{c2::PRG}} code.	Airport Codes::Europe
+{{c1::Budapest Ferenc Liszt International Airport (Pest County, Hungary)}} uses the {{c2::BUD}} code.	Airport Codes::Europe
+{{c1::Henri Coandă International Airport (Ilfov County, Romania)}} uses the {{c2::OTP}} code.	Airport Codes::Europe
+{{c1::Sofia Airport (Sofia City Province, Bulgaria)}} uses the {{c2::SOF}} code.	Airport Codes::Europe
+{{c1::Franjo Tuđman Airport (Zagreb County, Croatia)}} uses the {{c2::ZAG}} code.	Airport Codes::Europe
+{{c1::Belgrade Nikola Tesla Airport (Central Serbia, Serbia)}} uses the {{c2::BEG}} code.	Airport Codes::Europe
+{{c1::Dubrovnik Airport (Dubrovnik-Neretva County, Croatia)}} uses the {{c2::DBV}} code.	Airport Codes::Europe
+{{c1::Ljubljana Jože Pučnik Airport (Upper Carniola, Slovenia)}} uses the {{c2::LJU}} code.	Airport Codes::Europe
+{{c1::Riga International Airport (Riga, Latvia)}} uses the {{c2::RIX}} code.	Airport Codes::Europe
+{{c1::Lennart Meri Tallinn Airport (Harju County, Estonia)}} uses the {{c2::TLL}} code.	Airport Codes::Europe
+{{c1::Vilnius Airport (Vilnius County, Lithuania)}} uses the {{c2::VNO}} code.	Airport Codes::Europe
+{{c1::Sheremetyevo Alexander Pushkin International Airport (Moscow Oblast, Russia)}} uses the {{c2::SVO}} code.	Airport Codes::Europe
+{{c1::Domodedovo Mikhail Lomonosov International Airport (Moscow Oblast, Russia)}} uses the {{c2::DME}} code.	Airport Codes::Europe
+{{c1::Pulkovo Airport named after Peter the Great (Leningrad Oblast, Russia)}} uses the {{c2::LED}} code.	Airport Codes::Europe
+{{c1::Boryspil International Airport (Kyiv Oblast, Ukraine)}} uses the {{c2::KBP}} code.	Airport Codes::Europe
+{{c1::Minsk National Airport (Minsk Region, Belarus)}} uses the {{c2::MSQ}} code.	Airport Codes::Europe
+{{c1::Heydar Aliyev International Airport (Absheron, Azerbaijan)}} uses the {{c2::GYD}} code.	Airport Codes::Europe
+{{c1::Tbilisi International Airport (Kvemo Kartli, Georgia)}} uses the {{c2::TBS}} code.	Airport Codes::Europe
+{{c1::Zvartnots International Airport (Armavir Province, Armenia)}} uses the {{c2::EVN}} code.	Airport Codes::Europe
+{{c1::Cairo International Airport (Egypt)}} uses the {{c2::CAI}} code.	Airport Codes::Africa
+{{c1::Mohammed V International Airport (Casablanca-Settat, Morocco)}} uses the {{c2::CMN}} code.	Airport Codes::Africa
+{{c1::Houari Boumediene Airport (Algiers Province, Algeria)}} uses the {{c2::ALG}} code.	Airport Codes::Africa
+{{c1::Tunis–Carthage International Airport (Tunis Governorate, Tunisia)}} uses the {{c2::TUN}} code.	Airport Codes::Africa
+{{c1::Murtala Muhammed International Airport (Lagos State, Nigeria)}} uses the {{c2::LOS}} code.	Airport Codes::Africa
+{{c1::Kotoka International Airport (Greater Accra Region, Ghana)}} uses the {{c2::ACC}} code.	Airport Codes::Africa
+{{c1::Jomo Kenyatta International Airport (Nairobi County, Kenya)}} uses the {{c2::NBO}} code.	Airport Codes::Africa
+{{c1::Addis Ababa Bole International Airport (Addis Ababa, Ethiopia)}} uses the {{c2::ADD}} code.	Airport Codes::Africa
+{{c1::O.R. Tambo International Airport (Gauteng, South Africa)}} uses the {{c2::JNB}} code.	Airport Codes::Africa
+{{c1::Cape Town International Airport (Western Cape, South Africa)}} uses the {{c2::CPT}} code.	Airport Codes::Africa
+{{c1::Julius Nyerere International Airport (Dar es Salaam Region, Tanzania)}} uses the {{c2::DAR}} code.	Airport Codes::Africa
+{{c1::Kigali International Airport (Kigali Province, Rwanda)}} uses the {{c2::KGL}} code.	Airport Codes::Africa
+{{c1::Dubai International Airport (Dubai, United Arab Emirates)}} uses the {{c2::DXB}} code.	Airport Codes::Asia
+{{c1::Zayed International Airport (Abu Dhabi, United Arab Emirates)}} uses the {{c2::AUH}} code.	Airport Codes::Asia
+{{c1::Hamad International Airport (Qatar)}} uses the {{c2::DOH}} code.	Airport Codes::Asia
+{{c1::King Khalid International Airport (Riyadh Province, Saudi Arabia)}} uses the {{c2::RUH}} code.	Airport Codes::Asia
+{{c1::King Abdulaziz International Airport (Makkah Province, Saudi Arabia)}} uses the {{c2::JED}} code.	Airport Codes::Asia
+{{c1::Kuwait International Airport (Kuwait)}} uses the {{c2::KWI}} code.	Airport Codes::Asia
+{{c1::Bahrain International Airport (Bahrain)}} uses the {{c2::BAH}} code.	Airport Codes::Asia
+{{c1::Muscat International Airport (Oman)}} uses the {{c2::MCT}} code.	Airport Codes::Asia
+{{c1::Queen Alia International Airport (Jordan)}} uses the {{c2::AMM}} code.	Airport Codes::Asia
+{{c1::Beirut–Rafic Hariri International Airport (Lebanon)}} uses the {{c2::BEY}} code.	Airport Codes::Asia
+{{c1::Ben Gurion International Airport (Tel Aviv District, Israel)}} uses the {{c2::TLV}} code.	Airport Codes::Asia
+{{c1::Imam Khomeini International Airport (Tehran Province, Iran)}} uses the {{c2::IKA}} code.	Airport Codes::Asia
+{{c1::Baghdad International Airport (Iraq)}} uses the {{c2::BGW}} code.	Airport Codes::Asia
+{{c1::Indira Gandhi International Airport (Delhi, India)}} uses the {{c2::DEL}} code.	Airport Codes::Asia
+{{c1::Chhatrapati Shivaji Maharaj International Airport (Maharashtra, India)}} uses the {{c2::BOM}} code.	Airport Codes::Asia
+{{c1::Kempegowda International Airport (Karnataka, India)}} uses the {{c2::BLR}} code.	Airport Codes::Asia
+{{c1::Chennai International Airport (Tamil Nadu, India)}} uses the {{c2::MAA}} code.	Airport Codes::Asia
+{{c1::Netaji Subhas Chandra Bose International Airport (West Bengal, India)}} uses the {{c2::CCU}} code.	Airport Codes::Asia
+{{c1::Rajiv Gandhi International Airport (Telangana, India)}} uses the {{c2::HYD}} code.	Airport Codes::Asia
+{{c1::Dabolim Airport (Goa, India)}} uses the {{c2::GOI}} code.	Airport Codes::Asia
+{{c1::Jinnah International Airport (Sindh, Pakistan)}} uses the {{c2::KHI}} code.	Airport Codes::Asia
+{{c1::Allama Iqbal International Airport (Punjab, Pakistan)}} uses the {{c2::LHE}} code.	Airport Codes::Asia
+{{c1::Islamabad International Airport (Islamabad Capital Territory, Pakistan)}} uses the {{c2::ISB}} code.	Airport Codes::Asia
+{{c1::Hazrat Shahjalal International Airport (Bangladesh)}} uses the {{c2::DAC}} code.	Airport Codes::Asia
+{{c1::Bandaranaike International Airport (Sri Lanka)}} uses the {{c2::CMB}} code.	Airport Codes::Asia
+{{c1::Tribhuvan International Airport (Nepal)}} uses the {{c2::KTM}} code.	Airport Codes::Asia
+{{c1::Velana International Airport (Maldives)}} uses the {{c2::MLE}} code.	Airport Codes::Asia
+{{c1::Suvarnabhumi Airport (Samut Prakan, Thailand)}} uses the {{c2::BKK}} code.	Airport Codes::Asia
+{{c1::Don Mueang International Airport (Bangkok, Thailand)}} uses the {{c2::DMK}} code.	Airport Codes::Asia
+{{c1::Phuket International Airport (Phuket Province, Thailand)}} uses the {{c2::HKT}} code.	Airport Codes::Asia
+{{c1::Chiang Mai International Airport (Chiang Mai Province, Thailand)}} uses the {{c2::CNX}} code.	Airport Codes::Asia
+{{c1::Singapore Changi Airport (Singapore)}} uses the {{c2::SIN}} code.	Airport Codes::Asia
+{{c1::Kuala Lumpur International Airport (Selangor, Malaysia)}} uses the {{c2::KUL}} code.	Airport Codes::Asia
+{{c1::Soekarno–Hatta International Airport (Banten, Indonesia)}} uses the {{c2::CGK}} code.	Airport Codes::Asia
+{{c1::Ngurah Rai International Airport (Bali, Indonesia)}} uses the {{c2::DPS}} code.	Airport Codes::Asia
+{{c1::Ninoy Aquino International Airport (Metro Manila, Philippines)}} uses the {{c2::MNL}} code.	Airport Codes::Asia
+{{c1::Mactan–Cebu International Airport (Cebu, Philippines)}} uses the {{c2::CEB}} code.	Airport Codes::Asia
+{{c1::Tan Son Nhat International Airport (Ho Chi Minh City, Vietnam)}} uses the {{c2::SGN}} code.	Airport Codes::Asia
+{{c1::Noi Bai International Airport (Hanoi, Vietnam)}} uses the {{c2::HAN}} code.	Airport Codes::Asia
+{{c1::Yangon International Airport (Yangon Region, Myanmar)}} uses the {{c2::RGN}} code.	Airport Codes::Asia
+{{c1::Phnom Penh International Airport (Cambodia)}} uses the {{c2::PNH}} code.	Airport Codes::Asia
+{{c1::Wattay International Airport (Laos)}} uses the {{c2::VTE}} code.	Airport Codes::Asia
+{{c1::Hong Kong International Airport (Hong Kong)}} uses the {{c2::HKG}} code.	Airport Codes::Asia
+{{c1::Macau International Airport (Macau)}} uses the {{c2::MFM}} code.	Airport Codes::Asia
+{{c1::Taiwan Taoyuan International Airport (Taoyuan, Taiwan)}} uses the {{c2::TPE}} code.	Airport Codes::Asia
+{{c1::Beijing Capital International Airport (Beijing, China)}} uses the {{c2::PEK}} code.	Airport Codes::Asia
+{{c1::Beijing Daxing International Airport (Beijing, China)}} uses the {{c2::PKX}} code.	Airport Codes::Asia
+{{c1::Shanghai Pudong International Airport (Shanghai, China)}} uses the {{c2::PVG}} code.	Airport Codes::Asia
+{{c1::Shanghai Hongqiao International Airport (Shanghai, China)}} uses the {{c2::SHA}} code.	Airport Codes::Asia
+{{c1::Guangzhou Baiyun International Airport (Guangdong, China)}} uses the {{c2::CAN}} code.	Airport Codes::Asia
+{{c1::Shenzhen Bao'an International Airport (Guangdong, China)}} uses the {{c2::SZX}} code.	Airport Codes::Asia
+{{c1::Chengdu Shuangliu International Airport (Sichuan, China)}} uses the {{c2::CTU}} code.	Airport Codes::Asia
+{{c1::Xi'an Xianyang International Airport (Shaanxi, China)}} uses the {{c2::XIY}} code.	Airport Codes::Asia
+{{c1::Chongqing Jiangbei International Airport (Chongqing, China)}} uses the {{c2::CKG}} code.	Airport Codes::Asia
+{{c1::Hangzhou Xiaoshan International Airport (Zhejiang, China)}} uses the {{c2::HGH}} code.	Airport Codes::Asia
+{{c1::Narita International Airport (Chiba Prefecture, Japan)}} uses the {{c2::NRT}} code.	Airport Codes::Asia
+{{c1::Haneda Airport (Tokyo, Japan)}} uses the {{c2::HND}} code.	Airport Codes::Asia
+{{c1::Kansai International Airport (Osaka Prefecture, Japan)}} uses the {{c2::KIX}} code.	Airport Codes::Asia
+{{c1::Chubu Centrair International Airport (Aichi Prefecture, Japan)}} uses the {{c2::NGO}} code.	Airport Codes::Asia
+{{c1::New Chitose Airport (Hokkaido, Japan)}} uses the {{c2::CTS}} code.	Airport Codes::Asia
+{{c1::Fukuoka Airport (Fukuoka Prefecture, Japan)}} uses the {{c2::FUK}} code.	Airport Codes::Asia
+{{c1::Naha Airport (Okinawa Prefecture, Japan)}} uses the {{c2::OKA}} code.	Airport Codes::Asia
+{{c1::Incheon International Airport (Incheon, South Korea)}} uses the {{c2::ICN}} code.	Airport Codes::Asia
+{{c1::Gimpo International Airport (Seoul, South Korea)}} uses the {{c2::GMP}} code.	Airport Codes::Asia
+{{c1::Gimhae International Airport (Busan, South Korea)}} uses the {{c2::PUS}} code.	Airport Codes::Asia
+{{c1::Chinggis Khaan International Airport (Töv Province, Mongolia)}} uses the {{c2::ULN}} code.	Airport Codes::Asia
+{{c1::Almaty International Airport (Almaty Region, Kazakhstan)}} uses the {{c2::ALA}} code.	Airport Codes::Asia
+{{c1::Astana International Airport (Akmola Region, Kazakhstan)}} uses the {{c2::NQZ}} code.	Airport Codes::Asia
+{{c1::Islam Karimov Tashkent International Airport (Tashkent Region, Uzbekistan)}} uses the {{c2::TAS}} code.	Airport Codes::Asia
+{{c1::Sydney Kingsford Smith Airport (New South Wales, Australia)}} uses the {{c2::SYD}} code.	Airport Codes::Oceania
+{{c1::Melbourne Airport (Victoria, Australia)}} uses the {{c2::MEL}} code.	Airport Codes::Oceania
+{{c1::Brisbane Airport (Queensland, Australia)}} uses the {{c2::BNE}} code.	Airport Codes::Oceania
+{{c1::Perth Airport (Western Australia, Australia)}} uses the {{c2::PER}} code.	Airport Codes::Oceania
+{{c1::Adelaide Airport (South Australia, Australia)}} uses the {{c2::ADL}} code.	Airport Codes::Oceania
+{{c1::Canberra Airport (Australian Capital Territory, Australia)}} uses the {{c2::CBR}} code.	Airport Codes::Oceania
+{{c1::Auckland Airport (New Zealand)}} uses the {{c2::AKL}} code.	Airport Codes::Oceania
+{{c1::Wellington Airport (New Zealand)}} uses the {{c2::WLG}} code.	Airport Codes::Oceania
+{{c1::Christchurch Airport (New Zealand)}} uses the {{c2::CHC}} code.	Airport Codes::Oceania
+{{c1::Nadi International Airport (Fiji)}} uses the {{c2::NAN}} code.	Airport Codes::Oceania
+{{c1::Faa'a International Airport (French Polynesia)}} uses the {{c2::PPT}} code.	Airport Codes::Oceania
+{{c1::Antonio B. Won Pat International Airport (Guam)}} uses the {{c2::GUM}} code.	Airport Codes::Oceania

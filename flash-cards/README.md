@@ -6,18 +6,13 @@ This directory contains plain-text flash card decks for import into [Anki](https
 
 In Anki desktop: **File → Import**, select the `.txt` file. Anki reads the header lines automatically and creates/targets the named deck with the `Cloze` note type — no manual field mapping needed.
 
+`Cards/Airport Codes.txt` instead uses a `#deck column:2` header (requires Anki 2.1.54+): each row carries its own deck name in a second tab-separated column, so importing this single file creates/targets six separate subdecks under a shared `Airport Codes` parent (Anki nests on `::` in the deck name).
+
 ## Decks included
 
 - `Cards/NATO Phonetic Alphabet.txt` – NATO phonetic alphabet, letter → code word (one-directional: the word is always hidden).
 - `Cards/Units.txt` – common measurement units and relationships.
 - `Cards/US Presidents.txt` – U.S. presidents, including non-consecutive terms.
-- `Cards/Airport Codes - North America.txt` – full airport name ↔ three-letter code → deck `Airport Codes::North America`.
-- `Cards/Airport Codes - South America.txt` – → deck `Airport Codes::South America`.
-- `Cards/Airport Codes - Europe.txt` – → deck `Airport Codes::Europe`.
-- `Cards/Airport Codes - Africa.txt` – → deck `Airport Codes::Africa`.
-- `Cards/Airport Codes - Asia.txt` – includes the Middle East → deck `Airport Codes::Asia`.
-- `Cards/Airport Codes - Oceania.txt` – → deck `Airport Codes::Oceania`.
-
-The airport-code decks import as subdecks of a shared `Airport Codes` parent deck (Anki nests on `::` in the deck name).
+- `Cards/Airport Codes.txt` – full airport name ↔ three-letter code, world airports, split by continent into `Airport Codes::North America`, `::South America`, `::Europe`, `::Africa`, `::Asia` (incl. Middle East), and `::Oceania` via the per-row deck column.
 
 Each deck keeps one fact per line to make it easy to parse and edit with text-based tooling.
