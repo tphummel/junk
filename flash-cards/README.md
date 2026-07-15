@@ -13,6 +13,7 @@ In Anki desktop: **File → Import**, select the `.txt` file. Anki reads the hea
 - `Cards/NATO Phonetic Alphabet.txt` – NATO phonetic alphabet, letter → code word (one-directional: the word is always hidden).
 - `Cards/Units.txt` – common measurement units and relationships.
 - `Cards/US Presidents.txt` – U.S. presidents, including non-consecutive terms.
+- `Cards/California Counties.txt` – all 58 California counties and their county seats, alphabetical by county. Each row clozes both the county and the seat, so cards drill in both directions (county → seat and seat → county).
 - `Cards/Airport Codes.txt` – full airport name ↔ three-letter code, world airports, split by continent into `Airport Codes::North America`, `::South America`, `::Europe`, `::Africa`, `::Asia` (incl. Middle East), and `::Oceania` via the per-row deck column.
 - `Cards/World Series Champions.txt` – MLB World Series champions, 1960–2025.
 - `Cards/Blackjack.txt` – basic strategy, all under a shared `Blackjack` parent deck via the per-row deck column:

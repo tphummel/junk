@@ -1,0 +1,62 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck:California Counties
+{{c1::Alameda County}}'s county seat is {{c2::Oakland}}.
+{{c1::Alpine County}}'s county seat is {{c2::Markleeville}}.
+{{c1::Amador County}}'s county seat is {{c2::Jackson}}.
+{{c1::Butte County}}'s county seat is {{c2::Oroville}}.
+{{c1::Calaveras County}}'s county seat is {{c2::San Andreas}}.
+{{c1::Colusa County}}'s county seat is {{c2::Colusa}}.
+{{c1::Contra Costa County}}'s county seat is {{c2::Martinez}}.
+{{c1::Del Norte County}}'s county seat is {{c2::Crescent City}}.
+{{c1::El Dorado County}}'s county seat is {{c2::Placerville}}.
+{{c1::Fresno County}}'s county seat is {{c2::Fresno}}.
+{{c1::Glenn County}}'s county seat is {{c2::Willows}}.
+{{c1::Humboldt County}}'s county seat is {{c2::Eureka}}.
+{{c1::Imperial County}}'s county seat is {{c2::El Centro}}.
+{{c1::Inyo County}}'s county seat is {{c2::Independence}}.
+{{c1::Kern County}}'s county seat is {{c2::Bakersfield}}.
+{{c1::Kings County}}'s county seat is {{c2::Hanford}}.
+{{c1::Lake County}}'s county seat is {{c2::Lakeport}}.
+{{c1::Lassen County}}'s county seat is {{c2::Susanville}}.
+{{c1::Los Angeles County}}'s county seat is {{c2::Los Angeles}}.
+{{c1::Madera County}}'s county seat is {{c2::Madera}}.
+{{c1::Marin County}}'s county seat is {{c2::San Rafael}}.
+{{c1::Mariposa County}}'s county seat is {{c2::Mariposa}}.
+{{c1::Mendocino County}}'s county seat is {{c2::Ukiah}}.
+{{c1::Merced County}}'s county seat is {{c2::Merced}}.
+{{c1::Modoc County}}'s county seat is {{c2::Alturas}}.
+{{c1::Mono County}}'s county seat is {{c2::Bridgeport}}.
+{{c1::Monterey County}}'s county seat is {{c2::Salinas}}.
+{{c1::Napa County}}'s county seat is {{c2::Napa}}.
+{{c1::Nevada County}}'s county seat is {{c2::Nevada City}}.
+{{c1::Orange County}}'s county seat is {{c2::Santa Ana}}.
+{{c1::Placer County}}'s county seat is {{c2::Auburn}}.
+{{c1::Plumas County}}'s county seat is {{c2::Quincy}}.
+{{c1::Riverside County}}'s county seat is {{c2::Riverside}}.
+{{c1::Sacramento County}}'s county seat is {{c2::Sacramento}}.
+{{c1::San Benito County}}'s county seat is {{c2::Hollister}}.
+{{c1::San Bernardino County}}'s county seat is {{c2::San Bernardino}}.
+{{c1::San Diego County}}'s county seat is {{c2::San Diego}}.
+{{c1::San Francisco County}}'s county seat is {{c2::San Francisco}}.
+{{c1::San Joaquin County}}'s county seat is {{c2::Stockton}}.
+{{c1::San Luis Obispo County}}'s county seat is {{c2::San Luis Obispo}}.
+{{c1::San Mateo County}}'s county seat is {{c2::Redwood City}}.
+{{c1::Santa Barbara County}}'s county seat is {{c2::Santa Barbara}}.
+{{c1::Santa Clara County}}'s county seat is {{c2::San Jose}}.
+{{c1::Santa Cruz County}}'s county seat is {{c2::Santa Cruz}}.
+{{c1::Shasta County}}'s county seat is {{c2::Redding}}.
+{{c1::Sierra County}}'s county seat is {{c2::Downieville}}.
+{{c1::Siskiyou County}}'s county seat is {{c2::Yreka}}.
+{{c1::Solano County}}'s county seat is {{c2::Fairfield}}.
+{{c1::Sonoma County}}'s county seat is {{c2::Santa Rosa}}.
+{{c1::Stanislaus County}}'s county seat is {{c2::Modesto}}.
+{{c1::Sutter County}}'s county seat is {{c2::Yuba City}}.
+{{c1::Tehama County}}'s county seat is {{c2::Red Bluff}}.
+{{c1::Trinity County}}'s county seat is {{c2::Weaverville}}.
+{{c1::Tulare County}}'s county seat is {{c2::Visalia}}.
+{{c1::Tuolumne County}}'s county seat is {{c2::Sonora}}.
+{{c1::Ventura County}}'s county seat is {{c2::Ventura}}.
+{{c1::Yolo County}}'s county seat is {{c2::Woodland}}.
+{{c1::Yuba County}}'s county seat is {{c2::Marysville}}.
