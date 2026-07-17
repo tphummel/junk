@@ -8,12 +8,18 @@ In Anki desktop: **File → Import**, select the `.txt` file. Anki reads the hea
 
 `Cards/Airport Codes.txt` and `Cards/Blackjack.txt` instead use a `#deck column:2` header (requires Anki 2.1.54+): each row carries its own deck name in a second tab-separated column, so importing either file creates/targets several subdecks under a shared parent (Anki nests on `::` in the deck name).
 
+### Decks with images
+
+`Cards/California Counties.txt` uses `#html:true` and a second tab-separated column mapped to the Cloze notetype's `Back Extra` field, holding an `<img>` tag. The first field (`Text`) is left untouched by this so that Anki's "update notes that match first field" import mode keeps matching existing notes and preserves their review history — only `Back Extra` gets (re)populated. One consequence: the map only renders on the answer side of the card, not while you're still guessing.
+
+Anki's plain-text import does **not** copy media files for you — before importing (or re-importing), copy the contents of `Cards/media/California Counties/` into Anki's `collection.media` folder (Anki desktop: **Tools → Check Media** shows the folder location, or find it directly under your profile folder, e.g. `~/.local/share/Anki2/<profile>/collection.media/` on Linux).
+
 ## Decks included
 
 - `Cards/NATO Phonetic Alphabet.txt` – NATO phonetic alphabet, letter → code word (one-directional: the word is always hidden).
 - `Cards/Units.txt` – common measurement units and relationships.
 - `Cards/US Presidents.txt` – U.S. presidents, including non-consecutive terms.
-- `Cards/California Counties.txt` – all 58 California counties and their county seats, alphabetical by county. Each row clozes both the county and the seat, so cards drill in both directions (county → seat and seat → county).
+- `Cards/California Counties.txt` – all 58 California counties and their county seats, alphabetical by county. Each row clozes both the county and the seat, so cards drill in both directions (county → seat and seat → county). Every row's `Back Extra` field also holds an SVG map of California with that county highlighted (`Cards/media/California Counties/ca-county-<slug>.svg`, generated from the same county boundary data used by the `data.tomhummel.com` running checklist), shown as confirmation once you flip to the answer.
 - `Cards/Airport Codes.txt` – full airport name ↔ three-letter code, world airports, split by continent into `Airport Codes::North America`, `::South America`, `::Europe`, `::Africa`, `::Asia` (incl. Middle East), and `::Oceania` via the per-row deck column.
 - `Cards/World Series Champions.txt` – MLB World Series champions, 1960–2025.
 - `Cards/Blackjack.txt` – basic strategy, all under a shared `Blackjack` parent deck via the per-row deck column:
