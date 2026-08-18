@@ -1,0 +1,33 @@
+{{define "layout"}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{block "title" .}}Trail Check{{end}}</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7/dist/turbo.min.js"></script>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">Trail Check</a>
+    {{if .Authenticated}}
+    <nav>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/catalog">Trails</a>
+      <a href="/me/passkeys">Passkeys</a>
+      <form method="post" action="/auth/logout" style="display:inline">
+        <button type="submit">Log out</button>
+      </form>
+    </nav>
+    {{end}}
+  </header>
+  <main>
+    {{template "content" .}}
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
+{{end}}

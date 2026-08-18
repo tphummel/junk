@@ -1,0 +1,59 @@
+{{define "title"}}Dashboard - Trail Check{{end}}
+{{define "content"}}
+<section class="dashboard-layout">
+  <aside class="trail-list">
+    <h2>Your trails</h2>
+    <ul>
+      {{range .Trails}}
+      <li{{if and $.Selected (eq .UserTrail.ID $.Selected.UserTrail.ID)}} class="active"{{end}}>
+        <a href="/dashboard?user_trail_id={{.UserTrail.ID}}">{{.CatalogTrail.Name}}</a>
+      </li>
+      {{else}}
+      <li>No trails tracked yet. <a href="/catalog">Browse the catalog</a>.</li>
+      {{end}}
+    </ul>
+  </aside>
+
+  {{if .Selected}}
+  <div class="trail-detail">
+    <h1>{{.Selected.CatalogTrail.Name}}</h1>
+
+    <div class="progress-bar" title="{{printf "%.1f" .Coverage.CoveragePct}}% covered">
+      <div class="progress-bar-fill" style="width: {{printf "%.1f" .Coverage.CoveragePct}}%"></div>
+    </div>
+    <p>{{printf "%.1f" .Coverage.CoveragePct}}% covered
+       ({{printf "%.1f" (divf .Coverage.MatchedLenM 1000)}} km of {{printf "%.1f" (divf .Coverage.RefLengthM 1000)}} km)</p>
+
+    <div id="map" data-user-trail-id="{{.Selected.UserTrail.ID}}"></div>
+
+    <h2>Upload a run</h2>
+    <form id="run-upload-form" method="post" action="/runs" enctype="multipart/form-data">
+      <input type="hidden" name="user_trail_id" value="{{.Selected.UserTrail.ID}}">
+      <div class="field">
+        <label for="run-name">Name (optional)</label>
+        <input type="text" id="run-name" name="name">
+      </div>
+      <div class="field">
+        <label for="run-file">GPX file</label>
+        <input type="file" id="run-file" name="file" accept=".gpx" required>
+      </div>
+      <button type="submit">Upload run</button>
+    </form>
+
+    <h2>Runs</h2>
+    <turbo-frame id="run-status">
+      {{template "run_list" .Runs}}
+    </turbo-frame>
+  </div>
+  {{else}}
+  <div class="trail-detail">
+    <p>Pick a trail on the left, or <a href="/catalog">browse the catalog</a> to start tracking one.</p>
+  </div>
+  {{end}}
+</section>
+<script>
+  {{if .Selected}}
+  TrailCheck.initDashboardMap({{.Selected.UserTrail.ID}});
+  {{end}}
+</script>
+{{end}}

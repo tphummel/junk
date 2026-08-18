@@ -1,0 +1,17 @@
+{{define "run_list"}}
+<table class="run-table">
+  <thead><tr><th>Name</th><th>Uploaded</th><th>Status</th><th>Coverage</th></tr></thead>
+  <tbody>
+    {{range .}}
+    <tr data-run-row="{{.ID}}" data-run-status="{{.Status}}">
+      <td>{{if .Name}}{{.Name}}{{else}}(unnamed){{end}}</td>
+      <td>{{.UploadedAt.Format "2006-01-02 15:04"}}</td>
+      <td class="run-status-cell">{{.Status}}</td>
+      <td class="run-coverage-cell">{{if .CoveragePct}}{{printf "%.1f" .CoveragePct}}%{{end}}</td>
+    </tr>
+    {{else}}
+    <tr><td colspan="4">No runs uploaded yet.</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

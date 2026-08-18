@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test and coverage
+*.test
+*.out
+coverage.html
+
+# Data
+data/
+/data
+cache/
+/cache
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/
+
+# k6
+k6/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
