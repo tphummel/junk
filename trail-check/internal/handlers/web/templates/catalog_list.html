@@ -1,0 +1,47 @@
+{{define "title"}}Trails - Trail Check{{end}}
+{{define "content"}}
+<section>
+  <h1>Reference trails</h1>
+  <table class="trail-table">
+    <thead><tr><th>Name</th><th>Length</th><th></th></tr></thead>
+    <tbody>
+      {{range .Trails}}
+      <tr>
+        <td>{{.Name}}</td>
+        <td>{{printf "%.1f" (divf .LengthM 1000)}} km</td>
+        <td>
+          {{if index $.TrackedSlugs .Slug}}
+            <a href="/dashboard?slug={{.Slug}}">View progress</a>
+          {{else}}
+            <form method="post" action="/catalog/{{.Slug}}/track" style="display:inline">
+              <button type="submit">Track this trail</button>
+            </form>
+          {{end}}
+        </td>
+      </tr>
+      {{else}}
+      <tr><td colspan="3">No reference trails yet.</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Add a reference trail</h2>
+  <form method="post" action="/catalog" enctype="multipart/form-data">
+    <div class="field">
+      <label for="trail-name">Name</label>
+      <input type="text" id="trail-name" name="name" required>
+    </div>
+    <div class="field">
+      <label for="trail-slug">Slug</label>
+      <input type="text" id="trail-slug" name="slug" pattern="[a-z0-9-]+" required>
+    </div>
+    <div class="field">
+      <label for="trail-file">GPX file</label>
+      <input type="file" id="trail-file" name="file" accept=".gpx" required>
+    </div>
+    <button type="submit">Upload</button>
+  </form>
+</section>
+{{end}}

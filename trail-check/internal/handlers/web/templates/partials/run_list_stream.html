@@ -1,0 +1,9 @@
+{{define "run_list_stream"}}
+<turbo-stream action="replace" target="run-status">
+  <template>
+    <turbo-frame id="run-status">
+      {{template "run_list" .}}
+    </turbo-frame>
+  </template>
+</turbo-stream>
+{{end}}

@@ -1,0 +1,14 @@
+{{define "title"}}Log in - Trail Check{{end}}
+{{define "content"}}
+<section class="auth-card">
+  <h1>Log in</h1>
+  <p>Sign in with any passkey registered to your account.</p>
+  <button id="login-button" type="button">Sign in with passkey</button>
+  <p id="login-status" role="status"></p>
+</section>
+<script>
+  document.getElementById('login-button').addEventListener('click', function () {
+    TrailCheck.login({ statusEl: document.getElementById('login-status') });
+  });
+</script>
+{{end}}
