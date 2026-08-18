@@ -20,10 +20,10 @@
     return res.json();
   }
 
-  async function register({ label, token, statusEl }) {
+  async function register({ label, statusEl }) {
     setStatus(statusEl, 'Requesting registration options...');
     try {
-      const options = await postJSON('/auth/register/begin', { label: label, token: token });
+      const options = await postJSON('/auth/register/begin', { label: label });
       const creationOptions = PublicKeyCredential.parseCreationOptionsFromJSON(options.publicKey || options);
 
       setStatus(statusEl, 'Follow your browser/device prompt...');

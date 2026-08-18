@@ -72,7 +72,6 @@ All configuration is via environment variables:
 | `RP_ID` | localhost | WebAuthn Relying Party ID (your domain, no scheme/port) |
 | `RP_DISPLAY_NAME` | Trail Check | WebAuthn Relying Party display name |
 | `RP_ORIGINS` | http://localhost:8080 | Comma-separated list of allowed origins |
-| `REGISTRATION_TOKEN` | | If set, required to create a new account (see below) |
 | `MATCH_BUFFER_METERS` | 20 | GPS-drift tolerance buffer used when matching runs to a trail |
 | `PROJECTED_SRID` | 32611 (UTM 11N) | Projected CRS used for metre-accurate length/buffer math; pick the UTM zone for your trails |
 
@@ -84,11 +83,10 @@ every restart invalidates all sessions. Generate a real one for production:
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt-key.pem
 ```
 
-**Registration is open by default.** Since there's no username or password --
-just "create a passkey" -- an exposed instance with no `REGISTRATION_TOKEN`
-set will let anyone create an account. Set `REGISTRATION_TOKEN` to a random
-value before exposing the service beyond your own network, and share it only
-with people you want to have accounts.
+**Registration is always open.** There's no username or password, no invite
+gate -- anyone who can reach `/auth/register` can create an account and a
+passkey for it. That's fine on a home network; keep that in mind if you ever
+expose the instance more broadly.
 
 ## API
 
@@ -153,7 +151,6 @@ docker run -d \
   -e RP_ID=trail.example.com \
   -e RP_ORIGINS=https://trail.example.com \
   -e JWT_RSA_PRIVATE_KEY_FILE=/data/jwt-key.pem \
-  -e REGISTRATION_TOKEN=change-me \
   --name trail-check \
   trail-check:latest
 ```

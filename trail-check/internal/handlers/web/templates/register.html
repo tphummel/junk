@@ -4,13 +4,6 @@
   <h1>Create your account</h1>
   <p>Trail Check has no passwords. Registering creates a passkey on this device that you'll use to sign in.</p>
 
-  {{if .RegistrationGated}}
-  <div class="field">
-    <label for="registration-token">Registration token</label>
-    <input type="password" id="registration-token" autocomplete="off">
-  </div>
-  {{end}}
-
   <div class="field">
     <label for="passkey-label">Label this passkey (optional)</label>
     <input type="text" id="passkey-label" placeholder="e.g. iPhone, YubiKey">
@@ -23,7 +16,6 @@
   document.getElementById('register-button').addEventListener('click', function () {
     TrailCheck.register({
       label: document.getElementById('passkey-label').value,
-      token: {{if .RegistrationGated}}document.getElementById('registration-token').value{{else}}''{{end}},
       statusEl: document.getElementById('register-status'),
     });
   });

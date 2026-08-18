@@ -312,10 +312,10 @@ made while building it against real SpatiaLite:
   already confirmed to work.
 - **Registration/login endpoints (§7):** WebAuthn ceremonies are inherently
   two round trips (fetch options, then submit the signed credential), so
-  each design-doc endpoint is split into `/begin` and `/finish`. An optional
-  `REGISTRATION_TOKEN` gate was added since the design has no username or
-  password -- without it, registration is wide open to anyone who can reach
-  the instance.
+  each design-doc endpoint is split into `/begin` and `/finish`. Registration
+  is wide open to anyone who can reach the instance -- there's no username or
+  password to gate on, and no invite mechanism was added; that's a deliberate
+  choice for a home-network deployment, not an oversight.
 - **Podman vs Docker:** the design doc specifies Podman; the GitHub Actions
   workflow uses `docker/build-push-action`, matching every other project in
   this repo. The resulting OCI image is the same either way.

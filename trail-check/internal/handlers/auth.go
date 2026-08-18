@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -33,15 +32,8 @@ func (h *Handler) handleHealthz(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-type registerPageData struct {
-	basePage
-	RegistrationGated bool
-}
-
 func (h *Handler) handleRegisterPage(c *gin.Context) {
-	h.tmpl.render(c, http.StatusOK, "register.html", registerPageData{
-		RegistrationGated: h.Auth.RegistrationGated(),
-	})
+	h.tmpl.render(c, http.StatusOK, "register.html", basePage{})
 }
 
 func (h *Handler) handleLoginPage(c *gin.Context) {
@@ -50,20 +42,15 @@ func (h *Handler) handleLoginPage(c *gin.Context) {
 
 type registerBeginRequest struct {
 	Label string `json:"label"`
-	Token string `json:"token"`
 }
 
 func (h *Handler) handleRegisterBegin(c *gin.Context) {
 	var body registerBeginRequest
 	_ = c.ShouldBindJSON(&body)
 
-	creation, token, err := h.Auth.BeginBootstrapRegistration(c.Request.Context(), body.Label, body.Token)
+	creation, token, err := h.Auth.BeginBootstrapRegistration(c.Request.Context(), body.Label)
 	if err != nil {
-		status := http.StatusInternalServerError
-		if errors.Is(err, auth.ErrRegistrationForbidden) {
-			status = http.StatusForbidden
-		}
-		c.JSON(status, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	auth.SetChallengeCookie(c, token)

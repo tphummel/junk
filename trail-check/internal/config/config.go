@@ -20,7 +20,6 @@ type Config struct {
 	RPID              string
 	RPDisplayName     string
 	RPOrigins         []string
-	RegistrationToken string
 	MatchBufferMeters float64
 	ProjectedSRID     int
 }
@@ -41,7 +40,6 @@ func Load() *Config {
 		RPID:              getEnv("RP_ID", "localhost"),
 		RPDisplayName:     getEnv("RP_DISPLAY_NAME", "Trail Check"),
 		RPOrigins:         splitCSV(getEnv("RP_ORIGINS", "http://localhost:8080")),
-		RegistrationToken: getEnv("REGISTRATION_TOKEN", ""),
 		MatchBufferMeters: getEnvFloat("MATCH_BUFFER_METERS", 20.0),
 		ProjectedSRID:     getEnvInt("PROJECTED_SRID", 32611),
 	}

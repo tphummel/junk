@@ -31,7 +31,6 @@ type Config struct {
 	SessionTTL        time.Duration
 	JWTPrivateKeyPEM  string
 	JWTPrivateKeyFile string
-	RegistrationToken string
 }
 
 // Service issues and verifies passkeys and sessions.
@@ -94,12 +93,9 @@ func (s *Service) loadWebAuthnUser(ctx context.Context, userID string) (*webAuth
 }
 
 // BeginBootstrapRegistration starts a registration ceremony for a brand new
-// account (the "first passkey" / sign-up flow). If cfg.RegistrationToken is
-// set, presentedToken must match it.
-func (s *Service) BeginBootstrapRegistration(ctx context.Context, label, presentedToken string) (*protocol.CredentialCreation, string, error) {
-	if s.cfg.RegistrationToken != "" && presentedToken != s.cfg.RegistrationToken {
-		return nil, "", ErrRegistrationForbidden
-	}
+// account (the "first passkey" / sign-up flow). Registration is open to
+// anyone who can reach the server; there is no invite gate.
+func (s *Service) BeginBootstrapRegistration(ctx context.Context, label string) (*protocol.CredentialCreation, string, error) {
 	u, err := s.db.CreateUser(ctx)
 	if err != nil {
 		return nil, "", err
@@ -268,12 +264,6 @@ func (s *Service) IssueSession(ctx context.Context, userID, deviceLabel string) 
 		return nil, err
 	}
 	return s.startSession(ctx, u, deviceLabel)
-}
-
-// RegistrationGated reports whether a registration token is required to
-// create a new account.
-func (s *Service) RegistrationGated() bool {
-	return s.cfg.RegistrationToken != ""
 }
 
 // Logout revokes a session by its JWT.

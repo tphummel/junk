@@ -3,9 +3,6 @@ package auth
 import "errors"
 
 var (
-	// ErrRegistrationForbidden is returned when a registration token is
-	// configured and the caller didn't present a matching one.
-	ErrRegistrationForbidden = errors.New("auth: registration is not open")
 	// ErrChallengeExpired is returned when a WebAuthn ceremony's challenge
 	// token is unknown or has expired.
 	ErrChallengeExpired = errors.New("auth: challenge expired or not found")

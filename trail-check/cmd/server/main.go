@@ -62,7 +62,6 @@ func main() {
 		SessionTTL:        time.Duration(cfg.SessionTTLDays) * 24 * time.Hour,
 		JWTPrivateKeyPEM:  cfg.JWTPrivateKeyPEM,
 		JWTPrivateKeyFile: cfg.JWTPrivateKeyFile,
-		RegistrationToken: cfg.RegistrationToken,
 	}, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("configure auth service")
