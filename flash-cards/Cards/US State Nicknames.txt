@@ -1,0 +1,54 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck:US State Nicknames
+{{c1::Alabama}}'s nickname is {{c2::The Heart of Dixie}}.
+{{c1::Alaska}}'s nickname is {{c2::The Last Frontier}}.
+{{c1::Arizona}}'s nickname is {{c2::The Grand Canyon State}}.
+{{c1::Arkansas}}'s nickname is {{c2::The Natural State}}.
+{{c1::California}}'s nickname is {{c2::The Golden State}}.
+{{c1::Colorado}}'s nickname is {{c2::The Centennial State}}.
+{{c1::Connecticut}}'s nickname is {{c2::The Constitution State}}.
+{{c1::Delaware}}'s nickname is {{c2::The First State}}.
+{{c1::Florida}}'s nickname is {{c2::The Sunshine State}}.
+{{c1::Georgia}}'s nickname is {{c2::The Peach State}}.
+{{c1::Hawaii}}'s nickname is {{c2::The Aloha State}}.
+{{c1::Idaho}}'s nickname is {{c2::The Gem State}}.
+{{c1::Illinois}}'s nickname is {{c2::The Prairie State}}.
+{{c1::Indiana}}'s nickname is {{c2::The Hoosier State}}.
+{{c1::Iowa}}'s nickname is {{c2::The Hawkeye State}}.
+{{c1::Kansas}}'s nickname is {{c2::The Sunflower State}}.
+{{c1::Kentucky}}'s nickname is {{c2::The Bluegrass State}}.
+{{c1::Louisiana}}'s nickname is {{c2::The Pelican State}}.
+{{c1::Maine}}'s nickname is {{c2::The Pine Tree State}}.
+{{c1::Maryland}}'s nickname is {{c2::The Old Line State}}.
+{{c1::Massachusetts}}'s nickname is {{c2::The Bay State}}.
+{{c1::Michigan}}'s nickname is {{c2::The Great Lakes State}}.
+{{c1::Minnesota}}'s nickname is {{c2::The Land of 10,000 Lakes}}.
+{{c1::Mississippi}}'s nickname is {{c2::The Magnolia State}}.
+{{c1::Missouri}}'s nickname is {{c2::The Show-Me State}}.
+{{c1::Montana}}'s nickname is {{c2::The Treasure State}}.
+{{c1::Nebraska}}'s nickname is {{c2::The Cornhusker State}}.
+{{c1::Nevada}}'s nickname is {{c2::The Silver State}}.
+{{c1::New Hampshire}}'s nickname is {{c2::The Granite State}}.
+{{c1::New Jersey}}'s nickname is {{c2::The Garden State}}.
+{{c1::New Mexico}}'s nickname is {{c2::Land of Enchantment}}.
+{{c1::New York}}'s nickname is {{c2::The Empire State}}.
+{{c1::North Carolina}}'s nickname is {{c2::The Tar Heel State}}.
+{{c1::North Dakota}}'s nickname is {{c2::The Peace Garden State}}.
+{{c1::Ohio}}'s nickname is {{c2::The Buckeye State}}.
+{{c1::Oklahoma}}'s nickname is {{c2::The Sooner State}}.
+{{c1::Oregon}}'s nickname is {{c2::The Beaver State}}.
+{{c1::Pennsylvania}}'s nickname is {{c2::The Keystone State}}.
+{{c1::Rhode Island}}'s nickname is {{c2::The Ocean State}}.
+{{c1::South Carolina}}'s nickname is {{c2::The Palmetto State}}.
+{{c1::South Dakota}}'s nickname is {{c2::The Mount Rushmore State}}.
+{{c1::Tennessee}}'s nickname is {{c2::The Volunteer State}}.
+{{c1::Texas}}'s nickname is {{c2::The Lone Star State}}.
+{{c1::Utah}}'s nickname is {{c2::The Beehive State}}.
+{{c1::Vermont}}'s nickname is {{c2::The Green Mountain State}}.
+{{c1::Virginia}}'s nickname is {{c2::The Old Dominion}}.
+{{c1::Washington}}'s nickname is {{c2::The Evergreen State}}.
+{{c1::West Virginia}}'s nickname is {{c2::The Mountain State}}.
+{{c1::Wisconsin}}'s nickname is {{c2::The Badger State}}.
+{{c1::Wyoming}}'s nickname is {{c2::The Equality State}}.

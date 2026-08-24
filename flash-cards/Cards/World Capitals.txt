@@ -1,0 +1,200 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck:World Capitals
+{{c1::Afghanistan}}'s capital is {{c2::Kabul}}.
+{{c1::Albania}}'s capital is {{c2::Tirana}}.
+{{c1::Algeria}}'s capital is {{c2::Algiers}}.
+{{c1::Andorra}}'s capital is {{c2::Andorra la Vella}}.
+{{c1::Angola}}'s capital is {{c2::Luanda}}.
+{{c1::Antigua and Barbuda}}'s capital is {{c2::Saint John's}}.
+{{c1::Argentina}}'s capital is {{c2::Buenos Aires}}.
+{{c1::Armenia}}'s capital is {{c2::Yerevan}}.
+{{c1::Australia}}'s capital is {{c2::Canberra}}.
+{{c1::Austria}}'s capital is {{c2::Vienna}}.
+{{c1::Azerbaijan}}'s capital is {{c2::Baku}}.
+{{c1::Bahamas}}'s capital is {{c2::Nassau}}.
+{{c1::Bahrain}}'s capital is {{c2::Manama}}.
+{{c1::Bangladesh}}'s capital is {{c2::Dhaka}}.
+{{c1::Barbados}}'s capital is {{c2::Bridgetown}}.
+{{c1::Belarus}}'s capital is {{c2::Minsk}}.
+{{c1::Belgium}}'s capital is {{c2::Brussels}}.
+{{c1::Belize}}'s capital is {{c2::Belmopan}}.
+{{c1::Benin}}'s capital is {{c2::Porto-Novo}}.
+{{c1::Bhutan}}'s capital is {{c2::Thimphu}}.
+{{c1::Bolivia}}'s capital is {{c2::Sucre}}.
+{{c1::Bosnia and Herzegovina}}'s capital is {{c2::Sarajevo}}.
+{{c1::Botswana}}'s capital is {{c2::Gaborone}}.
+{{c1::Brazil}}'s capital is {{c2::Brasília}}.
+{{c1::Brunei}}'s capital is {{c2::Bandar Seri Begawan}}.
+{{c1::Bulgaria}}'s capital is {{c2::Sofia}}.
+{{c1::Burkina Faso}}'s capital is {{c2::Ouagadougou}}.
+{{c1::Burundi}}'s capital is {{c2::Gitega}}.
+{{c1::Cabo Verde}}'s capital is {{c2::Praia}}.
+{{c1::Cambodia}}'s capital is {{c2::Phnom Penh}}.
+{{c1::Cameroon}}'s capital is {{c2::Yaoundé}}.
+{{c1::Canada}}'s capital is {{c2::Ottawa}}.
+{{c1::Central African Republic}}'s capital is {{c2::Bangui}}.
+{{c1::Chad}}'s capital is {{c2::N'Djamena}}.
+{{c1::Chile}}'s capital is {{c2::Santiago}}.
+{{c1::China}}'s capital is {{c2::Beijing}}.
+{{c1::Colombia}}'s capital is {{c2::Bogotá}}.
+{{c1::Comoros}}'s capital is {{c2::Moroni}}.
+{{c1::Congo (Congo-Brazzaville)}}'s capital is {{c2::Brazzaville}}.
+{{c1::Congo (Democratic Republic)}}'s capital is {{c2::Kinshasa}}.
+{{c1::Costa Rica}}'s capital is {{c2::San José}}.
+{{c1::Croatia}}'s capital is {{c2::Zagreb}}.
+{{c1::Cuba}}'s capital is {{c2::Havana}}.
+{{c1::Cyprus}}'s capital is {{c2::Nicosia}}.
+{{c1::Czech Republic}}'s capital is {{c2::Prague}}.
+{{c1::Denmark}}'s capital is {{c2::Copenhagen}}.
+{{c1::Djibouti}}'s capital is {{c2::Djibouti}}.
+{{c1::Dominica}}'s capital is {{c2::Roseau}}.
+{{c1::Dominican Republic}}'s capital is {{c2::Santo Domingo}}.
+{{c1::East Timor (Timor-Leste)}}'s capital is {{c2::Dili}}.
+{{c1::Ecuador}}'s capital is {{c2::Quito}}.
+{{c1::Egypt}}'s capital is {{c2::Cairo}}.
+{{c1::El Salvador}}'s capital is {{c2::San Salvador}}.
+{{c1::Equatorial Guinea}}'s capital is {{c2::Malabo}}.
+{{c1::Eritrea}}'s capital is {{c2::Asmara}}.
+{{c1::Estonia}}'s capital is {{c2::Tallinn}}.
+{{c1::Eswatini}}'s capital is {{c2::Mbabane}}.
+{{c1::Ethiopia}}'s capital is {{c2::Addis Ababa}}.
+{{c1::Fiji}}'s capital is {{c2::Suva}}.
+{{c1::Finland}}'s capital is {{c2::Helsinki}}.
+{{c1::France}}'s capital is {{c2::Paris}}.
+{{c1::Gabon}}'s capital is {{c2::Libreville}}.
+{{c1::Gambia}}'s capital is {{c2::Banjul}}.
+{{c1::Georgia}}'s capital is {{c2::Tbilisi}}.
+{{c1::Germany}}'s capital is {{c2::Berlin}}.
+{{c1::Ghana}}'s capital is {{c2::Accra}}.
+{{c1::Greece}}'s capital is {{c2::Athens}}.
+{{c1::Grenada}}'s capital is {{c2::Saint George's}}.
+{{c1::Guatemala}}'s capital is {{c2::Guatemala City}}.
+{{c1::Guinea}}'s capital is {{c2::Conakry}}.
+{{c1::Guinea-Bissau}}'s capital is {{c2::Bissau}}.
+{{c1::Guyana}}'s capital is {{c2::Georgetown}}.
+{{c1::Haiti}}'s capital is {{c2::Port-au-Prince}}.
+{{c1::Honduras}}'s capital is {{c2::Tegucigalpa}}.
+{{c1::Hungary}}'s capital is {{c2::Budapest}}.
+{{c1::Iceland}}'s capital is {{c2::Reykjavik}}.
+{{c1::India}}'s capital is {{c2::New Delhi}}.
+{{c1::Indonesia}}'s capital is {{c2::Jakarta}}.
+{{c1::Iran}}'s capital is {{c2::Tehran}}.
+{{c1::Iraq}}'s capital is {{c2::Baghdad}}.
+{{c1::Ireland}}'s capital is {{c2::Dublin}}.
+{{c1::Israel}}'s capital is {{c2::Jerusalem}}.
+{{c1::Italy}}'s capital is {{c2::Rome}}.
+{{c1::Ivory Coast (Côte d'Ivoire)}}'s capital is {{c2::Yamoussoukro}}.
+{{c1::Jamaica}}'s capital is {{c2::Kingston}}.
+{{c1::Japan}}'s capital is {{c2::Tokyo}}.
+{{c1::Jordan}}'s capital is {{c2::Amman}}.
+{{c1::Kazakhstan}}'s capital is {{c2::Astana}}.
+{{c1::Kenya}}'s capital is {{c2::Nairobi}}.
+{{c1::Kiribati}}'s capital is {{c2::Tarawa}}.
+{{c1::Kuwait}}'s capital is {{c2::Kuwait City}}.
+{{c1::Kyrgyzstan}}'s capital is {{c2::Bishkek}}.
+{{c1::Laos}}'s capital is {{c2::Vientiane}}.
+{{c1::Latvia}}'s capital is {{c2::Riga}}.
+{{c1::Lebanon}}'s capital is {{c2::Beirut}}.
+{{c1::Lesotho}}'s capital is {{c2::Maseru}}.
+{{c1::Liberia}}'s capital is {{c2::Monrovia}}.
+{{c1::Libya}}'s capital is {{c2::Tripoli}}.
+{{c1::Liechtenstein}}'s capital is {{c2::Vaduz}}.
+{{c1::Lithuania}}'s capital is {{c2::Vilnius}}.
+{{c1::Luxembourg}}'s capital is {{c2::Luxembourg City}}.
+{{c1::Madagascar}}'s capital is {{c2::Antananarivo}}.
+{{c1::Malawi}}'s capital is {{c2::Lilongwe}}.
+{{c1::Malaysia}}'s capital is {{c2::Kuala Lumpur}}.
+{{c1::Maldives}}'s capital is {{c2::Malé}}.
+{{c1::Mali}}'s capital is {{c2::Bamako}}.
+{{c1::Malta}}'s capital is {{c2::Valletta}}.
+{{c1::Marshall Islands}}'s capital is {{c2::Majuro}}.
+{{c1::Mauritania}}'s capital is {{c2::Nouakchott}}.
+{{c1::Mauritius}}'s capital is {{c2::Port Louis}}.
+{{c1::Mexico}}'s capital is {{c2::Mexico City}}.
+{{c1::Micronesia}}'s capital is {{c2::Palikir}}.
+{{c1::Moldova}}'s capital is {{c2::Chisinau}}.
+{{c1::Monaco}}'s capital is {{c2::Monaco}}.
+{{c1::Mongolia}}'s capital is {{c2::Ulaanbaatar}}.
+{{c1::Montenegro}}'s capital is {{c2::Podgorica}}.
+{{c1::Morocco}}'s capital is {{c2::Rabat}}.
+{{c1::Mozambique}}'s capital is {{c2::Maputo}}.
+{{c1::Myanmar (Burma)}}'s capital is {{c2::Naypyidaw}}.
+{{c1::Namibia}}'s capital is {{c2::Windhoek}}.
+{{c1::Nauru}}'s capital is {{c2::Yaren District}}.
+{{c1::Nepal}}'s capital is {{c2::Kathmandu}}.
+{{c1::Netherlands}}'s capital is {{c2::Amsterdam}}.
+{{c1::New Zealand}}'s capital is {{c2::Wellington}}.
+{{c1::Nicaragua}}'s capital is {{c2::Managua}}.
+{{c1::Niger}}'s capital is {{c2::Niamey}}.
+{{c1::Nigeria}}'s capital is {{c2::Abuja}}.
+{{c1::North Korea}}'s capital is {{c2::Pyongyang}}.
+{{c1::North Macedonia}}'s capital is {{c2::Skopje}}.
+{{c1::Norway}}'s capital is {{c2::Oslo}}.
+{{c1::Oman}}'s capital is {{c2::Muscat}}.
+{{c1::Pakistan}}'s capital is {{c2::Islamabad}}.
+{{c1::Palau}}'s capital is {{c2::Ngerulmud}}.
+{{c1::Palestine}}'s capital is {{c2::Jerusalem (claimed)}}.
+{{c1::Panama}}'s capital is {{c2::Panama City}}.
+{{c1::Papua New Guinea}}'s capital is {{c2::Port Moresby}}.
+{{c1::Paraguay}}'s capital is {{c2::Asunción}}.
+{{c1::Peru}}'s capital is {{c2::Lima}}.
+{{c1::Philippines}}'s capital is {{c2::Manila}}.
+{{c1::Poland}}'s capital is {{c2::Warsaw}}.
+{{c1::Portugal}}'s capital is {{c2::Lisbon}}.
+{{c1::Qatar}}'s capital is {{c2::Doha}}.
+{{c1::Romania}}'s capital is {{c2::Bucharest}}.
+{{c1::Russia}}'s capital is {{c2::Moscow}}.
+{{c1::Rwanda}}'s capital is {{c2::Kigali}}.
+{{c1::Saint Kitts and Nevis}}'s capital is {{c2::Basseterre}}.
+{{c1::Saint Lucia}}'s capital is {{c2::Castries}}.
+{{c1::Saint Vincent and the Grenadines}}'s capital is {{c2::Kingstown}}.
+{{c1::Samoa}}'s capital is {{c2::Apia}}.
+{{c1::San Marino}}'s capital is {{c2::San Marino}}.
+{{c1::Sao Tome and Principe}}'s capital is {{c2::São Tomé}}.
+{{c1::Saudi Arabia}}'s capital is {{c2::Riyadh}}.
+{{c1::Senegal}}'s capital is {{c2::Dakar}}.
+{{c1::Serbia}}'s capital is {{c2::Belgrade}}.
+{{c1::Seychelles}}'s capital is {{c2::Victoria}}.
+{{c1::Sierra Leone}}'s capital is {{c2::Freetown}}.
+{{c1::Singapore}}'s capital is {{c2::Singapore}}.
+{{c1::Slovakia}}'s capital is {{c2::Bratislava}}.
+{{c1::Slovenia}}'s capital is {{c2::Ljubljana}}.
+{{c1::Solomon Islands}}'s capital is {{c2::Honiara}}.
+{{c1::Somalia}}'s capital is {{c2::Mogadishu}}.
+{{c1::South Africa}}'s capital is {{c2::Pretoria}}.
+{{c1::South Korea}}'s capital is {{c2::Seoul}}.
+{{c1::South Sudan}}'s capital is {{c2::Juba}}.
+{{c1::Spain}}'s capital is {{c2::Madrid}}.
+{{c1::Sri Lanka}}'s capital is {{c2::Sri Jayawardenepura Kotte}}.
+{{c1::Sudan}}'s capital is {{c2::Khartoum}}.
+{{c1::Suriname}}'s capital is {{c2::Paramaribo}}.
+{{c1::Sweden}}'s capital is {{c2::Stockholm}}.
+{{c1::Switzerland}}'s capital is {{c2::Bern}}.
+{{c1::Syria}}'s capital is {{c2::Damascus}}.
+{{c1::Taiwan}}'s capital is {{c2::Taipei}}.
+{{c1::Tajikistan}}'s capital is {{c2::Dushanbe}}.
+{{c1::Tanzania}}'s capital is {{c2::Dodoma}}.
+{{c1::Thailand}}'s capital is {{c2::Bangkok}}.
+{{c1::Togo}}'s capital is {{c2::Lomé}}.
+{{c1::Tonga}}'s capital is {{c2::Nukuʻalofa}}.
+{{c1::Trinidad and Tobago}}'s capital is {{c2::Port of Spain}}.
+{{c1::Tunisia}}'s capital is {{c2::Tunis}}.
+{{c1::Turkey}}'s capital is {{c2::Ankara}}.
+{{c1::Turkmenistan}}'s capital is {{c2::Ashgabat}}.
+{{c1::Tuvalu}}'s capital is {{c2::Funafuti}}.
+{{c1::Uganda}}'s capital is {{c2::Kampala}}.
+{{c1::Ukraine}}'s capital is {{c2::Kyiv}}.
+{{c1::United Arab Emirates}}'s capital is {{c2::Abu Dhabi}}.
+{{c1::United Kingdom}}'s capital is {{c2::London}}.
+{{c1::United States}}'s capital is {{c2::Washington D.C.}}.
+{{c1::Uruguay}}'s capital is {{c2::Montevideo}}.
+{{c1::Uzbekistan}}'s capital is {{c2::Tashkent}}.
+{{c1::Vanuatu}}'s capital is {{c2::Port Vila}}.
+{{c1::Vatican City}}'s capital is {{c2::Vatican City}}.
+{{c1::Venezuela}}'s capital is {{c2::Caracas}}.
+{{c1::Vietnam}}'s capital is {{c2::Hanoi}}.
+{{c1::Yemen}}'s capital is {{c2::Sana'a}}.
+{{c1::Zambia}}'s capital is {{c2::Lusaka}}.
+{{c1::Zimbabwe}}'s capital is {{c2::Harare}}.
