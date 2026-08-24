@@ -20,6 +20,7 @@ Anki's plain-text import does **not** copy media files for you — before import
 - `Cards/Units.txt` – common measurement units and relationships.
 - `Cards/US Presidents.txt` – U.S. presidents, including non-consecutive terms.
 - `Cards/US State Nicknames.txt` – all 50 U.S. states and their official nicknames. Each row clozes both the state and the nickname, so cards drill in both directions (state → nickname and nickname → state).
+- `Cards/World Capitals.txt` – 196 countries and their capital cities. Each row clozes both the country and the capital, so cards drill in both directions (country → capital and capital → country).
 - `Cards/California Counties.txt` – all 58 California counties and their county seats, alphabetical by county. Each row clozes both the county and the seat, so cards drill in both directions (county → seat and seat → county). Every row's `Back Extra` field also holds an SVG map of California with that county highlighted (`Cards/media/California Counties/ca-county-<slug>.svg`, generated from the same county boundary data used by the `data.tomhummel.com` running checklist), shown as confirmation once you flip to the answer.
 - `Cards/Airport Codes.txt` – full airport name ↔ three-letter code, world airports, split by continent into `Airport Codes::North America`, `::South America`, `::Europe`, `::Africa`, `::Asia` (incl. Middle East), and `::Oceania` via the per-row deck column.
 - `Cards/World Series Champions.txt` – MLB World Series champions, 1960–2025.
