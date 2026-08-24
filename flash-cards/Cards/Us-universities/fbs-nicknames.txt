@@ -1,0 +1,119 @@
+#separator:tab
+#html:false
+#notetype:Cloze
+#deck:US Universities::FBS Nicknames
+{{c1::Air Force}}'s mascot nickname is {{c2::Falcons}}.
+{{c1::Akron}}'s mascot nickname is {{c2::Zips}}.
+{{c1::Alabama}}'s mascot nickname is {{c2::Crimson Tide}}.
+{{c1::Appalachian State}}'s mascot nickname is {{c2::Mountaineers}}.
+{{c1::Arizona}}'s mascot nickname is {{c2::Wildcats}}.
+{{c1::Arizona State}}'s mascot nickname is {{c2::Sun Devils}}.
+{{c1::Arkansas}}'s mascot nickname is {{c2::Razorbacks}}.
+{{c1::Arkansas State}}'s mascot nickname is {{c2::Red Wolves}}.
+{{c1::Army}}'s mascot nickname is {{c2::Black Knights}}.
+{{c1::Auburn}}'s mascot nickname is {{c2::Tigers}}.
+{{c1::Ball State}}'s mascot nickname is {{c2::Cardinals}}.
+{{c1::Baylor}}'s mascot nickname is {{c2::Bears}}.
+{{c1::Boise State}}'s mascot nickname is {{c2::Broncos}}.
+{{c1::Boston College}}'s mascot nickname is {{c2::Eagles}}.
+{{c1::BYU}}'s mascot nickname is {{c2::Cougars}}.
+{{c1::California}}'s mascot nickname is {{c2::Golden Bears}}.
+{{c1::Central Michigan}}'s mascot nickname is {{c2::Chippewas}}.
+{{c1::Charlotte}}'s mascot nickname is {{c2::49ers}}.
+{{c1::Cincinnati}}'s mascot nickname is {{c2::Bearcats}}.
+{{c1::Clemson}}'s mascot nickname is {{c2::Tigers}}.
+{{c1::Coastal Carolina}}'s mascot nickname is {{c2::Chanticleers}}.
+{{c1::Colorado}}'s mascot nickname is {{c2::Buffaloes}}.
+{{c1::Colorado State}}'s mascot nickname is {{c2::Rams}}.
+{{c1::Duke}}'s mascot nickname is {{c2::Blue Devils}}.
+{{c1::East Carolina}}'s mascot nickname is {{c2::Pirates}}.
+{{c1::Eastern Michigan}}'s mascot nickname is {{c2::Eagles}}.
+{{c1::Florida}}'s mascot nickname is {{c2::Gators}}.
+{{c1::Florida State}}'s mascot nickname is {{c2::Seminoles}}.
+{{c1::Florida Atlantic}}'s mascot nickname is {{c2::Owls}}.
+{{c1::Florida International}}'s mascot nickname is {{c2::Panthers}}.
+{{c1::Fresno State}}'s mascot nickname is {{c2::Bulldogs}}.
+{{c1::Georgia}}'s mascot nickname is {{c2::Bulldogs}}.
+{{c1::Georgia Southern}}'s mascot nickname is {{c2::Eagles}}.
+{{c1::Georgia State}}'s mascot nickname is {{c2::Panthers}}.
+{{c1::Georgia Tech}}'s mascot nickname is {{c2::Yellow Jackets}}.
+{{c1::Hawaii}}'s mascot nickname is {{c2::Rainbow Warriors}}.
+{{c1::Houston}}'s mascot nickname is {{c2::Cougars}}.
+{{c1::Illinois}}'s mascot nickname is {{c2::Fighting Illini}}.
+{{c1::Indiana}}'s mascot nickname is {{c2::Hoosiers}}.
+{{c1::Iowa}}'s mascot nickname is {{c2::Hawkeyes}}.
+{{c1::Iowa State}}'s mascot nickname is {{c2::Cyclones}}.
+{{c1::Kansas}}'s mascot nickname is {{c2::Jayhawks}}.
+{{c1::Kansas State}}'s mascot nickname is {{c2::Wildcats}}.
+{{c1::Kent State}}'s mascot nickname is {{c2::Golden Flashes}}.
+{{c1::Kentucky}}'s mascot nickname is {{c2::Wildcats}}.
+{{c1::Louisiana}}'s mascot nickname is {{c2::Ragin' Cajuns}}.
+{{c1::Louisiana Tech}}'s mascot nickname is {{c2::Bulldogs}}.
+{{c1::Liberty}}'s mascot nickname is {{c2::Flames}}.
+{{c1::Louisville}}'s mascot nickname is {{c2::Cardinals}}.
+{{c1::LSU}}'s mascot nickname is {{c2::Tigers}}.
+{{c1::Marshall}}'s mascot nickname is {{c2::Thundering Herd}}.
+{{c1::Maryland}}'s mascot nickname is {{c2::Terrapins}}.
+{{c1::Memphis}}'s mascot nickname is {{c2::Tigers}}.
+{{c1::Miami (FL)}}'s mascot nickname is {{c2::Hurricanes}}.
+{{c1::Miami (OH)}}'s mascot nickname is {{c2::RedHawks}}.
+{{c1::Michigan}}'s mascot nickname is {{c2::Wolverines}}.
+{{c1::Michigan State}}'s mascot nickname is {{c2::Spartans}}.
+{{c1::Minnesota}}'s mascot nickname is {{c2::Golden Gophers}}.
+{{c1::Mississippi State}}'s mascot nickname is {{c2::Bulldogs}}.
+{{c1::Missouri}}'s mascot nickname is {{c2::Tigers}}.
+{{c1::Navy}}'s mascot nickname is {{c2::Midshipmen}}.
+{{c1::NC State}}'s mascot nickname is {{c2::Wolfpack}}.
+{{c1::North Carolina}}'s mascot nickname is {{c2::Tar Heels}}.
+{{c1::North Texas}}'s mascot nickname is {{c2::Mean Green}}.
+{{c1::Northern Illinois}}'s mascot nickname is {{c2::Huskies}}.
+{{c1::Northwestern}}'s mascot nickname is {{c2::Wildcats}}.
+{{c1::Notre Dame}}'s mascot nickname is {{c2::Fighting Irish}}.
+{{c1::Ohio State}}'s mascot nickname is {{c2::Buckeyes}}.
+{{c1::Oklahoma}}'s mascot nickname is {{c2::Sooners}}.
+{{c1::Oklahoma State}}'s mascot nickname is {{c2::Cowboys}}.
+{{c1::Ole Miss}}'s mascot nickname is {{c2::Rebels}}.
+{{c1::Oregon}}'s mascot nickname is {{c2::Ducks}}.
+{{c1::Oregon State}}'s mascot nickname is {{c2::Beavers}}.
+{{c1::Penn State}}'s mascot nickname is {{c2::Nittany Lions}}.
+{{c1::TCU}}'s mascot nickname is {{c2::Horned Frogs}}.
+{{c1::Temple}}'s mascot nickname is {{c2::Owls}}.
+{{c1::Tennessee}}'s mascot nickname is {{c2::Volunteers}}.
+{{c1::Texas}}'s mascot nickname is {{c2::Longhorns}}.
+{{c1::Texas A&M}}'s mascot nickname is {{c2::Aggies}}.
+{{c1::Texas State}}'s mascot nickname is {{c2::Bobcats}}.
+{{c1::Texas Tech}}'s mascot nickname is {{c2::Red Raiders}}.
+{{c1::Tulane}}'s mascot nickname is {{c2::Green Wave}}.
+{{c1::Tulsa}}'s mascot nickname is {{c2::Golden Hurricane}}.
+{{c1::UCF}}'s mascot nickname is {{c2::Knights}}.
+{{c1::UCLA}}'s mascot nickname is {{c2::Bruins}}.
+{{c1::USF}}'s mascot nickname is {{c2::Bulls}}.
+{{c1::USC}}'s mascot nickname is {{c2::Trojans}}.
+{{c1::Utah}}'s mascot nickname is {{c2::Utes}}.
+{{c1::Utah State}}'s mascot nickname is {{c2::Aggies}}.
+{{c1::Virginia}}'s mascot nickname is {{c2::Cavaliers}}.
+{{c1::Virginia Tech}}'s mascot nickname is {{c2::Hokies}}.
+{{c1::Wake Forest}}'s mascot nickname is {{c2::Demon Deacons}}.
+{{c1::Washington}}'s mascot nickname is {{c2::Huskies}}.
+{{c1::Washington State}}'s mascot nickname is {{c2::Cougars}}.
+{{c1::West Virginia}}'s mascot nickname is {{c2::Mountaineers}}.
+{{c1::Wisconsin}}'s mascot nickname is {{c2::Badgers}}.
+{{c1::Wyoming}}'s mascot nickname is {{c2::Cowboys}}.
+{{c1::UTSA}}'s mascot nickname is {{c2::Roadrunners}}.
+{{c1::UAB}}'s mascot nickname is {{c2::Blazers}}.
+{{c1::Jax State}}'s mascot nickname is {{c2::Gamecocks}}.
+{{c1::Kennesaw State}}'s mascot nickname is {{c2::Owls}}.
+{{c1::ULM}}'s mascot nickname is {{c2::Warhawks}}.
+{{c1::Southern Miss}}'s mascot nickname is {{c2::Golden Eagles}}.
+{{c1::Troy}}'s mascot nickname is {{c2::Trojans}}.
+{{c1::South Alabama}}'s mascot nickname is {{c2::Jaguars}}.
+{{c1::South Carolina}}'s mascot nickname is {{c2::Gamecocks}}.
+{{c1::Western Kentucky}}'s mascot nickname is {{c2::Hilltoppers}}.
+{{c1::Middle Tennessee}}'s mascot nickname is {{c2::Blue Raiders}}.
+{{c1::UTEP}}'s mascot nickname is {{c2::Miners}}.
+{{c1::New Mexico}}'s mascot nickname is {{c2::Lobos}}.
+{{c1::New Mexico State}}'s mascot nickname is {{c2::Aggies}}.
+{{c1::UNLV}}'s mascot nickname is {{c2::Rebels}}.
+{{c1::San Jose State}}'s mascot nickname is {{c2::Spartans}}.
+{{c1::San Diego State}}'s mascot nickname is {{c2::Aztecs}}.
+{{c1::Nevada}}'s mascot nickname is {{c2::Wolf Pack}}.
