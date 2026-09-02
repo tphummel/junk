@@ -1,0 +1,14 @@
+{{define "title"}}Account recovery - app-passkey{{end}}
+{{define "content"}}
+<section class="card">
+  <h1>Lost your device?</h1>
+  <p>Enter one of your offline recovery codes to register a replacement passkey.
+    Each code can only be used once.</p>
+  <label for="code">Recovery code</label>
+  <input id="code" type="text" placeholder="XXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX" autofocus>
+  <label for="nickname">New device name</label>
+  <input id="nickname" type="text" placeholder="e.g. New Phone">
+  <button type="button" id="recover-btn">Verify code and add new passkey</button>
+  <p id="recovery-error" class="error" hidden></p>
+</section>
+{{end}}

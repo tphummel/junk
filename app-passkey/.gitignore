@@ -1,0 +1,8 @@
+/bin/
+*.db
+*.db-shm
+*.db-wal
+/data/
+*.test
+*.out
+coverage.html

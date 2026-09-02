@@ -1,0 +1,22 @@
+{{define "title"}}Admin - app-passkey{{end}}
+{{define "content"}}
+<section class="card">
+  <h1>All users</h1>
+  <table>
+    <thead>
+      <tr><th>Username</th><th>Registered keys</th><th>Created</th></tr>
+    </thead>
+    <tbody>
+      {{range .Users}}
+      <tr>
+        <td>{{.Username}}</td>
+        <td>{{.CredentialCount}}</td>
+        <td>{{.CreatedAt}}</td>
+      </tr>
+      {{else}}
+      <tr><td colspan="3">No users yet.</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}

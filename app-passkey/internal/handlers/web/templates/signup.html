@@ -1,0 +1,27 @@
+{{define "title"}}Sign up - app-passkey{{end}}
+{{define "content"}}
+<section class="card">
+  <h1>Create an account</h1>
+
+  <div id="signup-form">
+    <label for="username">Username</label>
+    <input id="username" type="text" autocomplete="username webauthn" autofocus>
+    <label for="signup-nickname">Device name (optional)</label>
+    <input id="signup-nickname" type="text" placeholder="e.g. MacBook">
+    <button type="button" id="signup-btn">Create passkey</button>
+    <p id="signup-error" class="error" hidden></p>
+  </div>
+
+  <div id="recovery-codes" hidden>
+    <h2>Save your recovery codes</h2>
+    <p>These codes are shown <strong>once</strong>. Store them somewhere safe -- they're the
+      only way back into your account if you lose every passkey.</p>
+    <pre id="recovery-codes-list"></pre>
+    <label>
+      <input type="checkbox" id="codes-saved-checkbox">
+      I've saved my recovery codes
+    </label>
+    <button type="button" id="confirm-btn" disabled>Finish signup</button>
+  </div>
+</section>
+{{end}}
