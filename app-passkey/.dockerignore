@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+bin/
+*.exe
+
+# Test and coverage
+*.test
+*.out
+coverage.html
+
+# Data
+data/
+/data
+*.db
+*.db-shm
+*.db-wal
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

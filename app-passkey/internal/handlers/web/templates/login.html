@@ -1,0 +1,11 @@
+{{define "title"}}Log in - app-passkey{{end}}
+{{define "content"}}
+<section class="card">
+  <h1>Log in</h1>
+  <label for="username">Username</label>
+  <input id="username" type="text" autocomplete="username webauthn" autofocus>
+  <button type="button" id="login-btn">Log in with passkey</button>
+  <p id="login-error" class="error" hidden></p>
+  <p class="link"><a href="/recovery">Lost your device?</a></p>
+</section>
+{{end}}

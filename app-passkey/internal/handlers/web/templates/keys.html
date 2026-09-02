@@ -1,0 +1,20 @@
+{{define "title"}}Manage keys - app-passkey{{end}}
+{{define "content"}}
+<section class="card">
+  <h1>Security dashboard</h1>
+  <p>Passkeys registered to <strong>{{.Username}}</strong>.</p>
+
+  <table id="keys-table">
+    <thead>
+      <tr><th>Nickname</th><th>Added</th><th>Last used</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Add a new passkey</h2>
+  <label for="new-key-nickname">Device name</label>
+  <input id="new-key-nickname" type="text" placeholder="e.g. Work Laptop">
+  <button type="button" id="add-key-btn">Add key</button>
+  <p id="keys-error" class="error" hidden></p>
+</section>
+{{end}}
