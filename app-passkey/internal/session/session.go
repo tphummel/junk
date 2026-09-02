@@ -20,7 +20,7 @@ import (
 const CookieName = "app_passkey_session"
 
 // ErrInvalid covers a missing, malformed, mis-signed, or expired token.
-var ErrInvalid = errors.New("invalid session")
+var ErrInvalid = errors.New("session: invalid session")
 
 // Claims identifies the authenticated user carried by a session token.
 type Claims struct {

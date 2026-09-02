@@ -110,3 +110,29 @@ A few points where the implementation had to make a concrete choice the doc left
 - **Login is username-based, not usernameless/discoverable** (`WithResidentKeyRequirement` is left at its default), matching section 4.2's explicit "User enters username" step.
 - **The `challenges` table doubles as ceremony storage for every WebAuthn Begin/Finish pair** (signup, login, add-key, and the post-recovery passkey registration), plus a short-lived "confirm signup" token issued after `FinishSignup` and consumed by `ConfirmSignup` -- this is what defers issuing a session until the user confirms they've saved their recovery codes (section 4.1, step 4).
 - **The E2E Playwright suite (section 7.3) is not included.** The Go integration tests in `internal/auth` and `internal/handlers` already exercise the same signup/login/add-key/recovery flows end-to-end against the real HTTP handlers and a real SQLite database, using `github.com/descope/virtualwebauthn` as the mock authenticator described in section 7.2 -- a browser-driven Playwright pass would mostly re-validate the same server logic through a slower harness. Wiring `setVirtualAuthenticator` into a headless-Chromium suite is a reasonable follow-up if browser-side JS (the `navigator.credentials` glue in `internal/handlers/web/static/app.js`) needs its own coverage.
+
+### Conventions carried over from this repo's other passkey service (trail-check)
+
+Section 2's Core Libraries list is deliberately narrow (go-webauthn, argon2, uuid), so this
+service skips trail-check's Gin/zerolog/Prometheus/JWT stack in favor of `net/http`, `log/slog`,
+and no metrics endpoint -- there was nothing in the design doc pulling in a web framework or an
+observability stack. Where the design doc is silent on a convention, though, this codebase follows
+trail-check's precedent rather than inventing a new one:
+
+- **Cookie helpers and the auth middleware live in the `auth` package**, not `handlers` --
+  `SetSessionCookie`, `ClearSessionCookie`, `SetChallengeCookie`, `ChallengeCookie` (read-and-clear
+  in one call), and `RequireAuth` all mirror trail-check's `internal/auth/middleware.go` almost
+  line for line, adapted from `gin.Context` to `http.ResponseWriter`/`*http.Request`.
+- **Every protected route responds 401 on missing/invalid auth, including page routes** (`/home`,
+  `/keys`, `/admin`) -- trail-check's `RequireAuth` does the same for `/dashboard` and friends
+  rather than redirecting to a login page, and `RequireAuth` here only clears the session cookie
+  when one was present but failed to verify, not when there was no cookie to begin with, matching
+  trail-check's exact branching.
+- **Error values are prefixed with their package name** (`"auth: ..."`, `"db: ..."`,
+  `"session: ..."`, `"recoverycode: ..."`), matching the convention visible across trail-check's
+  `internal/auth`, `internal/db`, `internal/geo`, and `internal/gpx` packages.
+- **Revoking a user's only remaining passkey is refused (409 Conflict)**, mirroring trail-check's
+  `handlePasskeyDelete` guard ("cannot delete your only active passkey"). The design doc doesn't
+  address this case, but leaving someone with zero passkeys and calling that success would be a
+  worse outcome than the equivalent guard in trail-check, even though recovery codes remain as a
+  fallback here in a way they don't for trail-check.

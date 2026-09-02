@@ -94,7 +94,7 @@ func hashSecret(secret string) ([]byte, error) {
 
 // ErrMalformed indicates a submitted recovery code isn't in the expected
 // "LOOKUPID-SECRET" shape.
-var ErrMalformed = errors.New("malformed recovery code")
+var ErrMalformed = errors.New("recoverycode: malformed recovery code")
 
 // Split parses a user-submitted code into its lookup ID and secret, without
 // touching the database or doing any hashing.

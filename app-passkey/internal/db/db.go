@@ -16,7 +16,7 @@ import (
 var schemaSQL string
 
 // ErrNotFound is returned when a lookup by ID or unique key matches nothing.
-var ErrNotFound = errors.New("not found")
+var ErrNotFound = errors.New("db: not found")
 
 // DB wraps the SQLite connection.
 type DB struct {

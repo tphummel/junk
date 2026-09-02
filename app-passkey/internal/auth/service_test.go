@@ -192,6 +192,12 @@ func TestFullSignupLoginRecoveryFlow(t *testing.T) {
 		t.Fatal("expected relabeled key to show the new nickname")
 	}
 
+	// A bogus ID with 2 keys on the account is a not-found, not a
+	// last-credential conflict.
+	if err := e.svc.RevokeKey(ctx, signup.User.ID, "not-a-real-id"); err != db.ErrNotFound {
+		t.Fatalf("expected ErrNotFound revoking an unknown key, got %v", err)
+	}
+
 	// --- Revoke a key ---
 	if err := e.svc.RevokeKey(ctx, signup.User.ID, addedCred.ID); err != nil {
 		t.Fatalf("RevokeKey: %v", err)
@@ -200,8 +206,10 @@ func TestFullSignupLoginRecoveryFlow(t *testing.T) {
 	if len(keys) != 1 {
 		t.Fatalf("expected 1 key after revoke, got %d", len(keys))
 	}
-	if err := e.svc.RevokeKey(ctx, signup.User.ID, "not-a-real-id"); err != db.ErrNotFound {
-		t.Fatalf("expected ErrNotFound revoking an unknown key, got %v", err)
+
+	// Revoking your last remaining passkey must be refused.
+	if err := e.svc.RevokeKey(ctx, signup.User.ID, keys[0].ID); err != ErrLastCredential {
+		t.Fatalf("expected ErrLastCredential revoking the only remaining key, got %v", err)
 	}
 
 	// --- Admin listing ---

@@ -104,6 +104,14 @@ func (d *DB) ListCredentialsByUser(ctx context.Context, userID string) ([]*Crede
 	return out, rows.Err()
 }
 
+// CountCredentialsByUser reports how many passkeys a user has registered.
+// Used to guard against revoking someone's only remaining passkey.
+func (d *DB) CountCredentialsByUser(ctx context.Context, userID string) (int, error) {
+	var n int
+	err := d.conn.QueryRowContext(ctx, `SELECT COUNT(*) FROM credentials WHERE user_id = ?`, userID).Scan(&n)
+	return n, err
+}
+
 // TouchCredential persists an updated sign counter after a successful
 // assertion (detecting cloned authenticators relies on this monotonically
 // increasing) and bumps last_used_at.

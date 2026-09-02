@@ -111,6 +111,7 @@ document.getElementById("logout-btn")?.addEventListener("click", async () => {
   if (!signupBtn) return;
 
   const usernameInput = document.getElementById("username");
+  const nicknameInput = document.getElementById("signup-nickname");
   const errorEl = document.getElementById("signup-error");
   const formEl = document.getElementById("signup-form");
   const codesSection = document.getElementById("recovery-codes");
@@ -141,7 +142,7 @@ document.getElementById("logout-btn")?.addEventListener("click", async () => {
       const publicKey = decodeCreationOptions(options);
       const credential = await navigator.credentials.create({ publicKey });
 
-      const finishRes = await fetch("/api/signup/finish?nickname=" + encodeURIComponent(navigator.userAgent.slice(0, 60)), {
+      const finishRes = await fetch("/api/signup/finish?nickname=" + encodeURIComponent(nicknameInput.value.trim()), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(encodeCredential(credential)),

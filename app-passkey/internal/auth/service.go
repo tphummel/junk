@@ -443,6 +443,13 @@ func (s *Service) LabelKey(ctx context.Context, userID, credentialID, nickname s
 // RevokeKey deletes one of a user's credentials, immediately stopping that
 // device from authenticating.
 func (s *Service) RevokeKey(ctx context.Context, userID, credentialID string) error {
+	n, err := s.db.CountCredentialsByUser(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if n <= 1 {
+		return ErrLastCredential
+	}
 	return s.db.DeleteCredential(ctx, credentialID, userID)
 }
 

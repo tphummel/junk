@@ -1,13 +1,17 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+
+	"app-passkey/internal/auth"
+)
 
 type basePage struct {
 	Authenticated bool
 }
 
 func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
-	if _, ok := h.authenticate(r); ok {
+	if _, _, ok := h.Auth.Authenticate(r); ok {
 		http.Redirect(w, r, "/home", http.StatusFound)
 		return
 	}
@@ -33,10 +37,9 @@ type homePageData struct {
 
 // handleHomePage is the design doc's protected "You are logged in" page.
 func (h *Handler) handleHomePage(w http.ResponseWriter, r *http.Request) {
-	claims := claimsFromContext(r)
 	renderPage(w, http.StatusOK, "home.html", homePageData{
 		basePage: basePage{Authenticated: true},
-		Username: claims.Username,
+		Username: auth.Username(r),
 	})
 }
 
@@ -46,10 +49,9 @@ type keysPageData struct {
 }
 
 func (h *Handler) handleKeysPage(w http.ResponseWriter, r *http.Request) {
-	claims := claimsFromContext(r)
 	renderPage(w, http.StatusOK, "keys.html", keysPageData{
 		basePage: basePage{Authenticated: true},
-		Username: claims.Username,
+		Username: auth.Username(r),
 	})
 }
 

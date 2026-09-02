@@ -33,17 +33,16 @@ func (h *Handler) handleSignupBegin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setChallengeCookie(w, r, token)
+	auth.SetChallengeCookie(w, r, token)
 	writeJSON(w, http.StatusOK, creation)
 }
 
 func (h *Handler) handleSignupFinish(w http.ResponseWriter, r *http.Request) {
-	token, ok := readChallengeCookie(r)
+	token, ok := auth.ChallengeCookie(w, r)
 	if !ok {
 		writeError(w, http.StatusBadRequest, "no signup in progress")
 		return
 	}
-	clearChallengeCookie(w, r)
 
 	nickname := r.URL.Query().Get("nickname")
 	result, err := h.Auth.FinishSignup(r.Context(), token, r, nickname)
@@ -77,6 +76,6 @@ func (h *Handler) handleSignupConfirm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setSessionCookie(w, r, result.SessionID, time.Until(result.ExpiresAt))
+	auth.SetSessionCookie(w, r, result.SessionID, time.Until(result.ExpiresAt))
 	writeJSON(w, http.StatusOK, map[string]string{"redirect": "/home"})
 }

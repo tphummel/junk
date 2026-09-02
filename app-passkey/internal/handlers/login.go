@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 	"time"
+
+	"app-passkey/internal/auth"
 )
 
 type loginBeginRequest struct {
@@ -23,17 +25,16 @@ func (h *Handler) handleLoginBegin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setChallengeCookie(w, r, token)
+	auth.SetChallengeCookie(w, r, token)
 	writeJSON(w, http.StatusOK, assertion)
 }
 
 func (h *Handler) handleLoginFinish(w http.ResponseWriter, r *http.Request) {
-	token, ok := readChallengeCookie(r)
+	token, ok := auth.ChallengeCookie(w, r)
 	if !ok {
 		writeError(w, http.StatusBadRequest, "no login in progress")
 		return
 	}
-	clearChallengeCookie(w, r)
 
 	result, err := h.Auth.FinishLogin(r.Context(), token, r)
 	if err != nil {
@@ -42,6 +43,6 @@ func (h *Handler) handleLoginFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setSessionCookie(w, r, result.SessionID, time.Until(result.ExpiresAt))
+	auth.SetSessionCookie(w, r, result.SessionID, time.Until(result.ExpiresAt))
 	writeJSON(w, http.StatusOK, map[string]string{"redirect": "/home"})
 }

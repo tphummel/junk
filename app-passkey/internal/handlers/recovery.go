@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 	"time"
+
+	"app-passkey/internal/auth"
 )
 
 type recoveryBeginRequest struct {
@@ -25,17 +27,16 @@ func (h *Handler) handleRecoveryBegin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setChallengeCookie(w, r, token)
+	auth.SetChallengeCookie(w, r, token)
 	writeJSON(w, http.StatusOK, creation)
 }
 
 func (h *Handler) handleRecoveryFinish(w http.ResponseWriter, r *http.Request) {
-	token, ok := readChallengeCookie(r)
+	token, ok := auth.ChallengeCookie(w, r)
 	if !ok {
 		writeError(w, http.StatusBadRequest, "no recovery in progress")
 		return
 	}
-	clearChallengeCookie(w, r)
 
 	result, err := h.Auth.FinishRecovery(r.Context(), token, r)
 	if err != nil {
@@ -44,6 +45,6 @@ func (h *Handler) handleRecoveryFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setSessionCookie(w, r, result.SessionID, time.Until(result.ExpiresAt))
+	auth.SetSessionCookie(w, r, result.SessionID, time.Until(result.ExpiresAt))
 	writeJSON(w, http.StatusOK, map[string]string{"redirect": "/home"})
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"app-passkey/internal/auth"
 	"app-passkey/internal/db"
 )
 
@@ -24,8 +25,7 @@ func toKeyView(c *db.Credential) keyView {
 }
 
 func (h *Handler) handleKeysList(w http.ResponseWriter, r *http.Request) {
-	claims := claimsFromContext(r)
-	keys, err := h.Auth.ListKeys(r.Context(), claims.UserID)
+	keys, err := h.Auth.ListKeys(r.Context(), auth.UserID(r))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not list keys")
 		return
@@ -42,29 +42,26 @@ type keysBeginRequest struct {
 }
 
 func (h *Handler) handleKeysBegin(w http.ResponseWriter, r *http.Request) {
-	claims := claimsFromContext(r)
 	var body keysBeginRequest
 	_ = decodeJSON(r, &body)
 
-	creation, token, err := h.Auth.BeginAddKey(r.Context(), claims.UserID, body.Nickname)
+	creation, token, err := h.Auth.BeginAddKey(r.Context(), auth.UserID(r), body.Nickname)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not start add-key ceremony")
 		return
 	}
-	setChallengeCookie(w, r, token)
+	auth.SetChallengeCookie(w, r, token)
 	writeJSON(w, http.StatusOK, creation)
 }
 
 func (h *Handler) handleKeysFinish(w http.ResponseWriter, r *http.Request) {
-	claims := claimsFromContext(r)
-	token, ok := readChallengeCookie(r)
+	token, ok := auth.ChallengeCookie(w, r)
 	if !ok {
 		writeError(w, http.StatusBadRequest, "no add-key ceremony in progress")
 		return
 	}
-	clearChallengeCookie(w, r)
 
-	cred, err := h.Auth.FinishAddKey(r.Context(), claims.UserID, token, r)
+	cred, err := h.Auth.FinishAddKey(r.Context(), auth.UserID(r), token, r)
 	if err != nil {
 		h.Logger.Warn("finish add key", "error", err)
 		writeError(w, http.StatusBadRequest, "could not add key")
@@ -78,7 +75,6 @@ type keysLabelRequest struct {
 }
 
 func (h *Handler) handleKeysLabel(w http.ResponseWriter, r *http.Request) {
-	claims := claimsFromContext(r)
 	id := r.PathValue("id")
 
 	var body keysLabelRequest
@@ -87,7 +83,7 @@ func (h *Handler) handleKeysLabel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Auth.LabelKey(r.Context(), claims.UserID, id, body.Nickname); err != nil {
+	if err := h.Auth.LabelKey(r.Context(), auth.UserID(r), id, body.Nickname); err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			writeError(w, http.StatusNotFound, "key not found")
 			return
@@ -99,15 +95,17 @@ func (h *Handler) handleKeysLabel(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleKeysRevoke(w http.ResponseWriter, r *http.Request) {
-	claims := claimsFromContext(r)
 	id := r.PathValue("id")
 
-	if err := h.Auth.RevokeKey(r.Context(), claims.UserID, id); err != nil {
-		if errors.Is(err, db.ErrNotFound) {
+	if err := h.Auth.RevokeKey(r.Context(), auth.UserID(r), id); err != nil {
+		switch {
+		case errors.Is(err, db.ErrNotFound):
 			writeError(w, http.StatusNotFound, "key not found")
-			return
+		case errors.Is(err, auth.ErrLastCredential):
+			writeError(w, http.StatusConflict, "cannot revoke your only passkey")
+		default:
+			writeError(w, http.StatusInternalServerError, "could not revoke key")
 		}
-		writeError(w, http.StatusInternalServerError, "could not revoke key")
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

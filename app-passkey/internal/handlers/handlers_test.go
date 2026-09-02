@@ -100,12 +100,15 @@ func TestHealthz(t *testing.T) {
 	}
 }
 
-func TestProtectedPagesRedirectUnauthenticated(t *testing.T) {
+// TestProtectedPagesRejectUnauthenticated matches trail-check's precedent
+// (see TestProtectedRoutesRejectUnauthenticated): every route behind
+// RequireAuth responds 401, page routes included, rather than redirecting.
+func TestProtectedPagesRejectUnauthenticated(t *testing.T) {
 	e := newTestEnv(t)
-	for _, path := range []string{"/home", "/keys"} {
+	for _, path := range []string{"/home", "/keys", "/admin"} {
 		rec := e.do(http.MethodGet, path, nil)
-		if rec.Code != http.StatusFound {
-			t.Errorf("%s: expected 302, got %d", path, rec.Code)
+		if rec.Code != http.StatusUnauthorized {
+			t.Errorf("%s: expected 401, got %d", path, rec.Code)
 		}
 	}
 }
@@ -155,10 +158,10 @@ func TestFullHTTPSignupLoginFlow(t *testing.T) {
 	}
 	authenticator.AddCredential(primaryCred)
 
-	// Not logged in yet: home should redirect.
+	// Not logged in yet: home should reject.
 	rec = e.do(http.MethodGet, "/home", nil)
-	if rec.Code != http.StatusFound {
-		t.Fatalf("expected redirect before confirming signup, got %d", rec.Code)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 before confirming signup, got %d", rec.Code)
 	}
 
 	// --- Confirm signup ---
@@ -237,8 +240,8 @@ func TestFullHTTPSignupLoginFlow(t *testing.T) {
 		t.Fatalf("logout: expected 200, got %d", rec.Code)
 	}
 	rec = e.do(http.MethodGet, "/home", nil)
-	if rec.Code != http.StatusFound {
-		t.Fatalf("expected redirect after logout, got %d", rec.Code)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 after logout, got %d", rec.Code)
 	}
 
 	// --- Log back in with the primary passkey ---
@@ -287,6 +290,25 @@ func TestFullHTTPSignupLoginFlow(t *testing.T) {
 	rec = e.do(http.MethodPost, "/api/recovery/begin", mustJSON(t, map[string]string{"code": signupOut.RecoveryCodes[1]}))
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("expected reused recovery code to be rejected, got %d", rec.Code)
+	}
+
+	// --- Revoking your only remaining passkey is refused (mirrors
+	// trail-check's "cannot delete your only active passkey" guard) ---
+	rec = e.do(http.MethodGet, "/api/keys", nil)
+	var remaining []keyView
+	if err := json.Unmarshal(rec.Body.Bytes(), &remaining); err != nil {
+		t.Fatal(err)
+	}
+	if len(remaining) != 2 {
+		t.Fatalf("expected 2 keys before the last-credential check, got %d", len(remaining))
+	}
+	rec = e.do(http.MethodDelete, "/api/keys/"+remaining[0].ID, nil)
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("revoke down to 1 key: expected 204, got %d: %s", rec.Code, rec.Body)
+	}
+	rec = e.do(http.MethodDelete, "/api/keys/"+remaining[1].ID, nil)
+	if rec.Code != http.StatusConflict {
+		t.Fatalf("expected 409 revoking the only remaining key, got %d: %s", rec.Code, rec.Body)
 	}
 }
 

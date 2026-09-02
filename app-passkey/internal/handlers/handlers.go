@@ -30,9 +30,9 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /signup", h.handleSignupPage)
 	mux.HandleFunc("GET /login", h.handleLoginPage)
 	mux.HandleFunc("GET /recovery", h.handleRecoveryPage)
-	mux.HandleFunc("GET /home", h.requireAuthPage(h.handleHomePage))
-	mux.HandleFunc("GET /keys", h.requireAuthPage(h.handleKeysPage))
-	mux.HandleFunc("GET /admin", h.requireAuthPage(h.handleAdminPage))
+	mux.HandleFunc("GET /home", h.Auth.RequireAuth(h.handleHomePage))
+	mux.HandleFunc("GET /keys", h.Auth.RequireAuth(h.handleKeysPage))
+	mux.HandleFunc("GET /admin", h.Auth.RequireAuth(h.handleAdminPage))
 
 	// Static assets
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticFS())))
@@ -54,11 +54,11 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/recovery/finish", h.handleRecoveryFinish)
 
 	// Manage keys (authenticated)
-	mux.HandleFunc("GET /api/keys", h.requireAuthAPI(h.handleKeysList))
-	mux.HandleFunc("POST /api/keys/begin", h.requireAuthAPI(h.handleKeysBegin))
-	mux.HandleFunc("POST /api/keys/finish", h.requireAuthAPI(h.handleKeysFinish))
-	mux.HandleFunc("PATCH /api/keys/{id}", h.requireAuthAPI(h.handleKeysLabel))
-	mux.HandleFunc("DELETE /api/keys/{id}", h.requireAuthAPI(h.handleKeysRevoke))
+	mux.HandleFunc("GET /api/keys", h.Auth.RequireAuth(h.handleKeysList))
+	mux.HandleFunc("POST /api/keys/begin", h.Auth.RequireAuth(h.handleKeysBegin))
+	mux.HandleFunc("POST /api/keys/finish", h.Auth.RequireAuth(h.handleKeysFinish))
+	mux.HandleFunc("PATCH /api/keys/{id}", h.Auth.RequireAuth(h.handleKeysLabel))
+	mux.HandleFunc("DELETE /api/keys/{id}", h.Auth.RequireAuth(h.handleKeysRevoke))
 }
 
 func (h *Handler) handleHealthz(w http.ResponseWriter, r *http.Request) {
