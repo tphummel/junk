@@ -1,0 +1,40 @@
+name: lab_gear-provider-release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'lab_gear/**'
+      - '.github/workflows/lab_gear-provider-release.yml'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: lab_gear/terraform-provider-lab_gear/go.mod
+
+      - name: Build release artifacts
+        run: make release VERSION="${{ github.ref_name }}"
+        working-directory: lab_gear/terraform-provider-lab_gear
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            lab_gear/terraform-provider-lab_gear/dist/terraform-provider-lab_gear_*.zip
+            lab_gear/terraform-provider-lab_gear/dist/terraform-provider-lab_gear_*_SHA256SUMS
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

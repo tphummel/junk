@@ -1,0 +1,129 @@
+name: lab_gear
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+    paths:
+      - 'lab_gear/**'
+      - '.github/workflows/lab_gear.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'lab_gear/**'
+      - '.github/workflows/lab_gear.yml'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: lab_gear
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: lab_gear/go.mod
+
+      - name: Tidy dependencies
+        run: GONOSUMDB='*' go mod tidy
+        working-directory: lab_gear
+
+      - name: Build binary
+        run: go build -o bin/lab_gear ./cmd/server
+        working-directory: lab_gear
+
+      - name: Start server with in-memory database
+        run: |
+          API_TOKEN=smoke-test-token DB_PATH=:memory: ./bin/lab_gear &
+          echo $! > /tmp/lab_gear_smoke.pid
+        working-directory: lab_gear
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:8080/healthz; then
+              echo "Server is ready"
+              break
+            fi
+            echo "Waiting for server... ($i/10)"
+            sleep 1
+          done
+
+      - name: Set up k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 smoke test
+        run: k6 run -e API_TOKEN=smoke-test-token -e BASE_URL=http://localhost:8080 k6/scripts/smoke.js
+        working-directory: lab_gear
+
+      - name: Stop server
+        if: always()
+        run: kill $(cat /tmp/lab_gear_smoke.pid) 2>/dev/null || true
+
+  build-and-push:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./lab_gear
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        if: github.event_name == 'pull_request'
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./lab_gear
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        if: github.event_name != 'pull_request'
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
