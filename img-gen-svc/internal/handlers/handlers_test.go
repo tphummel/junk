@@ -9,7 +9,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"png-generation-service/internal/cache"
+	"img-gen-svc/internal/cache"
 )
 
 func newTestHandlers(t *testing.T) *Handlers {

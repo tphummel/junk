@@ -1,7 +1,7 @@
 # Notes
 
 ## Task
-Implement the service described in `png-generation-service-design-doc.md`:
+Implement the service described in `img-gen-svc-design-doc.md`:
 a Go HTTP service that returns a deterministic PNG for `GET /image?seed=...`,
 caches generated PNGs on disk (no TTL/eviction), exposes Prometheus metrics,
 logs structured JSON, and has a `/healthz` endpoint. Dockerized, non-root.
@@ -72,6 +72,13 @@ internal/metrics/metrics.go   the six Prometheus series from the design doc
 internal/handlers/            /image and /healthz HTTP handlers (+ tests)
 Dockerfile, .dockerignore     multi-stage build -> scratch, non-root
 .gitignore, .tool-versions
-png-generation-service-design-doc.md   the design doc as given
+img-gen-svc-design-doc.md     the design doc as given
 README.md                     usage/config/metrics/docker reference
 ```
+
+## Rename
+
+Renamed the project from `png-generation-service` to `img-gen-svc` (per
+request) after the initial commit: directory, Go module path and all
+`import` statements, the design doc filename, and the README/notes
+references to it.

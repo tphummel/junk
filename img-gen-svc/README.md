@@ -1,8 +1,8 @@
-# PNG Generation Service
+# img-gen-svc
 
 A small Go HTTP service that returns a deterministic PNG for a given seed,
 caching every generated image on disk forever (no TTL, no eviction -- see
-[`png-generation-service-design-doc.md`](./png-generation-service-design-doc.md)
+[`img-gen-svc-design-doc.md`](./img-gen-svc-design-doc.md)
 for the full design). Also exposes Prometheus metrics, structured JSON logs,
 and a `/healthz` endpoint.
 
@@ -101,8 +101,8 @@ design doc.
 ## Docker
 
 ```bash
-docker build -t png-generation-service .
-docker run --rm -p 8080:8080 -v "$(pwd)/cache:/data/cache" png-generation-service
+docker build -t img-gen-svc .
+docker run --rm -p 8080:8080 -v "$(pwd)/cache:/data/cache" img-gen-svc
 ```
 
 The image is a multi-stage build: a static (`CGO_ENABLED=0`) binary compiled

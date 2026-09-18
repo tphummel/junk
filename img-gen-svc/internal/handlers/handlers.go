@@ -7,9 +7,9 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"png-generation-service/internal/cache"
-	"png-generation-service/internal/imagegen"
-	"png-generation-service/internal/metrics"
+	"img-gen-svc/internal/cache"
+	"img-gen-svc/internal/imagegen"
+	"img-gen-svc/internal/metrics"
 )
 
 // Handlers holds the dependencies shared by the HTTP handlers.

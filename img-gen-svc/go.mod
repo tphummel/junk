@@ -1,4 +1,4 @@
-module png-generation-service
+module img-gen-svc
 
 go 1.25.0
 

@@ -9,10 +9,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 
-	"png-generation-service/internal/cache"
-	"png-generation-service/internal/config"
-	"png-generation-service/internal/handlers"
-	"png-generation-service/internal/metrics"
+	"img-gen-svc/internal/cache"
+	"img-gen-svc/internal/config"
+	"img-gen-svc/internal/handlers"
+	"img-gen-svc/internal/metrics"
 )
 
 func main() {
