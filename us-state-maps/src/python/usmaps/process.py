@@ -212,9 +212,9 @@ def build_places(tiger_places_path, population, osm_places, cfg, frame, outline,
         match = op[(op["name"] == r["NAME"]) & op.geometry.within(r.geometry.buffer(500))]
         if not match.empty:
             pt = match.geometry.iat[0]
-            if pop is None:
+            if pop is None and pd.notna(match["population"].iat[0]):
                 pop = match["population"].iat[0]
-        if not pop or not outline.contains(pt):
+        if pop is None or pd.isna(pop) or pop <= 0 or not outline.contains(pt):
             continue
         rows.append({"name": r["NAME"], "placefp": r["PLACEFP"], "lsad": r["LSAD"],
                      "population": int(pop), "geometry": pt})
