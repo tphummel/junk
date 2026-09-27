@@ -27,3 +27,5 @@
   length x (0.5 + major_fraction) x (1 + cities), rivers by length, parks by area).
 - The artifact blob host and job-log redirect are blocked from the sandbox, so review
   here relies on the content summary printed in the build log.
+- Length-only river ranking dropped the Juniata/Schuylkill/Lehigh in favour of long creeks;
+  rivers/canals (by name) now rank first.

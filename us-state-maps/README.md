@@ -94,7 +94,8 @@ route include/exclude list, acceptance targets).
   (legal boundary minus shoreline outline: bays, Lake Erie, border rivers),
   clipped to the legal area, dissolved and area-filtered. Named rivers and
   canals are merged by name, and each connected stretch is length-filtered on
-  its own. The longest `max_rivers` stretches are kept; stretches already drawn as
+  its own. The top `max_rivers` stretches are kept, with named rivers and canals
+  ranked ahead of creeks and then by length; stretches already drawn as
   water area are removed. Shorelines are outlined, but artificial cut edges
   at the legal boundary aren't.
 - **Parks**: OSM protected areas, nature reserves and parks, dissolved,

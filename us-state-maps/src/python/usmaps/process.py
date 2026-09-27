@@ -193,7 +193,9 @@ def build_water(osm_water, osm_waterways, outline, legal, frame, crs):
             if not geom.is_empty:
                 rivers.append({"name": name, "kind": grp["waterway"].mode().iat[0],
                                "length_m": round(part.length), "geometry": geom})
-    rivers.sort(key=lambda r: r["length_m"], reverse=True)
+    # Named rivers and canals outrank creeks/runs of similar length.
+    major = re.compile(r"\b(river|canal)\b", re.I)
+    rivers.sort(key=lambda r: (bool(major.search(r["name"])), r["length_m"]), reverse=True)
     if t.get("max_rivers") is not None:
         rivers = rivers[: t["max_rivers"]]
     water_gdf = gpd.GeoDataFrame({"area_km2": [round(p.area / 1e6, 2) for p in water]},
