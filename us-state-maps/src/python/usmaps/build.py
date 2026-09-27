@@ -182,5 +182,7 @@ def build_state(code, inputs=None, maps_dir=None, previews_dir=None, config_dir=
     for c in checks:
         if c["status"] != "pass":
             print(f"  {c['status'].upper()}: {c['section']}: {c['check']} {c['detail']}")
+    for k, v in manifest["content"].items():
+        print(f"  {k}: {', '.join(v) if isinstance(v, list) else v}")
     print(f"  qa: {manifest['qa']}")
     return manifest, checks
