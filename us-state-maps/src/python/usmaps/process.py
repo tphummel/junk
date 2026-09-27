@@ -127,12 +127,23 @@ def select_highways(roads, cfg, frame, legal, city_points):
         if not parts:
             continue
         geom = shapely.MultiLineString(parts).simplify(t["simplification_m"])
+        frac = major / total if total else 0.0
         rows.append({"route": route, "highway_class": hc, "length_m": round(total),
-                     "major_fraction": round(major / total, 3) if total else 0.0,
-                     "connects_cities": connects, "geometry": geom})
-    cols = ["route", "highway_class", "length_m", "major_fraction", "connects_cities", "geometry"]
-    return gpd.GeoDataFrame(rows or {c: [] for c in cols}, columns=cols,
-                            geometry="geometry", crs=roads.crs)
+                     "major_fraction": round(frac, 3), "connects_cities": connects,
+                     "score": round(total / 1000 * (0.5 + frac) * (1 + min(connects, 3)), 1),
+                     "geometry": geom})
+    cols = ["route", "highway_class", "length_m", "major_fraction", "connects_cities",
+            "score", "geometry"]
+    out = gpd.GeoDataFrame(rows or {c: [] for c in cols}, columns=cols,
+                           geometry="geometry", crs=roads.crs)
+    # Keep the series readable: only the top-scoring major routes survive
+    # (manual includes always do).
+    cap = t.get("max_major_state_routes")
+    major = out[(out["highway_class"] == "major_state_route") & ~out["route"].isin(include)]
+    if cap is not None and len(major) > cap:
+        demote = major.sort_values("score", ascending=False).index[cap:]
+        out.loc[demote, "highway_class"] = "minor_state_route"
+    return out
 
 
 # --- water & parks ----------------------------------------------------------
@@ -172,14 +183,19 @@ def build_water(osm_water, osm_waterways, outline, legal, frame, crs):
     ww = ww[ww["name"].notna()]
     rivers = []
     for name, grp in ww.groupby("name"):
-        geom = _merge(grp.geometry).intersection(legal)
-        if geom.length < t["river_min_length_km"] * 1000:
-            continue
-        geom = geom.difference(water_union)  # drawn as area already
-        geom = shapely.MultiLineString(_lines(geom)).simplify(t["simplification_m"])
-        if not geom.is_empty:
-            rivers.append({"name": name, "kind": grp["waterway"].mode().iat[0],
-                           "length_m": round(grp.geometry.length.sum()), "geometry": geom})
+        # Evaluate each connected stretch on its own: many unrelated creeks
+        # share a name ("Mill Creek") and must not add up.
+        for part in _lines(_merge(grp.geometry).intersection(legal)):
+            if part.length < t["river_min_length_km"] * 1000:
+                continue
+            geom = part.difference(water_union)  # drawn as area already
+            geom = shapely.MultiLineString(_lines(geom)).simplify(t["simplification_m"])
+            if not geom.is_empty:
+                rivers.append({"name": name, "kind": grp["waterway"].mode().iat[0],
+                               "length_m": round(part.length), "geometry": geom})
+    rivers.sort(key=lambda r: r["length_m"], reverse=True)
+    if t.get("max_rivers") is not None:
+        rivers = rivers[: t["max_rivers"]]
     water_gdf = gpd.GeoDataFrame({"area_km2": [round(p.area / 1e6, 2) for p in water]},
                                  geometry=water, crs=crs)
     cols = ["name", "kind", "length_m", "geometry"]
@@ -192,6 +208,9 @@ def build_parks(osm_parks, outline, frame, crs):
     t = frame["thresholds"]
     polys = _area_filter(list(osm_parks.to_crs(crs).geometry), outline,
                          t["park_min_area_km2"] * 1e6, t["simplification_m"])
+    polys.sort(key=lambda p: p.area, reverse=True)
+    if t.get("max_parks") is not None:
+        polys = polys[: t["max_parks"]]
     return gpd.GeoDataFrame({"area_km2": [round(p.area / 1e6, 2) for p in polys]},
                             geometry=polys, crs=crs)
 

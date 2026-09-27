@@ -23,6 +23,9 @@ river_min_length_km = 14.0
 park_min_area_km2 = 12.0
 min_interstate_label_mm = 15.0
 min_state_route_label_mm = 17.0
+max_major_state_routes = 20
+max_rivers = 20
+max_parks = 50
 large_city_pop = 100000
 medium_city_pop = 40000
 

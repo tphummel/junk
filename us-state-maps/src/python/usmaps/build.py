@@ -92,7 +92,8 @@ def manifest_for(cfg, frame, layers, labels, scale_err, inputs, files):
         "thresholds": {k: t[k] for k in (
             "min_road_length_m", "min_major_state_route_m", "simplification_m",
             "label_spacing_m", "max_city_labels", "water_min_area_km2",
-            "river_min_length_km", "park_min_area_km2")},
+            "river_min_length_km", "park_min_area_km2", "max_major_state_routes",
+            "max_rivers", "max_parks") if k in t},
         "letter_layout": {"page_cm": list(LETTER_CM), "map_x_cm": lay["map_x_cm"],
                           "map_y_cm": lay["map_y_cm"], "map_width_cm": w, "map_height_cm": h,
                           "legend_x_cm": lay["legend_x_cm"], "legend_y_cm": lay["legend_y_cm"],

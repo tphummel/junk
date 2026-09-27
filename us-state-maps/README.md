@@ -74,7 +74,10 @@ route include/exclude list, acceptance targets).
   route. A state route is *major* if it's on the include list, or if it is at
   least `min_major_state_route_m` long **and** either ≥ 50 % of it is
   motorway/trunk/primary or it passes within 3 mm (paper) of ≥ 2 anchor
-  cities. `*_link` ramps are never loaded.
+  cities. Eligible routes are then ranked by
+  `length_km × (0.5 + major_fraction) × (1 + min(cities, 3))` and only the top
+  `max_major_state_routes` per state are kept; manual includes always stay.
+  `*_link` ramps are never loaded.
 - **Cities**: TIGER places with Census population (OSM `population` as fallback), located at the OSM
   place node when one matches. Tiers are capital / large / medium / small.
   Interstate-corridor and state-route-junction cities get priority bonuses.
@@ -90,11 +93,12 @@ route include/exclude list, acceptance targets).
 - **Water**: OSM `natural=water|bay` polygons plus TIGER *state waters*
   (legal boundary minus shoreline outline: bays, Lake Erie, border rivers),
   clipped to the legal area, dissolved and area-filtered. Named rivers and
-  canals are merged by name and length-filtered; stretches already drawn as
+  canals are merged by name, and each connected stretch is length-filtered on
+  its own. The longest `max_rivers` stretches are kept; stretches already drawn as
   water area are removed. Shorelines are outlined, but artificial cut edges
   at the legal boundary aren't.
 - **Parks**: OSM protected areas, nature reserves and parks, dissolved,
-  area-filtered and left unlabelled.
+  area-filtered, capped to the largest `max_parks`, and left unlabelled.
 
 ### Deviations from the plan (so far)
 
@@ -109,5 +113,11 @@ route include/exclude list, acceptance targets).
 - The PA PROJ string drops `+to_wgs84=0`, which isn't valid PROJ syntax
   (`+datum=NAD83` already covers it). The measured max scale error over PA is
   about 0.02 %.
+- **Caps on top of the plan's thresholds.** On real OSM data, the plan's
+  rules alone let through 110 PA and 27 DE "major" state routes and about 250
+  named PA creeks, because OSM tags many PA routes `primary` and lots of
+  creeks `waterway=river`. Ranked caps (DE 10 routes / 15 rivers / 15 parks;
+  PA 20 / 20 / 50) keep the maps legible. They are the main tuning knobs for
+  pilot review.
 - Wetlands/marshes aren't drawn yet. The plan's candidate lists (e.g. DE-13,
   DE-301) include US routes, which the "no US routes" rule drops.
