@@ -1,0 +1,56 @@
+# Series-wide defaults. Each config/<ST>.toml is deep-merged on top of this.
+# Threshold keys left out here are derived from the final scale denominator S
+# (see usmaps/config.py:derive_thresholds).
+
+padding_percent = 7          # total padding across the trim, split evenly per side
+scale_round = 10000          # scale denominator is rounded up to this step
+
+[sources]
+tiger_year = 2024            # TIGER/Line legal boundary + places
+cb_year = 2023               # cartographic boundary (shoreline-clipped) outline
+census_pl = "https://api.census.gov/data/2020/dec/pl"
+census_estimates = "https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/cities/totals/sub-est2023.csv"
+geofabrik_base = "https://download.geofabrik.de"
+
+[style]
+font_family = "DejaVu Sans"
+boundary_width_pt = 1.00
+interstate_width_pt = 0.60
+state_route_width_pt = 0.40
+water_fill_gray = 0.88
+water_line_gray = 0.30
+water_line_width_pt = 0.30
+river_width_pt = 0.35
+park_fill_gray = 0.70
+city_label_pt = 5.0
+interstate_label_pt = 5.0
+state_route_label_pt = 5.0
+legend_text_pt = 5.0
+label_halo_mm = 0.40
+state_route_label_halo_mm = 0.35
+symbol_halo_mm = 0.20
+road_label_offset_mm = 0.35
+state_route_label_offset_mm = 0.30
+capital_symbol_mm = 1.4
+large_city_symbol_mm = 1.0
+medium_city_symbol_mm = 0.7
+small_city_symbol_mm = 0.5
+
+[limits]
+# Hard floors checked by QA.
+min_label_pt = 5.0
+min_state_route_label_pt = 4.75
+min_legend_pt = 4.5
+max_scale_error = 0.005      # ideal
+max_scale_error_hard = 0.010 # acceptable upper bound
+
+[thresholds]
+frame_margin_mm = 1.0        # labels stay this far inside the trim
+min_city_spacing_mm = 5.0    # hard floor between labelled city points
+major_class_fraction = 0.5   # share of a state route's length on motorway/trunk/primary
+city_connect_mm = 3.0        # route "connects" a city if it passes within this distance
+label_pad_mm = 0.15          # extra clearance around label boxes
+
+[routes]
+include = []                 # manual exception list, e.g. ["DE-9"]
+exclude = []
