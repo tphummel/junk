@@ -1,6 +1,7 @@
 """Download and cache raw inputs under data/raw/. Files already present are
 reused, so CI can restore data/raw from a cache."""
 
+import csv
 import json
 import shutil
 import subprocess
@@ -52,19 +53,33 @@ def fetch_tiger(cfg):
 
 
 def fetch_population(cfg):
-    """2020 decennial PL counts per place, as {PLACEFP: population}."""
+    """Place population as {PLACEFP: population}. Incorporated places come
+    from the Census Vintage 2023 estimates CSV; the 2020 decennial PL API adds
+    census-designated places when it answers. Either may be missing, in which
+    case OSM `population` tags are the fallback."""
     fips = cfg["fips"]
+    pop = {}
+    url = cfg["sources"]["census_pl"] + f"?get=NAME,P1_001N&for=place:*&in=state:{fips}"
     dest = RAW / "census" / f"pl2020_place_{fips}.json"
-    url = f"{cfg['sources']['census_pl']}?get=NAME,P1_001N&for=place:*&in=state:{fips}"
     try:
         _download(url, dest)
-    except RuntimeError as e:
-        print(f"warning: census population unavailable, using OSM only ({e})")
-        return {}
-    rows = json.loads(dest.read_text())
-    head = rows[0]
-    i_pop, i_place = head.index("P1_001N"), head.index("place")
-    return {r[i_place]: int(r[i_pop]) for r in rows[1:]}
+        rows = json.loads(dest.read_text())
+        i_pop, i_place = rows[0].index("P1_001N"), rows[0].index("place")
+        pop.update({r[i_place]: int(r[i_pop]) for r in rows[1:]})
+    except (RuntimeError, ValueError, IndexError) as e:
+        dest.unlink(missing_ok=True)
+        print(f"warning: census PL API unavailable ({e})")
+    try:
+        est = _download(cfg["sources"]["census_estimates"],
+                        RAW / "census" / cfg["sources"]["census_estimates"].rsplit("/", 1)[-1])
+        with open(est, newline="", encoding="latin-1") as f:
+            for r in csv.DictReader(f):
+                if r["SUMLEV"] == "162" and r["STATE"] == fips:
+                    pop[r["PLACE"]] = int(r["POPESTIMATE2023"])
+    except (RuntimeError, KeyError, ValueError) as e:
+        print(f"warning: census estimates unavailable ({e})")
+    print(f"  population for {len(pop)} places")
+    return pop
 
 
 OSMIUM_FILTER = [

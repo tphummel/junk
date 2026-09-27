@@ -101,7 +101,7 @@ def manifest_for(cfg, frame, layers, labels, scale_err, inputs, files):
         "data_sources": {"boundary": f"TIGER/Line {cfg['sources']['tiger_year']} (legal) + "
                                      f"Cartographic Boundary {cfg['sources']['cb_year']} 1:500k (outline)",
                          "highways": "OpenStreetMap",
-                         "places": f"TIGER/Line {cfg['sources']['tiger_year']} Places + 2020 Census PL "
+                         "places": f"TIGER/Line {cfg['sources']['tiger_year']} Places + Census population (2023 est. / 2020 PL) "
                                    "population + OSM supplement",
                          "water": "OpenStreetMap + TIGER state waters", "parks": "OpenStreetMap"},
         "outputs": {k: v.name for k, v in files.items()},

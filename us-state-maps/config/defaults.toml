@@ -9,6 +9,7 @@ scale_round = 10000          # scale denominator is rounded up to this step
 tiger_year = 2024            # TIGER/Line legal boundary + places
 cb_year = 2023               # cartographic boundary (shoreline-clipped) outline
 census_pl = "https://api.census.gov/data/2020/dec/pl"
+census_estimates = "https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/cities/totals/sub-est2023.csv"
 geofabrik_base = "https://download.geofabrik.de"
 
 [style]

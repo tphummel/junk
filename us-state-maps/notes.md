@@ -18,3 +18,5 @@
 - Scale error: DE State Plane (EPSG:26957) max |k-1| ~ 0.0007 %; PA custom LCC ~ 0.02 %.
 - The plan's PA PROJ string contains `+to_wgs84=0` (invalid); dropped.
 - Label orientation: near-vertical route labels normalised to read bottom-to-top.
+- CI run 1: api.census.gov returned an empty body from the Actions runner. Switched to the static
+  Vintage 2023 estimates CSV on www2.census.gov (incorporated places), API optional, OSM fallback.

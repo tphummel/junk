@@ -38,8 +38,8 @@ python -m pytest -q tests              # unit + synthetic end-to-end build, no n
 PYTHONPATH=src/python python -m usmaps build DE      # or PA, or --all
 ```
 
-Raw data lands in `data/raw/` (TIGER/Line + cartographic boundary, 2020 Census
-PL place populations, Geofabrik OSM extracts). All outputs are git-ignored.
+Raw data lands in `data/raw/` (TIGER/Line + cartographic boundary, Census
+place populations (Vintage 2023 estimates CSV, plus the 2020 PL API when it answers), Geofabrik OSM extracts). All outputs are git-ignored.
 
 ## Pipeline
 
@@ -75,7 +75,7 @@ route include/exclude list, acceptance targets).
   least `min_major_state_route_m` long **and** either ≥ 50 % of it is
   motorway/trunk/primary or it passes within 3 mm (paper) of ≥ 2 anchor
   cities. `*_link` ramps are never loaded.
-- **Cities**: TIGER places with 2020 Census population, located at the OSM
+- **Cities**: TIGER places with Census population (OSM `population` as fallback), located at the OSM
   place node when one matches. Tiers are capital / large / medium / small.
   Interstate-corridor and state-route-junction cities get priority bonuses.
   Labels are placed in this order: capital, large cities, Interstate labels,
