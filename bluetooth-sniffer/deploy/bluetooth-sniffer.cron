@@ -1,0 +1,4 @@
+# /etc/cron.d/bluetooth-sniffer
+15 2 * * *  btscanner  /usr/local/bin/bluetooth-sniffer purge --keep-days 14 --db /opt/bluetooth-sniffer/sniffer.db
+# weekly VACUUM to return space
+45 2 * * 0  btscanner  /usr/local/bin/bluetooth-sniffer purge --keep-days 14 --vacuum --db /opt/bluetooth-sniffer/sniffer.db

@@ -1,0 +1,77 @@
+name: bluetooth-sniffer
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'bluetooth-sniffer/**'
+      - '.github/workflows/bluetooth-sniffer.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'bluetooth-sniffer/**'
+      - '.github/workflows/bluetooth-sniffer.yml'
+
+defaults:
+  run:
+    working-directory: bluetooth-sniffer
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: bluetooth-sniffer/go.mod
+      - name: gofmt check
+        run: |
+          fmt_out="$(gofmt -l .)"
+          if [ -n "$fmt_out" ]; then echo "gofmt needs to be run on:"; echo "$fmt_out"; exit 1; fi
+      - run: go vet ./...
+      - run: go test -v ./...
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: bluetooth-sniffer/go.mod
+      - name: Build linux binaries
+        env:
+          CGO_ENABLED: '0'
+        run: |
+          mkdir dist
+          for arch in amd64 arm64; do
+            GOOS=linux GOARCH=$arch go build -trimpath -ldflags="-s -w" -o "bluetooth-sniffer-linux-$arch" .
+            tar -czf "dist/bluetooth-sniffer-linux-$arch.tar.gz" "bluetooth-sniffer-linux-$arch" README.md deploy
+          done
+          (cd dist && sha256sum *.tar.gz > SHA256SUMS)
+      - name: Publish releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: .
+        run: |
+          short=${GITHUB_SHA::7}
+          # Immutable per-commit release: never deleted or overwritten.
+          if gh release view "bluetooth-sniffer-$short" >/dev/null 2>&1; then
+            echo "release bluetooth-sniffer-$short already exists; leaving it untouched"
+          else
+            gh release create "bluetooth-sniffer-$short" bluetooth-sniffer/dist/* \
+              --target "$GITHUB_SHA" --latest=false \
+              --title "bluetooth-sniffer $short" \
+              --notes "bluetooth-sniffer built from main at $GITHUB_SHA."
+          fi
+          # Ephemeral pointer to the newest build: recreated every time.
+          gh release delete bluetooth-sniffer-latest --cleanup-tag --yes || true
+          gh release create bluetooth-sniffer-latest bluetooth-sniffer/dist/* \
+            --target "$GITHUB_SHA" --latest=false --prerelease \
+            --title "bluetooth-sniffer latest ($short)" \
+            --notes "Ephemeral build of main at $GITHUB_SHA. Pin to bluetooth-sniffer-$short for an immutable copy."
