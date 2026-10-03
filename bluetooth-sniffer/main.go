@@ -34,6 +34,7 @@ func runCmd(args []string) error {
 	dbPath := fs.String("db", "/opt/bluetooth-sniffer/sniffer.db", "SQLite database path")
 	flushMS := fs.Int("flush-ms", 1000, "flush interval in milliseconds")
 	flushRows := fs.Int("flush-rows", 500, "flush once this many rows are buffered")
+	minInterval := fs.Duration("min-interval", 10*time.Second, "record RSSI/data-only updates for a device at most this often (0 = every update)")
 	rawAD := fs.Bool("raw-ad", false, "store raw AdvertisingData (requires bluetoothd --experimental)")
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "usage: bluetooth-sniffer [flags]\n       bluetooth-sniffer purge [flags]\n\n")
@@ -57,7 +58,7 @@ func runCmd(args []string) error {
 		runWriter(ctx, st, sightings, time.Duration(*flushMS)*time.Millisecond, *flushRows)
 	}()
 
-	err = scan(ctx, dbus.ObjectPath(*adapter), *rawAD, sightings)
+	err = scan(ctx, dbus.ObjectPath(*adapter), *rawAD, *minInterval, sightings)
 	<-done // scan closed the channel; writer has done its final flush
 	return err
 }

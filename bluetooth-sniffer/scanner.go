@@ -21,7 +21,7 @@ const (
 
 // scan runs discovery on adapter and sends a sighting for every Device1
 // update until ctx is cancelled. out is closed on return.
-func scan(ctx context.Context, adapter dbus.ObjectPath, rawAD bool, out chan<- sighting) error {
+func scan(ctx context.Context, adapter dbus.ObjectPath, rawAD bool, minInterval time.Duration, out chan<- sighting) error {
 	defer close(out)
 
 	conn, err := dbus.SystemBus()
@@ -82,11 +82,15 @@ func scan(ctx context.Context, adapter dbus.ObjectPath, rawAD bool, out chan<- s
 	}()
 
 	prefix := string(adapter) + "/"
+	th := newThrottle(minInterval)
 	cache := map[dbus.ObjectPath]map[string]dbus.Variant{}
 
 	emit := func(path dbus.ObjectPath, changed string) {
 		s, ok := parseSighting(float64(time.Now().UnixNano())/1e9, cache[path])
 		if !ok {
+			return
+		}
+		if !th.Allow(s.Addr, s.TS, changed) {
 			return
 		}
 		s.Sensor = addr
