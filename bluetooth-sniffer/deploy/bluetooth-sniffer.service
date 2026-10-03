@@ -1,0 +1,18 @@
+[Unit]
+Description=BLE advertising logger (bluetooth-sniffer)
+After=bluetooth.service
+Wants=bluetooth.service
+
+[Service]
+Type=simple
+User=btscanner
+Group=bluetooth
+ExecStart=/usr/local/bin/bluetooth-sniffer -adapter /org/bluez/hci0 -db /opt/bluetooth-sniffer/sniffer.db
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
