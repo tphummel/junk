@@ -1,0 +1,118 @@
+name: us-state-maps
+
+# Every push that touches us-state-maps/ builds the maps and uploads them as a
+# workflow artifact. Pushes to main additionally publish a GitHub release
+# carrying a zip of all build outputs.
+
+on:
+  push:
+    paths:
+      - 'us-state-maps/**'
+      - '.github/workflows/us-state-maps.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'us-state-maps/**'
+      - '.github/workflows/us-state-maps.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: us-state-maps-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+defaults:
+  run:
+    working-directory: us-state-maps
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: us-state-maps/requirements.txt
+
+      - name: Install osmium-tool
+        run: sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest -q tests
+
+      - name: Build metadata
+        id: meta
+        run: |
+          echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+          echo "tag=us-state-maps-$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      # Raw OSM/TIGER downloads are refreshed weekly to stay polite to Geofabrik
+      # and the Census Bureau.
+      - name: Cache raw source data
+        uses: actions/cache@v4
+        with:
+          path: us-state-maps/data/raw
+          key: us-state-maps-raw-${{ steps.meta.outputs.week }}-${{ hashFiles('us-state-maps/config/*.toml') }}
+          restore-keys: |
+            us-state-maps-raw-${{ steps.meta.outputs.week }}-
+
+      - name: Build maps
+        run: PYTHONPATH=src/python python -m usmaps build --all
+
+      - name: Package release zip
+        run: |
+          mkdir -p dist
+          zip -r "dist/${{ steps.meta.outputs.tag }}.zip" maps output README.md
+          (cd dist && sha256sum *.zip > "${{ steps.meta.outputs.tag }}_SHA256SUMS")
+
+      - name: QA summary
+        run: |
+          for f in maps/*/*_qa_report.md; do cat "$f" >> "$GITHUB_STEP_SUMMARY"; echo >> "$GITHUB_STEP_SUMMARY"; done
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.tag }}
+          path: us-state-maps/dist/*
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.tag }}
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ needs.build.outputs.tag }}
+          make_latest: false
+          body: |
+            us-state-maps build of ${{ github.sha }}.
+            The zip contains per-state map PDFs, Letter proof sheets with legend,
+            GeoPackages, manifests, QA reports and QA preview PNGs.
+          files: |
+            dist/*.zip
+            dist/*_SHA256SUMS
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
