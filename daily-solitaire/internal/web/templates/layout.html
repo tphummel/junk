@@ -1,0 +1,49 @@
+{{define "top"}}<!doctype html>
+<html lang="en" data-deck="{{.Deck}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{if .Title}}{{.Title}} · {{end}}Daily Solitaire</title>
+<meta name="description" content="One shared Klondike deal every day. Same cards for everyone, no hints, every move kept.">
+<meta name="color-scheme" content="light dark">
+<meta name="csrf-token" content="{{.CSRF}}">
+<meta name="csp-nonce" content="{{.Nonce}}">
+<meta name="turbo-refresh-method" content="morph">
+<meta name="turbo-refresh-scroll" content="preserve">
+<meta name="view-transition" content="same-origin">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/app.css">
+<script type="importmap" nonce="{{.Nonce}}">{"imports":{"@hotwired/turbo":"/static/vendor/turbo.js","@hotwired/stimulus":"/static/vendor/stimulus.js","app":"/static/app.js"}}</script>
+<script type="module" nonce="{{.Nonce}}">import "@hotwired/turbo"; import "app";</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="sym-s" viewBox="0 0 24 24"><path d="M12 1.5C12 1.5 3 8.7 3 14.4a4.6 4.6 0 0 0 8 3.1c-.2 2.2-1 3.9-2.6 5.5h7.2c-1.600-1.600-2.400-3.300-2.600-5.500a4.600 4.600 0 0 0 8-3.100C21 8.700 12 1.500 12 1.500z"/></symbol>
+  <symbol id="sym-h" viewBox="0 0 24 24"><path d="M12 22C12 22 2 14.800 2 8.300a5.300 5.300 0 0 1 10-2.400 5.300 5.300 0 0 1 10 2.400C22 14.800 12 22 12 22z"/></symbol>
+  <symbol id="sym-d" viewBox="0 0 24 24"><path d="M12 1.500 20.500 12 12 22.500 3.500 12z"/></symbol>
+  <symbol id="sym-c" viewBox="0 0 24 24"><path d="M12 1.800a4.600 4.600 0 0 0-3.700 7.300A4.800 4.800 0 1 0 11 17.200c-.2 2.200-1 3.800-2.600 5.300h7.200c-1.600-1.500-2.400-3.100-2.600-5.300a4.800 4.800 0 1 0 2.700-8.100A4.600 4.600 0 0 0 12 1.800z"/></symbol>
+</svg>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site">
+  <a class="brand" href="/" data-turbo-action="advance"><svg class="suit" aria-hidden="true"><use href="#sym-s"/></svg> Daily Solitaire</a>
+  <nav aria-label="Main">
+    {{if .User}}
+    <a href="/days" {{if eq .Path "/days"}}aria-current="page"{{end}}>Archive</a>
+    <a href="/history" {{if eq .Path "/history"}}aria-current="page"{{end}}>History</a>
+    <a href="/account" class="who" {{if eq .Path "/account"}}aria-current="page"{{end}}>{{avatar .User.ID}}<span>{{.User.DisplayName}}</span></a>
+    {{else}}
+    <a href="/login">Sign in</a>
+    {{if .Signups}}<a href="/signup" class="btn small">Create account</a>{{end}}
+    {{end}}
+  </nav>
+</header>
+<main id="main">
+{{if .Flash}}<p class="flash" role="status">{{.Flash}}</p>{{end}}
+{{end}}
+
+{{define "bottom"}}
+</main>
+<footer class="site"><p>One deal a day. Same cards for everyone. Every move kept.</p></footer>
+</body>
+</html>
+{{end}}

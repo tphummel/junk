@@ -1,0 +1,70 @@
+{{define "hidden"}}<input type="hidden" name="csrf" value="{{.B.CSRF}}"><input type="hidden" name="seq" value="{{.B.Seq}}">{{end}}
+
+{{define "card"}}{{$c := .C}}{{$b := .B}}
+{{- if not $c.Up -}}
+<div class="slot" id="{{$c.ID}}" style="--k:{{$c.K}}"><div class="card down" aria-hidden="true"></div></div>
+{{- else if $b.ReadOnly -}}
+<div class="slot" id="{{$c.ID}}" style="--k:{{$c.K}}"><div class="card {{if $c.Red}}red{{end}}" role="img" aria-label="{{$c.Label}}">{{template "face" $c}}</div></div>
+{{- else -}}
+<form class="slot" id="{{$c.ID}}" method="post" action="/games/{{$b.GameID}}/moves" style="--k:{{$c.K}}"{{if $c.Draggable}} data-drag-card data-card="{{$c.Num}}"{{end}}>
+  {{template "hidden" (dict "B" $b)}}<input type="hidden" name="card" value="{{$c.Num}}"><input type="hidden" name="to" value="">
+  {{if $c.Playable}}<button class="card {{if $c.Red}}red{{end}}" type="submit" aria-label="{{$c.Label}}">{{template "face" $c}}</button>
+  {{else}}<div class="card {{if $c.Red}}red{{end}}" role="img" aria-label="{{$c.Label}}">{{template "face" $c}}</div>{{end}}
+</form>
+{{- end -}}
+{{end}}
+
+{{define "face"}}<span class="idx"><b>{{.Rank}}</b><svg class="suit"><use href="#sym-{{.Suit}}"/></svg></span>
+{{- if or (eq .Rank "J") (eq .Rank "Q") (eq .Rank "K")}}<span class="court"><b>{{.Rank}}</b><svg class="suit"><use href="#sym-{{.Suit}}"/></svg></span>
+{{- else}}<svg class="pip"><use href="#sym-{{.Suit}}"/></svg>{{end}}{{end}}
+
+{{define "board"}}{{$b := .}}
+<div class="board" id="board" data-controller="flip drag">
+  <div class="top-row">
+    <div class="stock" data-pile="stock">
+      {{if $b.ReadOnly}}
+        <div class="card back {{if not $b.StockCount}}empty{{end}}"><span>{{$b.StockCount}}</span></div>
+      {{else if $b.CanDraw}}
+        <form method="post" action="/games/{{$b.GameID}}/moves">{{template "hidden" (dict "B" $b)}}<input type="hidden" name="type" value="draw">
+          <button class="card back" type="submit" aria-label="Draw {{$b.DrawCount}} cards, {{$b.StockCount}} left in the stock"><span>{{$b.StockCount}}</span></button></form>
+      {{else if $b.CanRecycle}}
+        <form method="post" action="/games/{{$b.GameID}}/moves">{{template "hidden" (dict "B" $b)}}<input type="hidden" name="type" value="recycle">
+          <button class="card back empty recycle" type="submit" aria-label="Turn the waste back into the stock"><svg class="suit" viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button></form>
+      {{else}}
+        <div class="card back empty" aria-label="Stock is empty"></div>
+      {{end}}
+    </div>
+    <div class="waste" data-pile="waste" aria-label="Waste, {{$b.WasteCount}} cards">
+      {{range $b.Waste}}{{template "card" (dict "C" . "B" $b)}}{{end}}
+    </div>
+    <div class="gap"></div>
+    {{range $b.Found}}
+    <div class="found" data-pile="{{.Pile}}" aria-label="{{.Name}} foundation, {{.Count}} cards">
+      <svg class="ghost suit"><use href="#sym-{{.Suit}}"/></svg>
+      {{with .Top}}{{template "card" (dict "C" . "B" $b)}}{{end}}
+    </div>
+    {{end}}
+  </div>
+  <div class="tableau">
+    {{range $b.Cols}}
+    <div class="col" data-pile="{{.Pile}}" style="--w:{{.W}}">
+      {{range .Cards}}{{template "card" (dict "C" . "B" $b)}}{{end}}
+    </div>
+    {{end}}
+  </div>
+  {{if not $b.ReadOnly}}
+  <div class="controls">
+    <span class="moves" aria-live="polite"><b>{{$b.Moves}}</b> moves</span>
+    <form method="post" action="/games/{{$b.GameID}}/moves">{{template "hidden" (dict "B" $b)}}<input type="hidden" name="type" value="undo"><button class="btn ghost" {{if not $b.CanUndo}}disabled{{end}}>Undo</button></form>
+    {{if $b.CanAuto}}<form method="post" action="/games/{{$b.GameID}}/moves">{{template "hidden" (dict "B" $b)}}<input type="hidden" name="type" value="auto"><button class="btn">Auto-complete</button></form>{{end}}
+    <form method="post" action="/games/{{$b.GameID}}/moves" data-turbo-confirm="Resign this game? It counts as a loss and can't be replayed.">{{template "hidden" (dict "B" $b)}}<input type="hidden" name="type" value="resign"><button class="btn ghost danger">Resign</button></form>
+  </div>
+  {{end}}
+</div>
+{{end}}
+
+{{define "timeline"}}{{$n := len .}}
+{{if $n}}<svg class="timeline" viewBox="0 0 {{$n}} 12" preserveAspectRatio="none" role="img" aria-label="Timeline of {{$n}} moves">
+{{range $i, $t := .}}<rect class="tick {{$t.Class}}" x="{{$i}}" y="{{if $t.Tall}}0{{else}}5{{end}}" width="0.7" height="{{if $t.Tall}}12{{else}}7{{end}}"><title>{{$t.Title}}</title></rect>{{end}}
+</svg>{{end}}
+{{end}}

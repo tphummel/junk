@@ -1,0 +1,22 @@
+{{template "top" .}}
+<section class="narrow" data-controller="passkey">
+  <h1>Create an account</h1>
+  {{if .Signups}}
+  <p class="lede">A username and a passkey. That's all: no email, no password.</p>
+  <form data-action="submit->passkey#signup" class="stack">
+    <label>Username
+      <input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="24" pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{2,23}" data-passkey-target="username">
+      <small>3–24 letters, digits, dots, dashes or underscores.</small>
+    </label>
+    <label>Display name <small>(shown on boards, optional)</small>
+      <input name="display_name" autocomplete="nickname" maxlength="40" data-passkey-target="display">
+    </label>
+    <button class="btn big" data-passkey-target="button">Create passkey</button>
+    <p class="error" role="alert" data-passkey-target="status" hidden></p>
+  </form>
+  <p class="fine">Already have an account? <a href="/login">Sign in</a>.</p>
+  {{else}}
+  <p class="lede">Sign-ups are closed on this server. Ask the admin for an invitation link.</p>
+  {{end}}
+</section>
+{{template "bottom" .}}

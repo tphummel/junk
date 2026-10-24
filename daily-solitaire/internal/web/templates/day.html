@@ -1,0 +1,29 @@
+{{template "top" .}}
+{{$d := .Data}}
+<section class="narrow">
+  <p class="eyebrow">{{niceDate $d.Date}}</p>
+  <h1>Board</h1>
+  {{if not $d.Unlocked}}
+    <p class="lede">The board stays hidden until you've finished this deal yourself, so nothing spoils it.</p>
+    {{if $d.Game}}<p><a class="btn" href="/games/{{$d.Game.ID}}">Continue your game</a></p>
+    {{else}}<form method="post" action="/play"><input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="date" value="{{$d.Date}}"><button class="btn">Play this deal</button></form>{{end}}
+  {{else}}
+    <p class="lede">Wins first, then fewest moves, then fastest time from first move to last.</p>
+    <table class="board-table">
+      <thead><tr><th>#</th><th>Player</th><th>Result</th><th class="num">Moves</th><th class="num">Time</th></tr></thead>
+      <tbody>
+      {{range $d.Rows}}
+        <tr {{if eq .UserID $d.Me}}class="me"{{end}}>
+          <td>{{.Rank}}</td>
+          <td class="player">{{avatar .UserID}} {{.DisplayName}}</td>
+          <td><span class="result {{.Result}}">{{resultLabel .Result}}</span></td>
+          <td class="num">{{.MoveCount}}</td>
+          <td class="num">{{durPtr .ElapsedMS}}</td>
+        </tr>
+      {{end}}
+      </tbody>
+    </table>
+    <p><a href="/days">Archive</a>{{if $d.Game}} · <a href="/games/{{$d.Game.ID}}/replay">Replay your game</a>{{end}}</p>
+  {{end}}
+</section>
+{{template "bottom" .}}

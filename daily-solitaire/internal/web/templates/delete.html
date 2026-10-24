@@ -1,0 +1,15 @@
+{{template "top" .}}
+<section class="narrow">
+  <h1>Delete your account</h1>
+  <p class="lede">This removes your passkeys, sessions and every game you've played, immediately and for good. Your results also disappear from past boards.</p>
+  <p><a class="btn ghost" href="/account/export">Download your archive first</a></p>
+  <form method="post" action="/account/delete" class="stack">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>Type your username (<b>{{.User.Username}}</b>) to confirm
+      <input name="confirm" autocomplete="off" autocapitalize="none" required>
+    </label>
+    <button class="btn danger big">Delete everything</button>
+  </form>
+  <p class="fine"><a href="/account">Cancel</a></p>
+</section>
+{{template "bottom" .}}

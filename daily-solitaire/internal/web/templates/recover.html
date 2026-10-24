@@ -1,0 +1,14 @@
+{{template "top" .}}
+<section class="narrow">
+  <h1>Use a recovery code</h1>
+  <p class="lede">Each recovery code works once. After you're in, add a new passkey.</p>
+  <form method="post" action="/recover" class="stack">
+    <label>Recovery code
+      <input name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" required placeholder="ABCDE-FGHJK">
+    </label>
+    <button class="btn big">Sign in</button>
+    {{with .Data}}{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}{{end}}
+  </form>
+  <p class="fine"><a href="/login">Back to sign in</a></p>
+</section>
+{{template "bottom" .}}

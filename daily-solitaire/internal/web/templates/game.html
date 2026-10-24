@@ -1,0 +1,26 @@
+{{template "top" .}}
+{{$d := .Data}}
+<section class="game">
+  <header class="game-head">
+    <div>
+      <p class="eyebrow">{{niceDate $d.Game.DealDate}}{{if $d.CatchUp}} · catch-up{{end}}</p>
+      {{if $d.Game.Over}}
+        <h1 class="result {{$d.Game.Result}}">{{resultLabel $d.Game.Result}}</h1>
+      {{else}}
+        <h1>Klondike</h1>
+      {{end}}
+    </div>
+    {{if not $d.Game.Over}}{{if $d.Remaining}}<p class="fine">Closes in {{$d.Remaining}}</p>{{end}}{{end}}
+  </header>
+  {{template "board" $d.Board}}
+  {{if $d.Game.Over}}
+  <div class="finish" id="finish">
+    <p class="summary">
+      <b>{{$d.Game.MoveCount}}</b> moves{{if $d.Game.ElapsedMS}} · <b>{{durPtr $d.Game.ElapsedMS}}</b>{{end}}
+    </p>
+    {{template "timeline" $d.Timeline}}
+    <p class="actions"><a class="btn" href="/days/{{$d.Game.DealDate}}">Board for {{shortDate $d.Game.DealDate}}</a> <a class="btn ghost" href="/games/{{$d.Game.ID}}/replay">Replay move by move</a> <a class="btn ghost" href="/days">Archive</a></p>
+  </div>
+  {{end}}
+</section>
+{{template "bottom" .}}

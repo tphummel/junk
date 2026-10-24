@@ -1,0 +1,13 @@
+{{template "top" .}}
+<turbo-frame id="stats">
+  <dl class="stats">
+    <div><dt>Played</dt><dd>{{.Data.Played}}</dd></div>
+    <div><dt>Won</dt><dd>{{.Data.Wins}}</dd></div>
+    <div><dt>Win rate</dt><dd>{{pct .Data.WinRate}}</dd></div>
+    <div><dt>Avg moves</dt><dd>{{if .Data.Wins}}{{f1 .Data.AvgMoves}}{{else}}–{{end}}</dd></div>
+    <div><dt>Best</dt><dd>{{if .Data.Wins}}{{.Data.BestMoves}}{{else}}–{{end}}</dd></div>
+    <div><dt>Streak</dt><dd>{{.Data.CurrentStreak}}</dd></div>
+    <div><dt>Best streak</dt><dd>{{.Data.BestStreak}}</dd></div>
+  </dl>
+</turbo-frame>
+{{template "bottom" .}}

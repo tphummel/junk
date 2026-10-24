@@ -1,0 +1,62 @@
+{{template "top" .}}
+{{$d := .Data}}
+<section class="narrow account" data-controller="passkey"
+  data-passkey-rp-value="{{.RPID}}" data-passkey-user-value="{{$d.UserHandle}}" data-passkey-username-value="{{.User.Username}}"
+  data-passkey-display-value="{{.User.DisplayName}}" data-passkey-credentials-value="{{json $d.SignalCredIDs}}">
+  <h1>{{avatar .User.ID}} {{.User.DisplayName}}</h1>
+  <p class="fine">@{{.User.Username}} · joined {{.User.CreatedAt.Format "Jan 2, 2006"}}</p>
+
+  <h2>Profile</h2>
+  <form method="post" action="/account/profile" class="stack">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>Display name <input name="display_name" value="{{.User.DisplayName}}" maxlength="40"></label>
+    <fieldset class="decks"><legend>Card deck</legend>
+      {{range $d.Decks}}<label><input type="radio" name="deck" value="{{.}}" {{if eq . $.User.Deck}}checked{{end}}> {{.}}</label>{{end}}
+    </fieldset>
+    <button class="btn">Save</button>
+  </form>
+
+  <h2 id="passkeys">Passkeys</h2>
+  <ul class="rows">
+    {{range $d.Passkeys}}
+    <li>
+      <div>
+        <form method="post" action="/account/passkeys/{{.ID}}/rename" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input name="name" value="{{.Name}}" aria-label="Passkey name" maxlength="40"><button class="btn small ghost">Rename</button></form>
+        <p class="fine">{{.Authenticator}} · added {{ago .CreatedAt}} · {{if .LastUsedAt}}last used {{ago (deref .LastUsedAt)}}{{else}}never used{{end}}</p>
+      </div>
+      <form method="post" action="/account/passkeys/{{.ID}}/revoke" data-turbo-confirm="Revoke this passkey? You won't be able to sign in with it again."><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="btn small ghost danger" {{if not $d.CanRevoke}}disabled title="Add another passkey first"{{end}}>Revoke</button></form>
+    </li>
+    {{end}}
+  </ul>
+  <form data-action="submit->passkey#add" class="inline">
+    <input name="name" placeholder="Name this passkey" maxlength="40" data-passkey-target="display" aria-label="New passkey name">
+    <button class="btn" data-passkey-target="button">Add a passkey</button>
+  </form>
+  <p class="error" role="alert" data-passkey-target="status" hidden></p>
+  {{if not $d.Fresh}}<p class="fine">Adding or revoking a passkey asks you to confirm with your passkey first.</p>{{end}}
+
+  <h2 id="recovery">Recovery codes</h2>
+  <p>{{if $d.CodesLeft}}You have <b>{{$d.CodesLeft}}</b> unused recovery codes.{{else}}<b>You have no recovery codes.</b> If you lose every passkey you'd be locked out.{{end}}</p>
+  <form method="post" action="/account/recovery-codes"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn">{{if $d.CodesLeft}}Make new codes{{else}}Make recovery codes{{end}}</button></form>
+
+  <h2 id="sessions">Signed-in devices</h2>
+  <ul class="rows">
+    {{range $d.Sessions}}
+    <li>
+      <div><b>{{.Device}}</b>{{if .Current}} <em>this device</em>{{end}}<p class="fine">last seen {{ago .LastSeen}} · signed in {{ago .Created}}</p></div>
+      <form method="post" action="/account/sessions/{{.ID}}/revoke"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="btn small ghost">{{if .Current}}Sign out{{else}}End{{end}}</button></form>
+    </li>
+    {{end}}
+  </ul>
+  <form method="post" action="/account/sessions/revoke-all"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn ghost">Sign out everywhere</button></form>
+
+  <h2 id="log">Security log</h2>
+  <ul class="rows log">
+    {{range $d.Audit}}<li><div>{{eventLabel .Event}}{{if .Detail}} <span class="fine">· {{.Detail}}</span>{{end}}</div><time class="fine">{{ago .CreatedAt}}</time></li>{{else}}<li>Nothing yet.</li>{{end}}
+  </ul>
+
+  <h2>Your data</h2>
+  <p><a class="btn ghost" href="/account/export">Download archive (JSON)</a> <a class="btn ghost danger" href="/account/delete">Delete account…</a></p>
+  <form method="post" action="/auth/logout"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn ghost">Sign out</button></form>
+</section>
+{{template "bottom" .}}

@@ -1,0 +1,23 @@
+{{template "top" .}}
+<section class="narrow">
+  <h1>History</h1>
+  <turbo-frame id="stats" src="/history/stats" loading="lazy"><p class="fine">Loading stats…</p></turbo-frame>
+  {{if not .Data}}<p class="lede">No games yet. <a href="/">Play today's deal.</a></p>{{else}}
+  <table class="board-table">
+    <thead><tr><th>Date</th><th>Result</th><th class="num">Moves</th><th class="num">Time</th><th></th></tr></thead>
+    <tbody>
+    {{range .Data}}
+      <tr>
+        <td>{{shortDate .DealDate}}</td>
+        <td><span class="result {{.Result}}">{{resultLabel .Result}}</span></td>
+        <td class="num">{{.MoveCount}}</td>
+        <td class="num">{{durPtr .ElapsedMS}}</td>
+        <td>{{if .Result}}<a href="/games/{{.ID}}/replay">Replay</a>{{else}}<a href="/games/{{.ID}}">Continue</a>{{end}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{end}}
+  <p class="fine"><a href="/account/export">Download everything as JSON</a> (asks you to confirm with your passkey).</p>
+</section>
+{{template "bottom" .}}

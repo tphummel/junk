@@ -1,0 +1,13 @@
+# Replicates the single SQLite file. Set LITESTREAM_REPLICA_URL (for example
+# s3://daily-solitaire/app.db on the NAS's MinIO) plus LITESTREAM_ACCESS_KEY_ID
+# and LITESTREAM_SECRET_ACCESS_KEY. Add a second entry under `replicas` for the
+# offsite S3-compatible bucket.
+#
+# Restore is one command:
+#   litestream restore -config /etc/litestream.yml -if-db-not-exists /data/app.db
+dbs:
+  - path: /data/app.db
+    replicas:
+      - url: ${LITESTREAM_REPLICA_URL}
+        endpoint: ${LITESTREAM_ENDPOINT}
+        force-path-style: true

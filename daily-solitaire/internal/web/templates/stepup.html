@@ -1,0 +1,11 @@
+{{template "top" .}}
+<section class="narrow" data-controller="passkey" data-passkey-next-value="{{.Data.Next}}">
+  <h1>Confirm it's you</h1>
+  <p class="lede">This action needs a fresh check with your passkey.</p>
+  <form data-action="submit->passkey#stepup" class="stack">
+    <button class="btn big" data-passkey-target="button">Verify with passkey</button>
+    <p class="error" role="alert" data-passkey-target="status" hidden></p>
+  </form>
+  <p class="fine"><a href="{{.Data.Next}}">Cancel</a></p>
+</section>
+{{template "bottom" .}}

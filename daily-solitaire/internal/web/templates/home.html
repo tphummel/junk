@@ -1,0 +1,37 @@
+{{template "top" .}}
+{{$d := .Data}}
+<section class="hero">
+  <p class="eyebrow">{{niceDate $d.Today}}</p>
+  <h1>Today's deal</h1>
+  <p class="lede">One Klondike deal, the same for everyone. Draw three, no hints, and every move is kept.</p>
+  {{if not .User}}
+    <p class="actions"><a class="btn" href="/login">Sign in to play</a>{{if .Signups}} <a class="btn ghost" href="/signup">Create an account</a>{{end}}</p>
+  {{else if not $d.Game}}
+    <form method="post" action="/play" class="actions">
+      <input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="date" value="{{$d.Today}}">
+      <button class="btn big">Play today's deal</button>
+    </form>
+    <p class="fine">You get one play per deal. Finish before 3:00 a.m. Pacific tomorrow.</p>
+  {{else if $d.Game.Over}}
+    <p class="result {{$d.Game.Result}}">{{resultLabel $d.Game.Result}}{{if eq $d.Game.Result "won"}} in {{$d.Game.MoveCount}} moves{{end}}</p>
+    <p class="actions"><a class="btn" href="/days/{{$d.Today}}">See today's board</a> <a class="btn ghost" href="/games/{{$d.Game.ID}}/replay">Replay</a></p>
+    <p class="fine">Come back tomorrow for a new deal.</p>
+  {{else}}
+    <p class="actions"><a class="btn big" href="/games/{{$d.Game.ID}}">Continue · {{$d.Game.MoveCount}} moves</a></p>
+    <p class="fine">Close at {{clock $d.Game.Deadline}}.</p>
+  {{end}}
+</section>
+{{if .User}}
+<section class="strip">
+  {{if $d.HasStats}}
+  <dl class="stats">
+    <div><dt>Played</dt><dd>{{$d.Stats.Played}}</dd></div>
+    <div><dt>Won</dt><dd>{{$d.Stats.Wins}}</dd></div>
+    <div><dt>Win rate</dt><dd>{{pct $d.Stats.WinRate}}</dd></div>
+    <div><dt>Streak</dt><dd>{{$d.Stats.CurrentStreak}}</dd></div>
+  </dl>
+  {{end}}
+  <p>Missed a day? <a href="/days">Catch up in the archive</a>.</p>
+</section>
+{{end}}
+{{template "bottom" .}}

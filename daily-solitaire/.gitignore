@@ -1,0 +1,10 @@
+/bin/
+/data/
+*.db
+*.db-shm
+*.db-wal
+*.test
+*.out
+coverage.html
+# The proven-winnable seed pool stays out of any public repo.
+seed-pool*.jsonl

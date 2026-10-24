@@ -1,0 +1,15 @@
+{{template "top" .}}
+<section class="narrow" data-controller="passkey" data-passkey-next-value="{{.Data.Next}}" data-passkey-conditional-value="true" data-passkey-rp-value="{{.RPID}}">
+  <h1>Sign in</h1>
+  <p class="lede">Use your passkey. No passwords here.</p>
+  <form data-action="submit->passkey#login" class="stack">
+    <label>Username
+      <input name="username" autocomplete="username webauthn" autocapitalize="none" spellcheck="false" data-passkey-target="username" placeholder="Pick a passkey from the list, or type your name">
+    </label>
+    <button class="btn big" data-passkey-target="button">Sign in with a passkey</button>
+    <p class="error" role="alert" data-passkey-target="status" hidden></p>
+  </form>
+  <p class="fine">Lost your passkey? <a href="/recover">Use a recovery code</a>.{{if .Signups}} New here? <a href="/signup">Create an account</a>.{{end}}</p>
+  <noscript><p class="error">Passkeys need JavaScript. Enable it to sign in; the game itself works without it.</p></noscript>
+</section>
+{{template "bottom" .}}

@@ -1,0 +1,21 @@
+{{template "top" .}}
+<section class="narrow">
+  <h1>Archive</h1>
+  <p class="lede">Every deal since October 1, 2026. Each one can be played once, and counts on that date's board. A catch-up game must be finished by 3:00 a.m. Pacific the morning after you start it.</p>
+  <ul class="days">
+    {{range .Data}}
+    <li>
+      <span class="date">{{niceDate .Date}}{{if .Today}} <em>today</em>{{end}}</span>
+      {{if not .Game}}
+        <form method="post" action="/play"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="date" value="{{.Date}}"><button class="btn small">Play</button></form>
+      {{else if .Game.Result}}
+        <span class="result {{.Game.Result}}">{{resultLabel .Game.Result}}{{if eq .Game.Result "won"}} · {{.Game.MoveCount}}{{end}}</span>
+        <a href="/days/{{.Date}}">Board</a>
+      {{else}}
+        <a class="btn small" href="/games/{{.Game.ID}}">Continue</a>
+      {{end}}
+    </li>
+    {{end}}
+  </ul>
+</section>
+{{template "bottom" .}}

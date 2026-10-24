@@ -1,0 +1,23 @@
+{{template "top" .}}
+{{$d := .Data}}
+<section class="game">
+  <header class="game-head">
+    <div><p class="eyebrow">{{niceDate $d.Game.DealDate}}</p><h1>Replay</h1></div>
+    <p><a href="/games/{{$d.Game.ID}}">Back to the result</a></p>
+  </header>
+  <turbo-frame id="replay" data-turbo-action="advance">
+    {{template "board" $d.Board}}
+    <div class="stepper">
+      <a class="btn ghost" href="/games/{{$d.Game.ID}}/replay?step=0">⏮</a>
+      <a class="btn ghost" href="/games/{{$d.Game.ID}}/replay?step={{if gt $d.Step 0}}{{sub $d.Step 1}}{{else}}0{{end}}">←</a>
+      <span class="where">{{$d.Step}} / {{$d.Total}}</span>
+      <a class="btn ghost" href="/games/{{$d.Game.ID}}/replay?step={{if lt $d.Step $d.Total}}{{add $d.Step 1}}{{else}}{{$d.Total}}{{end}}">→</a>
+      <a class="btn ghost" href="/games/{{$d.Game.ID}}/replay?step={{$d.Total}}">⏭</a>
+    </div>
+    <p class="note">{{if $d.Note}}{{$d.Step}}. {{$d.Note}}{{else}}Opening deal{{end}}</p>
+  </turbo-frame>
+  <details class="steps"><summary>All {{$d.Total}} moves</summary>
+    <ol>{{range $d.Steps}}<li><a href="/games/{{$d.Game.ID}}/replay?step={{.N}}" data-turbo-frame="replay">{{.Text}}</a></li>{{end}}</ol>
+  </details>
+</section>
+{{template "bottom" .}}

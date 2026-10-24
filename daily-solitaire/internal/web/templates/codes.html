@@ -1,0 +1,8 @@
+{{template "top" .}}
+<section class="narrow">
+  <h1>Your recovery codes</h1>
+  <p class="lede">Store these somewhere safe, like a password manager or a printout. Each works once, and this is the only time they're shown. Making new codes cancels the old ones.</p>
+  <ol class="codes">{{range .Data}}<li><code>{{.}}</code></li>{{end}}</ol>
+  <p class="actions"><a class="btn" href="/account">I've saved them</a></p>
+</section>
+{{template "bottom" .}}

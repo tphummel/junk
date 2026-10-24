@@ -1,0 +1,10 @@
+{{template "top" .}}
+<section class="narrow">
+  <h1>Welcome</h1>
+  <p class="lede">This single-use link from the server admin signs you in so you can set up a passkey.</p>
+  <form method="post" action="/recover/link" class="stack">
+    <input type="hidden" name="token" value="{{.Data.Token}}">
+    <button class="btn big">Continue</button>
+  </form>
+</section>
+{{template "bottom" .}}
