@@ -174,7 +174,7 @@ func userFrom(r *http.Request) *store.User {
 	return u
 }
 
-const sessionCookie = "vc_session"
+const sessionCookie = "sworn_session"
 
 func (s *Server) sessionFrom(r *http.Request) (*store.User, string) {
 	c, err := r.Cookie(sessionCookie)

@@ -16,7 +16,7 @@ import (
 	"sworn/internal/store"
 )
 
-const challengeCookie = "vc_challenge"
+const challengeCookie = "sworn_challenge"
 const challengeTTL = 5 * time.Minute
 
 type challenge struct {
