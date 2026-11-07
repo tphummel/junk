@@ -1,0 +1,15 @@
+{{define "content"}}
+<h1>Admin · import</h1>
+<form method="post" enctype="multipart/form-data" class="card">
+  <input type="hidden" name="csrf" value="{{.CSRF}}">
+  <label>Foursquare JSON or Swarm CSV <input type="file" name="file" accept=".json,.csv" required></label>
+  <button>Import</button>
+</form>
+<p class="muted">Idempotent: re-importing skips rows whose venue and timestamp already exist. Imported check-ins are added to your account; new venues are flagged <em>needs-reconcile</em>.</p>
+{{with .Data}}
+<h2>Result</h2>
+<ul class="facts"><li>Rows read: <strong>{{.Rows}}</strong></li><li>Imported: <strong>{{.Imported}}</strong></li>
+<li>Skipped (duplicates): <strong>{{.Skipped}}</strong></li><li>Venues created: <strong>{{.VenuesCreated}}</strong></li><li>Errors: <strong>{{len .Errors}}</strong></li></ul>
+{{if .Errors}}<ul class="err">{{range .Errors}}<li>{{.}}</li>{{end}}</ul>{{end}}
+{{end}}
+{{end}}

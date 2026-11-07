@@ -1,0 +1,19 @@
+{{define "bars"}}
+{{$max := maxCount .}}
+<table class="bars">{{range .}}<tr><td class="lbl">{{if .VenueID}}<a href="/venues/{{.VenueID}}">{{.Label}}</a>{{else}}{{.Label}}{{end}}</td>
+<td class="bar"><span style="width:{{pct .N $max}}%"></span></td><td class="n">{{.N}}</td></tr>{{end}}</table>
+{{end}}
+{{define "content"}}
+{{with .Data}}
+<h1>Insights</h1>
+<p class="big"><strong>{{.Total}}</strong> check-ins · <strong>{{.UniqueVenues}}</strong> unique venues</p>
+<h2>By year</h2>{{template "bars" .ByYear}}
+<h2>Last 24 months</h2>{{template "bars" .ByMonth}}
+<h2>By country</h2>{{template "bars" .ByCountry}}
+<h2>By city</h2>{{template "bars" .ByCity}}
+<h2>By category</h2>{{template "bars" .ByCategory}}
+<h2>Top venues</h2>{{template "bars" .TopVenues}}
+<h2>Most recent</h2>
+<ul class="list">{{range .Recent}}<li><a href="/checkins/{{.ID}}">{{.VenueName}}</a> <span class="muted">{{date .CheckedInAt}}</span></li>{{end}}</ul>
+{{end}}
+{{end}}

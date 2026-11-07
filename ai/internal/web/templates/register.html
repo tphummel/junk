@@ -1,0 +1,11 @@
+{{define "content"}}
+<h1>Register</h1>
+{{if .Data.First}}<p class="muted">This is the first account on this instance, so it becomes the administrator.</p>{{end}}
+<form id="register-form" class="card">
+  <label>Username <input name="username" autocomplete="username" required maxlength="64" autofocus></label>
+  <label>Passkey label <input name="name" placeholder="e.g. Pixel phone" maxlength="40"></label>
+  <button type="submit">Create passkey</button>
+  <p id="msg" class="err" role="alert"></p>
+</form>
+<p class="muted">Passkeys require HTTPS (or <code>localhost</code>). See the README for the Caddy setup.</p>
+{{end}}

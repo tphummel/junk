@@ -1,0 +1,17 @@
+{{define "content"}}
+{{with .Data}}
+<h1>{{.C.VenueName}}</h1>
+<p class="muted">{{date .C.CheckedInAt}} UTC · {{.C.Source}}{{if .Venue}} · <a href="/venues/{{.Venue.ID}}">venue page</a>{{end}}</p>
+{{range .C.PhotoURLs}}<p><a href="{{.}}" rel="noreferrer noopener">photo</a></p>{{end}}
+<form method="post" class="card">
+  <input type="hidden" name="csrf" value="{{$.CSRF}}">
+  <label>Note <textarea name="note" rows="3" maxlength="2000">{{.C.Note}}</textarea></label>
+  <label>Time (UTC, ±1 day) <input type="datetime-local" name="checked_in_at" value="{{iso .C.CheckedInAt}}"></label>
+  <button type="submit">Save</button>
+</form>
+<form method="post" action="/checkins/{{.C.ID}}/delete" data-confirm="Delete this check-in?">
+  <input type="hidden" name="csrf" value="{{$.CSRF}}">
+  <button class="danger">Delete</button>
+</form>
+{{end}}
+{{end}}

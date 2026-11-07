@@ -1,0 +1,33 @@
+{{define "content"}}
+{{with .Data}}
+<h1>Confirm check-in</h1>
+<form method="post" action="/checkin" class="card">
+  <input type="hidden" name="csrf" value="{{$.CSRF}}">
+  <input type="hidden" name="lat" value="{{.Lat}}" data-geo="lat">
+  <input type="hidden" name="lon" value="{{.Lon}}" data-geo="lon">
+  {{if .Venue}}
+    <input type="hidden" name="venue_id" value="{{.Venue.ID}}">
+    <h2>{{.Venue.Name}}</h2>
+    <p class="muted">{{.Venue.Address}} {{.Venue.City}}</p>
+    {{if .Stats.Count}}<p>📍 Tracked · {{.Stats.Count}} visit{{if ne .Stats.Count 1}}s{{end}} · Last: {{month .Stats.Last}}</p>{{end}}
+  {{else if .OSM}}
+    <input type="hidden" name="osm_type" value="{{.OSM.OSMType}}">
+    <input type="hidden" name="osm_id" value="{{.OSM.OSMID}}">
+    <h2>{{.OSM.Name}}</h2>
+    <p class="muted">{{.OSM.Address}} {{.OSM.Category}}</p>
+    <p class="muted">New to your venue list; it will be saved from OpenStreetMap.</p>
+  {{else}}
+    <input type="hidden" name="new" value="1">
+    <label>Venue name <input name="name" required maxlength="200"></label>
+    <div class="row">
+      <label>Latitude <input name="venue_lat" data-geo="lat" inputmode="decimal"></label>
+      <label>Longitude <input name="venue_lon" data-geo="lon" inputmode="decimal"></label>
+    </div>
+    <p class="muted">Coordinates fill in from your location when allowed.</p>
+  {{end}}
+  <label>Note <textarea name="note" rows="3" maxlength="2000"></textarea></label>
+  <button type="submit">Check in</button>
+</form>
+{{end}}
+{{end}}
+{{define "scripts"}}<script src="/static/checkin.js"></script>{{end}}

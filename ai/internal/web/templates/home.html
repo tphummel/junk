@@ -1,0 +1,12 @@
+{{define "content"}}
+<p><a class="btn" href="/checkin">Check in</a></p>
+<h1>Recent check-ins</h1>
+{{if .Data}}
+<ul class="list">
+{{range .Data}}
+  <li><a href="/checkins/{{.ID}}"><strong>{{.VenueName}}</strong></a>
+  <span class="muted">{{date .CheckedInAt}} UTC</span>{{if .Note}}<br><span>{{.Note}}</span>{{end}}</li>
+{{end}}
+</ul>
+{{else}}<p class="muted">No check-ins yet.</p>{{end}}
+{{end}}
