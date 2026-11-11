@@ -8,3 +8,4 @@
 - API names in DESIGN.md come from the session page, not from compiling against the SDK. Verify each on first build.
 - Authoring environment is Linux with no Swift/Xcode toolchain, so nothing here can be compiled locally.
   The design leans on XcodeGen + a macOS GitHub Actions job to get compile/test feedback.
+- TestFlight-only distribution (no App Store review). Added Distribution section; TestFlight prerequisites pulled into milestone 0.
