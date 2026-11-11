@@ -1,0 +1,46 @@
+name: ios-inference-toolkit
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ios-inference-toolkit/**'
+      - '.github/workflows/ios-inference-toolkit.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ios-inference-toolkit/**'
+      - '.github/workflows/ios-inference-toolkit.yml'
+
+defaults:
+  run:
+    working-directory: ios-inference-toolkit
+
+jobs:
+  test:
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show toolchain
+        run: xcodebuild -version
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Pick a simulator
+        run: |
+          udid="$(xcrun simctl list devices available --json \
+            | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')"
+          if [ -z "$udid" ] || [ "$udid" = "null" ]; then
+            echo "no available iPhone simulator"; xcrun simctl list devices available; exit 1
+          fi
+          echo "SIM_UDID=$udid" >> "$GITHUB_ENV"
+      - name: Build and test
+        run: |
+          xcodebuild test \
+            -project InferenceToolkit.xcodeproj \
+            -scheme InferenceToolkit \
+            -destination "platform=iOS Simulator,id=$SIM_UDID" \
+            CODE_SIGNING_ALLOWED=NO

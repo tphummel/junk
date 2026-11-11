@@ -1,0 +1,40 @@
+# XcodeGen spec. Generate the Xcode project with: xcodegen generate
+name: InferenceToolkit
+options:
+  deploymentTarget:
+    iOS: "27.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    # Must increase with every TestFlight upload.
+    CURRENT_PROJECT_VERSION: "1"
+    # Your Apple Developer team id. Empty is fine for simulator builds.
+    DEVELOPMENT_TEAM: ""
+packages:
+  InferenceKit:
+    path: Packages/InferenceKit
+targets:
+  InferenceToolkit:
+    type: application
+    platform: iOS
+    sources:
+      - App
+    dependencies:
+      - package: InferenceKit
+        product: InferenceKitUI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tomhummel.InferenceToolkit
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Inference Toolkit
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+    scheme:
+      testTargets:
+        - package: InferenceKit/InferenceKitTests

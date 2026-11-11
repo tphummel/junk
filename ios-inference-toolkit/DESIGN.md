@@ -5,7 +5,7 @@ language model through the **Foundation Models** framework. Working name:
 **Inference Toolkit** (folder `ios-inference-toolkit`, bundle id
 `com.tomhummel.InferenceToolkit`). Both are easy to change before code exists.
 
-Status: draft for review. Nothing is built yet.
+Status: milestone 0 (skeleton) written; not yet compiled.
 
 ## Goals
 
@@ -22,7 +22,7 @@ Status: draft for review. Nothing is built yet.
 - Bring-your-own weights via Core AI / MLX.
 - Adapters and fine-tuning.
 - iPad/Mac-specific layouts beyond what SwiftUI gives for free, iCloud sync.
-- App Store review and public release. Distribution is TestFlight only (see Distribution).
+- App Store review and public release (see Distribution).
 
 ## Platform decisions
 
@@ -125,28 +125,28 @@ environment with no Swift toolchain. That shapes how we get feedback:
 2. **On device** — you open the generated project in Xcode and run it on your iPhone. Real model behavior,
    performance numbers, and Private Cloud Compute can only be checked here.
 
-Risk: the hosted macOS runner needs an Xcode with the iOS 27 SDK. If it doesn't have one, CI can't compile
-and we fall back to you building locally and pasting errors back. Checked in milestone 0.
+The workflow uses GitHub's `xcode-27` hosted runner. It triggers on pull requests and pushes to `main`, so it
+first runs when a PR is opened for this branch.
 
 ## Distribution
 
-TestFlight only for now; no App Store submission.
+No App Store submission. Two ways onto a device:
 
-- **Internal testing** is the default: testers are members of the App Store Connect team, and builds are
-  available without Beta App Review. External testers would need Beta App Review, so we avoid them unless needed.
-- TestFlight builds expire after 90 days, so expect to re-upload periodically.
-- Uploads are manual: Archive in Xcode, then Distribute to App Store Connect. Automating upload from CI needs
-  an App Store Connect API key stored as a repo secret; left out until the manual step becomes annoying.
-- This requires things a debug build doesn't, so they are part of milestone 0 rather than left for later:
-  a real team id and a bundle id registered to it, an app record in App Store Connect, a full app icon,
-  `ITSAppUsesNonExemptEncryption = NO` in Info.plist (skips the export-compliance prompt on every upload),
-  the privacy manifest, and a marketing version plus a build number that increases with each upload.
+- **Direct install from Xcode** — the default during development. Connect the phone, turn on Developer Mode,
+  choose a signing team, press Run. With a paid Developer Program team the install lasts a year; with a free
+  Apple ID it lasts 7 days and has to be re-run from Xcode.
+- **TestFlight** — optional, for installing without a Mac nearby or sharing with others. Needs a paid team, a
+  bundle id registered to it, and an app record in App Store Connect. Internal testers need no Beta App Review.
+  Builds expire after 90 days. Upload is manual: Archive in Xcode, then Distribute.
+
+The skeleton already carries what a TestFlight upload checks for (app icon, privacy manifest,
+`ITSAppUsesNonExemptEncryption = NO`, version and build numbers), so switching later is account setup only.
 
 ## Milestones
 
 | # | Deliverable | Done when |
 |---|---|---|
-| 0 | Skeleton: XcodeGen spec, app shell with four empty tabs, `InferenceKit` package, CI workflow, TestFlight prerequisites | CI builds and runs one trivial test; you can archive and upload the empty shell to TestFlight |
+| 0 | Skeleton: XcodeGen spec, app shell with four empty tabs, `InferenceKit` package, CI workflow | CI builds and runs the skeleton tests; the empty shell runs on your phone |
 | 1 | Status tab and `ModelCatalog` | Shows correct availability on your phone and in the simulator |
 | 2 | `InferenceRunner`, text Playground with streaming, options, metrics | A prompt streams on device with timings; runner unit tests pass against the fake |
 | 3 | History with SwiftData and export | Runs persist across launches and export as JSON |
@@ -159,9 +159,9 @@ Each milestone is a separate commit that leaves CI green.
 
 ## Open questions
 
-1. **iOS 27 minimum** — fine, or do you need this on a device still on iOS 26?
+1. ~~iOS 27 minimum~~ — confirmed.
 2. **Private Cloud Compute** — free access is tied to Small Business Program enrollment. Are you enrolled? Also unverified: whether PCC works at all in a TestFlight-only app that has never been on the App Store. Milestone 6 treats PCC as optional and hides it when unavailable.
-3. **Apple Developer team** — TestFlight needs a paid Developer Program team. I need the team id for `project.yml`, or I leave a placeholder you fill in.
+3. **Apple Developer team** — `DEVELOPMENT_TEAM` in `project.yml` is empty; fill it in, or pick the team in Xcode each time the project is regenerated.
 4. **Evaluations framework** — Apple shipped one at WWDC26 but its API isn't in the material I could read. Suites are designed to stand alone; adopt Apple's framework later if it fits.
 5. **Name and bundle id** — keep the working ones?
 

@@ -9,3 +9,10 @@
 - Authoring environment is Linux with no Swift/Xcode toolchain, so nothing here can be compiled locally.
   The design leans on XcodeGen + a macOS GitHub Actions job to get compile/test feedback.
 - TestFlight-only distribution (no App Store review). Added Distribution section; TestFlight prerequisites pulled into milestone 0.
+- iOS 27 minimum confirmed. TestFlight is optional: direct install from Xcode is the default path.
+- Milestone 0 written: project.yml, App/, Packages/InferenceKit, CI workflow. NOT compiled anywhere yet —
+  no toolchain here, and the workflow only triggers on PRs / pushes to main.
+- GitHub hosted runner label for Xcode 27 is `xcode-27` (GA 2026-10-15); there is no `macos-27` label.
+- Unverified until CI runs: XcodeGen `testTargets: - package: InferenceKit/InferenceKitTests` syntax,
+  `.iOS("27.0")` in Package.swift, INFOPLIST_KEY_ITSAppUsesNonExemptEncryption being honoured.
+- App icon generated with PIL (gradient, bars, spark); opaque RGB, 1024px.
