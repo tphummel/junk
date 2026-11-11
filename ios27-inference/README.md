@@ -12,7 +12,7 @@ Foundation Models framework. See [DESIGN.md](DESIGN.md) for what is being built 
 
 ## Run it on your iPhone
 
-1. `cd ios-inference-toolkit && xcodegen generate && open InferenceToolkit.xcodeproj`
+1. `cd ios27-inference && xcodegen generate && open InferenceToolkit.xcodeproj`
 2. Select the InferenceToolkit target, open Signing & Capabilities, and choose your team.
    To make that stick across regenerations, put the team id in `DEVELOPMENT_TEAM` in `project.yml`.
 3. Connect the phone, enable Developer Mode on it when prompted (Settings, Privacy & Security), pick it as the
@@ -22,7 +22,7 @@ The Xcode project is generated and not committed; rerun `xcodegen generate` afte
 
 ## Tests
 
-Run from Xcode with Cmd-U, or see `.github/workflows/ios-inference-toolkit.yml` for the command line.
+Run from Xcode with Cmd-U, or see `.github/workflows/ios27-inference.yml` for the command line.
 
 ## Layout
 

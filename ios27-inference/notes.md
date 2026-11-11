@@ -17,3 +17,4 @@
   `.iOS("27.0")` in Package.swift, INFOPLIST_KEY_ITSAppUsesNonExemptEncryption being honoured.
 - App icon generated with PIL (gradient, bars, spark); opaque RGB, 1024px.
 - On-device only: Private Cloud Compute, model switching and reasoning level removed from the design. No network calls at all.
+- Renamed the folder and workflow to ios27-inference (was ios-inference-toolkit). App/Xcode names unchanged.

@@ -2,7 +2,7 @@
 
 A native iOS app for poking at, measuring, and building on Apple's on-device
 language model through the **Foundation Models** framework. Working name:
-**Inference Toolkit** (folder `ios-inference-toolkit`, bundle id
+**Inference Toolkit** (folder `ios27-inference`, bundle id
 `com.tomhummel.InferenceToolkit`). Both are easy to change before code exists.
 
 Status: milestone 0 (skeleton) written; not yet compiled.
@@ -56,7 +56,7 @@ SDK yet; each is confirmed or corrected in the milestone that first uses it.
 ## Architecture
 
 ```
-ios-inference-toolkit/
+ios27-inference/
   project.yml                  XcodeGen spec
   App/                         thin app target: @main, tab shell, SwiftData container
   Packages/InferenceKit/       local Swift package, all logic
@@ -117,7 +117,7 @@ reason to keep history.
 The model only runs on Apple Intelligence-capable hardware, and the project is being authored from a Linux
 environment with no Swift toolchain. That shapes how we get feedback:
 
-1. **CI** — a GitHub Actions workflow (`.github/workflows/ios-inference-toolkit.yml`, path-filtered like the
+1. **CI** — a GitHub Actions workflow (`.github/workflows/ios27-inference.yml`, path-filtered like the
    other projects here) on a macOS runner: install XcodeGen, generate the project, `xcodebuild build` and
    `test` on a simulator. Tests use the fake model, so no Apple Intelligence is needed. This is the compile
    check for every push.

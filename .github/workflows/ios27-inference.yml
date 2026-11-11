@@ -1,22 +1,22 @@
-name: ios-inference-toolkit
+name: ios27-inference
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'ios-inference-toolkit/**'
-      - '.github/workflows/ios-inference-toolkit.yml'
+      - 'ios27-inference/**'
+      - '.github/workflows/ios27-inference.yml'
   pull_request:
     branches:
       - main
     paths:
-      - 'ios-inference-toolkit/**'
-      - '.github/workflows/ios-inference-toolkit.yml'
+      - 'ios27-inference/**'
+      - '.github/workflows/ios27-inference.yml'
 
 defaults:
   run:
-    working-directory: ios-inference-toolkit
+    working-directory: ios27-inference
 
 jobs:
   test:
