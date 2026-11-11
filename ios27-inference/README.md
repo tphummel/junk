@@ -3,7 +3,7 @@
 A native iOS app and Swift package for testing and measuring Apple's on-device language model through the
 Foundation Models framework. See [DESIGN.md](DESIGN.md) for what is being built and in what order.
 
-**Status: milestone 1.** The Status tab reports model availability, limits, and device details. The other three tabs are placeholders.
+**Status: milestone 2.** The Status tab reports model availability, limits, and device details. The Playground streams a text response with generation options and timing and token metrics. Suites and History are placeholders.
 
 ## Requirements
 

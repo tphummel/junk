@@ -5,7 +5,7 @@ language model through the **Foundation Models** framework. Working name:
 **Inference Toolkit** (folder `ios27-inference`, bundle id
 `com.tomhummel.InferenceToolkit`). Both are easy to change before code exists.
 
-Status: milestones 0–1 built and passing CI; not yet run on a device.
+Status: milestones 0–2 built; not yet run on a device.
 
 ## Goals
 
@@ -82,7 +82,8 @@ ios27-inference/
   sentiment) and a builder that turns a user-edited field list into a `DynamicGenerationSchema`.
 - **`RunError`** — maps framework errors to a small enum with user-facing text and a suggested fix.
 
-Every dependency on a real model goes through the `LanguageModel` protocol, so tests inject a scripted fake.
+Every dependency on a real model sits behind a small protocol of our own (`ModelCatalog`, `TextGenerator`), so
+tests inject scripted fakes and the framework is touched in only a couple of files.
 
 ### App screens
 

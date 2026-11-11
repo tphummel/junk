@@ -23,3 +23,12 @@
 - Milestone 1: ModelCatalog protocol + SystemModelCatalog (FoundationModels), StatusView. Own
   `ModelAvailability` enum mirrors the framework's so explanations are testable without the model.
 - No public deep link to the Apple Intelligence settings pane; "Open Settings" opens the app's own settings page.
+- CI green on milestone 1 (9 tests). `SystemLanguageModel.default.availability`, `.contextSize`,
+  `.supportedLanguages` all compile against the iOS 27 SDK as written.
+- Milestone 2: RunRequest/RunOptions/RunMetrics, InferenceRunner (timing via injectable `now`), SystemTextGenerator,
+  Playground. Fakes go through our own TextGenerator protocol rather than Apple's `LanguageModel`, whose
+  requirements I haven't read.
+- From Apple's DocC JSON: token usage is on each stream `Snapshot` (`snapshot.usage`, iOS 27), no need to call
+  `collect()`. `GenerationOptions(sampling:...)` is deprecated in favour of `samplingMode:`.
+- Each Playground run uses a fresh session (single turn). Prewarm is called on a throwaway session; whether that
+  actually speeds up the next session needs measuring on device.
