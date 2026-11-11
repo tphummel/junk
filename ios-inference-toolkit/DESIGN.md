@@ -11,14 +11,14 @@ Status: milestone 0 (skeleton) written; not yet compiled.
 
 1. **Access** — show at a glance whether the model is usable on this device, and why not if it isn't.
 2. **Test** — an interactive playground for every major capability: text, streaming, guided generation,
-   tool calling, image input, model/reasoning selection.
+   tool calling, image input.
 3. **Measure** — record latency and token usage for every run, and run saved prompt suites repeatedly
    so results can be compared across OS updates and settings.
 4. **Use** — keep the engine in a standalone Swift package (`InferenceKit`) that other apps of mine can import.
 
 ## Non-goals (v1)
 
-- Third-party cloud providers (Anthropic, Google, OpenAI). The `LanguageModel` protocol makes this possible later.
+- Anything that leaves the device: Apple's Private Cloud Compute model and third-party cloud providers. Every run uses the on-device model only.
 - Bring-your-own weights via Core AI / MLX.
 - Adapters and fine-tuning.
 - iPad/Mac-specific layouts beyond what SwiftUI gives for free, iCloud sync.
@@ -28,7 +28,7 @@ Status: milestone 0 (skeleton) written; not yet compiled.
 
 | Decision | Choice | Why |
 |---|---|---|
-| Deployment target | **iOS 27.0** | Image input, Private Cloud Compute, dynamic profiles, and `response.usage` are all 27-only. Supporting 26 means `#available` branches around most of the app. |
+| Deployment target | **iOS 27.0** | Image input, dynamic profiles, and `response.usage` are all 27-only. Supporting 26 means `#available` branches around most of the app. |
 | UI | SwiftUI, `@Observable`, `NavigationStack` in a `TabView` | Current Apple defaults. |
 | Language mode | Swift 6, strict concurrency | Model work is all async; catch isolation mistakes at compile time. |
 | Persistence | SwiftData | Saved prompts, suites, and run history are simple relational data. |
@@ -50,8 +50,7 @@ SDK yet; each is confirmed or corrected in the milestone that first uses it.
 | Guided generation | `@Generable`, `@Guide`, `PartiallyGenerated` snapshots, `DynamicGenerationSchema` for schemas defined at runtime |
 | Tools | `Tool` protocol; built-in `OCRTool`, `BarcodeReaderTool` |
 | Image input | `Attachment(...)` inside a prompt |
-| Larger model | `PrivateCloudComputeLanguageModel`, `ContextOptions(reasoningLevel:)` |
-| Accounting | `response.usage.input/output` token counts, including cached and reasoning tokens |
+| Accounting | `response.usage.input/output` token counts, including cached tokens |
 | Errors | `LanguageModelSession.GenerationError` (context window exceeded, guardrail violation, unsupported language), `ToolCallError` |
 
 ## Architecture
@@ -68,15 +67,15 @@ ios-inference-toolkit/
 
 ### InferenceKit (engine)
 
-- **`ModelCatalog`** — the selectable models (on-device, Private Cloud Compute) with availability, context size,
+- **`ModelCatalog`** — the on-device system model with its availability, context size, supported languages,
   and a human-readable explanation when unavailable.
 - **`RunRequest`** — a value type describing one run: model, instructions, prompt, attachments, generation
-  options, reasoning level, enabled tools, optional output schema. `Codable`, so it can be saved and exported.
+  options, enabled tools, optional output schema. `Codable`, so it can be saved and exported.
 - **`InferenceRunner`** — an actor that executes a `RunRequest` and returns an `AsyncThrowingStream<RunEvent>`:
   `.started`, `.snapshot(text or partial structure)`, `.toolCall`, `.toolResult`, `.finished(RunResult)`.
   One code path serves the playground, the benchmark runner, and any other app that imports the package.
 - **`RunResult` / `RunMetrics`** — output, full transcript, and timings: prewarm time, time to first snapshot,
-  total duration, input/output/reasoning tokens, tokens per second. Timed with `ContinuousClock`.
+  total duration, input/output tokens, tokens per second. Timed with `ContinuousClock`.
 - **`ToolRegistry`** — sample tools that can be toggled per run. v1 set needs no permissions: current date and
   time, calculator, device info, plus the built-in OCR and barcode tools. Each records its calls for the trace view.
 - **`SchemaLibrary`** — a few compiled `@Generable` examples (summary with tags, extracted contact, classified
@@ -89,8 +88,8 @@ Every dependency on a real model goes through the `LanguageModel` protocol, so t
 
 | Tab | What it does |
 |---|---|
-| **Status** | Availability per model with the reason when unavailable, context size, supported languages, OS and device, and a deep link to Settings when Apple Intelligence is off. |
-| **Playground** | Instructions and prompt editors, image picker, model and reasoning pickers, generation options, tool toggles, optional output schema. Streams the response. A metrics bar shows first-token time, duration, and tokens. A transcript inspector shows every entry including tool calls. A live token counter shows prompt size against the context window. |
+| **Status** | Model availability with the reason when unavailable, context size, supported languages, OS and device, and a deep link to Settings when Apple Intelligence is off. |
+| **Playground** | Instructions and prompt editors, image picker, generation options, tool toggles, optional output schema. Streams the response. A metrics bar shows first-token time, duration, and tokens. A transcript inspector shows every entry including tool calls. A live token counter shows prompt size against the context window. |
 | **Suites** | Saved prompt sets. Run a suite N times against a chosen configuration; see per-case median and spread for latency and tokens; compare two runs side by side. |
 | **History** | Every run with its request, output, and metrics. Re-open any run in the Playground. Export as JSON or CSV through the share sheet. |
 
@@ -110,7 +109,7 @@ reason to keep history.
 - `prewarm()` when the Playground appears.
 - Dynamic Type, VoiceOver labels, Dark Mode, and system colors and materials throughout; no custom design system.
 - Strings in a String Catalog.
-- A privacy manifest; no network calls of our own. The UI states clearly when a run leaves the device for Private Cloud Compute.
+- A privacy manifest; no network calls at all. Prompts, images, and run history stay on the device unless you export them yourself.
 - Photo access through `PhotosPicker`, which needs no permission prompt.
 
 ## Build and verification
@@ -123,7 +122,7 @@ environment with no Swift toolchain. That shapes how we get feedback:
    `test` on a simulator. Tests use the fake model, so no Apple Intelligence is needed. This is the compile
    check for every push.
 2. **On device** — you open the generated project in Xcode and run it on your iPhone. Real model behavior,
-   performance numbers, and Private Cloud Compute can only be checked here.
+   and performance numbers can only be checked here.
 
 The workflow uses GitHub's `xcode-27` hosted runner. It triggers on pull requests and pushes to `main`, so it
 first runs when a PR is opened for this branch.
@@ -152,7 +151,7 @@ The skeleton already carries what a TestFlight upload checks for (app icon, priv
 | 3 | History with SwiftData and export | Runs persist across launches and export as JSON |
 | 4 | Guided generation: schema library and runtime schema builder | Structured output streams field by field |
 | 5 | Tools: registry, toggles, transcript trace | Tool calls visible in the inspector |
-| 6 | Image input and Private Cloud Compute with reasoning level | Image prompt works; model switch works |
+| 6 | Image input, with the built-in OCR and barcode tools | A prompt with an attached photo works on device |
 | 7 | Suites: repeated runs, statistics, comparison | A suite of 5 cases runs 10 times and reports medians |
 
 Each milestone is a separate commit that leaves CI green.
@@ -160,7 +159,7 @@ Each milestone is a separate commit that leaves CI green.
 ## Open questions
 
 1. ~~iOS 27 minimum~~ — confirmed.
-2. **Private Cloud Compute** — free access is tied to Small Business Program enrollment. Are you enrolled? Also unverified: whether PCC works at all in a TestFlight-only app that has never been on the App Store. Milestone 6 treats PCC as optional and hides it when unavailable.
+2. ~~Private Cloud Compute~~ — dropped; on-device only.
 3. **Apple Developer team** — `DEVELOPMENT_TEAM` in `project.yml` is empty; fill it in, or pick the team in Xcode each time the project is regenerated.
 4. **Evaluations framework** — Apple shipped one at WWDC26 but its API isn't in the material I could read. Suites are designed to stand alone; adopt Apple's framework later if it fits.
 5. **Name and bundle id** — keep the working ones?
