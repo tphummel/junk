@@ -1,0 +1,48 @@
+{{define "content"}}
+{{with .Data}}{{$v := .V}}
+<p><a href="/admin/venues">← all venues</a> · <a href="/venues/{{$v.ID}}">public page</a></p>
+<h1>{{$v.Name}}</h1>
+<p><span class="badge {{$v.Status}}">{{$v.Status}}</span>
+{{if $v.OSMURL}}<a href="{{$v.OSMURL}}" rel="noreferrer noopener">{{$v.OSMType}}/{{$v.OSMID}}</a> v{{$v.OSMVersion}}, pulled {{ts $v.OSMPulledAt}}{{end}}</p>
+<table>
+<tr><th>Address</th><td>{{$v.Address}}</td></tr><tr><th>City / country</th><td>{{$v.City}} {{$v.Country}}</td></tr>
+<tr><th>Category</th><td>{{$v.Category}} {{$v.Cuisine}}</td></tr><tr><th>Website / phone</th><td>{{$v.Website}} {{$v.Phone}}</td></tr>
+<tr><th>Position</th><td>{{$v.Lat}}, {{$v.Lon}}</td></tr><tr><th>Foursquare id</th><td>{{$v.FoursquareID}}</td></tr>
+<tr><th>Notes</th><td>{{$v.LocalNotes}}</td></tr>
+</table>
+<h2>Actions</h2>
+<div class="actions">
+  {{if $v.OSMURL}}
+    <form method="post" action="/admin/venues/{{$v.ID}}/pull" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="secondary">Pull from OSM</button></form>
+  {{else}}
+    <form method="post" action="/admin/venues/{{$v.ID}}/reconcile" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="secondary">Reconcile (50 m)</button></form>
+  {{end}}
+  {{if .CanPush}}
+    {{if $v.OSMURL}}
+      <form method="post" action="/admin/venues/{{$v.ID}}/push" class="inline" data-confirm="Upload {{len .Pending}} changed field(s) to OpenStreetMap?">
+        <input type="hidden" name="csrf" value="{{$.CSRF}}"><button {{if not .Pending}}disabled{{end}}>Push {{len .Pending}} change(s) to OSM</button></form>
+    {{else}}
+      <form method="post" action="/admin/venues/{{$v.ID}}/push" class="inline" data-confirm="Create a NEW node in OpenStreetMap for this venue? Reconcile first to avoid duplicates.">
+        <input type="hidden" name="csrf" value="{{$.CSRF}}"><button>Create node in OSM</button></form>
+    {{end}}
+  {{else}}<span class="muted">OSM writes disabled (no OSM_API_KEY).</span>{{end}}
+</div>
+{{if .Pending}}<p class="muted">Unpushed fields: {{range .Pending}}{{.}} {{end}}</p>{{end}}
+
+{{if .Reconciled}}
+<h2>Candidates</h2>
+{{if .Candidates}}
+<table><tr><th>Name</th><th>Category</th><th>Distance</th><th>Name diff</th><th></th></tr>
+{{range .Candidates}}<tr><td>{{.Name}}</td><td>{{.Category}}</td><td>{{.Distance}} m</td><td>{{.Dist}}</td>
+<td><form method="post" action="/admin/venues/{{$v.ID}}/link" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}">
+<input type="hidden" name="osm_type" value="{{.Type}}"><input type="hidden" name="osm_id" value="{{.ID}}"><button>Link</button></form></td></tr>{{end}}</table>
+{{else}}<p class="muted">No OSM feature within 50 m with a similar name.</p>{{end}}
+<form method="post" action="/admin/venues/{{$v.ID}}/dismiss"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="secondary">Dismiss — no OSM match</button></form>
+{{end}}
+
+{{if $v.OSMTags}}<h2>OSM tags</h2><pre>{{pretty $v.OSMTags}}</pre>{{end}}
+<h2>Edit log</h2>
+{{if .Log}}<table><tr><th>When</th><th>Field</th><th>Old</th><th>New</th></tr>
+{{range .Log}}<tr><td>{{date .At}}</td><td>{{.Field}}</td><td>{{.Old}}</td><td>{{.New}}</td></tr>{{end}}</table>{{else}}<p class="muted">No edits.</p>{{end}}
+{{end}}
+{{end}}

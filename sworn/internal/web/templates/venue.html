@@ -1,0 +1,48 @@
+{{define "head"}}<link rel="stylesheet" href="/static/leaflet/leaflet.css">{{end}}
+{{define "content"}}
+{{with .Data}}{{$v := .V}}
+<h1>{{$v.Name}}</h1>
+<p><span class="badge {{$v.Status}}">{{$v.Status}}</span>
+{{if $v.OSMURL}}<a href="{{$v.OSMURL}}" rel="noreferrer noopener">View on OpenStreetMap</a>{{end}}</p>
+<div id="venue-map" class="minimap" data-lat="{{$v.Lat}}" data-lon="{{$v.Lon}}" data-name="{{$v.Name}}"></div>
+<ul class="facts">
+  <li>Check-ins (all users): <strong>{{.Stats.Count}}</strong></li>
+  {{if .Stats.Count}}<li>Last check-in: <strong>{{day .Stats.Last}}</strong></li>{{end}}
+  {{if $v.OSMPulledAt}}<li>OSM snapshot: {{ts $v.OSMPulledAt}} (v{{$v.OSMVersion}})</li>{{end}}
+</ul>
+<div class="actions">
+  <a class="btn" href="/checkin/new?venue_id={{$v.ID}}">Check in here</a>
+  {{if $v.OSMURL}}<form method="post" action="/venues/{{$v.ID}}/refresh" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="secondary">Refresh from OSM</button></form>{{end}}
+</div>
+<h2>Details</h2>
+<form method="post" class="card">
+  <input type="hidden" name="csrf" value="{{$.CSRF}}">
+  <label>Name <input name="name" value="{{$v.Name}}" required maxlength="200"></label>
+  <label>Address <input name="address" value="{{$v.Address}}"></label>
+  <div class="row">
+    <label>City <input name="city" value="{{$v.City}}"></label>
+    <label>Country (ISO) <input name="country" value="{{$v.Country}}" maxlength="2"></label>
+  </div>
+  <div class="row">
+    <label>Category <input name="category" value="{{$v.Category}}" placeholder="amenity=cafe"></label>
+    <label>Cuisine <input name="cuisine" value="{{$v.Cuisine}}"></label>
+  </div>
+  <div class="row">
+    <label>Website <input name="website" value="{{$v.Website}}" type="url"></label>
+    <label>Phone <input name="phone" value="{{$v.Phone}}"></label>
+  </div>
+  <div class="row">
+    <label>Latitude <input name="lat" value="{{$v.Lat}}" inputmode="decimal"></label>
+    <label>Longitude <input name="lon" value="{{$v.Lon}}" inputmode="decimal"></label>
+  </div>
+  <label>Notes (shared, never pushed to OSM) <textarea name="local_notes" rows="3">{{$v.LocalNotes}}</textarea></label>
+  <button type="submit">Save</button>
+  <p class="muted">Edits are shared and last-write-wins.</p>
+</form>
+<h2>Edit log</h2>
+{{if .Log}}<table><tr><th>When</th><th>Field</th><th>Old</th><th>New</th></tr>
+{{range .Log}}<tr><td>{{date .At}}</td><td>{{.Field}}</td><td>{{.Old}}</td><td>{{.New}}</td></tr>{{end}}</table>
+{{else}}<p class="muted">No edits yet.</p>{{end}}
+{{end}}
+{{end}}
+{{define "scripts"}}<script src="/static/leaflet/leaflet.js"></script><script src="/static/map.js"></script>{{end}}
