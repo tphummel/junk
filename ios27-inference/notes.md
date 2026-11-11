@@ -18,3 +18,8 @@
 - App icon generated with PIL (gradient, bars, spark); opaque RGB, 1024px.
 - On-device only: Private Cloud Compute, model switching and reasoning level removed from the design. No network calls at all.
 - Renamed the folder and workflow to ios27-inference (was ios-inference-toolkit). App/Xcode names unchanged.
+- PR #199 opened. First CI run green on xcode-27: XcodeGen package test target syntax, `.iOS("27.0")` and the
+  generated Info.plist all worked first time. 3 Swift Testing tests ran in the simulator.
+- Milestone 1: ModelCatalog protocol + SystemModelCatalog (FoundationModels), StatusView. Own
+  `ModelAvailability` enum mirrors the framework's so explanations are testable without the model.
+- No public deep link to the Apple Intelligence settings pane; "Open Settings" opens the app's own settings page.

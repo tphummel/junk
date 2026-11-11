@@ -5,7 +5,7 @@ language model through the **Foundation Models** framework. Working name:
 **Inference Toolkit** (folder `ios27-inference`, bundle id
 `com.tomhummel.InferenceToolkit`). Both are easy to change before code exists.
 
-Status: milestone 0 (skeleton) written; not yet compiled.
+Status: milestones 0–1 built and passing CI; not yet run on a device.
 
 ## Goals
 
