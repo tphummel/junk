@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "junk",
+  "main": "api/index.ts",
+  "compatibility_date": "2026-11-14",
+  "assets": {
+    "directory": "./web",
+    // Only /api/* runs Worker code; everything else is served as static files from web/.
+    "run_worker_first": ["/api/*"]
+  },
+  "routes": [
+    { "pattern": "junk.tomhummel.com", "custom_domain": true }
+  ],
+  "observability": { "enabled": true }
+  // Bindings (KV, D1, R2, Durable Objects) get added here as APIs need them.
+}
