@@ -641,15 +641,31 @@ async function gameDialog(game) {
 // ---------------------------------------------------------------------------------------------
 // Import / export
 
+/**
+ * Open the file picker through a permanent, attached input. A detached input created on the fly
+ * can lose its change event in iOS WebKit browsers (Safari, Brave, Chrome on iOS).
+ * @returns {Promise<File[]>}
+ */
 function pickFiles() {
+  const input = /** @type {HTMLInputElement} */ ($("#file-input"));
   return new Promise((resolve) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.multiple = true;
-    input.accept = ".json,.csv,.html,.htm,.txt,application/json,text/csv,text/html";
-    input.addEventListener("change", () => resolve([...(input.files ?? [])]));
-    input.addEventListener("cancel", () => resolve([]));
+    input.value = "";
+    input.onchange = () => {
+      const files = [...(input.files ?? [])];
+      resolve(files);
+    };
     input.click();
+  });
+}
+
+/** @param {File} file @returns {Promise<string>} */
+function readText(file) {
+  if (typeof file.text === "function") return file.text();
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error);
+    r.readAsText(file);
   });
 }
 
@@ -659,7 +675,7 @@ async function importFiles(files) {
   const errors = [];
   for (const file of files) {
     try {
-      imported.push(...parseImport(await file.text(), file.name));
+      imported.push(...parseImport(await readText(file), file.name));
     } catch (err) {
       errors.push(`${file.name}: ${/** @type {Error} */ (err).message}`);
     }
@@ -678,6 +694,7 @@ async function importFiles(files) {
   render();
   if (errors.length) alert(`Some files could not be imported:\n\n${errors.join("\n")}`);
   if (count) toast(`Imported ${count} game${count === 1 ? "" : "s"}`);
+  else if (!errors.length) toast("No games found in that file");
 }
 
 async function markBackup() {
@@ -711,7 +728,13 @@ document.addEventListener("click", async (ev) => {
     }
     case "import": {
       const files = await pickFiles();
-      if (files.length) await importFiles(/** @type {File[]} */ (files));
+      if (files.length) {
+        try {
+          await importFiles(files);
+        } catch (err) {
+          alert(`Import failed: ${/** @type {Error} */ (err).message}`);
+        }
+      }
       break;
     }
     case "export-all":
