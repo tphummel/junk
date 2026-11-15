@@ -32,7 +32,7 @@
 
 - Adding a stateful project is a set of bindings, a migrations folder, and the manual creation steps.
 - A project's data is isolated, at the cost of more bindings in one `wrangler.jsonc` that parallel sessions will conflict on; keep both entries.
-- Because migrations run in the deploy of the shared Worker, a bad migration blocks every page and API until fixed ([ADR 0005](0005-cloudflare-workers-deployment.md)).
+- Because migrations run in the deploy of the shared Worker, a failed migration stops the deploy of every page and API until fixed; the version already live keeps serving ([ADR 0005](0005-cloudflare-workers-deployment.md)). A migration that succeeds but breaks the live code only breaks that project's routes, which is why migrations must be backward compatible.
 - Preview databases must be migrated too, or previews fail. How `wrangler preview` applies migrations to the preview database is not settled and must be verified in the first project (see Open).
 - `node:sqlite` is SQLite, not D1: D1-only behavior (limits, batching semantics) is not covered by tests.
 

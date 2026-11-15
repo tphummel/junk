@@ -23,7 +23,7 @@ The junk Worker serves static pages from `web/` ([ADR 0003](0003-webpages.md)) a
 ## Consequences
 
 - Another stateful product is a folder, a mount line, a `run_worker_first` entry and its bindings, not a new Worker or domain.
-- Every app in the shared Worker deploys together: one failing bundle or migration blocks the site ([ADR 0005](0005-cloudflare-workers-deployment.md)).
+- Every app in the shared Worker deploys together: one failing bundle or migration blocks deploys of the whole site, not requests: the live version keeps serving ([ADR 0005](0005-cloudflare-workers-deployment.md)).
 - `api/index.ts` and `wrangler.jsonc` become registries that parallel sessions conflict on; keep both entries.
 - Routes under a prefix make a missed `url()` a 404; the link-scan test catches most of them.
 - Server-rendered pages cost a Worker invocation per view, unlike static pages.
