@@ -1,13 +1,13 @@
 ---
 name: golden-angle-styling
-description: Roll a random seed color and generate a light and dark mode color scheme for a web experiment in this repo using the golden-angle palette API (junk.tomhummel.com/api/golden-angle-palette/<hex>), then apply it as CSS custom properties with a prefers-color-scheme override. Use when creating or restyling anything under web/, or when asked for a palette, theme, or colors for an experiment.
+description: Roll a random seed color and generate a light and dark mode color scheme for a webpage in this repo using the golden-angle palette API (junk.tomhummel.com/api/golden-angle-palette/<hex>), then apply it as CSS custom properties with a prefers-color-scheme override. Use when creating or restyling anything under web/, or when asked for a palette, theme, or colors for a webpage.
 metadata:
   version: "2.0.0"
 ---
 
-# Golden-angle styling for web experiments
+# Golden-angle styling for webpages
 
-Each experiment under `web/` gets its own color scheme, generated from one random **seed color** by the golden-angle palette API, and it must work in **both light and dark mode**. See [ADR 0001](../../adr/0001-web-styling.md) for why.
+Each webpage under `web/` gets its own color scheme, generated from one random **seed color** by the golden-angle palette API, and it must work in **both light and dark mode**. See [ADR 0001](../../adr/0001-web-styling.md) for why.
 
 ## How the palette works
 
@@ -34,7 +34,7 @@ Parameters: `?direction=cw|ccw` (accent rotation; `ccw` gives a different accent
 
 ### 1. Choose the backgrounds
 
-Pick your experiment's light and dark background colors (and body text colors) first; the API checks contrast against them. The defaults `#FFFFFF` and `#111111` are fine if you have no preference.
+Pick your webpage's light and dark background colors (and body text colors) first; the API checks contrast against them. The defaults `#FFFFFF` and `#111111` are fine if you have no preference.
 
 ### 2. Roll a random seed
 
@@ -42,7 +42,7 @@ Pick your experiment's light and dark background colors (and body text colors) f
 node skill/golden-angle-styling/scripts/random-seed.mjs     # prints e.g. #E4572E
 ```
 
-Random hue at fixed saturation and mid lightness. Nothing tracks which seeds other experiments use; if you do not like the result, or it looks too much like a neighbor, roll again. A hand-picked seed is also fine.
+Random hue at fixed saturation and mid lightness. Nothing tracks which seeds other webpages use; if you do not like the result, or it looks too much like a neighbor, roll again. A hand-picked seed is also fine.
 
 ### 3. Generate the palette for both modes
 
@@ -52,7 +52,7 @@ curl -s 'https://junk.tomhummel.com/api/golden-angle-palette/E4572E?light=FFFFFF
          dark:  (.dark  | {primary: .primary.color, support: .support.color, accent: .accent.color})}'
 ```
 
-Against local dev use `http://localhost:8787` (`npm run dev`). Run it once at authoring time and **write the results into the experiment as static CSS**; experiments must not call the API at runtime. The interactive page at `/golden-angle-palette/` does the same and its **Copy CSS** button outputs the block in step 4 directly (including the marker comment).
+Against local dev use `http://localhost:8787` (`npm run dev`). Run it once at authoring time and **write the results into the webpage as static CSS**; webpages must not call the API at runtime. The interactive page at `/golden-angle-palette/` does the same and its **Copy CSS** button outputs the block in step 4 directly (including the marker comment).
 
 ### 4. Apply as CSS custom properties
 
@@ -106,4 +106,4 @@ button { background: var(--primary); color: var(--bg); border: 0; }
 ## Notes
 
 - The page and the API share one implementation, `web/golden-angle-palette/palette.js`; `npm test` (from the repo root) tests it and the API route.
-- Migrated experiments (copied from the blog) are not restyled during migration. Add a palette, with both modes, when you next change them.
+- Migrated webpages (copied from the blog) are not restyled during migration. Add a palette, with both modes, when you next change them.
