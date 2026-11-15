@@ -45,7 +45,7 @@ Logic to keep as-is, with its tests ported: the leaderboard SQL (window `LAG`, 2
 ```
 Browser ──► junk Worker (api/index.ts)
               ├─ /api/*            existing Hono APIs (unchanged)
-              ├─ /jigseer/*        Jigseer Hono + JSX app, mounted with basePath
+              ├─ /jigseer/*        Jigseer Hono app (`html` templates), mounted with basePath
               ├─ static assets     web/ as today; Jigseer's CSS/JS in web/jigseer/static/
               ├─ D1  "JIGSEER_DB"  puzzles, hits
               └─ DO  "JIGSEER_ROOM" one hibernating WebSocket room per puzzle, fan-out only
@@ -55,7 +55,7 @@ Browser ──► junk Worker (api/index.ts)
 | --- | --- |
 | FrankenPHP + Caddy | The junk Worker; the app is a Hono sub-app mounted at `/jigseer` |
 | `public/` static files | Static Assets under `web/jigseer/static/`, served without running Worker code |
-| PHP templates | Hono JSX (auto-escaped, same markup); wrangler bundles `.tsx`, no build step added |
+| PHP templates | Hono `html` tagged templates in `.ts` (auto-escaped, same markup); no JSX, because the test runner cannot transform it (ADR 0008) |
 | SQLite file via PDO on a Fly volume | **D1.** Same SQLite dialect, so the schema and the `LAG` query port nearly verbatim; foreign keys and `ON DELETE CASCADE` are on by default. Backups: D1 Time Travel (30-day point-in-time restore), no extra job |
 | SSE that polls the DB on each reconnect | Phase 4: a Durable Object per puzzle holds WebSockets (hibernation API); the Worker pings it after each write and it broadcasts "refresh". Until then, keep the SSE endpoint, one indexed D1 read per poll. SSE stays as the fallback afterwards |
 | `api.qrserver.com` fetch plus GD placeholder, PNG cached on disk | QR generated in the Worker with a small pure-JS library, as SVG: no network call, no placeholder case; `Cache-Control: public, immutable` |
@@ -85,21 +85,21 @@ jigseer-saas/
 ├── PLAN.md → README.md once built
 ├── migrations/0001_init.sql
 ├── src/
-│   ├── app.tsx             # Hono app, routes; exported for api/index.ts
+│   ├── app.ts              # Hono app, routes; exported for api/index.ts
 │   ├── routes/             # puzzles, hits, settings, export, qr, events, health
 │   ├── db.ts               # D1 queries (ported from Database.php)
 │   ├── domain/             # pure logic: story, leaderboard, duration, code, progress
 │   ├── room.ts             # Durable Object (phase 4)
 │   ├── export.ts           # CSV + ZIP
 │   ├── qr.ts
-│   └── views/              # JSX: Layout, Nav, Breadcrumb, Play, Leaderboard, Story, Transcript, Settings, Home, NotFound, partials
+│   └── views/              # html templates: Layout, Nav, Breadcrumb, Play, Leaderboard, Story, Transcript, Settings, Home, NotFound, partials
 └── test/                   # node:test
 web/jigseer/static/         # app.css, live.js
 api/index.ts                # + app.route("/jigseer", jigseer) and DO export
 wrangler.jsonc              # + d1_databases, durable_objects, migrations, run_worker_first, previews entries
 ```
 
-Changes to the root: `wrangler.jsonc` (bindings, `migrations_dir` pointing at `jigseer-saas/migrations`, `run_worker_first`), `tsconfig.json` (JSX settings, include the new folder), and `package.json` (the `test` glob must also cover `jigseer-saas/test/**`).
+Changes to the root: `wrangler.jsonc` (bindings, `migrations_dir` pointing at `jigseer-saas/migrations`, `run_worker_first`), `tsconfig.json` (include the new folder), and `package.json` (the `test` glob must also cover `jigseer-saas/test/**`).
 
 ## 5. Testing
 
@@ -112,7 +112,7 @@ Changes to the root: `wrangler.jsonc` (bindings, `migrations_dir` pointing at `j
 ## 6. Phases (each one a PR)
 
 1. **ADRs and skeleton.** ADR 0007 and 0008, folder scaffold, `wrangler.jsonc` with D1 and previews, migration `0001`, `/jigseer/health`, test wiring. By hand: create the production and preview D1 databases and set the dashboard deploy command to apply migrations before `wrangler deploy` (and for previews, the preview database), documented in the PR. Also set a usage notification in the dashboard.
-2. **Core parity.** Domain modules and tests, `db.ts`, home, create, play, hits, leaderboard, story, transcript, settings, delete, with JSX copied from the templates and SSE polling for live updates.
+2. **Core parity.** Domain modules and tests, `db.ts`, home, create, play, hits, leaderboard, story, transcript, settings, delete, with templates ported from `templates/*.php` and SSE polling for live updates.
 3. **Remaining routes.** QR (SVG) and the export ZIP.
 4. **Realtime upgrade.** `JIGSEER_ROOM` Durable Object with WebSocket hibernation; the Worker notifies it after writes; the client uses the socket and falls back to SSE.
 
@@ -127,7 +127,7 @@ Two projects now carry the name, so the READMEs of both should say which is whic
 - **Privacy.** Hits store the client IP (`CF-Connecting-IP`) and user agent, as the self-hosted app does. A hosted service is a different promise than a homelab one: the README says what is stored and that deleting a puzzle deletes its hits.
 - **Rate limit: 1 write per second per client.** Applies to every `POST` (`/puzzles`, hits, settings, deletes), keyed on the client IP. The Workers Rate Limiting binding only supports 10 or 60 second periods and counts per Cloudflare location, so the closest setting is `limit: 10, period: 10` (1 per second on average, bursts of up to 10). A strict 1-per-second gate would need a Durable Object, which is more than this is worth. Over the limit returns `429` with `Retry-After` and the page shows a "slow down" message; the hit is not recorded, so the play buttons must keep the player's input on screen. Players on one wifi share an IP, so a table of people tapping at once may trip it; if that happens in practice, key on IP plus puzzle plus player name instead. Turnstile only if spam appears.
 - **Cost model.** The account is on Workers Paid, so there are no daily D1 or request cutoffs; abuse and runaway polling show up as a bill. Polling SSE is one Worker request and one D1 read per client every few seconds, which phase 4 removes. D1 bills rows scanned, so `0001_init.sql` creates indexes on `hits(puzzle_id, created_at)` and `hits(puzzle_id, updated_at)`, and the Jigseer README states expected daily reads, writes and requests (ADR 0007). Declare the Durable Object class as SQLite-backed in the `migrations` block (the free plan only allows that kind), and check current plan limits before phase 4.
-- **Redirects.** Keep POST-then-redirect with 303 so refreshes do not resubmit. JSX escapes by default; keep it that way (no raw HTML injection).
+- **Redirects.** Keep POST-then-redirect with 303 so refreshes do not resubmit. `html` templates escape by default; use `raw()` only for markup the app built.
 - **Fly-specific code** (`FLY_*` env vars in `/health`) is dropped.
 
 ## 8. Assumptions to confirm

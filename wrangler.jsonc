@@ -5,8 +5,9 @@
   "compatibility_date": "2026-11-14",
   "assets": {
     "directory": "./web",
-    // Only /api/* runs Worker code; everything else is served as static files from web/.
-    "run_worker_first": ["/api/*"]
+    // Only /api/* and /jigseer/* (except /jigseer/static/*) run Worker code; everything else is
+    // served as static files from web/.
+    "run_worker_first": ["/api/*", "/jigseer/*", "!/jigseer/static/*"]
   },
   // No workers.dev URL; the Worker is only reachable on the custom domain.
   "workers_dev": false,
@@ -22,6 +23,17 @@
   // inherit production settings: when adding vars or KV/D1/R2 bindings above, add matching
   // entries here that point at test resources. See
   // https://developers.cloudflare.com/workers/previews/configuration/
-  "previews": {}
-  // Bindings (KV, D1, R2, Durable Objects) get added here as APIs need them.
+  "previews": {
+    "d1_databases": [{ "binding": "JIGSEER_DB", "database_name": "jigseer-preview" }]
+  },
+  // Bindings, prefixed by project (ADR 0007). Create the database by hand first:
+  //   npx wrangler d1 create jigseer && npx wrangler d1 create jigseer-preview
+  // then add each "database_id" it prints. migrations_dir is applied by the deploy command.
+  "d1_databases": [
+    {
+      "binding": "JIGSEER_DB",
+      "database_name": "jigseer",
+      "migrations_dir": "jigseer-saas/migrations"
+    }
+  ]
 }
