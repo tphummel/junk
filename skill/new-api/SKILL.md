@@ -31,7 +31,7 @@ Rules are in [ADR 0004](../../adr/0004-apis.md); [0002](../../adr/0002-no-web-bu
    export default app;
    ```
    Routes are relative to the mount point.
-3. **Register it** in `api/index.ts`: one import and one `app.route("/api/<name>", sub)` line, each in alphabetical order.
+3. **Register it** in `api/index.ts`: one import and one `app.route("/api/<name>", sub)` line, each in alphabetical order. Then list it in the API section of `web/index.html`: one `<li>` with a link to an example URL and a short description, in alphabetical order.
 4. **Write `api/<name>.test.mjs`** with `node:test` and `app.request()`; no network:
    ```js
    import assert from "node:assert/strict";
@@ -59,7 +59,8 @@ Rules are in [ADR 0004](../../adr/0004-apis.md); [0002](../../adr/0002-no-web-bu
 
 - **Errors:** 400 with `{ "error": "<what to use instead>" }`. Never return stack traces. Unknown paths already get the global JSON 404.
 - **Methods:** `GET` for read-only calls.
-- **Caching:** add `Cache-Control: public, max-age=...` only when the response is deterministic for the URL.
+- **Caching:** add `Cache-Control: public, max-age=...` only when the response is deterministic for the URL. If it depends on the current time or other changing state, send `Cache-Control: no-store`.
+- **Request id:** Cloudflare sends one in the `cf-ray` request header. It is not guaranteed unique and is absent locally, so use `crypto.randomUUID()` where true uniqueness is needed.
 - **CORS:** off unless wanted; then `app.use("*", cors())`.
 - **Auth:** none. Every route is public, including ones that write. Anything needing protection needs its own ADR first.
 - **Shared logic with a page:** a plain `.js` ES module in `web/<name>/` with JSDoc types, imported as `../web/<name>/x.js`. Wrangler bundles it for the Worker; the page loads it as-is. Add `web/<name>/x.js` to `include` in `tsconfig.json` so `checkJs` covers it.

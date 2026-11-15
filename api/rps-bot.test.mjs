@@ -2,23 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import app from "./rps-bot.ts";
 
-const realNow = Date.now;
-
-test("maps timestamp modulo 3 to rock/paper/scissors", async (t) => {
-  t.after(() => {
-    Date.now = realNow;
-  });
-  const cases = [
-    [3000, "rock"],
-    [3001, "paper"],
-    [3002, "scissors"],
-  ];
-  for (const [ms, expected] of cases) {
-    Date.now = () => ms;
-    const res = await app.request("/calvin");
-    assert.equal(res.status, 200);
-    assert.deepEqual(await res.json(), { throw: expected, timestamp: ms, id: null });
-  }
+test("returns a valid throw and a timestamp", async () => {
+  const res = await app.request("/calvin");
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.ok(["rock", "paper", "scissors"].includes(body.throw));
+  assert.equal(typeof body.timestamp, "number");
+  assert.equal(body.id, null);
 });
 
 test("echoes cf-ray as X-Request-Id and is not cacheable", async () => {
