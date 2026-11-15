@@ -10,7 +10,7 @@ A place for things without a home: unfinished, out of date, broken things. Inspi
 | `web/` | Static webpages, served at `https://junk.tomhummel.com/<name>/`. |
 | `api/` | The Worker behind `https://junk.tomhummel.com/api/<name>/`. |
 | `adr/` | [Architecture decision records](https://adr.github.io/): short documents that record one decision, its context and consequences. |
-| `skill/` | [Agent skills](https://agentskills.io/): instructions an AI agent loads for a specific task. |
+| `skill/` | [Agent skills](https://agentskills.io/): instructions an AI agent loads for a specific task. `.claude/skills` links here so Claude Code loads them automatically. |
 | `AGENTS.md` | Pointer for agents to this README, `skill/` and `adr/`. |
 
 ## Site and API
@@ -18,7 +18,7 @@ A place for things without a home: unfinished, out of date, broken things. Inspi
 `web/` and `api/` deploy together as one Cloudflare Worker. Develop locally with:
 
 ```sh
-npm install && npm run types   # once; generates worker-configuration.d.ts
+npm ci && npm run types        # once per checkout; generates worker-configuration.d.ts
 npm run dev                    # http://localhost:8787
 npm run typecheck && npm test  # CI runs both on PRs
 ```
