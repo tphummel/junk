@@ -29,6 +29,9 @@
     window.addEventListener('error', (e) => {
       // cross-origin errors (extensions, injected scripts) are opaque and not from this page
       if (e.message === 'Script error.' && !e.filename && !e.error) return;
+      // browser-injected scripts (e.g. Brave on iOS) report as this page's URL at line 1;
+      // nothing of ours is there (line 1 is the doctype), and main() logs the app's own errors
+      if (e.filename === location.href.split('#')[0] && e.lineno === 1) return;
       log((e.error?.stack || e.message) + ` [${e.filename || 'unknown source'}:${e.lineno}:${e.colno}]`);
     });
     window.addEventListener('unhandledrejection', (e) => log(e.reason?.stack || e.reason));
