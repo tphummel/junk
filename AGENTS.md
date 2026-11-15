@@ -35,9 +35,9 @@ The other top-level folders are older, unrelated projects. They have no common s
 - Change only that folder, and its workflow in `.github/workflows/` if it has one.
 - Don't restructure, migrate or add tooling unless asked.
 
-#### Starting a new investigation
+### Everything else
 
-For a one-off experiment or investigation that is not a web, API or Docker project, create a new folder with an appropriate name and work only in it.
+For new work that doesn't fit any kind above, create a new folder with an appropriate name and work only in it.
 
 - Create `notes.md` and append to it as you work: what you tried and what you learned.
 - Write a `README.md` report at the end.
