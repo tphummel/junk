@@ -5,9 +5,9 @@
   "compatibility_date": "2026-11-14",
   "assets": {
     "directory": "./web",
-    // Only /api/* and /jigseer/* (except /jigseer/static/*) run Worker code; everything else is
-    // served as static files from web/.
-    "run_worker_first": ["/api/*", "/jigseer/*", "!/jigseer/static/*"]
+    // /api/* always runs Worker code. Any other path is served from web/ if a file matches; if none
+    // does, the Worker handles it (server-rendered apps such as /jigseer/*, ADR 0008).
+    "run_worker_first": ["/api/*"]
   },
   // No workers.dev URL; the Worker is only reachable on the custom domain.
   "workers_dev": false,

@@ -72,7 +72,7 @@ R2 is not used. It would only serve the unimplemented puzzle-photo feature, whic
 The existing rules cover JSON APIs under `/api/*` and static pages in `web/`. A server-rendered app with state fits neither, so write these before code:
 
 - **ADR 0007, storage on the junk Worker.** Resolves the "Storage" item left open in ADR 0004: D1 for relational data, Durable Objects for realtime coordination, KV for config; dedicated bindings per project, named with a project prefix (`JIGSEER_DB`), so one project cannot read another's data by accident; every binding gets a `previews` entry pointing at a test resource, never production; D1 migrations live in the project folder and are applied by the deploy command.
-- **ADR 0008, server-rendered apps on the junk Worker.** A project folder at the top level exports a Hono app; `api/index.ts` mounts it at `/<name>` and re-exports any Durable Object classes; `wrangler.jsonc` adds `/<name>/*` to `run_worker_first` with a negative pattern for its static files (`"!/<name>/static/*"`). Anonymous and public, like the APIs.
+- **ADR 0008, server-rendered apps on the junk Worker.** A project folder at the top level exports a Hono app; `api/index.ts` mounts it at `/<name>` and re-exports any Durable Object classes; no routing config, because paths with no matching file in `web/` already reach the Worker. Anonymous and public, like the APIs.
 
 No authentication ADR is needed: nothing in scope is protected. (If admin returns later, it will need one, per ADR 0004.)
 
@@ -96,10 +96,10 @@ jigseer-hosted/
 └── test/                   # node:test
 web/jigseer/static/         # app.css, live.js
 api/index.ts                # + app.route("/jigseer", jigseer) and DO export
-wrangler.jsonc              # + d1_databases, durable_objects, migrations, run_worker_first, previews entries
+wrangler.jsonc              # + d1_databases, durable_objects, migrations, previews entries
 ```
 
-Changes to the root: `wrangler.jsonc` (bindings, `migrations_dir` pointing at `jigseer-hosted/migrations`, `run_worker_first`), `tsconfig.json` (include the new folder), and `package.json` (the `test` glob must also cover `jigseer-hosted/test/**`).
+Changes to the root: `wrangler.jsonc` (bindings and `migrations_dir` pointing at `jigseer-hosted/migrations`) and the mount line in `api/index.ts`. The `test` glob in `package.json` is `**/*.test.mjs`, and `tsc` follows imports, so neither needs a per-project edit.
 
 ## 5. Testing
 
@@ -121,7 +121,7 @@ Two projects now carry the name, so the READMEs of both should say which is whic
 ## 7. Risks and decisions inside the port
 
 - **Base path.** The old app links to `/p/...`, `/puzzles` and form actions from the site root. Every link, redirect, form `action`, the SSE URL, and the QR share URL must go through one `url()` helper that adds `/jigseer`. A missed one is a 404 that tests only catch if they check links, so add a test that scans rendered HTML for root-relative `href`/`action` values that lack the prefix.
-- **Static assets versus Worker-first.** `run_worker_first` with `/jigseer/*` would send the CSS and JS to the Worker too; the negative pattern avoids that. Check it in `npm run dev` and on a preview, since a wrong pattern shows up as slow or missing assets.
+- **Static assets.** `run_worker_first` stays `["/api/*"]`: files in `web/jigseer/static/` are served as assets and every other `/jigseer/*` path reaches the app. `web/jigseer/` must contain only `static/`, or a file there shadows a route. Verified in `wrangler dev`; check once on a preview.
 - **Shared Worker.** Per ADR 0005, a bundling or migration failure here blocks deploys of every page and API on the site (the live version keeps serving). Keep the Jigseer import cheap and the migration step safe to re-run.
 - **Timestamps.** The leaderboard gap math uses `strftime('%s', …)`. Write UTC ISO strings (`2026-11-14T10:00:00Z`) so text order matches time order.
 - **Privacy.** Hits store the client IP (`CF-Connecting-IP`) and user agent, as the self-hosted app does. A hosted service is a different promise than a homelab one: the README says what is stored and that deleting a puzzle deletes its hits.

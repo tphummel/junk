@@ -14,7 +14,6 @@
   },
   "include": [
     "api/**/*.ts",
-    "jigseer-hosted/src/**/*.ts",
     "web/golden-angle-palette/palette.js",
     "worker-configuration.d.ts"
   ]
