@@ -10,9 +10,8 @@ A place for things without a home: unfinished, out of date, broken things. Inspi
 | `web/` | Static experiments, served at `https://junk.tomhummel.com/<name>/`. |
 | `api/` | The Worker behind `https://junk.tomhummel.com/api/<name>/`. |
 | `adr/` | Decisions on how `web/` and `api/` are built. Read before changing them. |
-| `skill/` | Agent skills for this repo. |
+| `skill/` | Agent skills: add a web experiment, an API route, or a Docker app; pick colors. |
 | `AGENTS.md` | Instructions for agents (and people) working here. |
-| `HOMELAB_APP_STRATEGY.md` | Patterns from the homelab server apps (`jigseer/`, `artifact-cache/`). |
 
 ## Site and API
 
@@ -26,7 +25,7 @@ npm run typecheck && npm test  # CI runs both on PRs
 
 Pages that import ES modules need the dev server; they do not load from `file://`.
 
-To add an experiment, follow [ADR 0003](adr/0003-web-experiments.md) (web) and [ADR 0004](adr/0004-api-experiments.md) (API).
+To add one, use the [`new-web-experiment`](skill/new-web-experiment/SKILL.md) or [`new-api-experiment`](skill/new-api-experiment/SKILL.md) skill; the rules are [ADR 0003](adr/0003-web-experiments.md) and [ADR 0004](adr/0004-api-experiments.md). Server apps that ship as Docker images use [`new-docker-app`](skill/new-docker-app/SKILL.md).
 
 ## Cloudflare dashboard settings
 

@@ -16,8 +16,10 @@
 5. **Public by construction.** Everything under `web/` is served. Do not put tests, notes, drafts or secrets in it. Tests live in `api/` (see ADR 0004); documentation lives in the PR and the ADRs.
 6. **Register it.** Add one `<li>` to the list in `web/index.html`, in alphabetical order by name. If the experiment has an API, add an `(api)` link beside it. The list is hand-maintained.
 7. **An experiment with an API** uses the same `<name>` for `web/<name>/` and `api/<name>.ts`, and calls it with same-origin paths. Logic shared with the API is a plain ES module inside `web/<name>/` that `api/<name>.ts` imports (ADR 0002).
-8. **Migrating from the blog** (`tphummel/blog`, `static/<name>/`). Copy the files unchanged, then make only the changes needed to work here: remove references to files that never existed, make self-links relative or root-absolute as above. State each deviation in the commit message. Redirects from `tomhummel.com/<name>` are configured in Cloudflare, not in this repo, and only after the new URL works.
-9. **Check before merging.** Open the PR's preview (`https://<branch>.junk.tomhummel.com/<name>/`), exercise the page, and view it in both light and dark mode.
+8. **Migrating from the blog** (`tphummel/blog`, `static/<name>/`) means copying the files unchanged and making only the edits needed to work here, each stated in its commit message. Redirects from `tomhummel.com/<name>` are configured in Cloudflare, not in this repo.
+9. **Verify in the PR preview** (`https://<branch>.junk.tomhummel.com/<name>/`) in both light and dark mode before merging.
+
+The step-by-step procedure, page template and migration details are in the [`new-web-experiment` skill](../skill/new-web-experiment/SKILL.md).
 
 ## Consequences
 
