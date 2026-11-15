@@ -320,7 +320,7 @@ function renderDash(game, state) {
         .map(
           (s) => `<li class="c-${classify(s.checkpoint).cat}" data-action="edit-step" data-id="${esc(s.id)}">
             <span class="m3-n">${s.step}</span>
-            <div><b>${esc(s.checkpoint)}</b>${where(s) ? `<small>${esc(where(s))}</small>` : ""}${s.note ? `<small class="note">${esc(s.note)}</small>` : ""}</div></li>`,
+            <div><b>${esc(s.checkpoint)}</b>${where(s) ? `<small>${esc(where(s))}</small>` : ""}</div></li>`,
         )
         .join("")}</ol>`
     : `<p class="m3-muted">Nothing left on the route.</p>`;
