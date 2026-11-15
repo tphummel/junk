@@ -15,7 +15,17 @@
    - Other branches and PRs: `npx wrangler preview`, served at `https://<branch>.junk.tomhummel.com` (`previews_enabled` on the route) and reported on the PR.
    - Build command and root directory are blank. The deploy bundles `api/` and uploads `web/` as it is.
 3. **Configuration lives in `wrangler.jsonc`:** the Worker name, entry point, assets, route and custom domain, `workers_dev: false` (reachable only on the custom domain), `preview_urls: true`, observability, and the `previews` block. Bindings and vars are added there too, with matching `previews` entries ([ADR 0004](0004-api-experiments.md)).
-4. **Settings that cannot live in the repo** are set in the dashboard and listed in the README: the repository and branch, the deploy and preview commands, and the build watch paths (`web/*, api/*, wrangler.jsonc, package.json, package-lock.json, tsconfig.json`). The Worker's name in the dashboard must equal `name` in `wrangler.jsonc`.
+4. **Settings that cannot live in the repo** are set by hand in the dashboard, under Workers & Pages → `junk` → Settings → Build:
+
+   | Setting | Value |
+   | --- | --- |
+   | Repository / branch | `tphummel/junk` / `main` |
+   | Root directory, build command | _(blank)_ |
+   | Deploy command | `npx wrangler deploy` |
+   | Preview command | `npx wrangler preview` (non-production branches) |
+   | Build watch paths (include) | `web/*, api/*, wrangler.jsonc, package.json, package-lock.json, tsconfig.json` |
+
+   The Worker's name in the dashboard must equal `name` in `wrangler.jsonc`, or builds fail.
 5. **Docs-only and unrelated changes do not deploy**, because of the watch paths. A new path that affects the deploy (for example `migrations/`) must be added to them.
 6. **CI checks, it does not deploy.** `.github/workflows/web.yml` runs `npm run types`, `npm run typecheck` and `npm test` on PRs and pushes to `main`. A Workers Build and CI run in parallel and independently.
 7. **Upkeep is automated by Dependabot** (weekly, one group for `wrangler`, `hono` and `typescript`). `compatibility_date` is changed by hand when wanted.
@@ -26,7 +36,7 @@
 - Merging to `main` is the release. Rolling back is a revert, or a rollback in the dashboard.
 - Deploy is independent of CI, so merging with a failing check still deploys unless branch protection requires the check.
 - All experiments share one deploy: a Worker that fails to bundle blocks every experiment (see [ADR 0004](0004-api-experiments.md)).
-- The dashboard settings are not reviewed in PRs and can drift from the README.
+- The dashboard settings are not reviewed in PRs and can drift from this table.
 - Previews do not inherit production settings, so each binding or var needs its own `previews` entry.
 
 ## Alternatives considered
