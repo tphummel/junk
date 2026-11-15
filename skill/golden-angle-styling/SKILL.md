@@ -52,7 +52,7 @@ curl -s 'https://junk.tomhummel.com/api/golden-angle-palette/E4572E?light=FFFFFF
          dark:  (.dark  | {primary: .primary.color, support: .support.color, accent: .accent.color})}'
 ```
 
-Against local dev use `http://localhost:8787` (`npm run dev`). Run it once at authoring time and **write the results into the webpage as static CSS**; webpages must not call the API at runtime. The interactive page at `/golden-angle-palette/` does the same and its **Copy CSS** button outputs the block in step 4 directly (including the marker comment).
+Against local dev use `http://localhost:8787` (`npm run dev`, after the one-time setup in the [README](../../README.md#site-and-api)). Run it once at authoring time and **write the results into the webpage as static CSS**; webpages must not call the API at runtime. The interactive page at `/golden-angle-palette/` does the same and its **Copy CSS** button outputs the block in step 4 directly (including the marker comment).
 
 ### 4. Apply as CSS custom properties
 

@@ -18,7 +18,7 @@ A place for things without a home: unfinished, out of date, broken things. Inspi
 `web/` and `api/` deploy together as one Cloudflare Worker. Develop locally with:
 
 ```sh
-npm install && npm run types   # once; generates worker-configuration.d.ts
+npm ci && npm run types        # once per checkout; generates worker-configuration.d.ts
 npm run dev                    # http://localhost:8787
 npm run typecheck && npm test  # CI runs both on PRs
 ```

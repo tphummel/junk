@@ -21,7 +21,7 @@ Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../ad
    <li><a href="/<name>/">display name</a> (<a href="/api/<name>/example">api</a>)</li>
    ```
 5. **If it needs an API**, use the [`new-api` skill](../new-api/SKILL.md) with the same `<name>`. Call it with a same-origin path (`fetch("/api/<name>/...")`). Logic both sides need goes in `web/<name>/<something>.js` as a plain ES module with JSDoc types; the API imports it.
-6. **Check locally:** in a fresh checkout run `npm ci && npm run types` once, then `npm run dev` and open `http://localhost:8787/<name>/`. Pages that import ES modules do not work from `file://`.
+6. **Check locally:** do the one-time setup in the [README](../../README.md#site-and-api) if needed, then `npm run dev` and open `http://localhost:8787/<name>/`. Pages that import ES modules do not work from `file://`.
 7. **Push and open a PR.** Open the preview at `https://<branch>.junk.tomhummel.com/<name>/`, exercise the page, and view it in light and dark mode (browser or OS setting). Fix console errors and 404s.
 
 ## Template

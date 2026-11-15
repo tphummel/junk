@@ -11,7 +11,7 @@ Rules are in [ADR 0004](../../adr/0004-apis.md); [0002](../../adr/0002-no-web-bu
 
 ## Steps
 
-1. **Branch** from an up-to-date `main`. In a fresh checkout, run `npm ci && npm run types` once. `<name>` is lowercase kebab-case, the same as the paired `web/<name>/` if there is one.
+1. **Branch** from an up-to-date `main`. In a fresh checkout, do the one-time setup in the [README](../../README.md#site-and-api). `<name>` is lowercase kebab-case, the same as the paired `web/<name>/` if there is one.
 2. **Create `api/<name>.ts`:**
    ```ts
    import { Hono } from "hono";
