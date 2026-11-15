@@ -7,7 +7,7 @@
     "deploy": "wrangler deploy",
     "types": "wrangler types",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --no-warnings --test api/golden-angle-palette.test.mjs"
+    "test": "node --experimental-strip-types --no-warnings --test \"api/**/*.test.mjs\""
   },
   "dependencies": {
     "hono": "^4.13.18"
