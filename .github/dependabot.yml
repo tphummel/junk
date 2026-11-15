@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Root Worker project (wrangler, hono, typescript). Workers Builds uses the
+  # wrangler version from package.json, so merging these PRs upgrades deploys.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      worker-deps:
+        patterns:
+          - wrangler
+          - hono
+          - typescript
