@@ -26,7 +26,11 @@
 6. **Migrations run in the deploy command,** before the Worker deploys: `npx wrangler d1 migrations apply <DB binding> --remote && npx wrangler deploy`. A failed migration stops the deploy. Migrations are backward compatible with the code currently running (add, then backfill, then drop in a later release), because the old Worker serves traffic during a deploy and a rollback restores old code against the new schema.
 7. **Backups** are D1 Time Travel (point-in-time restore); no extra job until data is worth more than that.
 8. **Tests run the real SQL.** Project tests apply the migration files to in-memory SQLite with Node's built-in `node:sqlite`, behind a small adapter with D1's `prepare().bind().all()/first()/run()` shape. Tests do not need a Cloudflare account or network.
-9. **Data is public by capability.** Access is by an unguessable URL, not by account. Projects store no secrets and no personal data beyond request metadata they document in their README (Jigseer stores the client IP and user agent with each hit). Anything more needs its own ADR (authentication is still open from ADR 0004).
+9. **Limits are account-wide.** The account is on Workers Paid. Quotas and bills are shared by every Worker, API and project in this repo, so dedicated bindings isolate data, not usage. Rules:
+   - Every query on a hot path (pages, polling, writes) is covered by an index, because D1 bills rows scanned, not queries. Migrations create the indexes with the table.
+   - A project's `README.md` states its expected daily reads, writes and requests, and the limits it relies on.
+   - A usage notification is set in the Cloudflare dashboard, since Paid has no hard daily cutoff and an abused public write endpoint shows up as a bill, not an outage.
+10. **Data is public by capability.** Access is by an unguessable URL, not by account. Projects store no secrets and no personal data beyond request metadata they document in their README (Jigseer stores the client IP and user agent with each hit). Anything more needs its own ADR (authentication is still open from ADR 0004).
 
 ## Consequences
 
@@ -35,6 +39,8 @@
 - Because migrations run in the deploy of the shared Worker, a failed migration stops the deploy of every page and API until fixed; the version already live keeps serving ([ADR 0005](0005-cloudflare-workers-deployment.md)). A migration that succeeds but breaks the live code only breaks that project's routes, which is why migrations must be backward compatible.
 - Preview databases must be migrated too, or previews fail. How `wrangler preview` applies migrations to the preview database is not settled and must be verified in the first project (see Open).
 - `node:sqlite` is SQLite, not D1: D1-only behavior (limits, batching semantics) is not covered by tests.
+
+- Paid removes the daily D1 row caps and the Worker request cap that Free has, but not the per-database and per-object size limits. Current limits are in the Cloudflare docs and are not copied here.
 
 ## Alternatives considered
 
@@ -48,4 +54,4 @@
 ## Open
 
 - How previews get their `-preview` database migrated: whether the preview command can run `d1 migrations apply` before `wrangler preview`, or whether it needs a script. Verify in phase 1 of Jigseer and amend by a new ADR if the answer changes the deploy commands.
-- A cap on D1 and Durable Object usage per project, if any project's traffic starts to matter.
+- A hard spending or usage cap per project, if any project's traffic starts to matter. Cloudflare notifies; it does not stop.
