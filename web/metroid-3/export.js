@@ -164,7 +164,8 @@ ${css}
  * @param {{ notes?: boolean, journal?: boolean, remaining?: boolean }} [opts]
  */
 export function buildSheetHtml(game, opts = {}) {
-  if (opts.layout !== "illustrated") return buildScoresheetHtml(game);
+  if (opts.layout === "scoresheet" || !opts.layout) return buildScoresheetHtml(game);
+  const card = opts.layout === "card";
   const { notes = false, journal = true, remaining = true } = opts;
   const state = deriveState(game);
   const meta = game.meta;
@@ -204,7 +205,7 @@ export function buildSheetHtml(game, opts = {}) {
         )
         .join("")
     : "";
-  return `<article class="sheet m3">
+  return `<article class="sheet m3${card ? " card-only" : ""}">
     <header class="sheet-head">
       <h1>${esc(game.name)}</h1>
       <div class="sub">Super Metroid · ${state.stepsDone}/${state.steps} checkpoints</div>
@@ -217,9 +218,8 @@ export function buildSheetHtml(game, opts = {}) {
         <h2>Bosses</h2>${bossesHtml(state)}
       </div>
     </div>
-    <h2>Checkpoints</h2>
-    <div class="sheet-log">${log}</div>
-    ${entries ? `<div class="sheet-journal"><h2>Journal</h2>${entries}</div>` : ""}
+    ${card ? "" : `<h2>Checkpoints</h2><div class="sheet-log">${log}</div>`}
+    ${!card && entries ? `<div class="sheet-journal"><h2>Journal</h2>${entries}</div>` : ""}
     <footer class="sheet-foot"><span>Metroid 3</span><span>${esc(game.name)} · printed ${esc(fmtStamp(Date.now()).slice(0, 10))}</span></footer>
   </article>`;
 }

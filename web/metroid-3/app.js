@@ -432,13 +432,13 @@ function renderPublish(game, state) {
       <div class="card"><h3>Printable scorecard</h3>
         <p class="hint">A one-sheet summary and checkpoint log, sized for pasting into a journal. Use the print dialog’s “Save as PDF”, with margins set to default and “Background graphics” on.</p>
         <div class="field-row" style="margin-top:0.75rem">
-          <label class="field">Layout<select id="p-layout">${sel(p.layout, "scoresheet", "Scoresheet: one page, like the spreadsheet")}${sel(p.layout, "illustrated", "Illustrated: progress grid and log")}</select></label>
+          <label class="field">Layout<select id="p-layout">${sel(p.layout, "scoresheet", "Scoresheet: one page, like the spreadsheet")}${sel(p.layout, "illustrated", "Illustrated: progress grid and log")}${sel(p.layout, "card", "Summary card: progress grid, no log")}</select></label>
         </div>
         <div class="field-row" style="margin-top:0.75rem">
           <label class="field">Paper<select id="p-paper">${sel(p.paper, "letter", "Letter")}${sel(p.paper, "a4", "A4")}${sel(p.paper, "a5", "A5 (journal size)")}</select></label>
           <label class="field">Orientation<select id="p-orient">${sel(p.orientation, "landscape", "Landscape")}${sel(p.orientation, "portrait", "Portrait")}</select></label>
         </div>
-        <div class="options"${p.layout === "scoresheet" ? " hidden" : ""}>
+        <div class="options"${p.layout !== "illustrated" ? " hidden" : ""}>
           ${chk("p-journal", "Include journal entries", p.journal)}
           ${chk("p-notes", "Include route notes", p.notes)}
           ${chk("p-remaining", "Include unfinished checkpoints (as a to-do checklist)", p.remaining)}
