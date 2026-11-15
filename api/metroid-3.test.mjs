@@ -201,3 +201,23 @@ test("open sessions run to now; stray events are ignored; events round-trip", as
   assert.equal(back.events.length, 3);
   assert.equal(back.events[1].ts, T0);
 });
+
+test("in-game time is total minutes", async () => {
+  const { parseIgt, fmtIgt } = await import("../web/metroid-3/engine.js");
+  assert.equal(parseIgt("00:52:00"), 52);
+  assert.equal(parseIgt("0:52"), 52);
+  assert.equal(parseIgt("1:05"), 65);
+  assert.equal(parseIgt("36' 59\""), 36);
+  assert.equal(parseIgt("52"), 52);
+  assert.equal(parseIgt("52 min"), 52);
+  assert.equal(parseIgt(52.4), 52);
+  assert.equal(parseIgt(""), null);
+  assert.equal(parseIgt("abc"), null);
+  assert.equal(fmtIgt(125), "125 min");
+  const game = newGame();
+  setDone(game, game.steps[1].id, T0);
+  game.steps[1].igt = parseIgt("36' 59\"");
+  const [back] = parseImport(JSON.stringify(toExportJson([game])));
+  assert.equal(back.steps[1].igt, 36);
+  assert.equal(deriveState(back).igt, 36);
+});

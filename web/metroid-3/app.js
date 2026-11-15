@@ -23,6 +23,8 @@ import {
   fmtClock,
   inferSessions,
   fmtDuration,
+  fmtIgt,
+  parseIgt,
   isDone,
   moveStep,
   newGame,
@@ -291,6 +293,11 @@ function renderDash(game, state) {
         <h3>${esc(cur.checkpoint)}</h3>
         ${where(cur) ? `<div class="where">${esc(where(cur))}</div>` : ""}
         ${cur.note ? `<div class="note">${esc(cur.note)}</div>` : ""}
+        ${
+          ["save", "milestone", "end"].includes(classify(cur.checkpoint).cat)
+            ? `<label class="field igt-field">In-game time (total minutes)<input id="nav-igt" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 52" value="${cur.igt ?? ""}"></label>`
+            : ""
+        }
         <div class="actions">
           <button type="button" class="primary" data-action="done" data-id="${esc(cur.id)}">✔ Done — log it now</button>
           <button type="button" data-action="edit-step" data-id="${esc(cur.id)}">Edit &amp; log with details</button>
@@ -375,7 +382,7 @@ function renderRoute(game, state) {
         <td>${esc(s.room ?? "")}</td>
         <td class="note">${esc(s.note ?? "")}${s.log ? `<br><b>Log:</b> ${esc(s.log)}` : ""}</td>
         <td class="time">${s.ts != null ? esc(fmtStamp(s.ts)) : '<span class="pending">—</span>'}</td>
-        <td class="time">${esc(s.igt ?? "")}</td>
+        <td class="time">${s.igt != null ? esc(fmtIgt(s.igt)) : ""}</td>
         <td class="act"><button type="button" class="small" data-action="edit-step" data-id="${esc(s.id)}">Edit</button></td>
       </tr>`;
     })
@@ -513,7 +520,7 @@ async function stepDialog(game, id) {
     <label class="field">Room<input name="room" value="${esc(s.room ?? "")}"></label>
     <div class="field-row">
       <label class="field">Timestamp<input name="ts" type="datetime-local" step="1" value="${toInputValue(s.ts)}"></label>
-      <label class="field">IGT<input name="igt" value="${esc(s.igt ?? "")}" placeholder="00:52:00"></label>
+      <label class="field">IGT (total minutes)<input name="igt" type="number" min="0" step="1" inputmode="numeric" value="${s.igt ?? ""}" placeholder="52"></label>
     </div>
     <div class="toolbar"><button type="button" class="small" data-now>Set to now</button><button type="button" class="small" data-clear-ts>Not done yet</button></div>
     <label class="field">Route note (where it is, how to get it)<textarea name="note">${esc(s.note ?? "")}</textarea></label>
@@ -542,7 +549,7 @@ async function stepDialog(game, id) {
     seq: val(fd, "seq") ? Number(val(fd, "seq")) : null,
     room: val(fd, "room") || null,
     ts: fromInputValue(val(fd, "ts")),
-    igt: val(fd, "igt") || null,
+    igt: parseIgt(val(fd, "igt")),
     note: val(fd, "note") || null,
     log: val(fd, "log") || null,
   };
@@ -783,7 +790,11 @@ document.addEventListener("click", async (ev) => {
     }
     case "done":
       if (game && id) {
-        await mutate(game, (g) => setDone(g, id, Date.now()));
+        const igt = parseIgt(/** @type {HTMLInputElement | null} */ (document.getElementById("nav-igt"))?.value);
+        await mutate(game, (g) => {
+          setDone(g, id, Date.now());
+          if (igt != null) /** @type {any} */ (g.steps.find((x) => x.id === id)).igt = igt;
+        });
         toast("Logged");
       }
       break;
@@ -923,6 +934,7 @@ async function boot() {
     if (!Array.isArray(g.steps)) continue;
     renumber(g);
     g.events ??= [];
+    for (const st of g.steps) st.igt = parseIgt(st.igt);
     games.set(g.id, g);
   }
   lastBackup = (await store.getMeta("lastBackup")) ?? null;

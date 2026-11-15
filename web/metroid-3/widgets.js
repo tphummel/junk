@@ -12,9 +12,9 @@ import {
   fmtClock,
   fmtDate,
   fmtDuration,
+  fmtIgt,
   fmtPlay,
   fmtSpan,
-  hud,
   journalDays,
 } from "./engine.js";
 
@@ -39,22 +39,17 @@ export function stepTitle(s) {
   return `#${s.step} ${s.checkpoint}${w ? " — " + w : ""}`;
 }
 
-/** The HUD strip: energy, reserve, ammo counters. @param {import("./engine.js").State} state */
+/** The HUD strip: boss progress. @param {import("./engine.js").State} state */
 export function hudHtml(state) {
-  const h = hud(state);
-  const tanks = (n, total, cls) =>
-    Array.from({ length: total }, (_, i) => `<i class="m3-tank ${cls}${i < n ? " on" : ""}"></i>`).join("");
-  const num = (n, w = 3) => String(n).padStart(w, "0");
-  return `<div class="m3-hud" aria-label="Samus HUD">
-    <div class="m3-hud-energy">
-      <div class="m3-tanks" aria-hidden="true">${tanks(h.etanks, TOTALS.etank, "e")}${tanks(h.rtanks, TOTALS.rtank, "r")}</div>
-      <div class="m3-hud-num"><span class="m3-hud-lab">Energy</span><b>${num(h.energy)}</b><span class="m3-hud-sub">${h.reserve ? `+ ${h.reserve} reserve` : "no reserve yet"}</span></div>
-    </div>
-    <div class="m3-hud-ammo">
-      <div class="m3-ammo m"><span class="m3-hud-lab">Missiles</span><b>${num(h.missiles)}</b></div>
-      <div class="m3-ammo s"><span class="m3-hud-lab">Super</span><b>${num(h.supers, 2)}</b></div>
-      <div class="m3-ammo p"><span class="m3-hud-lab">Power</span><b>${num(h.powerBombs, 2)}</b></div>
-    </div>
+  const n = state.bosses.filter((b) => b.done).length;
+  return `<div class="m3-hud" aria-label="Boss progress">
+    <div class="m3-hud-head"><span class="m3-hud-lab">Bosses</span><b>${n}<small>/${state.bosses.length}</small></b></div>
+    <ol class="m3-boss-pips">${state.bosses
+      .map(
+        (b) =>
+          `<li class="${b.done ? "on" : ""}" title="${b.step ? esc(stepTitle(b.step)) : esc(b.name)}"><i aria-hidden="true">${b.done ? "✔" : ""}</i><span>${esc(b.name)}</span><span class="visually-hidden">${b.done ? "defeated" : "not yet"}</span></li>`,
+      )
+      .join("")}</ol>
   </div>`;
 }
 
@@ -173,7 +168,7 @@ export function statsHtml(game, state) {
     ["Play time", fmtPlay(state)],
     ["Sessions", state.sessions.length ? String(state.sessions.length) : "—"],
     ["Clock span", fmtSpan(state)],
-    ["Game time", state.igt ?? "—"],
+    ["Game time", fmtIgt(state.igt)],
     ["Play days", String(days || "—")],
     ["Started", state.first != null ? fmtDate(state.first) : "—"],
     ["Finished", state.complete && state.last != null ? fmtDate(state.last) : "—"],
@@ -244,7 +239,7 @@ export function timelineHtml(game, opts = {}) {
           return `<li class="m3-ev c-${cat}" data-step="${esc(s.id)}">
             <time>${esc(fmtClock(/** @type {number} */ (s.ts)))}</time>
             <span class="m3-chip" aria-hidden="true">${esc(CATEGORIES[cat].short)}</span>
-            <div><b>${esc(s.checkpoint)}</b>${w ? `<small>${esc(w)}</small>` : ""}${s.igt ? `<small>IGT ${esc(s.igt)}</small>` : ""}
+            <div><b>${esc(s.checkpoint)}</b>${w ? `<small>${esc(w)}</small>` : ""}${s.igt != null ? `<small>IGT ${esc(fmtIgt(s.igt))}</small>` : ""}
               ${note ? `<em>${esc(note)}</em>` : ""}${s.log ? `<p>${esc(s.log)}</p>` : ""}
               ${edit ? `<div class="m3-row-actions"><button type="button" data-action="edit-step" data-id="${esc(s.id)}">Edit</button></div>` : ""}</div></li>`;
         })

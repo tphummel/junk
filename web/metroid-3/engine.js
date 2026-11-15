@@ -18,7 +18,7 @@ export const FORMAT_VERSION = 1;
  *   room: string | null,
  *   note: string | null,
  *   ts: number | null,
- *   igt: string | null,
+ *   igt: number | null,
  *   log: string | null,
  * }} Step
  * @typedef {{ id: string, ts: number, title: string, body: string }} Entry
@@ -271,7 +271,7 @@ export function cloneGame(game) {
  *   currentIndex: number,
  *   first: number | null,
  *   last: number | null,
- *   igt: string | null,
+ *   igt: number | null,
  *   complete: boolean,
  *   steps: number,
  *   stepsDone: number,
@@ -651,6 +651,29 @@ export function fmtAgo(ts, now) {
   return `${fmtDuration(ms)} ago`;
 }
 
+/**
+ * In-game time as total minutes. Accepts a number, "52", "52 min", "0:52" or "00:52:00"
+ * (hours:minutes[:seconds]) and "36' 59\"" (minutes' seconds"). Seconds are dropped.
+ * @param {unknown} v
+ * @returns {number | null}
+ */
+export function parseIgt(v) {
+  if (v == null || v === "") return null;
+  if (typeof v === "number") return Number.isFinite(v) && v >= 0 ? Math.round(v) : null;
+  const t = String(v).trim();
+  let m = t.match(/^(\d+):(\d{1,2})(?::\d{1,2})?$/);
+  if (m) return +m[1] * 60 + +m[2];
+  m = t.match(/^(\d+)\s*'/);
+  if (m) return +m[1];
+  m = t.match(/^(\d+(?:\.\d+)?)\s*(?:m|min|mins|minutes)?$/i);
+  return m ? Math.round(+m[1]) : null;
+}
+
+/** In-game time, total minutes only. @param {number | null | undefined} n */
+export function fmtIgt(n) {
+  return n == null ? "—" : `${n} min`;
+}
+
 /** Active play time from session events. @param {State} state */
 export function fmtPlay(state) {
   return state.sessions.length ? fmtDuration(state.playMs) : "—";
@@ -743,7 +766,7 @@ export function normalizeGame(raw) {
         room: str(s.room),
         note: str(s.note),
         ts: parseTime(s.ts),
-        igt: str(s.igt),
+        igt: parseIgt(s.igt),
         log: str(s.log),
       })),
   );
@@ -868,7 +891,7 @@ export function parseImportCsv(text, name = "Imported game") {
     steps.push({
       checkpoint,
       ts: parseTime(get(r, iT)),
-      igt: get(r, iI) || null,
+      igt: parseIgt(get(r, iI)),
       note: get(r, iN) || null,
       area: get(r, iA) || null,
       seq: get(r, iS) ? Number(get(r, iS)) : null,

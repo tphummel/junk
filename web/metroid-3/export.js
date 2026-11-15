@@ -5,6 +5,7 @@ import {
   deriveState,
   fmtClock,
   fmtDate,
+  fmtIgt,
   fmtPlay,
   fmtSpan,
   fmtStamp,
@@ -169,7 +170,7 @@ export function buildSheetHtml(game, opts = {}) {
     ["Finish", state.complete && state.last != null ? fmtStamp(state.last) : ""],
     ["Play time", state.sessions.length ? fmtPlay(state) : ""],
     ["Clock span", state.first != null ? fmtSpan(state) : ""],
-    ["Game time", state.igt ?? ""],
+    ["Game time", state.igt != null ? fmtIgt(state.igt) : ""],
     ["System", meta.system],
     ["Item %", `${state.percent}%`],
     ["Bosses", meta.bosses],
@@ -185,7 +186,7 @@ export function buildSheetHtml(game, opts = {}) {
       return `<div class="log-row c-${cat} ${isDone(s) ? "is-done" : "todo"}">
         <span class="n">${s.step}</span>
         <span><b>${esc(s.checkpoint)}</b>${w ? `<small>${esc(w)}</small>` : ""}${tip}</span>
-        <span class="t">${s.ts != null ? esc(fmtStamp(s.ts).slice(5, 16)) : ""}${s.igt ? ` · ${esc(s.igt)}` : ""}</span>
+        <span class="t">${s.ts != null ? esc(fmtStamp(s.ts).slice(5, 16)) : ""}${s.igt != null ? ` · ${esc(fmtIgt(s.igt))}` : ""}</span>
       </div>`;
     })
     .join("");
