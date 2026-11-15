@@ -181,7 +181,7 @@ export function buildSheetHtml(game, opts = {}) {
   const log = rows
     .map((s) => {
       const { cat } = classify(s.checkpoint);
-      const tip = notes && s.note ? `<span class="tip">${esc(s.note)}</span>` : "";
+      const tip = (notes && s.note ? `<span class="tip">${esc(s.note)}</span>` : "") + (s.log ? `<span class="tip">${esc(s.log)}</span>` : "");
       const w = where(s);
       return `<div class="log-row c-${cat} ${isDone(s) ? "is-done" : "todo"}">
         <span class="n">${s.step}</span>

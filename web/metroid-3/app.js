@@ -45,7 +45,6 @@ import {
   esc,
   gridHtml,
   historyHtml,
-  hudHtml,
   paceHtml,
   progressBarHtml,
   statsHtml,
@@ -294,9 +293,11 @@ function renderDash(game, state) {
         ${where(cur) ? `<div class="where">${esc(where(cur))}</div>` : ""}
         ${cur.note ? `<div class="note">${esc(cur.note)}</div>` : ""}
         ${
-          ["save", "milestone", "end"].includes(classify(cur.checkpoint).cat)
+          ["save", "end"].includes(classify(cur.checkpoint).cat)
             ? `<label class="field igt-field">In-game time (total minutes)<input id="nav-igt" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 52" value="${cur.igt ?? ""}"></label>`
-            : ""
+            : classify(cur.checkpoint).cat === "milestone"
+              ? `<label class="field igt-field">Countdown timer reading<input id="nav-log" placeholder="e.g. 36' 59&quot;" autocomplete="off"></label>`
+              : ""
         }
         <div class="actions">
           <button type="button" class="primary" data-action="done" data-id="${esc(cur.id)}">✔ Done — log it now</button>
@@ -324,7 +325,6 @@ function renderDash(game, state) {
 
   return `<section class="view stack">
     <div class="card stack">
-      ${hudHtml(state)}
       ${sessionBar(game, state)}
       ${progressBarHtml(state)}
       ${statsHtml(game, state)}
@@ -524,7 +524,7 @@ async function stepDialog(game, id) {
     </div>
     <div class="toolbar"><button type="button" class="small" data-now>Set to now</button><button type="button" class="small" data-clear-ts>Not done yet</button></div>
     <label class="field">Route note (where it is, how to get it)<textarea name="note">${esc(s.note ?? "")}</textarea></label>
-    <label class="field">My log (what happened)<textarea name="log">${esc(s.log ?? "")}</textarea></label>
+    <label class="field">My log (what happened; Ceres Escape: countdown timer reading)<textarea name="log">${esc(s.log ?? "")}</textarea></label>
     ${
       existing
         ? ""
@@ -791,9 +791,12 @@ document.addEventListener("click", async (ev) => {
     case "done":
       if (game && id) {
         const igt = parseIgt(/** @type {HTMLInputElement | null} */ (document.getElementById("nav-igt"))?.value);
+        const timer = /** @type {HTMLInputElement | null} */ (document.getElementById("nav-log"))?.value.trim();
         await mutate(game, (g) => {
           setDone(g, id, Date.now());
-          if (igt != null) /** @type {any} */ (g.steps.find((x) => x.id === id)).igt = igt;
+          const st = /** @type {any} */ (g.steps.find((x) => x.id === id));
+          if (igt != null) st.igt = igt;
+          if (timer) st.log = `Countdown timer: ${timer}`;
         });
         toast("Logged");
       }
@@ -934,7 +937,9 @@ async function boot() {
     if (!Array.isArray(g.steps)) continue;
     renumber(g);
     g.events ??= [];
-    for (const st of g.steps) st.igt = parseIgt(st.igt);
+    for (const st of g.steps) {
+      st.igt = classify(st.checkpoint).cat === "milestone" ? null : parseIgt(st.igt);
+    }
     games.set(g.id, g);
   }
   lastBackup = (await store.getMeta("lastBackup")) ?? null;

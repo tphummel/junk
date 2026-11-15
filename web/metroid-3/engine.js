@@ -766,8 +766,12 @@ export function normalizeGame(raw) {
         room: str(s.room),
         note: str(s.note),
         ts: parseTime(s.ts),
-        igt: parseIgt(s.igt),
-        log: str(s.log),
+        // Ceres Escape's "IGT" is the countdown timer reading, not game time: keep it as text in the log.
+        igt: classify(String(s.checkpoint)).cat === "milestone" ? null : parseIgt(s.igt),
+        log:
+          classify(String(s.checkpoint)).cat === "milestone" && str(s.igt) && !str(s.log)
+            ? `Countdown timer: ${str(s.igt)}`
+            : str(s.log),
       })),
   );
   const seen = new Set();
@@ -891,7 +895,7 @@ export function parseImportCsv(text, name = "Imported game") {
     steps.push({
       checkpoint,
       ts: parseTime(get(r, iT)),
-      igt: parseIgt(get(r, iI)),
+      igt: get(r, iI) || null,
       note: get(r, iN) || null,
       area: get(r, iA) || null,
       seq: get(r, iS) ? Number(get(r, iS)) : null,

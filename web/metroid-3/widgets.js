@@ -39,20 +39,6 @@ export function stepTitle(s) {
   return `#${s.step} ${s.checkpoint}${w ? " — " + w : ""}`;
 }
 
-/** The HUD strip: boss progress. @param {import("./engine.js").State} state */
-export function hudHtml(state) {
-  const n = state.bosses.filter((b) => b.done).length;
-  return `<div class="m3-hud" aria-label="Boss progress">
-    <div class="m3-hud-head"><span class="m3-hud-lab">Bosses</span><b>${n}<small>/${state.bosses.length}</small></b></div>
-    <ol class="m3-boss-pips">${state.bosses
-      .map(
-        (b) =>
-          `<li class="${b.done ? "on" : ""}" title="${b.step ? esc(stepTitle(b.step)) : esc(b.name)}"><i aria-hidden="true">${b.done ? "✔" : ""}</i><span>${esc(b.name)}</span><span class="visually-hidden">${b.done ? "defeated" : "not yet"}</span></li>`,
-      )
-      .join("")}</ol>
-  </div>`;
-}
-
 /** The 100-segment progress bar. @param {import("./engine.js").State} state */
 export function progressBarHtml(state) {
   const n = Math.min(100, state.percent);

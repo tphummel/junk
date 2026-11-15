@@ -215,9 +215,22 @@ test("in-game time is total minutes", async () => {
   assert.equal(parseIgt("abc"), null);
   assert.equal(fmtIgt(125), "125 min");
   const game = newGame();
-  setDone(game, game.steps[1].id, T0);
-  game.steps[1].igt = parseIgt("36' 59\"");
+  const save = game.steps.find((s) => s.checkpoint.startsWith("Save"));
+  setDone(game, save.id, T0);
+  save.igt = parseIgt("0:52");
   const [back] = parseImport(JSON.stringify(toExportJson([game])));
-  assert.equal(back.steps[1].igt, 36);
-  assert.equal(deriveState(back).igt, 36);
+  assert.equal(back.steps.find((s) => s.checkpoint.startsWith("Save")).igt, 52);
+  assert.equal(deriveState(back).igt, 52);
+});
+
+test("Ceres Escape's countdown reading goes to the log, not IGT", () => {
+  const csv = [
+    "Timestamp,IGT,Checkpoint",
+    `2026-11-01 16:50:58,"36' 59""",Ceres Escape`,
+    "2026-11-13 16:16:50,00:52:00,Save: at ship",
+  ].join("\n");
+  const [game] = parseImport(csv, "x.csv");
+  assert.equal(game.steps[0].igt, null);
+  assert.equal(game.steps[0].log, `Countdown timer: 36' 59"`);
+  assert.equal(game.steps[1].igt, 52);
 });
