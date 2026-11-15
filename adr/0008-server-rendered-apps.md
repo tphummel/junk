@@ -16,7 +16,7 @@ The junk Worker serves static pages from `web/` ([ADR 0003](0003-webpages.md)) a
 5. **HTML is rendered with Hono JSX** (`.tsx`), which escapes by default. Raw HTML injection is not used. Layout and components live inside the project; nothing is shared with `web/` pages or other projects.
 6. **One URL helper.** The app is mounted under a prefix, so every link, form `action`, redirect, event-stream and share URL is built by a single `url()` helper that adds it. A test scans rendered HTML for root-relative `href` and `action` values missing the prefix.
 7. **Forms post and redirect** (`303`), so a refresh does not resubmit. Input is validated on the server and bad input renders the page again with a message, status `400`; no stack traces.
-8. **Public, like the APIs.** No authentication. Anonymous write endpoints get a rate limit (Workers Rate Limiting binding). Anything needing protection needs its own ADR first ([ADR 0004](0004-apis.md)).
+8. **Public, like the APIs.** No authentication. Anonymous write endpoints get a rate limit (Workers Rate Limiting binding), keyed on the client IP. The binding only offers 10 or 60 second periods, counted per location, so "N per second" means a rate averaged over a period, not a strict gate. Anything needing protection needs its own ADR first ([ADR 0004](0004-apis.md)).
 9. **Register it** in `web/index.html` under the heading for its class (Tools, Games, Toys), per [ADR 0003](0003-webpages.md).
 10. **Tests** use `node:test`. The `test` script in `package.json` covers `jigseer-saas/test/**` as well as `api/**`. Route tests call `app.request()` with a stub env; SQL tests follow [ADR 0007](0007-worker-storage.md).
 
@@ -39,4 +39,4 @@ The junk Worker serves static pages from `web/` ([ADR 0003](0003-webpages.md)) a
 ## Open
 
 - Whether the mounted-prefix approach holds up for a second app, or whether apps should move to their own Workers once there are more than a couple.
-- Where per-project rate-limit settings live (`wrangler.jsonc` `ratelimits`) and what the limits should be; set when the first write endpoints are built.
+- Where per-project rate-limit settings live (`wrangler.jsonc` `ratelimits`) and whether a strict per-second gate (a Durable Object) is ever needed. Jigseer starts at `limit: 10, period: 10` for all `POST`s, which is one write per second on average; revisit if players on one network are throttled.

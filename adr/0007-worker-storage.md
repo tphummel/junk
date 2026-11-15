@@ -26,7 +26,7 @@
 6. **Migrations run in the deploy command,** before the Worker deploys: `npx wrangler d1 migrations apply <DB binding> --remote && npx wrangler deploy`. A failed migration stops the deploy. Migrations are backward compatible with the code currently running (add, then backfill, then drop in a later release), because the old Worker serves traffic during a deploy and a rollback restores old code against the new schema.
 7. **Backups** are D1 Time Travel (point-in-time restore); no extra job until data is worth more than that.
 8. **Tests run the real SQL.** Project tests apply the migration files to in-memory SQLite with Node's built-in `node:sqlite`, behind a small adapter with D1's `prepare().bind().all()/first()/run()` shape. Tests do not need a Cloudflare account or network.
-9. **Data is public by capability.** No project stores secrets or personal data beyond what its URL-based access exposes; anything more needs its own ADR (authentication is still open from ADR 0004).
+9. **Data is public by capability.** Access is by an unguessable URL, not by account. Projects store no secrets and no personal data beyond request metadata they document in their README (Jigseer stores the client IP and user agent with each hit). Anything more needs its own ADR (authentication is still open from ADR 0004).
 
 ## Consequences
 

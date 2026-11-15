@@ -65,7 +65,7 @@ Browser ──► junk Worker (api/index.ts)
 
 Why D1 is the system of record and the Durable Object only does realtime: queries and exports stay plain SQL over one database, and the schema is the existing SQLite one. One SQLite-backed Durable Object per puzzle as the store is the alternative; it isolates tenants but makes any cross-puzzle query awkward, and nothing needs one now that admin is gone.
 
-R2 is not used. It would only serve the unimplemented puzzle-photo feature, which stays out of scope, so the new schema has no `image_path` or `ip_address` column.
+R2 is not used. It would only serve the unimplemented puzzle-photo feature, which stays out of scope, so the new schema has no `image_path` column. It keeps `ip_address`.
 
 ## 3. How it fits this repo, and what needs an ADR first
 
@@ -124,13 +124,13 @@ Two projects now carry the name, so the READMEs of both should say which is whic
 - **Static assets versus Worker-first.** `run_worker_first` with `/jigseer/*` would send the CSS and JS to the Worker too; the negative pattern avoids that. Check it in `npm run dev` and on a preview, since a wrong pattern shows up as slow or missing assets.
 - **Shared Worker.** Per ADR 0005, a bundling or migration failure here blocks every page and API on the site. Keep the Jigseer import cheap and the migration step safe to re-run.
 - **Timestamps.** The leaderboard gap math uses `strftime('%s', …)`. Write UTC ISO strings (`2026-11-14T10:00:00Z`) so text order matches time order.
-- **Privacy.** For a hosted service, hits do not store IP addresses (the column is omitted from the new schema). User-agent storage stays unless you say otherwise.
-- **Abuse.** Anonymous creation and hits are open, as with every junk API. Add the Workers Rate Limiting binding on `POST /puzzles` and `POST /p/:id/hits` in phase 2; Turnstile only if spam appears.
+- **Privacy.** Hits store the client IP (`CF-Connecting-IP`) and user agent, as the self-hosted app does. A hosted service is a different promise than a homelab one: the README says what is stored and that deleting a puzzle deletes its hits.
+- **Rate limit: 1 write per second per client.** Applies to every `POST` (`/puzzles`, hits, settings, deletes), keyed on the client IP. The Workers Rate Limiting binding only supports 10 or 60 second periods and counts per Cloudflare location, so the closest setting is `limit: 10, period: 10` (1 per second on average, bursts of up to 10). A strict 1-per-second gate would need a Durable Object, which is more than this is worth. Over the limit returns `429` with `Retry-After` and the page shows a "slow down" message; the hit is not recorded, so the play buttons must keep the player's input on screen. Players on one wifi share an IP, so a table of people tapping at once may trip it; if that happens in practice, key on IP plus puzzle plus player name instead. Turnstile only if spam appears.
 - **Cost model.** Polling SSE is one D1 read per client every few seconds, which phase 4 removes. Declare the Durable Object class as SQLite-backed in the `migrations` block (the free plan only allows that kind), and check current plan limits before phase 4.
 - **Redirects.** Keep POST-then-redirect with 303 so refreshes do not resubmit. JSX escapes by default; keep it that way (no raw HTML injection).
 - **Fly-specific code** (`FLY_*` env vars in `/health`) is dropped.
 
 ## 8. Assumptions to confirm
 
-1. **No IP addresses** are stored for hits.
+1. **Rate limit approximation:** `limit: 10, period: 10`, keyed on IP, rather than a strict 1 per second.
 2. **Path name:** `/jigseer/` on `junk.tomhummel.com`.
