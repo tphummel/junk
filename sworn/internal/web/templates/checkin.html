@@ -1,0 +1,8 @@
+{{define "content"}}
+<h1>Check in</h1>
+<input id="q" type="search" placeholder="Search venues…" autocomplete="off" autofocus>
+<p id="status" class="muted"></p>
+<div id="results"></div>
+<p><a class="btn secondary" id="create-local" href="/checkin/new?new=1">Create a local venue</a></p>
+{{end}}
+{{define "scripts"}}<script src="/static/checkin.js"></script>{{end}}

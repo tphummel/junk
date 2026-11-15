@@ -1,0 +1,17 @@
+{{define "content"}}
+<h1>Admin · venues</h1>
+<form method="get" class="row">
+  <input type="search" name="q" value="{{.Data.Q}}" placeholder="Search…">
+  <select name="status">
+    <option value="">any status</option>
+    {{range $s := (list "osm-linked" "local-only" "needs-reconcile")}}<option value="{{$s}}" {{if eq $s $.Data.Status}}selected{{end}}>{{$s}}</option>{{end}}
+  </select>
+  <button>Filter</button>
+</form>
+<p class="muted">{{.Data.Total}} venue(s)</p>
+<table><tr><th>Name</th><th>Status</th><th>City</th><th>Category</th><th>Updated</th></tr>
+{{range .Data.Venues}}<tr><td><a href="/admin/venues/{{.ID}}">{{.Name}}</a></td><td><span class="badge {{.Status}}">{{.Status}}</span></td>
+<td>{{.City}}</td><td>{{.Category}}</td><td>{{ts .UpdatedAt}}</td></tr>{{end}}</table>
+<p>{{if gt .Data.Page 1}}<a href="?q={{urlq .Data.Q}}&status={{.Data.Status}}&page={{sub .Data.Page 1}}">← Prev</a>{{end}}
+{{if .Data.More}}<a href="?q={{urlq .Data.Q}}&status={{.Data.Status}}&page={{add .Data.Page 1}}">Next →</a>{{end}}</p>
+{{end}}

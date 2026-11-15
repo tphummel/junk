@@ -1,0 +1,5 @@
+{{define "content"}}
+<h1>Export</h1>
+<p>Download all your check-ins with embedded venue snapshots as JSON. It does not include other users' data, the venue edit log, or sessions.</p>
+<form method="post" action="/export"><input type="hidden" name="csrf" value="{{.CSRF}}"><button>Download JSON</button></form>
+{{end}}

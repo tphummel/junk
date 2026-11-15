@@ -1,0 +1,45 @@
+name: web
+
+# Typecheck and test the Worker (api/) and the shared palette module (web/golden-angle-palette/).
+# Deploys are handled by Cloudflare Workers Builds, not by this workflow.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+      - 'web/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'wrangler.jsonc'
+      - '.github/workflows/web.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+      - 'web/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'wrangler.jsonc'
+      - '.github/workflows/web.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22   # matches engines.node in package.json
+          cache: npm
+      - run: npm ci
+      # tsconfig includes the generated worker-configuration.d.ts (gitignored)
+      - run: npm run types
+      - run: npm run typecheck
+      - run: npm test

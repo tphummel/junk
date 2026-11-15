@@ -1,0 +1,15 @@
+{{define "content"}}
+<h1>Passkeys</h1>
+<table><tr><th>Name</th><th>Added</th><th>Status</th><th></th></tr>
+{{range .Data}}<tr><td>{{.Name}}</td><td>{{day .CreatedAt}}</td><td>{{if .Active}}active{{else}}deactivated{{end}}</td>
+<td>{{if .Active}}<form method="post" action="/passkeys/{{.ID}}/deactivate" data-confirm="Deactivate {{.Name}}?">
+<input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="danger">Deactivate</button></form>{{end}}</td></tr>{{end}}
+</table>
+<h2>Add a passkey</h2>
+<form id="addkey-form" class="card">
+  <label>Label <input name="name" placeholder="e.g. YubiKey" maxlength="40"></label>
+  <button type="submit">Add passkey</button>
+  <p id="msg" class="err" role="alert"></p>
+</form>
+<p class="muted">Rotation: add the new passkey first, then deactivate the old one. At least one must stay active.</p>
+{{end}}
