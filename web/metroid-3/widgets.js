@@ -83,9 +83,9 @@ export function gridHtml(state) {
     const have = list.filter((it) => state.fixed[it.key]).length + extras.length;
     return { cells: `<div class="m3-cells c-${cat}" style="--rows:${rows}">${cells}</div>`, count: `${have}/${list.length}` };
   };
-  /** @param {string} label @param {string} count @param {string} cells @param {"top" | "bottom"} at */
-  const section = (label, count, cells, at) =>
-    `<section class="m3-sec"><div class="m3-cellwrap ${at}">${cells}</div><h4>${label} <b>${count}</b></h4></section>`;
+  /** @param {Array<[string, string]>} labels label and count pairs @param {string} cells */
+  const section = (labels, cells) =>
+    `<section class="m3-sec"><div class="m3-stack">${cells}</div><h4>${labels.map(([l, c]) => `<span>${l} <b>${c}</b></span>`).join("")}</h4></section>`;
 
   const missile = counted("missile", TOTALS.missile, 5, "Missile");
   const sup = counted("super", TOTALS.super, 2, "Super Missile");
@@ -96,13 +96,10 @@ export function gridHtml(state) {
   const beam = fixed("beam", 3);
   const item = fixed("item", 2);
   return `<div class="m3-grid" role="img" aria-label="Item grid, ${state.percent} of 100 collected">
-    ${section("Missile", missile.count, missile.cells, "bottom")}
-    ${section("Super", sup.count, sup.cells, "bottom")}
-    ${section("Power Bomb", pb.count, pb.cells, "bottom")}
-    ${section("Tanks", `${et.count} · ${rt.count}`, `<div class="m3-stack">${et.cells}${rt.cells}</div>`, "top")}
-    ${section("Suits", suit.count, suit.cells, "top")}
-    ${section("Beams", beam.count, beam.cells, "top")}
-    ${section("Items", item.count, item.cells, "bottom")}
+    ${section([["Missile", missile.count]], missile.cells)}
+    ${section([["Super", sup.count], ["Power Bomb", pb.count]], sup.cells + pb.cells)}
+    ${section([["Energy", et.count], ["Reserve", rt.count]], et.cells + rt.cells)}
+    ${section([["Suits", suit.count], ["Beams", beam.count], ["Items", item.count]], suit.cells + beam.cells + item.cells)}
   </div>`;
 }
 
