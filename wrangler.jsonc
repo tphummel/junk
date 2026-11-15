@@ -13,7 +13,9 @@
   // Keep Version URLs / Preview URLs for PR and branch builds.
   "preview_urls": true,
   "routes": [
-    { "pattern": "junk.tomhummel.com", "custom_domain": true }
+    // previews_enabled: PR/branch Previews are served at <branch>.junk.tomhummel.com
+    // (Cloudflare manages a wildcard DNS record + certificate for *.junk.tomhummel.com).
+    { "pattern": "junk.tomhummel.com", "custom_domain": true, "previews_enabled": true }
   ],
   "observability": { "enabled": true },
   // Required by `wrangler preview` (used for PR/branch preview builds). Previews do NOT
