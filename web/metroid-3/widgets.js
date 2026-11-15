@@ -88,13 +88,13 @@ export function gridHtml(state) {
   };
   /** @param {string[]} labels @param {string} cells */
   const section = (labels, cells) =>
-    `<section class="m3-sec"><div class="m3-stack">${cells}</div><h4>${labels.map((l) => `<span>${l}</span>`).join("")}</h4></section>`;
+    `<section class="m3-sec"><div class="m3-stack">${cells}</div>${labels.length ? `<h4>${labels.map((l) => `<span>${l}</span>`).join("")}</h4>` : ""}</section>`;
 
   return `<div class="m3-grid" role="group" aria-label="Item grid, ${state.percent} of 100 collected">
     ${section(["Missile"], counted("missile", TOTALS.missile, 5, "Missile"))}
     ${section(["Super", "Power Bomb"], counted("super", TOTALS.super, 2, "Super Missile") + counted("pb", TOTALS.pb, 2, "Power Bomb"))}
     ${section(["Energy", "Reserve"], counted("etank", TOTALS.etank, 3, "Energy Tank") + counted("rtank", TOTALS.rtank, 1, "Reserve Tank"))}
-    ${section(["Suits", "Beams", "Items"], fixed("suit", 1, true) + fixed("beam", 2, true) + fixed("item", 2))}
+    ${section([], fixed("suit", 1, true) + fixed("beam", 2, true) + fixed("item", 2))}
   </div>`;
 }
 
