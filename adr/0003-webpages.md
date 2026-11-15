@@ -11,7 +11,7 @@
 
 1. **One directory per webpage.** `web/<name>/index.html`, with `<name>` in lowercase kebab-case, served at `/<name>/`.
 2. **Self-contained.** Everything a webpage needs is in its own directory, referenced with relative paths. It does not import from another webpage, and there is no shared layout, navigation or stylesheet. Link to other pages and APIs with root-absolute paths. Only served files go in `web/`; tests live in `api/`.
-3. **Register it.** Add one `<li>` to the list in `web/index.html`, in alphabetical order by name, with an `(api)` link if it has an API. The list is hand-maintained.
+3. **Register it.** Add one `<li>` under the heading for its class (Tools, Games, Toys) in `web/index.html`, in alphabetical order by name. One line per project: the main link first, then extra links (`api`, docker image) on the same line. Add a new section only if no existing class fits. The index is hand-maintained and styled like any webpage ([ADR 0001](0001-web-styling.md)).
 4. **Paired API.** A webpage with an API uses the same `<name>` for `web/<name>/` and `api/<name>.ts` and calls it with same-origin paths. Shared logic is a plain ES module in `web/<name>/` that the API imports.
 5. **Migrating from the blog** (`tphummel/blog`, `static/<name>/`): copy the files unchanged, then make only the edits needed to work here, each stated in its commit message. Redirects from `tomhummel.com/<name>` are configured in Cloudflare, not in this repo.
 

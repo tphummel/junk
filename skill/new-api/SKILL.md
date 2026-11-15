@@ -31,7 +31,7 @@ Rules are in [ADR 0004](../../adr/0004-apis.md); [0002](../../adr/0002-no-web-bu
    export default app;
    ```
    Routes are relative to the mount point.
-3. **Register it** in `api/index.ts`: one import and one `app.route("/api/<name>", sub)` line, each in alphabetical order. Then list it in the API section of `web/index.html`: one `<li>` with a link to an example URL and a short description, in alphabetical order.
+3. **Register it** in `api/index.ts`: one import and one `app.route("/api/<name>", sub)` line, each in alphabetical order. Then list it in `web/index.html` under the heading for its class (Tools, Games, Toys): one `<li>` with a link to an example URL and a short description, in alphabetical order. If the API belongs to a webpage, add an `api` link to that page's existing line instead of a new entry.
 4. **Write `api/<name>.test.mjs`** with `node:test` and `app.request()`; no network:
    ```js
    import assert from "node:assert/strict";
