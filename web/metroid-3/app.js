@@ -301,8 +301,8 @@ function renderDash(game, state) {
               : ""
         }
         <div class="actions">
-          <button type="button" class="primary" data-action="done" data-id="${esc(cur.id)}">✔ Done — log it now</button>
-          <button type="button" data-action="edit-step" data-id="${esc(cur.id)}">Edit &amp; log with details</button>
+          <button type="button" class="primary" data-action="done" data-id="${esc(cur.id)}">✔ Done</button>
+          <button type="button" data-action="edit-step" data-id="${esc(cur.id)}">✎ Done with note</button>
           ${undoBtn}
         </div>
       </div>`
