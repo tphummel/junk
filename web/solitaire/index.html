@@ -672,13 +672,49 @@ function renderStats(){
       ${cell(n(st.fewest),'Fewest moves')}${cell(n(st.avgMoves),'Avg win moves')}</div>
         ${st.played?`<table><tr><th>Ended</th><th>Game</th><th>Result</th><th>Time</th><th>Moves</th></tr>${
       st.ord.slice(-10).reverse().map(x=>`<tr><td>${new Date(x.at).toLocaleString([],{dateStyle:'short',timeStyle:'short'})}</td><td>${x.mode==='daily'?'Daily '+x.date:'Random #'+x.deal}</td><td>${x.end==='abandoned'?'abandoned':x.result}</td><td>${fmtTime(x.durationMs)}</td><td>${x.moves}</td></tr>`).join('')}</table>`:'<div>No finished games yet.</div>'}
-    <div class="row"><button id="statsClose">Close</button><button id="statsExport">Export JSON</button></div>`;
+    <div class="row"><button id="statsClose">Close</button><button id="statsExport">Export JSON</button><button id="statsImport">Import JSON</button><input type="file" id="statsFile" accept=".json,application/json" hidden></div>`;
   p.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{statsTab=b.dataset.tab;renderStats()});
   $('statsClose').onclick=()=>{p.hidden=true};
   $('statsExport').onclick=()=>{
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(loadHistory(),null,2)],{type:'application/json'}));
     a.download='solitaire-history.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   };
+  $('statsImport').onclick=()=>$('statsFile').click();
+  $('statsFile').onchange=async e=>{
+    const f=e.target.files[0];e.target.value='';if(!f)return;
+    try{const r=importHistory(JSON.parse(await f.text()));toast(r.added?`Imported ${r.added} game${r.added>1?'s':''}${r.skipped?`, ${r.skipped} skipped`:''}`:`Nothing new to import${r.skipped?` (${r.skipped} skipped)`:''}`);renderStats()}
+    catch(err){toast(err.message==='format'?'Not a solitaire export':'Could not read that file')}
+  };
+}
+// Accepts a full history export (array) or a single-game export (object); merges by id, never overwrites.
+function gameToEntry(x){
+  if(!x||x.game!=='solitaire'||!['won','surrendered'].includes(x.result))return null;
+  const start=x.startedAt?Date.parse(x.startedAt):null;
+  if(x.startedAt&&isNaN(start)||typeof x.date!=='string'||!Number.isInteger(x.deal)||!Number.isFinite(x.durationMs))return null;
+  const random=x.mode==='random',won=x.result==='won';
+  return {id:`${random?'r':'d'}-${x.date}-${x.deal}-${start}`,mode:random?'random':'daily',date:x.date,deal:x.deal,
+    result:won?'won':'lost',end:won?'win':'surrender',at:x.endedAt||new Date((start||Date.now())+x.durationMs).toISOString(),
+    startedAt:x.startedAt||null,durationMs:x.durationMs,moves:x.moveCount,foundation:x.foundationCount};
+}
+function validEntry(x){
+  return x&&typeof x.id==='string'&&['daily','random'].includes(x.mode)&&['won','lost'].includes(x.result)&&typeof x.date==='string'
+    &&Number.isFinite(x.deal)&&Number.isFinite(x.durationMs)&&Number.isFinite(x.moves)&&!isNaN(Date.parse(x.at));
+}
+function importHistory(data){
+  const items=Array.isArray(data)?data:data&&typeof data==='object'?[data]:null;
+  if(!items)throw new Error('format');
+  const h=loadHistory(),ids=new Set(h.map(x=>x.id));
+  let added=0,skipped=0,recognised=0;
+  for(const raw of items){
+    const e=raw&&raw.game==='solitaire'?gameToEntry(raw):validEntry(raw)?raw:null;
+    if(!e){skipped++;continue}
+    recognised++;
+    if(ids.has(e.id))continue;
+    ids.add(e.id);h.push(e);added++;
+  }
+  if(items.length&&!recognised)throw new Error('format');
+  if(added)saveHistory(h);
+  return {added,skipped};
 }
 $('statsBtn').addEventListener('click',()=>{const p=$('statsPanel');if(p.hidden){renderStats();p.hidden=false}else p.hidden=true});
 recordResult(); // backfill a game that finished before history existed
