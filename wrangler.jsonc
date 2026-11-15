@@ -8,6 +8,10 @@
     // Only /api/* runs Worker code; everything else is served as static files from web/.
     "run_worker_first": ["/api/*"]
   },
+  // No workers.dev URL; the Worker is only reachable on the custom domain.
+  "workers_dev": false,
+  // Keep Version URLs / Preview URLs for PR and branch builds.
+  "preview_urls": true,
   "routes": [
     { "pattern": "junk.tomhummel.com", "custom_domain": true }
   ],
