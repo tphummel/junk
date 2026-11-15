@@ -11,6 +11,11 @@
   "routes": [
     { "pattern": "junk.tomhummel.com", "custom_domain": true }
   ],
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Required by `wrangler preview` (used for PR/branch preview builds). Previews do NOT
+  // inherit production settings: when adding vars or KV/D1/R2 bindings above, add matching
+  // entries here that point at test resources. See
+  // https://developers.cloudflare.com/workers/previews/configuration/
+  "previews": {}
   // Bindings (KV, D1, R2, Durable Objects) get added here as APIs need them.
 }
