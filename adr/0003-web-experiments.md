@@ -13,7 +13,7 @@
 2. **Self-contained.** Everything an experiment needs (its scripts, modules, data, images) is in its own directory. An experiment does not import from another experiment's directory, and there is no shared layout, navigation or stylesheet.
 3. **Paths.** Reference the experiment's own files with relative paths (`App.svelte`, `./palette.js`) so they resolve under `/<name>/`. Link to other pages and APIs with root-absolute paths (`/api/<name>/...`).
 4. **Page basics.** `<!doctype html>`, `<meta charset="utf-8">`, a viewport meta tag, and a `<title>` naming the experiment. Colors and light/dark mode follow ADR 0001.
-5. **Public by construction.** Everything under `web/` is served. Do not put tests, notes, drafts or secrets in it. Tests live in `api/` (see ADR 0004); documentation lives in the PR and the ADRs.
+5. **Only served files.** Everything under `web/` is served as-is. Tests live in `api/` (see ADR 0004); documentation lives in the PR and the ADRs.
 6. **Register it.** Add one `<li>` to the list in `web/index.html`, in alphabetical order by name. If the experiment has an API, add an `(api)` link beside it. The list is hand-maintained.
 7. **An experiment with an API** uses the same `<name>` for `web/<name>/` and `api/<name>.ts`, and calls it with same-origin paths. Logic shared with the API is a plain ES module inside `web/<name>/` that `api/<name>.ts` imports (ADR 0002).
 8. **Migrating from the blog** (`tphummel/blog`, `static/<name>/`) means copying the files unchanged and making only the edits needed to work here, each stated in its commit message. Redirects from `tomhummel.com/<name>` are configured in Cloudflare, not in this repo.
@@ -33,7 +33,7 @@ The step-by-step procedure, page template and migration details are in the [`new
 
 - **A generated index.** Would remove the conflicts but needs a build step (ADR 0002).
 - **A shared layout and stylesheet.** Consistent, but couples experiments and conflicts with ADR 0001's one-palette-per-experiment idea.
-- **A README or notes file per experiment inside `web/<name>/`.** It would be served publicly and clutter the site.
+- **A README or notes file per experiment inside `web/<name>/`.** It would be served and clutter the site.
 
 ## Open
 

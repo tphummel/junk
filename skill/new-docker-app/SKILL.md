@@ -7,7 +7,7 @@ metadata:
 
 # New Docker app
 
-For apps that run in a container with their own state. Static pages and Worker APIs use the [`new-web-experiment`](../new-web-experiment/SKILL.md) and [`new-api-experiment`](../new-api-experiment/SKILL.md) skills instead. Reference apps: [`jigseer/`](../../jigseer/README.md) (PHP) and [`artifact-cache/`](../../artifact-cache/README.md) (Go, with a [design doc](../../artifact-cache/artifact-cache-design-doc.md)).
+For apps that run in a container with their own state. Static pages and Worker APIs use the [`new-web-experiment`](../new-web-experiment/SKILL.md) and [`new-api-experiment`](../new-api-experiment/SKILL.md) skills instead (deployed per [ADR 0005](../../adr/0005-web-api-deployment.md)). Reference apps: [`jigseer/`](../../jigseer/README.md) (PHP) and [`artifact-cache/`](../../artifact-cache/README.md) (Go, with a [design doc](../../artifact-cache/artifact-cache-design-doc.md)).
 
 ## Principles
 
@@ -20,7 +20,7 @@ For apps that run in a container with their own state. Static pages and Worker A
 
 ## Steps
 
-1. **Folder and branch.** A new top-level folder named for the app, per the "Experiments and investigations" workflow in [AGENTS.md](../../AGENTS.md): `notes.md` while working, `README.md` at the end. This is not `web/` or `api/`.
+1. **Folder and branch.** A new top-level folder named for the app, following the "Starting a new investigation" workflow in [AGENTS.md](../../AGENTS.md): `notes.md` while working, `README.md` at the end. This is not `web/` or `api/`.
 2. **Write the contract first** (a short design brief in the README or a design doc): goals, non-goals, what persists and where, how an operator overrides paths and ports.
 3. **Pick the stack.**
    - **PHP** for server-rendered forms and quick templating. Reuse jigseer's structure.
@@ -28,7 +28,7 @@ For apps that run in a container with their own state. Static pages and Worker A
 4. **Build it** using the matching pattern below.
 5. **Dockerfile** (patterns below). Run it locally: `docker build -t <name> <name>/ && docker run --rm -p 8080:8080 -v <name>-data:/data <name>`.
 6. **README:** what it is, `docker build` and `docker run`, environment variables, volumes, the proxy stanza, local test commands, what is not implemented.
-7. **Workflow** `.github/workflows/<name>.yml`, copied from [`jigseer.yml`](../../.github/workflows/jigseer.yml): trigger on `<name>/**` and the workflow file; run the tests; build with `docker/build-push-action`; push to `ghcr.io/<owner>/<name>` (tags `latest` and the commit SHA) only on `main` pushes, otherwise `load` only.
+7. **Workflow** `.github/workflows/<name>.yml`, copied from [`sworn.yml`](../../.github/workflows/sworn.yml) as [ADR 0006](../../adr/0006-docker-image-projects.md) says: a `test` job, then `build-and-push` to `ghcr.io/<owner>/<name>`, tagged by `docker/metadata-action` (`main`, PR, semver, SHA). PRs build without pushing. Release with a `v1.2.3` tag. Change the name, paths, image name and test steps.
 8. **PR.** Confirm the workflow built the image.
 
 ## PHP / FrankenPHP pattern (jigseer)
@@ -56,5 +56,5 @@ For apps that run in a container with their own state. Static pages and Worker A
 - [ ] An export, download, or stats path exists.
 - [ ] Non-root user; state under a volume path.
 - [ ] README has build, run, env vars, proxy stanza, test commands.
-- [ ] Workflow builds on PRs and pushes to GHCR on `main`.
+- [ ] Workflow tests, builds on PRs, and pushes to GHCR on `main` and `v*` tags.
 - [ ] Only the app's folder and workflow are committed.

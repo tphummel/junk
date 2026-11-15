@@ -1,6 +1,6 @@
 # Architecture decision records
 
-How the site (`web/`) and API (`api/`) are built. Read these before changing either; they exist so parallel sessions make the same choices.
+How the site (`web/`), API (`api/`) and Docker image projects are built and shipped. Read these before changing them; they exist so parallel sessions make the same choices.
 
 | # | Decision |
 | --- | --- |
@@ -8,6 +8,8 @@ How the site (`web/`) and API (`api/`) are built. Read these before changing eit
 | [0002](0002-no-web-build-step.md) | No build step for `web/`; what is committed is what is served |
 | [0003](0003-web-experiments.md) | How a static experiment is structured, linked and migrated |
 | [0004](0004-api-experiments.md) | How an API experiment is structured, validated, tested and given state |
+| [0005](0005-web-api-deployment.md) | `web/` and `api/` deploy as one Worker through Workers Builds; previews per branch; config in `wrangler.jsonc` |
+| [0006](0006-docker-image-projects.md) | Docker image projects: one folder and workflow each, tested then built, tagged by metadata-action, pushed to GHCR; no deploy from the repo |
 
 ## Adding one
 

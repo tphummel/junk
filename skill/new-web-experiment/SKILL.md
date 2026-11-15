@@ -47,7 +47,7 @@ Rules are in [ADR 0003](../../adr/0003-web-experiments.md) (structure), [0002](.
 ## Do not
 
 - Add a build step, bundler, `package.json`, or generated files under `web/` (ADR 0002).
-- Put tests, notes, drafts, or secrets in `web/`. Everything there is public. Tests for shared logic go in `api/<name>.test.mjs`.
+- Put tests, notes, or drafts in `web/`; everything there is served as-is. Tests for shared logic go in `api/<name>.test.mjs`.
 - Import from another experiment's directory, or add a shared layout or stylesheet.
 - Create a project folder or `notes.md` for this work.
 
