@@ -286,6 +286,7 @@ function renderDash(game, state) {
   const [cur, ...rest] = next;
   const canUndo = undoStack.some((u) => u.id === game.id);
 
+  const undoBtn = `<button type="button" data-action="undo"${canUndo ? "" : " disabled"}>↶ Undo</button>`;
   const navCard = cur
     ? `<div class="nav-now c-${classify(cur.checkpoint).cat}">
         <span class="label">Next · step ${cur.step} of ${state.steps}</span>
@@ -302,6 +303,7 @@ function renderDash(game, state) {
         <div class="actions">
           <button type="button" class="primary" data-action="done" data-id="${esc(cur.id)}">✔ Done — log it now</button>
           <button type="button" data-action="edit-step" data-id="${esc(cur.id)}">Edit &amp; log with details</button>
+          ${undoBtn}
         </div>
       </div>`
     : `<div class="nav-now"><span class="label">${state.steps ? "Route complete" : "Empty route"}</span>
@@ -310,6 +312,7 @@ function renderDash(game, state) {
         <div class="actions">
           ${state.steps ? `<a class="btn primary" href="${gameUrl(game.id, "publish")}">Publish</a>` : ""}
           <button type="button" data-action="add-step">Log a pickup</button>
+          ${undoBtn}
         </div></div>`;
 
   const nextList = rest.length
@@ -328,14 +331,9 @@ function renderDash(game, state) {
       ${progressBarHtml(state)}
       ${statsHtml(game, state)}
     </div>
-    <div class="cols">
+    <div class="cols match">
       <div class="card"><h3>Item grid</h3>${gridHtml(state)}</div>
-      <div class="card"><h3>Nav</h3>${navCard}
-        <div class="toolbar" style="margin-top:0.75rem">
-          <button type="button" data-action="add-step">＋ Unplanned pickup</button>
-          <button type="button" data-action="undo"${canUndo ? "" : " disabled"}>↶ Undo</button>
-        </div>
-      </div>
+      <div class="card"><h3>Nav</h3>${navCard}</div>
     </div>
     <div class="cols">
       <div class="card"><h3>Next steps</h3>${nextList}</div>
