@@ -33,7 +33,7 @@
     {
       "binding": "JIGSEER_DB",
       "database_name": "jigseer",
-      "migrations_dir": "jigseer-saas/migrations"
+      "migrations_dir": "jigseer-hosted/migrations"
     }
   ]
 }

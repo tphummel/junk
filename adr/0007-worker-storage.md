@@ -5,7 +5,7 @@
 
 ## Context
 
-[ADR 0004](0004-apis.md) left storage open: which of KV, D1, R2 and Durable Objects, and whether projects share bindings. The first stateful project, a hosted Jigseer (`jigseer-saas/`), needs relational data (puzzles and hits, with window-function queries) and per-puzzle realtime coordination. [ADR 0005](0005-cloudflare-workers-deployment.md) says previews do not inherit production bindings, and Workers Builds runs only the commands set in the dashboard.
+[ADR 0004](0004-apis.md) left storage open: which of KV, D1, R2 and Durable Objects, and whether projects share bindings. The first stateful project, a hosted Jigseer (`jigseer-hosted/`), needs relational data (puzzles and hits, with window-function queries) and per-puzzle realtime coordination. [ADR 0005](0005-cloudflare-workers-deployment.md) says previews do not inherit production bindings, and Workers Builds runs only the commands set in the dashboard.
 
 ## Decision
 

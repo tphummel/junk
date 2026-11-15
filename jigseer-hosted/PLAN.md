@@ -7,7 +7,7 @@ Scope, as decided:
 - **Hangs off junk.** It is served at `https://junk.tomhummel.com/jigseer/` by the existing `junk` Worker, not a separate Worker or hostname.
 - **No admin.** `/admin` and the SQLite download are dropped, not ported.
 - **Starts empty.** No data migration from the Fly app.
-- **`jigseer/` stays.** The self-hosted Docker image (PHP, SQLite, GHCR workflow, `fly.toml`) remains in the repo and is not retired. The hosted app is a separate project, `jigseer-saas/`, that reimplements it on Cloudflare; the two do not share code or data.
+- **`jigseer/` stays.** The self-hosted Docker image (PHP, SQLite, GHCR workflow, `fly.toml`) remains in the repo and is not retired. The hosted app is a separate project, `jigseer-hosted/`, that reimplements it on Cloudflare; the two do not share code or data.
 
 Goal: everything `jigseer/` does today, except admin, runs on Workers, Static Assets, D1 and Durable Objects, with no container and no volume.
 
@@ -81,7 +81,7 @@ Also add `skill/new-worker-app/SKILL.md`, a link in `web/index.html` under Games
 ## 4. Layout
 
 ```
-jigseer-saas/
+jigseer-hosted/
 ├── PLAN.md → README.md once built
 ├── migrations/0001_init.sql
 ├── src/
@@ -99,7 +99,7 @@ api/index.ts                # + app.route("/jigseer", jigseer) and DO export
 wrangler.jsonc              # + d1_databases, durable_objects, migrations, run_worker_first, previews entries
 ```
 
-Changes to the root: `wrangler.jsonc` (bindings, `migrations_dir` pointing at `jigseer-saas/migrations`, `run_worker_first`), `tsconfig.json` (include the new folder), and `package.json` (the `test` glob must also cover `jigseer-saas/test/**`).
+Changes to the root: `wrangler.jsonc` (bindings, `migrations_dir` pointing at `jigseer-hosted/migrations`, `run_worker_first`), `tsconfig.json` (include the new folder), and `package.json` (the `test` glob must also cover `jigseer-hosted/test/**`).
 
 ## 5. Testing
 

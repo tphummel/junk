@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import goldenAnglePalette from "./golden-angle-palette";
 import health from "./health";
-import jigseer from "../jigseer-saas/src/app";
+import jigseer from "../jigseer-hosted/src/app";
 import rpsBot from "./rps-bot";
 
 const app = new Hono();
