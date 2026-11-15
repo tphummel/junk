@@ -8,7 +8,7 @@ How the site (`web/`), API (`api/`) and Docker image projects are built and ship
 | [0002](0002-no-web-build-step.md) | No build step for `web/`; what is committed is what is served |
 | [0003](0003-webpages.md) | How a static webpage is structured, linked and migrated |
 | [0004](0004-apis.md) | How an API is structured, validated, tested and given state |
-| [0005](0005-web-api-deployment.md) | `web/` and `api/` deploy as one Worker through Workers Builds; previews per branch; config in `wrangler.jsonc` |
+| [0005](0005-cloudflare-workers-deployment.md) | `web/` and `api/` deploy to Cloudflare as one Worker through Workers Builds; previews per branch; config in `wrangler.jsonc` |
 | [0006](0006-docker-image-projects.md) | Docker image projects: one folder and workflow each, tested then built, tagged by metadata-action, pushed to GHCR; no deploy from the repo |
 
 ## Adding one

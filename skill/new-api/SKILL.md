@@ -66,7 +66,7 @@ Rules are in [ADR 0004](../../adr/0004-apis.md); [0002](../../adr/0002-no-web-bu
 
 ## Needs storage or secrets
 
-Storage is **not yet decided** (ADR 0004, Open). Before the first stateful API, stop and propose an ADR (0005) covering which services, shared versus per-API resources, and preview isolation. Then, per binding:
+Storage is **not yet decided** (ADR 0004, Open). Before the first stateful API, stop and propose a new ADR covering which services, shared versus per-API resources, and preview isolation. Then, per binding:
 
 1. Add the binding to `wrangler.jsonc` **and** a matching entry under `previews` pointing at test resources, never production ones. Previews do not inherit production bindings or vars.
 2. Run `npm run types`; type the app as `new Hono<{ Bindings: Env }>()`.
