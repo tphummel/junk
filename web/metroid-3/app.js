@@ -797,13 +797,17 @@ document.addEventListener("click", async (ev) => {
       if (game && id) {
         const igt = parseIgt(/** @type {HTMLInputElement | null} */ (document.getElementById("nav-igt"))?.value);
         const timer = /** @type {HTMLInputElement | null} */ (document.getElementById("nav-log"))?.value.trim();
+        const now = Date.now();
+        const autoStart = !deriveState(game).playing;
         await mutate(game, (g) => {
-          setDone(g, id, Date.now());
+          // Logging a step with no session running means you are playing: start one.
+          if (autoStart) g.events = [...(g.events ?? []), { id: uid(), ts: now, kind: "start" }];
+          setDone(g, id, now);
           const st = /** @type {any} */ (g.steps.find((x) => x.id === id));
           if (igt != null) st.igt = igt;
           if (timer) st.log = `Countdown timer: ${timer}`;
         });
-        toast("Logged");
+        toast(autoStart ? "Logged. Session started." : "Logged");
       }
       break;
     case "edit-step":
