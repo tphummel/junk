@@ -1,13 +1,13 @@
 ---
 name: golden-angle-styling
-description: Choose a unique color scheme for a web experiment in this repo using the golden-angle palette API (junk.tomhummel.com/api/golden-angle-palette/<hex>), then apply it as CSS custom properties. Use when creating or restyling anything under web/, or when asked for a palette, theme, or colors for an experiment.
+description: Choose a random seed color and generate a color scheme for a web experiment in this repo using the golden-angle palette API (junk.tomhummel.com/api/golden-angle-palette/<hex>), then apply it as CSS custom properties. Use when creating or restyling anything under web/, or when asked for a palette, theme, or colors for an experiment.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Golden-angle styling for web experiments
 
-Each experiment under `web/` gets its own color scheme, generated from one **seed color** by the golden-angle palette API. See [ADR 0001](../../adr/0001-web-styling.md) for why.
+Each experiment under `web/` gets its own color scheme, generated from one random **seed color** by the golden-angle palette API. See [ADR 0001](../../adr/0001-web-styling.md) for why.
 
 ## How the palette works
 
@@ -21,33 +21,28 @@ Each experiment under `web/` gets its own color scheme, generated from one **see
 
 `direction=cw` (default) rotates the accent one way, `ccw` the other. Use `ccw` for a different accent hue from the same seed.
 
-All three colors share the seed's **lightness**, so the seed's lightness decides whether they work against light or dark backgrounds. The API does not return neutrals; pick background and text neutrals yourself.
+All three colors share the seed's **lightness**, but not its perceived brightness: rotating the hue changes luminance, so the accent can have very different contrast from the primary (a green accent on white is often far below 4.5:1). The API does not return neutrals; pick background and text neutrals yourself.
 
 Input: 3 or 6 hex digits, no `#` (a bare `#` is a URL fragment; `%23` also works). Errors are 400 with `{"error": ...}`.
 
 ## Workflow
 
-### 1. Choose a unique seed
-
-List the seeds already in use and get a suggestion from the largest hue gap:
+### 1. Roll a random seed
 
 ```bash
-node skill/golden-angle-styling/scripts/seed-hues.mjs            # default s=0.65 l=0.40
-node skill/golden-angle-styling/scripts/seed-hues.mjs --l 0.30   # darker seed
+node skill/golden-angle-styling/scripts/random-seed.mjs                  # for a light background (#FFFFFF)
+node skill/golden-angle-styling/scripts/random-seed.mjs --bg 111111      # for a dark background
+node skill/golden-angle-styling/scripts/random-seed.mjs --bg FAFAFA --ratio 7   # stricter (AAA)
 ```
 
-The script reads the marker comment `golden-angle seed: #RRGGBB cw|ccw` from files under `web/`. Rules:
+It picks a random hue at fixed saturation, then adjusts lightness (darker for light backgrounds, lighter for dark ones) until the seed meets the contrast ratio (default 4.5:1). The seed is printed to stdout and the details to stderr. Nothing tracks which seeds other experiments use; if the result is not to your taste, or looks too much like a neighbor, roll again.
 
-- Never reuse an existing seed. Prefer a hue well away from existing ones, so experiments are visibly distinct.
-- A hand-picked seed is fine (for example a color that suits the experiment); still check it against the existing list.
-- Keep lightness around 30-45% if `primary` will be used as text or button color on a light background.
+A hand-picked seed is also fine. Check it against your background with the contrast guidance in step 4.
 
 ### 2. Generate the palette
 
 ```bash
 curl -s https://junk.tomhummel.com/api/golden-angle-palette/E4572E
-# {"input":"#E4572E","direction":"cw","primary":"#E4572E","support":"#AD7565","accent":"#2EE48C"}
-
 curl -s 'https://junk.tomhummel.com/api/golden-angle-palette/E4572E?direction=ccw' | jq -r '.accent'
 ```
 
@@ -74,24 +69,24 @@ button { background: var(--primary); color: var(--bg); border: 0; }
 .active { outline: 2px solid var(--accent); }
 ```
 
-The marker comment format is exact, because the script and reviewers search for it.
+The marker comment records the seed and direction so the scheme can be reproduced; keep its format exact.
 
 ### 4. Check contrast
 
 - Body text must be at least 4.5:1 against its background; large text and UI borders at least 3:1.
-- Example: seed `#E4572E` is 3.68:1 on white (too low for body text, fine for large headings) and 5.13:1 on `#111111`.
-- Fix a failing seed by lowering lightness (`--l 0.30` in the script) rather than darkening the palette by hand, so the three colors stay consistent.
-- For text over a swatch of one of the colors, use black or white by luminance, as the palette page does: black if `0.299*R + 0.587*G + 0.114*B > 150`, else white.
+- The seed script guarantees `primary` against the background you gave it. `support` and `accent` are **not** guaranteed: check them before using them for text. If the API response includes a `contrast` section, use it (ratios and AA pass/fail for each color on white and on `#111111`); otherwise compute WCAG ratios yourself.
+- If `accent` fails, use it only for non-text decoration (3:1 for UI components), or try `direction=ccw` for a different accent hue.
+- If `support` is too faint for text, use it for backgrounds and borders only.
+- For text over a swatch of one of the colors, pick black or white by whichever has the higher contrast ratio; the better of the two is always at least 4.58:1.
 
 ### 5. Validate
 
-- [ ] Seed is not used by any other experiment (script output)
 - [ ] Marker comment `golden-angle seed: #RRGGBB cw|ccw` is present, with the direction used
 - [ ] `--primary`, `--support`, `--accent` match the API response for that seed and direction
-- [ ] Contrast checked for text and interactive elements
+- [ ] Contrast checked for text and interactive elements, including `support` and `accent` where used as text
 - [ ] No runtime call to the API
 
 ## Notes
 
-- The API's behavior mirrors `web/golden-angle-palette/index.html`; the page is the interactive way to preview a seed before committing to it.
+- The API's behavior mirrors `web/golden-angle-palette/index.html`; the page is the interactive way to preview a seed.
 - Migrated experiments (copied from the blog) are not restyled during migration. Add a palette when you next change them.
