@@ -1,21 +1,38 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>tomhummel.com - golden angle palette</title>
 <style>
+  :root{color-scheme:light dark}
   body{font:16px system-ui,sans-serif;max-width:640px;margin:2rem auto;padding:0 1rem}
-  .row{display:flex;gap:.5rem;align-items:center;margin-bottom:1rem}
+  .row{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
   .sw{display:flex;gap:0;height:140px;border-radius:8px;overflow:hidden}
   button{font:inherit;padding:.3rem .8rem;cursor:pointer}
-  .sw div{flex:1;display:flex;align-items:flex-end;padding:.5rem;font:600 .85rem monospace}
+  .sw div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:.5rem;font:600 .85rem monospace}
+  h2{font-size:1rem;margin:1.25rem 0 .4rem}
+  .mode{border:1px solid #8886;border-radius:8px;padding:.4rem .75rem}
+  .r{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.25rem 0;font:600 .85rem monospace}
+  #warn{color:#b00020}
+  @media (prefers-color-scheme:dark){#warn{color:#ff8a80}}
 </style>
 <h1>Golden angle palette</h1>
 <div class="row">
   <input type="color" id="c" value="#e4572e">
   <label><input type="checkbox" id="ccw"> counter-clockwise</label>
 </div>
+<div class="row">
+  <label>min contrast <select id="min"><option value="3">3:1</option><option value="4.5" selected>4.5:1</option><option value="7">7:1</option></select></label>
+  <label>light bg <input type="color" id="lbg" value="#ffffff"></label>
+  <label>dark bg <input type="color" id="dbg" value="#111111"></label>
+</div>
 <div class="sw" id="sw"></div>
-<p><button id="copy">Copy</button> <span id="msg" role="status"></span></p>
+<h2>Light mode</h2>
+<div class="mode" id="light"></div>
+<h2>Dark mode</h2>
+<div class="mode" id="dark"></div>
+<p id="warn" role="alert"></p>
+<p><button id="copy">Copy</button> <button id="copycss">Copy CSS</button> <span id="msg" role="status"></span></p>
 <script>
 const GOLDEN_ANGLE = 360 - 360 / 1.618, SAT_CUT = 0.6;
 function rgb2hsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;
@@ -26,15 +43,53 @@ function hsl2hex(h,s,l){h=((h%360)+360)%360;const c=(1-Math.abs(2*l-1))*s,x=c*(1
   return[r,g,b].map(v=>Math.round((v+m)*255).toString(16).padStart(2,"0")).join("").toUpperCase();}
 function palette(hex,dir){const n=parseInt(hex.slice(1),16),[h,s,l]=rgb2hsl(n>>16,n>>8&255,n&255);
   return{primary:hex.slice(1).toUpperCase(),support:hsl2hex(h,s*(1-SAT_CUT),l),accent:hsl2hex(h+dir*GOLDEN_ANGLE,s,l)};}
+
+// WCAG contrast. Keep in sync with api/golden-angle-palette.ts.
+const lin=c=>((c/=255)<=.03928?c/12.92:((c+.055)/1.055)**2.4);
+function lum(hex){const n=parseInt(hex,16);return .2126*lin(n>>16)+.7152*lin(n>>8&255)+.0722*lin(n&255);}
+function ratio(a,b){const[x,y]=[lum(a),lum(b)].sort((p,q)=>q-p);return(x+.05)/(y+.05);}
+// Shift lightness (same hue and saturation) until hex meets target on bg: darker on light bg, lighter on dark bg.
+function fit(hex,bg,target){const raw=ratio(hex,bg);
+  if(raw>=target)return{hex:hex.toUpperCase(),ratio:raw,raw,adjusted:false,meets:true};
+  const n=parseInt(hex,16),[h,s,l]=rgb2hsl(n>>16,n>>8&255,n&255),lighten=lum(bg)<=.18,end=lighten?1:0;
+  let far=end,near=l;
+  for(let i=0;i<30;i++){const mid=(far+near)/2;if(ratio(hsl2hex(h,s,mid),bg)>=target)far=mid;else near=mid;}
+  let out=hsl2hex(h,s,far);
+  for(let i=0;i<100&&ratio(out,bg)<target&&far!==end;i++){far=lighten?Math.min(1,far+.001):Math.max(0,far-.001);out=hsl2hex(h,s,far);}
+  const r=ratio(out,bg);return{hex:out,ratio:r,raw,adjusted:true,meets:r>=target};}
+
+const $=id=>document.getElementById(id), fl=n=>(Math.floor(n*100)/100).toFixed(2);
 let cur;
-function render(){const p=cur=palette(c.value,ccw.checked?-1:1);
-  sw.innerHTML=Object.entries(p).map(([k,v])=>{const n=parseInt(v,16),y=(.299*(n>>16)+.587*(n>>8&255)+.114*(n&255))>150;
-    return`<div style="background:#${v};color:${y?"#000":"#fff"}">${k}<br>#${v}</div>`}).join("");}
-copy.onclick=async()=>{
-  const text=Object.entries(cur).map(([k,v])=>`${k}: #${v}`).join("\n");
-  try{await navigator.clipboard.writeText(text);msg.textContent="Copied!";}
+function render(){
+  const seed=$("c").value,dir=$("ccw").checked?-1:1,target=Number($("min").value);
+  const bgs={light:$("lbg").value.slice(1).toUpperCase(),dark:$("dbg").value.slice(1).toUpperCase()};
+  const p=palette(seed,dir),rep={};
+  // Seed palette; the label is black or white, whichever contrasts more (always >= 4.58:1).
+  $("sw").innerHTML=Object.entries(p).map(([k,v])=>{const w=ratio(v,"FFFFFF"),b=ratio(v,"000000");
+    return`<div style="background:#${v};color:${b>=w?"#000":"#fff"}">${k}<br>#${v}<br>${fl(Math.max(w,b))}:1</div>`}).join("");
+  // One adjusted variant per mode: no single color reaches 4.5:1 on both a white and a near-black background.
+  for(const[m,bg]of Object.entries(bgs)){
+    rep[m]=Object.fromEntries(Object.entries(p).map(([k,v])=>[k,fit(v,bg,target)]));
+    const txt=ratio(bg,"111111")>=ratio(bg,"FFFFFF")?"#111":"#fff";
+    $(m).style.background="#"+bg;$(m).style.color=txt;
+    $(m).innerHTML=Object.entries(rep[m]).map(([k,f])=>
+      `<div class="r"><span style="color:#${f.hex}">${k} #${f.hex}</span><span>${fl(f.ratio)}:1 ${f.meets?"✓":"✗"}${f.adjusted?` (from #${p[k]}, ${fl(f.raw)}:1)`:""}</span></div>`).join("");
+  }
+  const bad=Object.entries(rep).flatMap(([m,r])=>Object.entries(r).filter(([,f])=>!f.meets).map(([k])=>`${k} (${m})`));
+  $("warn").textContent=bad.length?`Cannot reach ${target}:1 on this background: ${bad.join(", ")}. Choose a lighter or darker background.`:"";
+  cur={p,rep,seed,dir,target,bgs};}
+function css(){const{rep,seed,dir,target,bgs}=cur,v=m=>Object.entries(rep[m]).map(([k,f])=>`--${k}: #${f.hex};`);
+  return[`/* golden-angle seed: ${seed.toUpperCase()} ${dir>0?"cw":"ccw"} */`,
+    `/* >= ${target}:1 on #${bgs.light} (light) and #${bgs.dark} (dark) */`,
+    ":root {",...v("light").map(l=>"  "+l),"}",
+    "@media (prefers-color-scheme: dark) {","  :root {",...v("dark").map(l=>"    "+l),"  }","}",""].join("\n");}
+async function copyText(text){
+  try{await navigator.clipboard.writeText(text);$("msg").textContent="Copied!";}
   catch(e){const t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();
-    try{document.execCommand("copy");msg.textContent="Copied!";}catch(e2){msg.textContent="Copy failed";}t.remove();}
-  setTimeout(()=>msg.textContent="",1500);};
-c.oninput=ccw.onchange=render;render();
+    try{document.execCommand("copy");$("msg").textContent="Copied!";}catch(e2){$("msg").textContent="Copy failed";}t.remove();}
+  setTimeout(()=>$("msg").textContent="",1500);}
+$("copy").onclick=()=>copyText(Object.entries(cur.p).map(([k,v])=>`${k}: #${v}`).join("\n"));
+$("copycss").onclick=()=>copyText(css());
+for(const id of["c","ccw","min","lbg","dbg"])$(id).addEventListener("input",render);
+render();
 </script>
