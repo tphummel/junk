@@ -20,7 +20,7 @@ For apps that run in a container with their own state. Static pages and Worker A
 
 ## Steps
 
-1. **Folder and branch.** A new top-level folder named for the app, following the "Everything else" workflow in [AGENTS.md](../../AGENTS.md): `notes.md` while working, `README.md` at the end. This is not `web/` or `api/`.
+1. **Folder and branch.** A new top-level folder named for the app, following the [`misc-project`](../misc-project/SKILL.md) workflow: `notes.md` while working, `README.md` at the end. This is not `web/` or `api/`.
 2. **Write the contract first** (a short design brief in the README or a design doc): goals, non-goals, what persists and where, how an operator overrides paths and ports.
 3. **Pick the stack.**
    - **PHP** for server-rendered forms and quick templating. Reuse jigseer's structure.
