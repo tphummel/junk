@@ -95,7 +95,7 @@ export function gridHtml(state) {
     ${section(group(counted("missile", TOTALS.missile, 6, "Missile"), "Missile"))}
     ${section(group(counted("super", TOTALS.super, 2, "Super Missile"), "Super Missile"), group(counted("pb", TOTALS.pb, 2, "Power Bomb"), "Power Bomb"))}
     ${section(group(counted("etank", TOTALS.etank, 3, "Energy Tank"), "Tank"), group(counted("rtank", TOTALS.rtank, 1, "Reserve Tank"), "Reserve"))}
-    ${section(group(fixed("suit", 1, true)), group(fixed("beam", 2, true)), group(fixed("item", 2)))}
+    ${section(group(fixed("suit", 1, true), "Suits"), group(fixed("beam", 2, true), "Beams"), group(fixed("item", 2), "Items"))}
   </div>`;
 }
 
