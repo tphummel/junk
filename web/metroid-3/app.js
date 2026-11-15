@@ -303,18 +303,7 @@ function renderDash(game, state) {
           <button type="button" class="primary" data-action="done" data-id="${esc(cur.id)}">✔ Done — log it now</button>
           <button type="button" data-action="edit-step" data-id="${esc(cur.id)}">Edit &amp; log with details</button>
         </div>
-      </div>
-      ${
-        rest.length
-          ? `<ol class="nav-list" aria-label="Upcoming steps">${rest
-              .map(
-                (s) => `<li class="c-${classify(s.checkpoint).cat}" data-action="edit-step" data-id="${esc(s.id)}">
-                  <span class="m3-n">${s.step}</span>
-                  <div><b>${esc(s.checkpoint)}</b>${where(s) ? `<small>${esc(where(s))}</small>` : ""}${s.note ? `<small class="note">${esc(s.note)}</small>` : ""}</div></li>`,
-              )
-              .join("")}</ol>`
-          : ""
-      }`
+      </div>`
     : `<div class="nav-now"><span class="label">${state.steps ? "Route complete" : "Empty route"}</span>
         <h3>${state.steps ? "Zebes is clear. 🎉" : "No steps yet"}</h3>
         <div class="where">${state.steps ? "Every checkpoint is logged. Print the scorecard or publish the journal." : "Add checkpoints on the Route tab as you play."}</div>
@@ -323,20 +312,33 @@ function renderDash(game, state) {
           <button type="button" data-action="add-step">Log a pickup</button>
         </div></div>`;
 
+  const nextList = rest.length
+    ? `<ol class="nav-list" style="margin-top:0" aria-label="Upcoming steps">${rest
+        .map(
+          (s) => `<li class="c-${classify(s.checkpoint).cat}" data-action="edit-step" data-id="${esc(s.id)}">
+            <span class="m3-n">${s.step}</span>
+            <div><b>${esc(s.checkpoint)}</b>${where(s) ? `<small>${esc(where(s))}</small>` : ""}${s.note ? `<small class="note">${esc(s.note)}</small>` : ""}</div></li>`,
+        )
+        .join("")}</ol>`
+    : `<p class="m3-muted">Nothing left on the route.</p>`;
+
   return `<section class="view stack">
     <div class="card stack">
       ${sessionBar(game, state)}
       ${progressBarHtml(state)}
       ${statsHtml(game, state)}
     </div>
-    <div class="card"><h3>Item grid</h3>${gridHtml(state)}</div>
     <div class="cols">
+      <div class="card"><h3>Item grid</h3>${gridHtml(state)}</div>
       <div class="card"><h3>Nav</h3>${navCard}
         <div class="toolbar" style="margin-top:0.75rem">
           <button type="button" data-action="add-step">＋ Unplanned pickup</button>
           <button type="button" data-action="undo"${canUndo ? "" : " disabled"}>↶ Undo</button>
         </div>
       </div>
+    </div>
+    <div class="cols">
+      <div class="card"><h3>Next steps</h3>${nextList}</div>
       <div class="card"><h3>History</h3>${historyHtml(history(game, 14), now)}
         <p style="margin:0.75rem 0 0"><a href="${gameUrl(game.id, "journal")}">Open the full journal →</a></p></div>
     </div>
