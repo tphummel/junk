@@ -1,0 +1,42 @@
+enabled = true
+state = "DE"
+state_name = "Delaware"
+fips = "10"
+geofabrik = "north-america/us/delaware"
+orientation = "portrait"
+map_trim_cm = [12.0, 18.0]
+scale_band = [850000, 950000]
+crs = "EPSG:26957"
+projection = "NAD83 / Delaware (StatePlane, metres)"
+capital = "Dover"
+state_route_prefixes = ["DE"]
+
+[style]
+interstate_width_pt = 0.65
+
+[thresholds]
+min_road_length_m = 1000
+min_major_state_route_m = 5000
+max_city_labels = 12
+water_min_area_km2 = 1.0
+river_min_length_km = 8.0
+park_min_area_km2 = 5.0
+min_interstate_label_mm = 11.0
+min_state_route_label_mm = 11.0
+max_major_state_routes = 10
+max_rivers = 15
+max_parks = 15
+large_city_pop = 30000
+medium_city_pop = 10000
+
+[letter_layout]
+map_x_cm = 4.80
+map_y_cm = 0.80
+legend_x_cm = 5.80
+legend_y_cm = 20.60
+legend_width_cm = 10.00
+legend_height_cm = 3.20
+
+[acceptance]
+cities = ["Dover", "Wilmington"]
+interstates = ["I-95", "I-295"]

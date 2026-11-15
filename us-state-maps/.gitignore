@@ -1,0 +1,6 @@
+data/
+maps/
+output/
+dist/
+__pycache__/
+.pytest_cache/
