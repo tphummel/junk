@@ -14,12 +14,11 @@ Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../ad
 1. **Branch.** `git switch -c <name>` from an up-to-date `main`. Name is lowercase kebab-case.
 2. **Create `web/<name>/index.html`** from the template below. Put every other file the page needs (scripts, modules, data, images) in the same directory and reference it relatively.
 3. **Style it** with the [`golden-angle-styling` skill](../golden-angle-styling/SKILL.md): random seed, light and dark variables. Migrated webpages are exempt until they are next changed.
-4. **Register it.** Add one `<li>` to the list in `web/index.html`, in alphabetical order:
+4. **Register it.** Add one `<li>` to the Pages list in `web/index.html`, in alphabetical order:
    ```html
    <li><a href="/<name>/">display name</a></li>
-   <!-- with an API: -->
-   <li><a href="/<name>/">display name</a> (<a href="/api/<name>/example">api</a>)</li>
    ```
+   An API for the page is listed separately in the API list (the `new-api` skill covers it), not as a link on the page entry.
 5. **If it needs an API**, use the [`new-api` skill](../new-api/SKILL.md) with the same `<name>`. Call it with a same-origin path (`fetch("/api/<name>/...")`). Logic both sides need goes in `web/<name>/<something>.js` as a plain ES module with JSDoc types; the API imports it.
 6. **Check locally:** do the one-time setup in the [README](../../README.md#site-and-api) if needed, then `npm run dev` and open `http://localhost:8787/<name>/`. Pages that import ES modules do not work from `file://`.
 7. **Push and open a PR.** Open the preview at `https://<branch>.junk.tomhummel.com/<name>/`, exercise the page, and view it in light and dark mode (browser or OS setting). Fix console errors and 404s.
@@ -64,5 +63,5 @@ Source: `https://github.com/tphummel/blog/tree/main/static/<name>/`.
 ## Done when
 
 - `/<name>/` loads in the PR preview with no console errors, in both color schemes.
-- The entry is in `web/index.html`, in order.
+- The entry is in the Pages list in `web/index.html`, in order.
 - `npm run types && npm run typecheck && npm test` pass (if an API or shared module is involved).
