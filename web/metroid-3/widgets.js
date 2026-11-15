@@ -55,51 +55,46 @@ export function progressBarHtml(state) {
  * @param {import("./engine.js").State} state
  */
 export function gridHtml(state) {
+  /** Hover text for a collected cell: name, place, when. @param {import("./engine.js").Step} s */
+  const tip = (s) =>
+    [s.checkpoint.replace(/^Item:\s*/, ""), where(s), `Step ${s.step} · ${fmtDate(/** @type {number} */ (s.ts))} ${fmtClock(/** @type {number} */ (s.ts))}`]
+      .filter(Boolean)
+      .join("\n");
+  /** @param {string} cls @param {string} text @param {string} [inner] */
+  const cell = (cls, text, inner = "") =>
+    `<i class="m3-cell ${cls}" tabindex="0" role="img" aria-label="${esc(text.replace(/\n/g, ", "))}" data-tip="${esc(text)}">${inner}</i>`;
   /** @param {string} cat @param {number} total @param {number} rows @param {string} label */
   const counted = (cat, total, rows, label) => {
     const done = state.byCat[cat];
-    const cells = Array.from({ length: total }, (_, i) => {
-      const s = done[i];
-      return s
-        ? `<i class="m3-cell on" title="${esc(stepTitle(s))}"></i>`
-        : `<i class="m3-cell" title="${esc(label)} ${i + 1}"></i>`;
-    }).join("");
-    return { cells: `<div class="m3-cells c-${cat}" style="--rows:${rows}">${cells}</div>`, count: `${Math.min(done.length, total)}/${total}` };
+    const cells = Array.from({ length: total }, (_, i) =>
+      done[i] ? cell("on", tip(done[i])) : cell("", `${label} ${i + 1} of ${total}\nnot yet`),
+    ).join("");
+    return `<div class="m3-cells c-${cat}" style="--rows:${rows}">${cells}</div>`;
   };
-  /** @param {"beam" | "suit" | "item"} cat @param {number} rows */
-  const fixed = (cat, rows) => {
+  /** @param {"beam" | "suit" | "item"} cat @param {number} rows @param {boolean} [turned] rows run left to right */
+  const fixed = (cat, rows, turned = false) => {
     const list = FIXED_ITEMS[cat];
     const known = new Set(list.map((i) => i.key));
     const extras = Object.entries(state.fixed).filter(([k, s]) => !known.has(k) && s && classify(s.checkpoint).cat === cat);
     const cells = [
       ...list.map((it) => {
         const s = state.fixed[it.key];
-        return s
-          ? `<i class="m3-cell on fx" title="${esc(stepTitle(s))}">${it.abbr}</i>`
-          : `<i class="m3-cell fx" title="${esc(it.name)}">${it.abbr}</i>`;
+        return s ? cell("on fx", tip(s), it.abbr) : cell("fx", `${it.name}\nnot yet`, it.abbr);
       }),
-      ...extras.map(([, s]) => `<i class="m3-cell on fx" title="${esc(stepTitle(/** @type {any} */ (s)))}">+</i>`),
+      ...extras.map(([, s]) => cell("on fx", tip(/** @type {any} */ (s)), "+")),
     ].join("");
-    const have = list.filter((it) => state.fixed[it.key]).length + extras.length;
-    return { cells: `<div class="m3-cells c-${cat}" style="--rows:${rows}">${cells}</div>`, count: `${have}/${list.length}` };
+    const cols = Math.ceil((list.length + extras.length) / rows);
+    return `<div class="m3-cells c-${cat}${turned ? " turned" : ""}" style="--rows:${rows};--cols:${cols}">${cells}</div>`;
   };
-  /** @param {Array<[string, string]>} labels label and count pairs @param {string} cells */
+  /** @param {string[]} labels @param {string} cells */
   const section = (labels, cells) =>
-    `<section class="m3-sec"><div class="m3-stack">${cells}</div><h4>${labels.map(([l, c]) => `<span>${l} <b>${c}</b></span>`).join("")}</h4></section>`;
+    `<section class="m3-sec"><div class="m3-stack">${cells}</div><h4>${labels.map((l) => `<span>${l}</span>`).join("")}</h4></section>`;
 
-  const missile = counted("missile", TOTALS.missile, 5, "Missile");
-  const sup = counted("super", TOTALS.super, 2, "Super Missile");
-  const pb = counted("pb", TOTALS.pb, 2, "Power Bomb");
-  const et = counted("etank", TOTALS.etank, 3, "Energy Tank");
-  const rt = counted("rtank", TOTALS.rtank, 1, "Reserve Tank");
-  const suit = fixed("suit", 1);
-  const beam = fixed("beam", 3);
-  const item = fixed("item", 2);
-  return `<div class="m3-grid" role="img" aria-label="Item grid, ${state.percent} of 100 collected">
-    ${section([["Missile", missile.count]], missile.cells)}
-    ${section([["Super", sup.count], ["Power Bomb", pb.count]], sup.cells + pb.cells)}
-    ${section([["Energy", et.count], ["Reserve", rt.count]], et.cells + rt.cells)}
-    ${section([["Suits", suit.count], ["Beams", beam.count], ["Items", item.count]], suit.cells + beam.cells + item.cells)}
+  return `<div class="m3-grid" role="group" aria-label="Item grid, ${state.percent} of 100 collected">
+    ${section(["Missile"], counted("missile", TOTALS.missile, 5, "Missile"))}
+    ${section(["Super", "Power Bomb"], counted("super", TOTALS.super, 2, "Super Missile") + counted("pb", TOTALS.pb, 2, "Power Bomb"))}
+    ${section(["Energy", "Reserve"], counted("etank", TOTALS.etank, 3, "Energy Tank") + counted("rtank", TOTALS.rtank, 1, "Reserve Tank"))}
+    ${section(["Suits", "Beams", "Items"], fixed("suit", 1, true) + fixed("beam", 2, true) + fixed("item", 2))}
   </div>`;
 }
 
