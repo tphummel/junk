@@ -1,26 +1,26 @@
 ---
-name: new-web-experiment
-description: Add or migrate a static web experiment under web/ in the junk repo (served at junk.tomhummel.com/<name>/). Use when asked to create, port, or move a page, tool, or toy into web/, including migrating one from tomhummel.com (tphummel/blog static/).
+name: new-webpage
+description: Add or migrate a static webpage under web/ in the junk repo (served at junk.tomhummel.com/<name>/). Use when asked to create, port, or move a page, tool, or toy into web/, including migrating one from tomhummel.com (tphummel/blog static/).
 metadata:
   version: "1.0.0"
 ---
 
-# New web experiment
+# New webpage
 
-Rules are in [ADR 0003](../../adr/0003-web-experiments.md) (structure), [0002](../../adr/0002-no-web-build-step.md) (no build step) and [0001](../../adr/0001-web-styling.md) (colors). This is the procedure.
+Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../adr/0002-no-web-build-step.md) (no build step) and [0001](../../adr/0001-web-styling.md) (colors). This is the procedure.
 
 ## Steps
 
 1. **Branch.** `git switch -c <name>` from an up-to-date `main`. Name is lowercase kebab-case.
 2. **Create `web/<name>/index.html`** from the template below. Put every other file the page needs (scripts, modules, data, images) in the same directory and reference it relatively.
-3. **Style it** with the [`golden-angle-styling` skill](../golden-angle-styling/SKILL.md): random seed, light and dark variables. Migrated experiments are exempt until they are next changed.
+3. **Style it** with the [`golden-angle-styling` skill](../golden-angle-styling/SKILL.md): random seed, light and dark variables. Migrated webpages are exempt until they are next changed.
 4. **Register it.** Add one `<li>` to the list in `web/index.html`, in alphabetical order:
    ```html
    <li><a href="/<name>/">display name</a></li>
    <!-- with an API: -->
    <li><a href="/<name>/">display name</a> (<a href="/api/<name>/example">api</a>)</li>
    ```
-5. **If it needs an API**, use the [`new-api-experiment` skill](../new-api-experiment/SKILL.md) with the same `<name>`. Call it with a same-origin path (`fetch("/api/<name>/...")`). Logic both sides need goes in `web/<name>/<something>.js` as a plain ES module with JSDoc types; the API imports it.
+5. **If it needs an API**, use the [`new-api` skill](../new-api/SKILL.md) with the same `<name>`. Call it with a same-origin path (`fetch("/api/<name>/...")`). Logic both sides need goes in `web/<name>/<something>.js` as a plain ES module with JSDoc types; the API imports it.
 6. **Check locally:** `npm run dev`, open `http://localhost:8787/<name>/`. Pages that import ES modules do not work from `file://`.
 7. **Push and open a PR.** Open the preview at `https://<branch>.junk.tomhummel.com/<name>/`, exercise the page, and view it in light and dark mode (browser or OS setting). Fix console errors and 404s.
 
@@ -48,7 +48,7 @@ Rules are in [ADR 0003](../../adr/0003-web-experiments.md) (structure), [0002](.
 
 - Add a build step, bundler, `package.json`, or generated files under `web/` (ADR 0002).
 - Put tests, notes, or drafts in `web/`; everything there is served as-is. Tests for shared logic go in `api/<name>.test.mjs`.
-- Import from another experiment's directory, or add a shared layout or stylesheet.
+- Import from another webpage's directory, or add a shared layout or stylesheet.
 - Create a project folder or `notes.md` for this work.
 
 ## Migrating from tomhummel.com

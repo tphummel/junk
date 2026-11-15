@@ -7,7 +7,7 @@ metadata:
 
 # New Docker app
 
-For apps that run in a container with their own state. Static pages and Worker APIs use the [`new-web-experiment`](../new-web-experiment/SKILL.md) and [`new-api-experiment`](../new-api-experiment/SKILL.md) skills instead (deployed per [ADR 0005](../../adr/0005-web-api-deployment.md)). Reference apps: [`jigseer/`](../../jigseer/README.md) (PHP) and [`artifact-cache/`](../../artifact-cache/README.md) (Go, with a [design doc](../../artifact-cache/artifact-cache-design-doc.md)).
+For apps that run in a container with their own state. Static pages and Worker APIs use the [`new-webpage`](../new-webpage/SKILL.md) and [`new-api`](../new-api/SKILL.md) skills instead (deployed per [ADR 0005](../../adr/0005-web-api-deployment.md)). Reference apps: [`jigseer/`](../../jigseer/README.md) (PHP) and [`artifact-cache/`](../../artifact-cache/README.md) (Go, with a [design doc](../../artifact-cache/artifact-cache-design-doc.md)).
 
 ## Principles
 

@@ -11,7 +11,7 @@ Rules for every kind of work:
 
 | Kind | Where it lives |
 | --- | --- |
-| Web experiment | `web/<name>/` |
+| Webpage | `web/<name>/` |
 | API route | `api/<name>.ts` |
 | Docker app | its own top-level folder |
 | Legacy or miscellaneous project | its own top-level folder |

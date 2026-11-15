@@ -14,7 +14,7 @@
    - Push to `main`: `npx wrangler deploy`.
    - Other branches and PRs: `npx wrangler preview`, served at `https://<branch>.junk.tomhummel.com` (`previews_enabled` on the route) and reported on the PR.
    - Build command and root directory are blank. The deploy bundles `api/` and uploads `web/` as it is.
-3. **Configuration lives in `wrangler.jsonc`:** the Worker name, entry point, assets, route and custom domain, `workers_dev: false` (reachable only on the custom domain), `preview_urls: true`, observability, and the `previews` block. Bindings and vars are added there too, with matching `previews` entries ([ADR 0004](0004-api-experiments.md)).
+3. **Configuration lives in `wrangler.jsonc`:** the Worker name, entry point, assets, route and custom domain, `workers_dev: false` (reachable only on the custom domain), `preview_urls: true`, observability, and the `previews` block. Bindings and vars are added there too, with matching `previews` entries ([ADR 0004](0004-apis.md)).
 4. **Settings that cannot live in the repo** are set by hand in the dashboard, under Workers & Pages → `junk` → Settings → Build:
 
    | Setting | Value |
@@ -35,7 +35,7 @@
 
 - Merging to `main` is the release. Rolling back is a revert, or a rollback in the dashboard.
 - Deploy is independent of CI, so merging with a failing check still deploys unless branch protection requires the check.
-- All experiments share one deploy: a Worker that fails to bundle blocks every experiment (see [ADR 0004](0004-api-experiments.md)).
+- All webpages and APIs share one deploy: a Worker that fails to bundle blocks them all (see [ADR 0004](0004-apis.md)).
 - The dashboard settings are not reviewed in PRs and can drift from this table.
 - Previews do not inherit production settings, so each binding or var needs its own `previews` entry.
 
@@ -43,8 +43,8 @@
 
 - **GitHub Actions running `wrangler deploy`.** Same toolchain, plus a workflow, an API token and secrets to maintain, and it loses the GitHub-app previews.
 - **Cloudflare Pages.** No Durable Objects, and Functions are a second system to learn.
-- **One Worker per experiment.** Independent deploys, but a config, route and project per experiment.
+- **One Worker per API.** Independent deploys, but a config, route and project per API.
 
 ## Open
 
-Whether CI should be a required check before merge. Storage and its migrations ([ADR 0004](0004-api-experiments.md)) will change this ADR's watch paths and possibly the deploy command.
+Whether CI should be a required check before merge. Storage and its migrations ([ADR 0004](0004-apis.md)) will change this ADR's watch paths and possibly the deploy command.

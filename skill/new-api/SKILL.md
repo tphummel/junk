@@ -1,13 +1,13 @@
 ---
-name: new-api-experiment
-description: Add a JSON API route to the junk repo's Hono Worker (api/, served at junk.tomhummel.com/api/<name>/), with tests. Use when asked to create an API, endpoint, or Worker route, or to give a web experiment a backend, including APIs that need KV, D1, R2, or Durable Objects.
+name: new-api
+description: Add a JSON API route to the junk repo's Hono Worker (api/, served at junk.tomhummel.com/api/<name>/), with tests. Use when asked to create an API, endpoint, or Worker route, or to give a webpage a backend, including APIs that need KV, D1, R2, or Durable Objects.
 metadata:
   version: "1.0.0"
 ---
 
-# New API experiment
+# New API
 
-Rules are in [ADR 0004](../../adr/0004-api-experiments.md); [0002](../../adr/0002-no-web-build-step.md) covers shared code. This is the procedure.
+Rules are in [ADR 0004](../../adr/0004-apis.md); [0002](../../adr/0002-no-web-build-step.md) covers shared code. This is the procedure.
 
 ## Steps
 
