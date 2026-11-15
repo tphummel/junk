@@ -193,7 +193,7 @@ export function defaultMeta() {
   return {
     system: "",
     goal: "100% item collection",
-    bosses: "All minor, all major",
+    bosses: "All Minor, All Major",
     bossOrder: "KPDR",
     glitches: "None",
   };
@@ -672,6 +672,31 @@ export function parseIgt(v) {
 /** In-game time, total minutes only. @param {number | null | undefined} n */
 export function fmtIgt(n) {
   return n == null ? "—" : `${n} min`;
+}
+
+/**
+ * Running item % by route position: how many pickups are counted up to and including each step,
+ * whether or not it is done yet (the spreadsheet's "%" column).
+ * @param {Game} game @returns {number[]}
+ */
+export function runningPercent(game) {
+  let n = 0;
+  return game.steps.map((s) => {
+    if (CATEGORIES[classify(s.checkpoint).cat].pickup) n++;
+    return n;
+  });
+}
+
+/** Total hours:mm:ss, as in the sheet's Clock Time (309:06:01). @param {number} ms */
+export function fmtHms(ms) {
+  const t = Math.max(0, Math.round(ms / 1000));
+  return `${Math.floor(t / 3600)}:${p2(Math.floor((t % 3600) / 60))}:${p2(t % 60)}`;
+}
+
+/** Sheet-style stamp, 24-hour: 11/1/2026 16:48:40. @param {number} ts */
+export function fmtSheetStamp(ts) {
+  const d = new Date(ts);
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
 }
 
 /** Active play time from session events. @param {State} state */

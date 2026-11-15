@@ -5,13 +5,16 @@ import {
   deriveState,
   fmtClock,
   fmtDate,
+  fmtHms,
   fmtIgt,
   fmtPlay,
   fmtSpan,
+  fmtSheetStamp,
   fmtStamp,
   isDone,
   journalDays,
   pace,
+  runningPercent,
   slug,
   toExportJson,
 } from "./engine.js";
@@ -161,6 +164,7 @@ ${css}
  * @param {{ notes?: boolean, journal?: boolean, remaining?: boolean }} [opts]
  */
 export function buildSheetHtml(game, opts = {}) {
+  if (opts.layout !== "illustrated") return buildScoresheetHtml(game);
   const { notes = false, journal = true, remaining = true } = opts;
   const state = deriveState(game);
   const meta = game.meta;
@@ -217,6 +221,49 @@ export function buildSheetHtml(game, opts = {}) {
     <div class="sheet-log">${log}</div>
     ${entries ? `<div class="sheet-journal"><h2>Journal</h2>${entries}</div>` : ""}
     <footer class="sheet-foot"><span>Metroid 3</span><span>${esc(game.name)} · printed ${esc(fmtStamp(Date.now()).slice(0, 10))}</span></footer>
+  </article>`;
+}
+
+/**
+ * The spreadsheet's "Printable Scorecard": run facts on top, then every checkpoint in two
+ * columns (item %, checkpoint, timestamp, IGT), sized to fill exactly one page.
+ * @param {Game} game
+ */
+export function buildScoresheetHtml(game) {
+  const state = deriveState(game);
+  const meta = game.meta;
+  const pct = runningPercent(game);
+  const half = Math.ceil(game.steps.length / 2) || 1;
+  const row = (s, i) => {
+    const cat = classify(s.checkpoint).cat;
+    // Ceres Escape's reading is the countdown timer, kept in the log; it sits in the IGT column.
+    const igt = s.igt != null ? fmtIgt(s.igt) : cat === "milestone" && s.log ? s.log.replace(/^Countdown timer:\s*/i, "") : "";
+    return `<div class="sc-row c-${cat}"><span class="p">${pct[i]}</span><span class="c" title="${esc(s.checkpoint)}">${esc(s.checkpoint)}</span><span class="t">${s.ts != null ? esc(fmtSheetStamp(s.ts)) : ""}</span><span class="g">${esc(igt)}</span></div>`;
+  };
+  const head = `<div class="sc-row sc-th"><span class="p">%</span><span class="c">Checkpoint</span><span class="t">Timestamp</span><span class="g">IGT</span></div>`;
+  const rows = game.steps.map(row);
+  const left = [
+    ["Start", state.first != null ? fmtSheetStamp(state.first) : ""],
+    ["Finish", state.last != null ? fmtSheetStamp(state.last) : ""],
+    ["Clock Time", state.first != null && state.last != null ? fmtHms(state.last - state.first) : ""],
+    ["Game Time", state.igt != null ? fmtIgt(state.igt) : ""],
+    ["System", meta.system],
+  ];
+  const right = [
+    ["Item %", String(state.percent)],
+    ["Bosses", meta.bosses],
+    ["Major Boss Order", meta.bossOrder],
+    ["Glitches Used", meta.glitches],
+    ["Play Time", state.sessions.length ? fmtPlay(state) : ""],
+  ];
+  const block = (list) => list.map(([k, v]) => `<div class="sc-k">${v ? esc(k) : ""}</div><div class="sc-v">${esc(v)}</div>`).join("");
+  return `<article class="sheet sc m3" style="--rows:${half}" aria-label="Printable scorecard for ${esc(game.name)}">
+    <div class="sc-title">${esc(game.name)}</div>
+    <div class="sc-head"><div class="sc-block">${block(left)}</div><div class="sc-block">${block(right)}</div></div>
+    <div class="sc-body">
+      <div class="sc-half">${head}${rows.slice(0, half).join("")}</div>
+      <div class="sc-half">${head}${rows.slice(half).join("")}</div>
+    </div>
   </article>`;
 }
 

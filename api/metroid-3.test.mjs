@@ -234,3 +234,13 @@ test("Ceres Escape's countdown reading goes to the log, not IGT", () => {
   assert.equal(game.steps[0].log, `Countdown timer: 36' 59"`);
   assert.equal(game.steps[1].igt, 52);
 });
+
+test("scoresheet helpers: running item % and hours:minutes:seconds", async () => {
+  const { runningPercent, fmtHms, fmtSheetStamp } = await import("../web/metroid-3/engine.js");
+  const pct = runningPercent(newGame());
+  assert.equal(pct.length, 114);
+  assert.deepEqual(pct.slice(0, 5), [0, 0, 1, 2, 3]); // Start, Ceres, Morph, Missile, Bomb
+  assert.equal(pct[113], 100);
+  assert.equal(fmtHms(309 * 3600000 + 6 * 60000 + 1000), "309:06:01");
+  assert.equal(fmtSheetStamp(new Date(2026, 10, 1, 16, 48, 40).getTime()), "11/1/2026 16:48:40");
+});

@@ -291,6 +291,32 @@ label.check input { width: 1.1rem; height: 1.1rem; accent-color: var(--primary);
 .sheet-journal .entry p { margin: 0.1rem 0 0; white-space: pre-wrap; }
 .sheet-journal .entry time { color: var(--support); font-size: 8pt; }
 
+/* Scoresheet layout: mirrors the spreadsheet's printable scorecard and fills one page. */
+.sheet.sc {
+  --head-h: 0.17in;
+  --avail: calc(var(--sheet-h, 8.5in) - 0.8in - 5 * var(--head-h) - 0.75in);
+  --row-h: calc(var(--avail) / var(--rows));
+  font-size: min(9pt, calc(var(--row-h) * 0.8));
+  line-height: 1;
+}
+.sc-title { font: 700 11pt/1.2 system-ui, sans-serif; margin-bottom: 0.08in; color: #111; }
+.sc-head { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.3in; margin-bottom: 0.12in; font-size: 7.5pt; }
+.sc-block { display: grid; grid-template-columns: 9.5em 1fr; border: 1px solid #c6c6c6; }
+.sc-block > div { height: var(--head-h); padding: 0 0.4em; border-bottom: 1px solid #c6c6c6; display: flex; align-items: center; overflow: hidden; white-space: nowrap; }
+.sc-block > div:nth-last-child(-n+2) { border-bottom: 0; }
+.sc-k { background: #efefef; color: #222; border-right: 1px solid #c6c6c6; }
+.sc-v { background: #cfe2f3; color: #111; justify-content: flex-end; }
+.sc-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.3in; }
+.sc-half { border: 1px solid #c6c6c6; border-bottom: 0; }
+.sc-row { display: grid; grid-template-columns: 2.9em 1fr 11.6em 5.2em; height: var(--row-h); align-items: center; border-bottom: 1px solid #d4d4d4; color: #111; }
+.sc-row > span { padding: 0 0.35em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+.sc-row .p { text-align: right; border-right: 1px solid #d4d4d4; }
+.sc-row .t, .sc-row .g { border-left: 1px solid #d4d4d4; }
+.sc-row .g { text-align: right; }
+.sc-th { height: var(--head-h); font-weight: 700; background: #fff; border-bottom: 1px solid #999; font-size: 7.5pt; }
+.sc-th .c, .sc-th .t, .sc-th .g { text-align: center; }
+.sheet.sc .m3-segs { display: none; }
+
 @media print {
   html, body { background: #fff !important; }
   .app-header, .no-print, .toast, dialog { display: none !important; }

@@ -70,7 +70,7 @@ let changesSinceBackup = 0;
 /** @type {Array<{ id: string, snapshot: Game }>} */
 let undoStack = [];
 let routeFilter = { q: "", show: "all" };
-const printPrefs = { paper: "letter", orientation: "landscape", notes: false, journal: true, remaining: true };
+const printPrefs = { layout: "scoresheet", paper: "letter", orientation: "landscape", notes: false, journal: true, remaining: true };
 const htmlPrefs = { notes: true, unfinished: false, subtitle: "" };
 const channel = typeof BroadcastChannel === "function" ? new BroadcastChannel("metroid-3") : null;
 
@@ -329,6 +329,7 @@ function renderDash(game, state) {
       ${progressBarHtml(state)}
       ${statsHtml(game, state)}
     </div>
+    <div class="card"><h3>Item grid</h3>${gridHtml(state)}</div>
     <div class="cols">
       <div class="card"><h3>Nav</h3>${navCard}
         <div class="toolbar" style="margin-top:0.75rem">
@@ -339,7 +340,6 @@ function renderDash(game, state) {
       <div class="card"><h3>History</h3>${historyHtml(history(game, 14), now)}
         <p style="margin:0.75rem 0 0"><a href="${gameUrl(game.id, "journal")}">Open the full journal →</a></p></div>
     </div>
-    <div class="card"><h3>Item grid</h3>${gridHtml(state)}</div>
     <div class="cols">${sessionsCard(game, state)}
       <div class="card"><h3>By type</h3>${categoryBarsHtml(state)}</div>
       <div class="card"><h3>By area</h3>${areasHtml(state)}<h3 style="margin-top:1.25rem">Bosses</h3>${bossesHtml(state)}</div>
@@ -431,10 +431,13 @@ function renderPublish(game, state) {
       <div class="card"><h3>Printable scorecard</h3>
         <p class="hint">A one-sheet summary and checkpoint log, sized for pasting into a journal. Use the print dialog’s “Save as PDF”, with margins set to default and “Background graphics” on.</p>
         <div class="field-row" style="margin-top:0.75rem">
+          <label class="field">Layout<select id="p-layout">${sel(p.layout, "scoresheet", "Scoresheet: one page, like the spreadsheet")}${sel(p.layout, "illustrated", "Illustrated: progress grid and log")}</select></label>
+        </div>
+        <div class="field-row" style="margin-top:0.75rem">
           <label class="field">Paper<select id="p-paper">${sel(p.paper, "letter", "Letter")}${sel(p.paper, "a4", "A4")}${sel(p.paper, "a5", "A5 (journal size)")}</select></label>
           <label class="field">Orientation<select id="p-orient">${sel(p.orientation, "landscape", "Landscape")}${sel(p.orientation, "portrait", "Portrait")}</select></label>
         </div>
-        <div class="options">
+        <div class="options"${p.layout === "scoresheet" ? " hidden" : ""}>
           ${chk("p-journal", "Include journal entries", p.journal)}
           ${chk("p-notes", "Include route notes", p.notes)}
           ${chk("p-remaining", "Include unfinished checkpoints (as a to-do checklist)", p.remaining)}
@@ -460,7 +463,10 @@ function applyPaper() {
   $("#page-style").textContent = page;
   const sheet = document.querySelector(".sheet");
   if (sheet) {
-    sheet.setAttribute("style", vars);
+    for (const decl of vars.split(";").filter(Boolean)) {
+      const [k, v] = decl.split(":");
+      /** @type {HTMLElement} */ (sheet).style.setProperty(k, v);
+    }
     const w = parseFloat(vars.match(/--sheet-w:([\d.]+)in/)?.[1] ?? "11");
     sheet.classList.toggle("narrow", w < 7);
   }
@@ -876,6 +882,7 @@ document.addEventListener("change", async (ev) => {
     return render();
   }
   const prefs = {
+    "p-layout": () => (printPrefs.layout = el.value),
     "p-paper": () => (printPrefs.paper = el.value),
     "p-orient": () => (printPrefs.orientation = el.value),
     "p-journal": () => (printPrefs.journal = el.checked),
@@ -887,6 +894,7 @@ document.addEventListener("change", async (ev) => {
   };
   if (prefs[el.id]) {
     prefs[el.id]();
+    if (el.id === "p-layout") return render();
     if (el.id.startsWith("p-") && game) {
       $("#sheet-wrap").innerHTML = buildSheetHtml(game, printPrefs);
       applyPaper();
