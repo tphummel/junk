@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "junk",
+  "main": "api/index.ts",
+  "compatibility_date": "2026-11-14",
+  "assets": {
+    "directory": "./web",
+    // Only /api/* runs Worker code; everything else is served as static files from web/.
+    "run_worker_first": ["/api/*"]
+  },
+  // No workers.dev URL; the Worker is only reachable on the custom domain.
+  "workers_dev": false,
+  // Keep Version URLs / Preview URLs for PR and branch builds.
+  "preview_urls": true,
+  "routes": [
+    // previews_enabled: PR/branch Previews are served at <branch>.junk.tomhummel.com
+    // (Cloudflare manages a wildcard DNS record + certificate for *.junk.tomhummel.com).
+    { "pattern": "junk.tomhummel.com", "custom_domain": true, "previews_enabled": true }
+  ],
+  "observability": { "enabled": true },
+  // Required by `wrangler preview` (used for PR/branch preview builds). Previews do NOT
+  // inherit production settings: when adding vars or KV/D1/R2 bindings above, add matching
+  // entries here that point at test resources. See
+  // https://developers.cloudflare.com/workers/previews/configuration/
+  "previews": {}
+  // Bindings (KV, D1, R2, Durable Objects) get added here as APIs need them.
+}

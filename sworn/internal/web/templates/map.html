@@ -1,0 +1,7 @@
+{{define "head"}}<link rel="stylesheet" href="/static/leaflet/leaflet.css">{{end}}
+{{define "content"}}
+<div class="row"><button id="near-me" class="secondary">Near me</button>
+<span class="muted"><span class="dot mine"></span> your check-ins <span class="dot venue"></span> venues</span></div>
+<div id="map" class="fullmap"></div>
+{{end}}
+{{define "scripts"}}<script src="/static/leaflet/leaflet.js"></script><script src="/static/map.js"></script>{{end}}

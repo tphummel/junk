@@ -1,0 +1,36 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} · Sworn</title>
+<link rel="stylesheet" href="/static/app.css">
+{{template "head" .}}
+</head>
+<body data-csrf="{{.CSRF}}">
+<header class="top">
+  <a class="brand" href="/">Sworn</a>
+  {{if .User}}
+  <nav>
+    <a href="/checkin">Check in</a>
+    <a href="/venues">Venues</a>
+    <a href="/map">Map</a>
+    <a href="/insights">Insights</a>
+    <a href="/passkeys">Passkeys</a>
+    <a href="/export">Export</a>
+    {{if .User.IsAdmin}}<a href="/admin/venues">Admin</a><a href="/admin/import">Import</a>{{end}}
+    <form method="post" action="/logout" class="inline"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="link">Sign out</button></form>
+  </nav>
+  {{end}}
+</header>
+<main>
+  {{if .Flash}}<p class="flash">{{.Flash}}</p>{{end}}
+  {{if .Err}}<p class="flash err">{{.Err}}</p>{{end}}
+  {{template "content" .}}
+</main>
+<script src="/static/app.js"></script>
+{{template "scripts" .}}
+</body>
+</html>{{end}}
+{{define "head"}}{{end}}
+{{define "scripts"}}{{end}}

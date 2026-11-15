@@ -1,0 +1,10 @@
+{{define "content"}}
+<h1>Venues</h1>
+<form method="get" class="row"><input type="search" name="q" value="{{.Data.Q}}" placeholder="Search name, address, city…"><button>Search</button></form>
+<p class="muted">{{.Data.Total}} venue(s)</p>
+<ul class="list">
+{{range .Data.Venues}}<li><a href="/venues/{{.ID}}"><strong>{{.Name}}</strong></a> <span class="muted">{{.City}} {{.Category}}</span></li>{{end}}
+</ul>
+<p>{{if gt .Data.Page 1}}<a href="?q={{urlq .Data.Q}}&page={{sub .Data.Page 1}}">← Prev</a>{{end}}
+{{if .Data.More}}<a href="?q={{urlq .Data.Q}}&page={{add .Data.Page 1}}">Next →</a>{{end}}</p>
+{{end}}
