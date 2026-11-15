@@ -7,7 +7,7 @@
 
 `web/` is deployed to junk.tomhummel.com as Cloudflare Workers static assets (`assets.directory: ./web` in `wrangler.jsonc`), and Workers Builds is configured with an empty build command. The experiments migrated from tomhummel.com are plain static files with no build. An early plan to colocate web content in each project folder and collect it with a copy script was dropped in favor of serving `web/` directly.
 
-This repo is a junk drawer of many unrelated experiments. Anything that needs a toolchain (bundler, framework CLI, package install) needs upkeep, breaks when left alone, and makes migrating or abandoning an experiment harder. The question of sharing code between a page and the API (the palette logic is currently duplicated) made it worth stating the rule explicitly.
+This repo is a junk drawer of many unrelated experiments. Anything that needs a toolchain (bundler, framework CLI, package install) needs upkeep, breaks when left alone, and makes migrating or abandoning an experiment harder. The question of sharing code between a page and the API (the palette logic was duplicated in both when this was decided, and was then moved into one shared module) made it worth stating the rule explicitly.
 
 ## Decision
 
