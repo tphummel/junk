@@ -86,15 +86,16 @@ export function gridHtml(state) {
     const cols = Math.ceil((list.length + extras.length) / rows);
     return `<div class="m3-cells c-${cat}${turned ? " turned" : ""}" style="--rows:${rows};--cols:${cols}">${cells}</div>`;
   };
-  /** @param {string[]} labels @param {string} cells */
-  const section = (labels, cells) =>
-    `<section class="m3-sec"><div class="m3-stack">${cells}</div>${labels.length ? `<h4>${labels.map((l) => `<span>${l}</span>`).join("")}</h4>` : ""}</section>`;
+  /** One block of cells with its own title underneath (none for an untitled block). @param {string} cells @param {string} [label] */
+  const group = (cells, label) => `<div class="m3-grp">${cells}${label ? `<h4>${label}</h4>` : ""}</div>`;
+  /** @param {string[]} groups */
+  const section = (...groups) => `<section class="m3-sec">${groups.join("")}</section>`;
 
   return `<div class="m3-grid" role="group" aria-label="Item grid, ${state.percent} of 100 collected">
-    ${section(["Missile"], counted("missile", TOTALS.missile, 6, "Missile"))}
-    ${section(["Super", "Power Bomb"], counted("super", TOTALS.super, 2, "Super Missile") + counted("pb", TOTALS.pb, 2, "Power Bomb"))}
-    ${section(["Energy", "Reserve"], counted("etank", TOTALS.etank, 3, "Energy Tank") + counted("rtank", TOTALS.rtank, 1, "Reserve Tank"))}
-    ${section([], fixed("suit", 1, true) + fixed("beam", 2, true) + fixed("item", 2))}
+    ${section(group(counted("missile", TOTALS.missile, 6, "Missile"), "Missile"))}
+    ${section(group(counted("super", TOTALS.super, 2, "Super Missile"), "Super Missile"), group(counted("pb", TOTALS.pb, 2, "Power Bomb"), "Power Bomb"))}
+    ${section(group(counted("etank", TOTALS.etank, 3, "Energy Tank"), "Tank"), group(counted("rtank", TOTALS.rtank, 1, "Reserve Tank"), "Reserve"))}
+    ${section(group(fixed("suit", 1, true)), group(fixed("beam", 2, true)), group(fixed("item", 2)))}
   </div>`;
 }
 

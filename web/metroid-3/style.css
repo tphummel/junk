@@ -132,10 +132,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .m3-progress-label { position: absolute; inset: 0; display: grid; place-items: center; font: 800 1rem/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.05em; color: var(--text); text-shadow: 0 0 4px var(--bg), 0 0 4px var(--bg), 0 0 2px var(--bg); pointer-events: none; }
 
 .m3-grid { --cell: 1.3rem; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5rem 1rem; }
-.m3-sec { display: grid; gap: 0.3rem; }
+.m3-sec { display: grid; gap: 0.5rem; align-content: start; }
+.m3-grp { display: grid; gap: 0.3rem; }
+.m3-sec:last-child { gap: 4px; }
 .m3-sec h4 { font: 600 0.62rem/1.35 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.06em; text-transform: uppercase; color: var(--support); white-space: nowrap; display: grid; }
 .m3-sec h4 b { color: var(--text); margin-left: 0.2rem; }
-.m3-stack { display: grid; gap: 4px; }
 .m3-cells { display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--rows), var(--cell)); grid-auto-columns: var(--cell); gap: 1px; width: max-content; }
 .m3-cell { box-sizing: border-box; width: var(--cell); height: var(--cell); min-width: 0; overflow: visible; display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--m) 55%, var(--bg)); background: color-mix(in srgb, var(--m) 12%, transparent); font: 700 0.45rem/1 ui-monospace, Menlo, Consolas, monospace; font-style: normal; color: color-mix(in srgb, var(--m) 55%, var(--text)); }
 .m3-cell.on { background: var(--m); border-color: var(--m); color: var(--on); }
