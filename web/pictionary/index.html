@@ -39,7 +39,8 @@
     }
     .actions { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
     .actions button { cursor: pointer; flex: 1; }
-    #generate { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    .actions button[hidden] { display: none; }
+    #generate, #start { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
     #clue-box {
       margin-top: 1.5rem;
       min-height: 7rem;
@@ -82,8 +83,11 @@
 
   <div class="actions">
     <button type="button" id="generate">New clue</button>
-    <button type="button" id="reveal">Hide / show</button>
-    <button type="button" id="timer-btn">Start 60s timer</button>
+    <button type="button" id="different" hidden>Different clue</button>
+    <button type="button" id="start" hidden>Start round</button>
+    <button type="button" id="cancel" hidden>Cancel</button>
+    <button type="button" id="reveal" hidden>Hide / show</button>
+    <button type="button" id="timer-btn" hidden>Stop timer</button>
   </div>
 
   <div id="clue-box"><p id="clue" class="hidden">Press &ldquo;New clue&rdquo;</p></div>
@@ -1645,6 +1649,8 @@
     const timerBtn = document.getElementById('timer-btn')
 
     let difficulty = 'easy'
+    // idle -> choosing (cycle clues, nothing saved) -> playing (row saved, timer runs) -> idle
+    let phase = 'idle'
     let current = null
     let hidden = false
     const STORAGE_KEY = 'pictionary-history'
@@ -1671,16 +1677,35 @@
       return cats.flatMap(c => CLUES[c][difficulty].map(text => ({ text, category: c })))
     }
 
-    function generate () {
+    function pickClue () {
       const category = categorySelect.value
       const key = category + '|' + difficulty
       const all = pool(category)
       let used_ = used[key] || (used[key] = new Set())
       if (used_.size >= all.length) used_ = used[key] = new Set()
       const remaining = all.filter(c => !used_.has(c.text))
-      current = remaining[Math.floor(Math.random() * remaining.length)]
-      used_.add(current.text)
+      const clue = remaining[Math.floor(Math.random() * remaining.length)]
+      used_.add(clue.text)
+      return clue
+    }
+
+    // show a clue to look over; no history row is written until the round starts
+    function chooseClue () {
+      current = pickClue()
+      currentId = null
       hidden = false
+      phase = 'choosing'
+      render()
+    }
+
+    function cancelChoice () {
+      current = null
+      phase = 'idle'
+      render()
+    }
+
+    // the clue is chosen: write the history row, hide the clue and start the timer
+    function startRound () {
       currentId = Date.now() + Math.random()
       history.unshift({
         id: currentId,
@@ -1693,6 +1718,18 @@
         seconds: null
       })
       save()
+      hidden = true
+      phase = 'playing'
+      startTimer()
+      render()
+    }
+
+    // round over (timer ran out or was stopped): reveal the clue
+    function endRound (seconds) {
+      recordTimer(seconds)
+      currentId = null
+      hidden = false
+      phase = 'idle'
       render()
     }
 
@@ -1702,11 +1739,22 @@
 
     function render () {
       renderClue()
+      renderActions()
       renderHistory()
     }
 
+    function renderActions () {
+      const show = { generate: 'idle', different: 'choosing', start: 'choosing', cancel: 'choosing', reveal: 'playing', 'timer-btn': 'playing' }
+      for (const [id, p] of Object.entries(show)) document.getElementById(id).hidden = phase !== p
+    }
+
     function renderClue () {
-      if (!current) return
+      if (!current) {
+        clueEl.className = 'hidden'
+        clueEl.textContent = 'Press \u201cNew clue\u201d'
+        metaEl.textContent = ''
+        return
+      }
       clueEl.className = hidden ? 'hidden' : ''
       clueEl.textContent = hidden ? '(hidden)' : current.text
       metaEl.textContent = current.category + ' \u00b7 ' + difficulty
@@ -1805,30 +1853,27 @@
       renderHistory()
     }
 
-    function toggleTimer () {
-      if (timerId) {
-        clearInterval(timerId)
-        timerId = null
-        recordTimer(Math.min(TIMER_SECONDS, Math.max(0, Math.round((Date.now() - timerStart) / 1000))))
-        timerEl.textContent = ''
-        timerBtn.textContent = 'Start 60s timer'
-        return
-      }
+    function startTimer () {
       let left = TIMER_SECONDS
       timerStart = Date.now()
       timerEntryId = currentId
       timerEl.textContent = left + 's'
-      timerBtn.textContent = 'Stop timer'
       timerId = setInterval(() => {
         left -= 1
         timerEl.textContent = left > 0 ? left + 's' : "Time's up!"
         if (left <= 0) {
           clearInterval(timerId)
           timerId = null
-          timerBtn.textContent = 'Start 60s timer'
-          recordTimer(TIMER_SECONDS)
+          endRound(TIMER_SECONDS)
         }
       }, 1000)
+    }
+
+    function stopTimer () {
+      clearInterval(timerId)
+      timerId = null
+      timerEl.textContent = ''
+      endRound(Math.min(TIMER_SECONDS, Math.max(0, Math.round((Date.now() - timerStart) / 1000))))
     }
 
     document.querySelectorAll('.difficulty button').forEach(btn => {
@@ -1836,18 +1881,21 @@
         difficulty = btn.dataset.d
         document.querySelectorAll('.difficulty button').forEach(b =>
           b.setAttribute('aria-pressed', String(b === btn)))
-        if (current) generate()
+        if (phase === 'choosing') chooseClue()
       })
     })
-    categorySelect.addEventListener('change', () => { if (current) generate() })
+    categorySelect.addEventListener('change', () => { if (phase === 'choosing') chooseClue() })
     renderHistory()
-    document.getElementById('generate').addEventListener('click', generate)
+    document.getElementById('generate').addEventListener('click', chooseClue)
+    document.getElementById('different').addEventListener('click', chooseClue)
+    document.getElementById('start').addEventListener('click', startRound)
+    document.getElementById('cancel').addEventListener('click', cancelChoice)
     document.getElementById('reveal').addEventListener('click', () => {
       if (!current) return
       hidden = !hidden
       render()
     })
-    timerBtn.addEventListener('click', toggleTimer)
+    timerBtn.addEventListener('click', stopTimer)
   </script>
 </body>
 </html>
