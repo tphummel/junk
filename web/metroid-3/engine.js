@@ -22,6 +22,8 @@ export const FORMAT_VERSION = 1;
  *   log: string | null,
  * }} Step
  * @typedef {{ id: string, ts: number, title: string, body: string }} Entry
+ * @typedef {{ id: string, ts: number, kind: "start" | "stop" }} SessionEvent
+ * @typedef {{ start: number, end: number | null, startId: string, endId: string | null, ms: number }} Session
  * @typedef {{ system: string, goal: string, bosses: string, bossOrder: string, glitches: string }} Meta
  * @typedef {{
  *   id: string,
@@ -31,6 +33,7 @@ export const FORMAT_VERSION = 1;
  *   meta: Meta,
  *   steps: Step[],
  *   entries: Entry[],
+ *   events: SessionEvent[],
  * }} Game
  */
 
@@ -236,6 +239,7 @@ export function newGame(opts = {}) {
     meta: { ...defaultMeta(), ...(opts.meta || {}) },
     steps,
     entries: [],
+    events: [],
   };
 }
 
@@ -271,17 +275,72 @@ export function cloneGame(game) {
  *   complete: boolean,
  *   steps: number,
  *   stepsDone: number,
+ *   sessions: Session[],
+ *   playMs: number,
+ *   playing: Session | null,
  * }} State
  */
+
+/**
+ * Pair start and stop events into sessions. A stray stop, or a second start while one is open,
+ * is ignored. An open session runs until `now`.
+ * @param {Game} game @param {number} [now]
+ * @returns {Session[]}
+ */
+export function sessions(game, now = Date.now()) {
+  const evs = [...(game.events ?? [])].sort((a, b) => a.ts - b.ts);
+  /** @type {Session[]} */
+  const out = [];
+  /** @type {SessionEvent | null} */
+  let open = null;
+  for (const e of evs) {
+    if (e.kind === "start" && !open) open = e;
+    else if (e.kind === "stop" && open) {
+      out.push({ start: open.ts, end: e.ts, startId: open.id, endId: e.id, ms: e.ts - open.ts });
+      open = null;
+    }
+  }
+  if (open) out.push({ start: open.ts, end: null, startId: open.id, endId: null, ms: Math.max(0, now - open.ts) });
+  return out;
+}
+
+/**
+ * Index of the session containing ts, or -1. Open sessions extend forever.
+ * @param {Session[]} list @param {number} ts
+ */
+export function sessionIndex(list, ts) {
+  return list.findIndex((x) => ts >= x.start && (x.end == null || ts <= x.end));
+}
+
+/**
+ * Suggest start/stop events from step timestamps: a new session begins after a gap longer than
+ * `gapMs`. Each session runs from its first to its last logged step.
+ * @param {Game} game @param {number} [gapMs]
+ * @returns {SessionEvent[]}
+ */
+export function inferSessions(game, gapMs = 30 * 60000) {
+  const stamps = game.steps.filter(isDone).map((s) => /** @type {number} */ (s.ts)).sort((a, b) => a - b);
+  /** @type {SessionEvent[]} */
+  const evs = [];
+  let from = 0;
+  for (let i = 0; i < stamps.length; i++) {
+    if (i === stamps.length - 1 || stamps[i + 1] - stamps[i] > gapMs) {
+      evs.push({ id: uid(), ts: stamps[from], kind: "start" }, { id: uid(), ts: stamps[i], kind: "stop" });
+      from = i + 1;
+    }
+  }
+  return evs;
+}
 
 /** @param {Step} s */
 export const isDone = (s) => s.ts != null;
 
 /**
  * @param {Game} game
+ * @param {number} [now]
  * @returns {State}
  */
-export function deriveState(game) {
+export function deriveState(game, now = Date.now()) {
   const done = game.steps.filter(isDone);
   /** @type {Record<string, Step[]>} */
   const byCat = {};
@@ -323,6 +382,7 @@ export function deriveState(game) {
   const stamps = done.map((s) => /** @type {number} */ (s.ts));
   const igtSteps = done.filter((s) => s.igt);
   const endStep = byCat.end[0];
+  const sess = sessions(game, now);
 
   return {
     counts,
@@ -340,6 +400,9 @@ export function deriveState(game) {
     complete: Boolean(endStep) || (game.steps.length > 0 && currentIndex < 0),
     steps: game.steps.length,
     stepsDone: done.length,
+    sessions: sess,
+    playMs: sess.reduce((n, x) => n + x.ms, 0),
+    playing: sess.find((x) => x.end == null) ?? null,
   };
 }
 
@@ -388,16 +451,24 @@ export function upcoming(game, state, ahead = 5) {
  * Completed steps, most recent first, with the gap to the step logged just before each.
  * @param {Game} game
  * @param {number} [limit]
- * @returns {Array<{ step: Step, gapMs: number | null }>}
+ * @returns {Array<{ step: Step, gapMs: number | null, fresh: boolean }>}
  */
 export function history(game, limit = 15) {
   const done = game.steps
     .map((s, i) => ({ s, i }))
     .filter(({ s }) => isDone(s))
     .sort((a, b) => /** @type {number} */ (b.s.ts) - /** @type {number} */ (a.s.ts) || b.i - a.i);
+  const list = sessions(game);
   return done.slice(0, limit).map(({ s }, k) => {
     const prev = done[k + 1];
-    return { step: s, gapMs: prev ? /** @type {number} */ (s.ts) - /** @type {number} */ (prev.s.ts) : null };
+    const ts = /** @type {number} */ (s.ts);
+    // With session events, a gap across sessions is not play time: mark a fresh session instead.
+    const fresh = Boolean(prev) && list.length > 0 && sessionIndex(list, ts) !== sessionIndex(list, /** @type {number} */ (prev.s.ts));
+    return {
+      step: s,
+      gapMs: prev && !fresh ? ts - /** @type {number} */ (prev.s.ts) : null,
+      fresh,
+    };
   });
 }
 
@@ -417,24 +488,27 @@ export function dayKey(ts) {
  *   end: number,
  *   pickups: number,
  *   bosses: number,
- *   items: Array<{ kind: "step", ts: number, step: Step } | { kind: "entry", ts: number, entry: Entry }>,
+ *   playMs: number,
+ *   items: Array<{ kind: "step", ts: number, step: Step } | { kind: "entry", ts: number, entry: Entry } | { kind: "event", ts: number, event: SessionEvent }>,
  * }>}
  */
 export function journalDays(game) {
   /** @type {Map<string, any>} */
   const days = new Map();
-  /** @type {Array<{ kind: "step", ts: number, step: Step, i: number } | { kind: "entry", ts: number, entry: Entry, i: number }>} */
+  /** @type {Array<any>} */
   const all = [];
   game.steps.forEach((s, i) => {
     if (isDone(s)) all.push({ kind: "step", ts: /** @type {number} */ (s.ts), step: s, i });
   });
   game.entries.forEach((e, i) => all.push({ kind: "entry", ts: e.ts, entry: e, i }));
-  all.sort((a, b) => a.ts - b.ts || (a.kind === b.kind ? a.i - b.i : a.kind === "step" ? -1 : 1));
+  (game.events ?? []).forEach((e, i) => all.push({ kind: "event", ts: e.ts, event: e, i }));
+  const rank = (it) => (it.kind === "event" ? (it.event.kind === "start" ? 0 : 3) : it.kind === "step" ? 1 : 2);
+  all.sort((a, b) => a.ts - b.ts || rank(a) - rank(b) || a.i - b.i);
   for (const it of all) {
     const key = dayKey(it.ts);
     let day = days.get(key);
     if (!day) {
-      day = { day: key, start: it.ts, end: it.ts, pickups: 0, bosses: 0, items: [] };
+      day = { day: key, start: it.ts, end: it.ts, pickups: 0, bosses: 0, playMs: 0, items: [] };
       days.set(key, day);
     }
     day.end = Math.max(day.end, it.ts);
@@ -444,6 +518,10 @@ export function journalDays(game) {
       if (CATEGORIES[cat].pickup) day.pickups++;
       if (cat === "boss") day.bosses++;
     }
+  }
+  for (const x of sessions(game)) {
+    const day = days.get(dayKey(x.start));
+    if (day) day.playMs += x.ms;
   }
   return [...days.values()];
 }
@@ -573,6 +651,11 @@ export function fmtAgo(ts, now) {
   return `${fmtDuration(ms)} ago`;
 }
 
+/** Active play time from session events. @param {State} state */
+export function fmtPlay(state) {
+  return state.sessions.length ? fmtDuration(state.playMs) : "—";
+}
+
 /** Clock span between first and last completed step. @param {State} state */
 export function fmtSpan(state) {
   if (state.first == null || state.last == null) return "—";
@@ -597,6 +680,7 @@ export function toExportJson(games, now = Date.now()) {
       updatedAt: new Date(g.updatedAt).toISOString(),
       steps: g.steps.map((s) => ({ ...s, ts: s.ts == null ? null : new Date(s.ts).toISOString() })),
       entries: g.entries.map((e) => ({ ...e, ts: new Date(e.ts).toISOString() })),
+      events: (g.events ?? []).map((e) => ({ ...e, ts: new Date(e.ts).toISOString() })),
     })),
   };
 }
@@ -676,6 +760,10 @@ export function normalizeGame(raw) {
       body: str(e?.body) ?? "",
     }))
     .filter((e) => e.title || e.body);
+  const events = (Array.isArray(raw.events) ? raw.events : [])
+    .map((e) => ({ id: str(e?.id) ?? uid(), ts: parseTime(e?.ts), kind: e?.kind === "stop" ? "stop" : e?.kind === "start" ? "start" : null }))
+    .filter((e) => e.ts != null && e.kind)
+    .sort((a, b) => a.ts - b.ts);
   return {
     id: str(raw.id) ?? uid(),
     name: str(raw.name) ?? "Super Metroid",
@@ -684,6 +772,7 @@ export function normalizeGame(raw) {
     meta: { ...defaultMeta(), ...(raw.meta && typeof raw.meta === "object" ? raw.meta : {}) },
     steps,
     entries,
+    events: /** @type {SessionEvent[]} */ (events),
   };
 }
 

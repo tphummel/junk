@@ -5,6 +5,7 @@ import {
   deriveState,
   fmtClock,
   fmtDate,
+  fmtPlay,
   fmtSpan,
   fmtStamp,
   isDone,
@@ -166,7 +167,8 @@ export function buildSheetHtml(game, opts = {}) {
   const facts = [
     ["Start", state.first != null ? fmtStamp(state.first) : ""],
     ["Finish", state.complete && state.last != null ? fmtStamp(state.last) : ""],
-    ["Clock time", state.first != null ? fmtSpan(state) : ""],
+    ["Play time", state.sessions.length ? fmtPlay(state) : ""],
+    ["Clock span", state.first != null ? fmtSpan(state) : ""],
     ["Game time", state.igt ?? ""],
     ["System", meta.system],
     ["Item %", `${state.percent}%`],

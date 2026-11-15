@@ -20,6 +20,9 @@ import {
   fmtStamp,
   fromInputValue,
   history,
+  fmtClock,
+  inferSessions,
+  fmtDuration,
   isDone,
   moveStep,
   newGame,
@@ -240,6 +243,42 @@ function progressBarMini(s) {
 // ----- Dashboard
 
 /** @param {Game} game @param {import("./engine.js").State} state */
+function sessionBar(game, state) {
+  const p = state.playing;
+  return `<div class="session-bar">
+    <button type="button" class="${p ? "danger" : "primary"}" data-action="session-toggle">${p ? "■ Stop session" : "▶ Start session"}</button>
+    <span class="${p ? "live" : "m3-muted"}">${
+      p
+        ? `Playing since ${esc(fmtClock(p.start))} · ${esc(fmtDuration(p.ms))}`
+        : state.sessions.length
+          ? `Not playing · ${state.sessions.length} session${state.sessions.length === 1 ? "" : "s"}, ${esc(fmtDuration(state.playMs))} played`
+          : "No sessions yet. Start one when you sit down to play, stop it when you put the controller down."
+    }</span>
+  </div>`;
+}
+
+/** @param {Game} game @param {import("./engine.js").State} state */
+function sessionsCard(game, state) {
+  const steps = game.steps.filter(isDone);
+  const rows = [...state.sessions]
+    .reverse()
+    .map((x) => {
+      const n = steps.filter((s) => /** @type {number} */ (s.ts) >= x.start && (x.end == null || /** @type {number} */ (s.ts) <= x.end)).length;
+      return `<li><b>${esc(fmtDate(x.start))}</b><span>${esc(fmtClock(x.start))} – ${x.end ? esc(fmtClock(x.end)) : "now"}</span>
+        <span>${esc(fmtDuration(x.ms))}</span><span class="m3-muted">${n} step${n === 1 ? "" : "s"}</span>
+        <button type="button" class="small" data-action="edit-event" data-id="${esc(x.startId)}">Start</button>
+        ${x.endId ? `<button type="button" class="small" data-action="edit-event" data-id="${esc(x.endId)}">Stop</button>` : ""}</li>`;
+    })
+    .join("");
+  return `<div class="card"><h3>Sessions</h3>
+    ${rows ? `<ul class="session-list">${rows}</ul>` : `<p class="m3-muted">Sessions record when you were actually playing, so “+n min” and play time ignore the hours you were away.</p>`}
+    <div class="toolbar" style="margin-top:0.75rem">
+      <button type="button" class="small" data-action="add-event">＋ Add start/stop event</button>
+      <button type="button" class="small" data-action="infer-sessions"${steps.length ? "" : " disabled"}>Infer from step times…</button>
+    </div></div>`;
+}
+
+/** @param {Game} game @param {import("./engine.js").State} state */
 function renderDash(game, state) {
   const now = Date.now();
   const next = upcoming(game, state, 5);
@@ -279,6 +318,7 @@ function renderDash(game, state) {
   return `<section class="view stack">
     <div class="card stack">
       ${hudHtml(state)}
+      ${sessionBar(game, state)}
       ${progressBarHtml(state)}
       ${statsHtml(game, state)}
     </div>
@@ -293,7 +333,7 @@ function renderDash(game, state) {
         <p style="margin:0.75rem 0 0"><a href="${gameUrl(game.id, "journal")}">Open the full journal →</a></p></div>
     </div>
     <div class="card"><h3>Item grid</h3>${gridHtml(state)}</div>
-    <div class="cols">
+    <div class="cols">${sessionsCard(game, state)}
       <div class="card"><h3>By type</h3>${categoryBarsHtml(state)}</div>
       <div class="card"><h3>By area</h3>${areasHtml(state)}<h3 style="margin-top:1.25rem">Bosses</h3>${bossesHtml(state)}</div>
       <div class="card"><h3>Items per session</h3>${paceHtml(pace(game))}</div>
@@ -364,7 +404,7 @@ function renderRoute(game, state) {
 function renderJournal(game) {
   return `<section class="view">
     <div class="picker-head"><h2>Journal</h2>
-      <div class="toolbar"><button type="button" class="primary" data-action="add-entry">＋ Journal entry</button></div></div>
+      <div class="toolbar"><button type="button" data-action="add-event">＋ Start/stop event</button><button type="button" class="primary" data-action="add-entry">＋ Journal entry</button></div></div>
     <div class="card">${timelineHtml(game, { edit: true })}</div>
   </section>`;
 }
@@ -536,6 +576,31 @@ async function entryDialog(game, id) {
   });
 }
 
+/** @param {Game} game @param {string | null} id */
+async function eventDialog(game, id) {
+  const e = id ? (game.events ?? []).find((x) => x.id === id) : null;
+  const fd = await openDialog(`<form method="dialog">
+    <h2>${e ? "Edit session event" : "Add session event"}</h2>
+    <p class="hint">Start and stop events can be at any time, including in the past. Stray stops and double starts are ignored.</p>
+    <div class="field-row">
+      <label class="field">Event<select name="kind"><option value="start"${e?.kind !== "stop" ? " selected" : ""}>▶ Start playing</option><option value="stop"${e?.kind === "stop" ? " selected" : ""}>■ Stop playing</option></select></label>
+      <label class="field">When<input name="ts" type="datetime-local" step="1" required value="${toInputValue(e?.ts ?? Date.now())}"></label>
+    </div>
+    <div class="dialog-actions">
+      ${e ? `<button type="submit" name="act" value="delete" class="danger left" formnovalidate>Delete</button>` : ""}
+      <button type="submit" value="cancel" formnovalidate>Cancel</button>
+      <button type="submit" name="act" value="save" class="primary">Save</button>
+    </div></form>`);
+  if (!fd) return;
+  if (e && val(fd, "act") === "delete") return mutate(game, (g) => void (g.events = g.events.filter((x) => x.id !== e.id)));
+  const ev = { id: e?.id ?? uid(), ts: fromInputValue(val(fd, "ts")) ?? Date.now(), kind: /** @type {"start" | "stop"} */ (val(fd, "kind") === "stop" ? "stop" : "start") };
+  return mutate(game, (g) => {
+    g.events = (g.events ?? []).filter((x) => x.id !== ev.id);
+    g.events.push(ev);
+    g.events.sort((a, b) => a.ts - b.ts);
+  });
+}
+
 /** @param {Game | null} game existing game to edit, or null to create */
 async function gameDialog(game) {
   const m = game?.meta ?? { system: "", goal: "100% item collection", bosses: "All minor, all major", bossOrder: "KPDR", glitches: "None" };
@@ -677,6 +742,7 @@ document.addEventListener("click", async (ev) => {
       copy.createdAt = Date.now();
       copy.steps.forEach((s) => (s.id = uid()));
       copy.entries.forEach((e) => (e.id = uid()));
+      (copy.events ?? []).forEach((e) => (e.id = uid()));
       await save(copy);
       render();
       break;
@@ -712,6 +778,30 @@ document.addEventListener("click", async (ev) => {
       break;
     case "undo":
       await undo();
+      break;
+    case "session-toggle":
+      if (game) {
+        const playing = Boolean(deriveState(game).playing);
+        await mutate(game, (g) => void (g.events = [...(g.events ?? []), { id: uid(), ts: Date.now(), kind: playing ? "stop" : "start" }]));
+        toast(playing ? "Session stopped" : "Session started");
+      }
+      break;
+    case "edit-event":
+      if (game && id) await eventDialog(game, id);
+      break;
+    case "add-event":
+      if (game) await eventDialog(game, null);
+      break;
+    case "infer-sessions":
+      if (game) {
+        const gapText = prompt("Start a new session after a gap of how many minutes between logged steps?", "30");
+        const gap = Number(gapText);
+        if (!gapText || !(gap > 0)) break;
+        if ((game.events ?? []).length && !confirm("This replaces your existing start/stop events. Continue?")) break;
+        const evs = inferSessions(game, gap * 60000);
+        await mutate(game, (g) => void (g.events = evs));
+        toast(`Created ${evs.length / 2} session${evs.length === 2 ? "" : "s"}`);
+      }
       break;
     case "print":
       applyPaper();
@@ -809,6 +899,7 @@ async function boot() {
     // Repair anything odd (older exports, hand edits) without losing data.
     if (!Array.isArray(g.steps)) continue;
     renumber(g);
+    g.events ??= [];
     games.set(g.id, g);
   }
   lastBackup = (await store.getMeta("lastBackup")) ?? null;

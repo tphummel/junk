@@ -158,3 +158,46 @@ test("import rejects things that are not games", () => {
   assert.throws(() => parseImport('{"hello": 1}'), /not a Metroid 3 export/);
   assert.throws(() => parseImport("a,b\n1,2"), /Checkpoint/);
 });
+
+test("session events give play time and session-aware history gaps", async () => {
+  const { sessions, inferSessions, fmtPlay } = await import("../web/metroid-3/engine.js");
+  const game = newGame();
+  // Day 1: two steps 2 min apart. Day 2: two steps 3 min apart.
+  const D2 = T0 + 24 * 60 * MIN;
+  [T0, T0 + 2 * MIN, D2, D2 + 3 * MIN].forEach((t, i) => setDone(game, game.steps[i].id, t));
+  // No events: legacy behaviour, raw gap.
+  assert.equal(history(game, 4)[1].gapMs, D2 - (T0 + 2 * MIN));
+  game.events = inferSessions(game, 30 * MIN);
+  assert.equal(game.events.length, 4);
+  const list = sessions(game);
+  assert.deepEqual(list.map((x) => x.ms), [2 * MIN, 3 * MIN]);
+  const state = deriveState(game);
+  assert.equal(state.playMs, 5 * MIN);
+  assert.equal(state.playing, null);
+  assert.equal(fmtPlay(state), "5 min");
+  const h = history(game, 4);
+  assert.equal(h[0].gapMs, 3 * MIN); // same session
+  assert.equal(h[1].fresh, true); // crossed sessions
+  assert.equal(h[1].gapMs, null);
+  const days = journalDays(game);
+  assert.equal(days[0].playMs, 2 * MIN);
+  assert.equal(days[0].items.filter((i) => i.kind === "event").length, 2);
+});
+
+test("open sessions run to now; stray events are ignored; events round-trip", async () => {
+  const { sessions } = await import("../web/metroid-3/engine.js");
+  const game = newGame();
+  game.events = [
+    { id: "a", ts: T0 - MIN, kind: "stop" }, // stray stop
+    { id: "b", ts: T0, kind: "start" },
+    { id: "c", ts: T0 + MIN, kind: "start" }, // double start
+  ];
+  const list = sessions(game, T0 + 10 * MIN);
+  assert.equal(list.length, 1);
+  assert.equal(list[0].end, null);
+  assert.equal(list[0].ms, 10 * MIN);
+  assert.ok(deriveState(game, T0 + 10 * MIN).playing);
+  const [back] = parseImport(JSON.stringify(toExportJson([game])));
+  assert.equal(back.events.length, 3);
+  assert.equal(back.events[1].ts, T0);
+});

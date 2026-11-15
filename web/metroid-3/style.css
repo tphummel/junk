@@ -203,6 +203,15 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .m3-day h3 small { font-size: 0.8rem; font-weight: 400; color: var(--support); }
 .m3-events { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
 .m3-ev, .m3-note-card { display: grid; grid-template-columns: 4.6rem auto 1fr; gap: 0.6rem; align-items: start; padding: 0.35rem 0; }
+.m3-session-row { display: grid; grid-template-columns: 4.6rem auto 1fr; gap: 0.6rem; align-items: start; padding: 0.35rem 0; color: var(--support); }
+.m3-session-row time { font: 0.8rem/1.9 ui-monospace, Menlo, Consolas, monospace; text-align: right; }
+.m3-session-row .m3-chip { background: transparent; border: 1px solid var(--support); color: var(--support); }
+.m3-session-row b { font-weight: 600; }
+.session-bar { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; }
+.session-bar .live { font-weight: 600; color: var(--primary); }
+.session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; font-size: 0.9rem; }
+.session-list li { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 0.3rem; }
+.session-list b { font-variant-numeric: tabular-nums; }
 .m3-ev time, .m3-note-card time { font: 0.8rem/1.9 ui-monospace, Menlo, Consolas, monospace; color: var(--support); text-align: right; }
 .m3-chip { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 4px; background: var(--m); color: var(--on); font: 700 0.75rem/1 ui-monospace, Menlo, Consolas, monospace; }
 .m3-ev b { font-weight: 600; }
@@ -325,7 +334,7 @@ label.check input { width: 1.1rem; height: 1.1rem; accent-color: var(--primary);
   .tabs { margin-left: 0; width: 100%; }
   .tabs a { flex: 1 1 auto; text-align: center; padding: 0.5rem 0.4rem; }
   .m3-bars li { grid-template-columns: 6rem 1fr 3.4rem; }
-  .m3-ev { grid-template-columns: 3.4rem auto 1fr; }
+  .m3-ev, .m3-session-row { grid-template-columns: 3.4rem auto 1fr; }
   .m3-ev time, .m3-note-card time { text-align: left; font-size: 0.7rem; }
   .m3-note-card { grid-template-columns: 3.4rem 1fr; }
 }

@@ -12,6 +12,7 @@ import {
   fmtClock,
   fmtDate,
   fmtDuration,
+  fmtPlay,
   fmtSpan,
   hud,
   journalDays,
@@ -169,7 +170,9 @@ export function statsHtml(game, state) {
   const cells = [
     ["Item %", `${state.percent}%`],
     ["Steps", `${state.stepsDone}/${state.steps}`],
-    ["Clock time", fmtSpan(state)],
+    ["Play time", fmtPlay(state)],
+    ["Sessions", state.sessions.length ? String(state.sessions.length) : "—"],
+    ["Clock span", fmtSpan(state)],
     ["Game time", state.igt ?? "—"],
     ["Play days", String(days || "—")],
     ["Started", state.first != null ? fmtDate(state.first) : "—"],
@@ -192,17 +195,17 @@ export function paceHtml(days) {
 
 /**
  * The "journal history" view: latest steps with relative time and the gap since the one before.
- * @param {Array<{ step: import("./engine.js").Step, gapMs: number | null }>} items
+ * @param {Array<{ step: import("./engine.js").Step, gapMs: number | null, fresh?: boolean }>} items
  * @param {number} now
  */
 export function historyHtml(items, now) {
   if (!items.length) return `<p class="m3-muted">Nothing logged yet. Complete the first step to start the journal.</p>`;
   return `<ol class="m3-history">${items
-    .map(({ step: s, gapMs }) => {
+    .map(({ step: s, gapMs, fresh }) => {
       const { cat } = classify(s.checkpoint);
       return `<li class="c-${cat}"><span class="m3-n">${s.step}</span>
         <div><b>${esc(s.checkpoint)}</b>${where(s) ? `<small>${esc(where(s))}</small>` : ""}</div>
-        <time datetime="${new Date(/** @type {number} */ (s.ts)).toISOString()}">${esc(fmtAgo(/** @type {number} */ (s.ts), now))}${gapMs != null ? `<small>+${esc(fmtDuration(gapMs))}</small>` : ""}</time></li>`;
+        <time datetime="${new Date(/** @type {number} */ (s.ts)).toISOString()}">${esc(fmtAgo(/** @type {number} */ (s.ts), now))}${gapMs != null ? `<small>+${esc(fmtDuration(gapMs))}</small>` : fresh ? `<small>new session</small>` : ""}</time></li>`;
     })
     .join("")}</ol>`;
 }
@@ -220,6 +223,13 @@ export function timelineHtml(game, opts = {}) {
     .map((d) => {
       const rows = d.items
         .map((it) => {
+          if (it.kind === "event") {
+            const e = it.event;
+            return `<li class="m3-session-row" data-event="${esc(e.id)}"><time>${esc(fmtClock(e.ts))}</time>
+              <span class="m3-chip" aria-hidden="true">${e.kind === "start" ? "▶" : "■"}</span>
+              <div><b>${e.kind === "start" ? "Session started" : "Session stopped"}</b>
+              ${edit ? `<div class="m3-row-actions"><button type="button" data-action="edit-event" data-id="${esc(e.id)}">Edit</button></div>` : ""}</div></li>`;
+          }
           if (it.kind === "entry") {
             const e = it.entry;
             return `<li class="m3-note-card" data-entry="${esc(e.id)}">
@@ -241,6 +251,7 @@ export function timelineHtml(game, opts = {}) {
         .join("");
       const span = d.end > d.start ? `${fmtClock(d.start)} – ${fmtClock(d.end)}` : fmtClock(d.start);
       const bits = [`${d.pickups} pickup${d.pickups === 1 ? "" : "s"}`];
+      if (d.playMs) bits.unshift(`${fmtDuration(d.playMs)} played`);
       if (d.bosses) bits.push(`${d.bosses} boss${d.bosses === 1 ? "" : "es"}`);
       return `<section class="m3-day"><h3>${esc(fmtDate(d.start))}<small>${esc(span)} · ${bits.join(", ")}</small></h3><ol class="m3-events">${rows}</ol></section>`;
     })
