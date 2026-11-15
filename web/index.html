@@ -3,22 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>junk</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #D22DAC cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #D02DAB;
+      --support: #A15F91;
+      --accent:  #4E841C;
+      --bg: #FFFFFF;
+      --text: #111111;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D439B1;
+        --support: #A66797;
+        --accent:  #7CD22D;
+        --bg: #111111;
+        --text: #EEEEEE;
+      }
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 1rem/1.5 system-ui, sans-serif;
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    h1, h2, h3, a { color: var(--primary); }
+    h2 { border-bottom: 1px solid var(--support); padding-bottom: 0.25rem; margin-top: 2rem; }
+    h3 { margin-bottom: 0; }
+    a:hover, a:focus-visible { color: var(--accent); }
+    ul { list-style: none; padding: 0; }
+    li { margin: 0.25rem 0; }
+    .muted { color: var(--support); }
+  </style>
 </head>
 <body>
   <h1>junk</h1>
-  <p>Tools and experiments.</p>
-  <h2>Pages</h2>
+  <p class="muted">Tools, games, and toys.</p>
+
+  <!--
+    Add each new project as one <li> under the heading for its class.
+    Alphabetical by name within a section. One line per project: the main link
+    first, then extra links (api, image) after it.
+      <li><a href="/name/">name</a> <a href="/api/name/">api</a>: short description</li>
+  -->
+
+  <h2>🛠️ Tools</h2>
   <ul>
-    <li><a href="/card-shuffle-svelte/">card shuffle</a></li>
-    <li><a href="/golden-angle-palette/">golden angle palette</a></li>
+    <li><a href="/golden-angle-palette/">golden angle palette</a> <a href="/api/golden-angle-palette/e4572e">api</a>: light and dark color palette from a seed color</li>
+    <li><a href="/api/health">health</a>: status and current time</li>
+  </ul>
+
+  <h2>🎮 Games</h2>
+  <ul>
     <li><a href="/math-game/">math game</a></li>
   </ul>
-  <h2>API</h2>
+
+  <h2>🧸 Toys</h2>
   <ul>
-    <li><a href="/api/golden-angle-palette/e4572e">/api/golden-angle-palette/&lt;hex&gt;</a>: light and dark color palette from a seed color</li>
-    <li><a href="/api/health">/api/health</a>: status and current time</li>
-    <li><a href="/api/rps-bot/calvin">/api/rps-bot/calvin</a>: rock, paper or scissors from the Worker's clock, with timestamp and Cloudflare request id</li>
+    <li><a href="/card-shuffle-svelte/">card shuffle</a></li>
+  </ul>
+  <h3>RPS bots</h3>
+  <ul>
+    <li><a href="/api/rps-bot/calvin">calvin</a></li>
   </ul>
 </body>
 </html>
