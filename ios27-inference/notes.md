@@ -32,3 +32,4 @@
   `collect()`. `GenerationOptions(sampling:...)` is deprecated in favour of `samplingMode:`.
 - Each Playground run uses a fresh session (single turn). Prewarm is called on a throwaway session; whether that
   actually speeds up the next session needs measuring on device.
+- 2026-11-15: merged main (repo now has README/skill/adr layout). This project is a "misc-project" per skill/misc-project; its folder + notes.md + README.md + workflow already match, so no restructuring was needed.
