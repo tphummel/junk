@@ -3,8 +3,8 @@
 //   #/                    game picker
 //   #/g/<id>              dashboard (HUD, progress bar, nav, item grid, history)
 //   #/g/<id>/route        every checkpoint, with the entry form
-//   #/g/<id>/journal      day-by-day journal and free-form entries
-//   #/g/<id>/publish      printable scorecard and static HTML export
+//   #/g/<id>/log          day-by-day journal and free-form entries
+//   #/g/<id>/share        printable scorecard and static HTML export
 
 import {
   ALL_AREAS,
@@ -130,7 +130,9 @@ function toast(msg) {
 
 function parseHash() {
   const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  if (parts[0] === "g" && parts[1]) return { game: decodeURIComponent(parts[1]), view: parts[2] || "dash" };
+  // Old names (journal, publish) still resolve to the renamed views.
+  const alias = { journal: "log", publish: "share" };
+  if (parts[0] === "g" && parts[1]) return { game: decodeURIComponent(parts[1]), view: alias[parts[2]] || parts[2] || "dash" };
   return { game: null, view: "games" };
 }
 
@@ -148,7 +150,7 @@ const gameUrl = (id, view = "") => `#/g/${encodeURIComponent(id)}${view ? "/" + 
 function render() {
   const { view } = parseHash();
   const game = current();
-  document.body.classList.toggle("is-publish", view === "publish" && Boolean(game));
+  document.body.classList.toggle("is-publish", view === "share" && Boolean(game));
   renderHeader(game, view);
   if (!game) {
     document.title = "Metroid 3";
@@ -159,17 +161,17 @@ function render() {
   const state = deriveState(game);
   const body =
     view === "route" ? renderRoute(game, state)
-    : view === "journal" ? renderJournal(game)
-    : view === "publish" ? renderPublish(game, state)
+    : view === "log" ? renderJournal(game)
+    : view === "share" ? renderPublish(game, state)
     : renderDash(game, state);
   app.innerHTML = body;
-  if (view === "publish") applyPaper();
+  if (view === "share") applyPaper();
 }
 
 /** @param {Game | null} game @param {string} view */
 function renderHeader(game, view) {
   const tabs = game
-    ? [["dash", "Dashboard"], ["route", "Route"], ["journal", "Journal"], ["publish", "Publish"]]
+    ? [["dash", "Dash"], ["route", "Route"], ["log", "Log"], ["share", "Share"]]
     : [];
   $("#tabs").innerHTML =
     (game ? `<a href="#/">Games</a>` : "") +
@@ -310,7 +312,7 @@ function renderDash(game, state) {
         <h3>${state.steps ? "Zebes is clear. 🎉" : "No steps yet"}</h3>
         <div class="where">${state.steps ? "Every checkpoint is logged. Print the scorecard or publish the journal." : "Add checkpoints on the Route tab as you play."}</div>
         <div class="actions">
-          ${state.steps ? `<a class="btn primary" href="${gameUrl(game.id, "publish")}">Publish</a>` : ""}
+          ${state.steps ? `<a class="btn primary" href="${gameUrl(game.id, "share")}">Share</a>` : ""}
           <button type="button" data-action="add-step">Log a pickup</button>
           ${undoBtn}
         </div></div>`;
@@ -409,7 +411,7 @@ function renderRoute(game, state) {
 /** @param {Game} game */
 function renderJournal(game) {
   return `<section class="view">
-    <div class="picker-head"><h2>Journal</h2>
+    <div class="picker-head"><h2>Log</h2>
       <div class="toolbar"><button type="button" data-action="add-event">＋ Start/stop event</button><button type="button" class="primary" data-action="add-entry">＋ Journal entry</button></div></div>
     <div class="card">${timelineHtml(game, { edit: true })}</div>
   </section>`;
@@ -424,7 +426,7 @@ function renderPublish(game, state) {
   const sel = (cur, v, label) => `<option value="${v}"${cur === v ? " selected" : ""}>${label}</option>`;
   const chk = (id, label, on) => `<label class="check"><input type="checkbox" id="${id}"${on ? " checked" : ""}> ${label}</label>`;
   return `<section class="view">
-    <h2>Publish</h2>
+    <h2>Share</h2>
     ${state.complete ? "" : `<div class="notice">This run isn’t finished yet (${state.percent}%). You can still print or export a snapshot; run it again when you’re done for the final version.</div>`}
     <div class="publish-grid no-print">
       <div class="card"><h3>Printable scorecard</h3>
