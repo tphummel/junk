@@ -6,7 +6,15 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["./worker-configuration.d.ts"]
+    "types": [
+      "./worker-configuration.d.ts"
+    ],
+    "allowJs": true,
+    "checkJs": true
   },
-  "include": ["api/**/*.ts", "worker-configuration.d.ts"]
+  "include": [
+    "api/**/*.ts",
+    "web/golden-angle-palette/palette.js",
+    "worker-configuration.d.ts"
+  ]
 }

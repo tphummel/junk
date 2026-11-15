@@ -33,47 +33,24 @@
 <div class="mode" id="dark"></div>
 <p id="warn" role="alert"></p>
 <p><button id="copy">Copy</button> <button id="copycss">Copy CSS</button> <span id="msg" role="status"></span></p>
-<script>
-const GOLDEN_ANGLE = 360 - 360 / 1.618, SAT_CUT = 0.6;
-function rgb2hsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;
-  if(!d)return[0,0,l];const s=d/(1-Math.abs(2*l-1));let h;
-  if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;return[(h*60+360)%360,s,l];}
-function hsl2hex(h,s,l){h=((h%360)+360)%360;const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
-  const[r,g,b]=[[c,x,0],[x,c,0],[0,c,x],[0,x,c],[x,0,c],[c,0,x]][Math.floor(h/60)%6];
-  return[r,g,b].map(v=>Math.round((v+m)*255).toString(16).padStart(2,"0")).join("").toUpperCase();}
-function palette(hex,dir){const n=parseInt(hex.slice(1),16),[h,s,l]=rgb2hsl(n>>16,n>>8&255,n&255);
-  return{primary:hex.slice(1).toUpperCase(),support:hsl2hex(h,s*(1-SAT_CUT),l),accent:hsl2hex(h+dir*GOLDEN_ANGLE,s,l)};}
-
-// WCAG contrast. Keep in sync with api/golden-angle-palette.ts.
-const lin=c=>((c/=255)<=.03928?c/12.92:((c+.055)/1.055)**2.4);
-function lum(hex){const n=parseInt(hex,16);return .2126*lin(n>>16)+.7152*lin(n>>8&255)+.0722*lin(n&255);}
-function ratio(a,b){const[x,y]=[lum(a),lum(b)].sort((p,q)=>q-p);return(x+.05)/(y+.05);}
-// Shift lightness (same hue and saturation) until hex meets target on bg: darker on light bg, lighter on dark bg.
-function fit(hex,bg,target){const raw=ratio(hex,bg);
-  if(raw>=target)return{hex:hex.toUpperCase(),ratio:raw,raw,adjusted:false,meets:true};
-  const n=parseInt(hex,16),[h,s,l]=rgb2hsl(n>>16,n>>8&255,n&255),lighten=lum(bg)<=.18,end=lighten?1:0;
-  let far=end,near=l;
-  for(let i=0;i<30;i++){const mid=(far+near)/2;if(ratio(hsl2hex(h,s,mid),bg)>=target)far=mid;else near=mid;}
-  let out=hsl2hex(h,s,far);
-  for(let i=0;i<100&&ratio(out,bg)<target&&far!==end;i++){far=lighten?Math.min(1,far+.001):Math.max(0,far-.001);out=hsl2hex(h,s,far);}
-  const r=ratio(out,bg);return{hex:out,ratio:r,raw,adjusted:true,meets:r>=target};}
-
+<script type="module">
+import{palette,fitContrast,contrastRatio as ratio}from"./palette.js";
 const $=id=>document.getElementById(id), fl=n=>(Math.floor(n*100)/100).toFixed(2);
 let cur;
 function render(){
   const seed=$("c").value,dir=$("ccw").checked?-1:1,target=Number($("min").value);
   const bgs={light:$("lbg").value.slice(1).toUpperCase(),dark:$("dbg").value.slice(1).toUpperCase()};
-  const p=palette(seed,dir),rep={};
+  const p=palette(seed.slice(1),dir),rep={};
   // Seed palette; the label is black or white, whichever contrasts more (always >= 4.58:1).
   $("sw").innerHTML=Object.entries(p).map(([k,v])=>{const w=ratio(v,"FFFFFF"),b=ratio(v,"000000");
     return`<div style="background:#${v};color:${b>=w?"#000":"#fff"}">${k}<br>#${v}<br>${fl(Math.max(w,b))}:1</div>`}).join("");
   // One adjusted variant per mode: no single color reaches 4.5:1 on both a white and a near-black background.
   for(const[m,bg]of Object.entries(bgs)){
-    rep[m]=Object.fromEntries(Object.entries(p).map(([k,v])=>[k,fit(v,bg,target)]));
+    rep[m]=Object.fromEntries(Object.entries(p).map(([k,v])=>[k,fitContrast(v,bg,target)]));
     const txt=ratio(bg,"111111")>=ratio(bg,"FFFFFF")?"#111":"#fff";
     $(m).style.background="#"+bg;$(m).style.color=txt;
     $(m).innerHTML=Object.entries(rep[m]).map(([k,f])=>
-      `<div class="r"><span style="color:#${f.hex}">${k} #${f.hex}</span><span>${fl(f.ratio)}:1 ${f.meets?"✓":"✗"}${f.adjusted?` (from #${p[k]}, ${fl(f.raw)}:1)`:""}</span></div>`).join("");
+      `<div class="r"><span style="color:#${f.hex}">${k} #${f.hex}</span><span>${fl(f.ratio)}:1 ${f.meets?"✓":"✗"}${f.adjusted?` (from #${p[k]}, ${fl(f.rawRatio)}:1)`:""}</span></div>`).join("");
   }
   const bad=Object.entries(rep).flatMap(([m,r])=>Object.entries(r).filter(([,f])=>!f.meets).map(([k])=>`${k} (${m})`));
   $("warn").textContent=bad.length?`Cannot reach ${target}:1 on this background: ${bad.join(", ")}. Choose a lighter or darker background.`:"";
