@@ -2,40 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>tomhummel.com - the perfect form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>perfect form</title>
   <style>
     :root {
-      --bg: #fafafa; --fg: #222; --muted: #777; --accent: #2b6cb0; --border: #ccc;
-      --card: #fff; --win: #2f855a; --loss: #c53030; --soft: #eee;
+      color-scheme: light dark;
+      /* golden-angle seed: #7DD22D cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #4F841C;
+      --support: #647E4A;
+      --accent:  #2D4DD2;
+      --bg: #FFFFFF;
+      --text: #111111;
+      --muted: #5F5F5F;
+      --border: #8A8A8A;
+      --soft: #ECECEC;
+      --loss: #B3261E;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1b1c1d; --fg: #e6e6e6; --muted: #999; --accent: #63a4e0; --border: #444;
-        --card: #252627; --win: #68d391; --loss: #fc8181; --soft: #2f3031;
+        --primary: #7DD22D;
+        --support: #7FA15F;
+        --accent:  #5C75DC;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --muted: #A6A6A6;
+        --border: #6E6E6E;
+        --soft: #2A2A2A;
+        --loss: #FF8A80;
       }
     }
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); max-width: 40rem; margin: 0 auto; padding: 1rem; line-height: 1.4; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); max-width: 40rem; margin: 0 auto; padding: 1rem; line-height: 1.4; }
     h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
     h2 { font-size: 1.1rem; margin: 0 0 0.25rem; }
-    a { color: var(--accent); }
+    a { color: var(--primary); }
     /* 16px minimum on every control: anything smaller makes iOS Safari zoom on focus */
-    button, select, input, textarea { font: inherit; font-size: 1rem; color: var(--fg); }
-    input, select, textarea { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--card); min-height: 2.75rem; }
-    input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; padding: 0; margin: 0; inline-size: 1.25rem; block-size: 1.25rem; accent-color: var(--accent); }
-    input[type="range"] { padding: 0; border: 0; background: none; accent-color: var(--accent); }
+    button, select, input, textarea { font: inherit; font-size: 1rem; color: var(--text); }
+    input, select, textarea { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); min-height: 2.75rem; }
+    input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; padding: 0; margin: 0; inline-size: 1.25rem; block-size: 1.25rem; accent-color: var(--primary); }
+    input[type="range"] { padding: 0; border: 0; background: none; accent-color: var(--primary); }
     input[type="color"] { padding: 0.2rem; }
     input[type="file"] { padding: 0.5rem; }
     select[multiple] { min-height: 6rem; }
-    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
     input:user-invalid, select:user-invalid, textarea:user-invalid { border-color: var(--loss); }
-    button { cursor: pointer; padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--card); min-height: 2.75rem; touch-action: manipulation; }
-    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; flex: 1; }
+    button { cursor: pointer; padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); min-height: 2.75rem; touch-action: manipulation; }
+    button.primary { background: var(--primary); border-color: var(--primary); color: var(--bg); font-weight: 600; flex: 1; }
     label { display: block; margin: 0 0 0.25rem; font-weight: 600; font-size: 0.9rem; }
     .muted { color: var(--muted); font-size: 0.9rem; margin: 0 0 0.75rem; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem; margin: 1rem 0; }
+    .card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem; margin: 1rem 0; }
     .field { margin-bottom: 0.9rem; min-width: 0; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.75rem; }
     .grid.three > :first-child { grid-column: 1 / -1; }
@@ -48,11 +66,11 @@
     .previews { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
     .previews figure { margin: 0; width: 6rem; font-size: 0.7rem; color: var(--muted); overflow-wrap: anywhere; }
     .previews img, .previews video { width: 6rem; height: 6rem; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); display: block; }
-    #results { border-color: var(--win); }
+    #results { border-color: var(--accent); }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { text-align: left; padding: 0.35rem 0.4rem; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
     th { color: var(--muted); font-size: 0.8rem; }
-    .yes { color: var(--win); font-weight: 600; }
+    .yes { color: var(--accent); font-weight: 600; }
     .no { color: var(--muted); }
     nav { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; font-size: 0.9rem; margin: 0.75rem 0; }
     #env { margin: 0.75rem 0; font-size: 0.8rem; }
@@ -449,7 +467,7 @@
     </div>
   </form>
 
-  <p class="muted"><a href="https://github.com/tphummel/junk/tree/main/perfect-form">about this page</a></p>
+  <p class="muted"><a href="/">← junk</a></p>
 
   <script>
     (function () {
