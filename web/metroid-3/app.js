@@ -337,8 +337,7 @@ function renderDash(game, state) {
     </div>
     <div class="cols">
       <div class="card"><h3>Next steps</h3>${nextList}</div>
-      <div class="card"><h3>History</h3>${historyHtml(history(game, 5), now)}
-        <p style="margin:0.75rem 0 0"><a href="${gameUrl(game.id, "journal")}">Open the full journal →</a></p></div>
+      <div class="card"><h3>History</h3>${historyHtml(history(game, 5), now)}</div>
     </div>
     <div class="cols">${sessionsCard(game, state)}
       <div class="card"><h3>By type</h3>${categoryBarsHtml(state)}</div>
