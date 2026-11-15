@@ -31,7 +31,7 @@ Specifically:
 - The API is only a design-time tool, so an API outage or change cannot break a published experiment.
 - Two experiments can end up with similar colors by chance. This is accepted; re-rolling is the remedy.
 - Adjustment is by lightness only, so in one mode a color can end up noticeably darker or lighter than the seed; the raw seed is not itself used in the mode where it fails.
-- The palette and contrast logic exists in two places (the page's inline JS and `api/golden-angle-palette.ts`); `npm test` fails if they diverge. Colors already baked into experiments will not change if the algorithm does.
+- The palette and contrast logic is one plain-JavaScript module, `web/golden-angle-palette/palette.js`, shared by the palette page and the API (see ADR 0002). Colors already baked into experiments will not change if the algorithm does.
 - Nothing in CI checks that an experiment actually follows this convention.
 
 ## Alternatives considered

@@ -105,5 +105,5 @@ button { background: var(--primary); color: var(--bg); border: 0; }
 
 ## Notes
 
-- The API mirrors the logic inline in `web/golden-angle-palette/index.html`; `npm test` fails if they diverge.
+- The page and the API share one implementation, `web/golden-angle-palette/palette.js`; `npm test` (from the repo root) tests it and the API route.
 - Migrated experiments (copied from the blog) are not restyled during migration. Add a palette, with both modes, when you next change them.
