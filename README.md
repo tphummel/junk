@@ -29,4 +29,5 @@ Pages that import ES modules need the dev server; they do not load from `file://
 
 - Work on a branch and open a PR; don't push to `main`.
 - Commit only the files for your change; leave unrelated uncommitted files alone.
+- After every push, re-read the PR title and description against `git diff main...HEAD` and fix anything stale.
 - Before changing anything, check [`skill/`](skill/) for a skill that matches the task and read the ADRs that apply. Don't edit an accepted ADR's decision; add a new ADR that supersedes it.
