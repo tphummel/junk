@@ -238,33 +238,9 @@
     let play = { phase: 'setup', teamId: null, player: '', clue: null, limit: 120, startedAt: 0, endAt: 0, pausedAt: 0, result: null }
     let tickId = null
     let timerEl = null
-    let audioCtx = null
 
-    // ---- time's-up alert: beeps + screen flash + vibration -----------------
-    function unlockAudio () {
-      try {
-        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)()
-        if (audioCtx.state === 'suspended') audioCtx.resume()
-      } catch (e) { /* no audio available */ }
-    }
+    // ---- time's-up alert: screen flash ------------------------
     function alarm () {
-      try {
-        if (audioCtx) {
-          for (let i = 0; i < 3; i++) {
-            const t = audioCtx.currentTime + i * 0.35
-            const o = audioCtx.createOscillator()
-            const gain = audioCtx.createGain()
-            o.type = 'square'
-            o.frequency.value = 880
-            gain.gain.setValueAtTime(0.15, t)
-            gain.gain.setValueAtTime(0, t + 0.2)
-            o.connect(gain).connect(audioCtx.destination)
-            o.start(t)
-            o.stop(t + 0.25)
-          }
-        }
-      } catch (e) { /* ignore */ }
-      try { if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]) } catch (e) { /* ignore */ }
       const f = document.getElementById('flash')
       f.classList.remove('go')
       void f.offsetWidth
@@ -305,7 +281,6 @@
     }
 
     function startRound () {
-      unlockAudio()
       play.phase = 'running'
       play.pausedAt = 0
       play.startedAt = Date.now()
