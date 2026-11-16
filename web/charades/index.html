@@ -47,6 +47,11 @@
     .clue { font-size: 2.2rem; font-weight: 700; word-break: break-word; margin: 1rem 0; }
     .timer { font-size: 4.5rem; font-weight: 700; font-variant-numeric: tabular-nums; margin: 0.5rem 0; }
     .timer.low { color: var(--loss); }
+    .timer.paused { opacity: 0.45; }
+    #flash { position: fixed; inset: 0; background: var(--loss); opacity: 0; pointer-events: none; z-index: 99; }
+    #flash.go { animation: flash 0.35s ease-in-out 4; }
+    @keyframes flash { 0%, 100% { opacity: 0; } 50% { opacity: 0.85; } }
+    @media (prefers-reduced-motion: reduce) { #flash.go { animation-duration: 1.2s; animation-iteration-count: 1; } }
     .stage .big { width: 100%; padding: 1rem; font-size: 1.3rem; margin-top: 0.5rem; }
     .won { color: var(--win); } .lost { color: var(--loss); }
     .result { font-size: 1.6rem; font-weight: 700; }
@@ -70,6 +75,7 @@
   </style>
 </head>
 <body>
+  <div id="flash" aria-hidden="true"></div>
   <header>
     <h1 id="title">Charades</h1>
     <input id="game-name" class="name" type="text" aria-label="Game name">
@@ -229,14 +235,46 @@
 
     // ---- play flow -------------------------------------------------------
     // phase: setup -> clue -> running -> done
-    let play = { phase: 'setup', teamId: null, player: '', clue: null, limit: 120, startedAt: 0, endAt: 0, result: null }
+    let play = { phase: 'setup', teamId: null, player: '', clue: null, limit: 120, startedAt: 0, endAt: 0, pausedAt: 0, result: null }
     let tickId = null
     let timerEl = null
+    let audioCtx = null
+
+    // ---- time's-up alert: beeps + screen flash + vibration -----------------
+    function unlockAudio () {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)()
+        if (audioCtx.state === 'suspended') audioCtx.resume()
+      } catch (e) { /* no audio available */ }
+    }
+    function alarm () {
+      try {
+        if (audioCtx) {
+          for (let i = 0; i < 3; i++) {
+            const t = audioCtx.currentTime + i * 0.35
+            const o = audioCtx.createOscillator()
+            const gain = audioCtx.createGain()
+            o.type = 'square'
+            o.frequency.value = 880
+            gain.gain.setValueAtTime(0.15, t)
+            gain.gain.setValueAtTime(0, t + 0.2)
+            o.connect(gain).connect(audioCtx.destination)
+            o.start(t)
+            o.stop(t + 0.25)
+          }
+        }
+      } catch (e) { /* ignore */ }
+      try { if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]) } catch (e) { /* ignore */ }
+      const f = document.getElementById('flash')
+      f.classList.remove('go')
+      void f.offsetWidth
+      f.classList.add('go')
+    }
 
     function resetPlay () {
       clearInterval(tickId)
       tickId = null
-      play = { phase: 'setup', teamId: null, player: '', clue: null, limit: 120, startedAt: 0, endAt: 0, result: null }
+      play = { phase: 'setup', teamId: null, player: '', clue: null, limit: 120, startedAt: 0, endAt: 0, pausedAt: 0, result: null }
     }
 
     function nextTeamId (g) {
@@ -267,7 +305,9 @@
     }
 
     function startRound () {
+      unlockAudio()
       play.phase = 'running'
+      play.pausedAt = 0
       play.startedAt = Date.now()
       play.endAt = play.startedAt + play.limit * 1000
       clearInterval(tickId)
@@ -275,9 +315,22 @@
       renderPlay()
     }
 
+    function togglePause () {
+      if (play.pausedAt) {
+        const delta = Date.now() - play.pausedAt
+        play.startedAt += delta
+        play.endAt += delta
+        play.pausedAt = 0
+      } else {
+        play.pausedAt = Date.now()
+      }
+      renderPlay()
+    }
+
     function tick () {
+      if (play.pausedAt) return
       const left = play.endAt - Date.now()
-      if (left <= 0) return finish(false)
+      if (left <= 0) { alarm(); return finish(false) }
       if (timerEl) {
         timerEl.textContent = fmtTime(Math.ceil(left / 1000))
         timerEl.classList.toggle('low', left <= 10000)
@@ -288,6 +341,7 @@
       clearInterval(tickId)
       tickId = null
       const g = game()
+      if (play.pausedAt) { const d = Date.now() - play.pausedAt; play.startedAt += d; play.endAt += d; play.pausedAt = 0 }
       const elapsed = won ? Math.min(play.limit, Math.round((Date.now() - play.startedAt) / 100) / 10) : play.limit
       const round = {
         id: uid(), ts: play.startedAt, teamId: play.teamId, player: play.player.trim(),
@@ -350,12 +404,16 @@
       }
 
       // running
-      timerEl = h('div', { class: 'timer' }, fmtTime(Math.ceil((play.endAt - Date.now()) / 1000)))
+      const paused = !!play.pausedAt
+      const leftMs = paused ? play.pausedAt : Date.now()
+      timerEl = h('div', { class: 'timer' + (paused ? ' paused' : '') }, fmtTime(Math.ceil((play.endAt - leftMs) / 1000)))
       pane.append(h('div', { class: 'card stage' },
         who,
         timerEl,
-        h('p', { class: 'muted' }, 'Clue hidden'),
+        h('p', { class: 'muted' }, paused ? 'Paused' : 'Clue hidden'),
         h('button', { type: 'button', class: 'primary big', onclick: () => finish(true) }, 'Solved!'),
+        h('div', { style: 'margin-top:0.5rem' },
+          h('button', { type: 'button', style: 'width:100%;padding:0.6rem', onclick: togglePause }, paused ? 'Resume' : 'Pause')),
         h('div', { style: 'margin-top:1rem' },
           twoClick('Cancel round', () => { resetPlay(); renderPlay() }, 'Discard round?'))))
     }
