@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>x4 reading report</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #2DD267 cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #1D8843;
+      --support: #4C825F;
+      --accent:  #972DD2;
+      --bg: #FFFFFF;
+      --text: #111111;
+      --muted: #555555;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #2DD267;
+        --support: #5FA176;
+        --accent:  #AB54DA;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --muted: #A8A8A8;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { color: var(--primary); font: 700 1.9rem/1.1 Georgia, serif; margin: 0 0 8px; }
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); }
+    code { background: color-mix(in srgb, var(--bg), var(--text) 8%); padding: 1px 5px; border-radius: 4px; }
+    #drop { border: 2px dashed var(--support); border-radius: 14px; padding: 40px 20px; text-align: center; margin: 20px 0 12px; transition: background .15s; }
+    #drop.over { background: color-mix(in srgb, var(--bg), var(--primary) 14%); border-color: var(--primary); }
+    #drop strong { display: block; font-size: 1.15rem; margin-bottom: 6px; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; justify-content: center; }
+    button, label.btn { font: inherit; cursor: pointer; border-radius: 8px; padding: 8px 14px; border: 1px solid var(--support); background: transparent; color: var(--primary); display: inline-block; }
+    button.primary { background: var(--primary); color: var(--bg); border-color: var(--primary); }
+    button:disabled { opacity: .45; cursor: default; }
+    button:focus-visible, label.btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    #status { min-height: 1.5em; color: var(--muted); }
+    #status.error { color: #B3261E; }
+    @media (prefers-color-scheme: dark) { #status.error { color: #FF8A80; } }
+    #viewer[hidden], #intake[hidden] { display: none; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    iframe { width: 100%; border: 1px solid color-mix(in srgb, var(--bg), var(--text) 16%); border-radius: 12px; background: var(--bg); min-height: 300px; }
+    details { margin-top: 24px; color: var(--muted); font-size: .9rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>x4 reading report</h1>
+  <section id="intake">
+    <p>Turn the reading data on an Xteink X4 into a report. Copy the <code>.metadata</code> and <code>.system</code> folders from the SD card, then drop both here. Everything is decoded in your browser; nothing is uploaded.</p>
+    <div id="drop">
+      <strong>Drop the <code>.metadata</code> and <code>.system</code> folders here</strong>
+      <span class="muted">Or a saved project <code>.json</code> to reopen a report.</span>
+      <div class="row">
+        <label class="btn">Add a folder…<input id="pick-folder" type="file" webkitdirectory multiple></label>
+        <button id="build" class="primary" disabled>Build report</button>
+        <label class="btn">Open project .json…<input id="pick-json" type="file" accept=".json,application/json"></label>
+      </div>
+    </div>
+    <p id="status" role="status"></p>
+    <details>
+      <summary>What gets read</summary>
+      <p>Only the small files that hold reading data: <code>books.bin</code>, <code>recent.bin</code>, and each book's <code>statistics.bin</code>, <code>progress.bin</code>, <code>book.bin</code> and <code>cover.jpg</code>, plus the device totals and state. Chapter caches, images, settings and WiFi credentials are skipped and never read.</p>
+    </details>
+  </section>
+
+  <section id="viewer" hidden>
+    <div class="toolbar">
+      <button id="dl-html" class="primary">Download report (.html)</button>
+      <button id="dl-json">Download project (.json)</button>
+      <button id="print">Print</button>
+      <button id="reset">Start over</button>
+    </div>
+    <iframe id="report" title="Reading report" sandbox="allow-same-origin allow-modals"></iframe>
+  </section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
