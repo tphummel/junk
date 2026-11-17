@@ -77,8 +77,11 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          flavor: |
+            latest=false
 
-      - name: Build Docker image
+      - name: Build Docker image (PR, no push)
         uses: docker/build-push-action@v5
         with:
           context: ./trail-check
@@ -90,6 +93,7 @@ jobs:
         if: github.event_name == 'pull_request'
 
       - name: Build and push Docker image
+        id: docker_build
         uses: docker/build-push-action@v5
         with:
           context: ./trail-check
@@ -101,4 +105,5 @@ jobs:
         if: github.event_name != 'pull_request'
 
       - name: Image digest
+        if: github.event_name != 'pull_request'
         run: echo ${{ steps.docker_build.outputs.digest }}

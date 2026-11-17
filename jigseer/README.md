@@ -99,7 +99,7 @@ The container listens on port 8080 inside the image. Caddy serves static assets 
 
 ## Continuous integration
 
-The [`jigseer` GitHub Actions workflow](../.github/workflows/jigseer.yml) triggers on any change under `jigseer/`. It runs the test harness and, on pushes to the repository, builds and publishes a Docker image to GHCR tagged with both `latest` and the commit SHA.
+The [`jigseer` GitHub Actions workflow](../.github/workflows/jigseer.yml) triggers on changes under `jigseer/` (pushes to `main` and PRs to `main`). It runs the test harness, builds the image on PRs, and on pushes to `main` publishes it to GHCR tagged `latest`, `main` and `sha-<short-sha>`.
 
 ## Deployment
 
