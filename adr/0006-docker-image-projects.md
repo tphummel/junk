@@ -14,7 +14,7 @@ Several top-level projects (`app-passkey`, `artifact-cache`, `jigseer`, `sworn`,
    - It runs on pushes to `main`, `v*` tags and PRs to `main`, filtered to `<name>/**` and the workflow file.
    - A `test` job must pass before the image is built.
    - PRs build without pushing; pushes to `main` and `v*` tags push, authenticating with `GITHUB_TOKEN` (`packages: write`) and no other secrets.
-3. **Tags** come from `docker/metadata-action`: the branch name (so `main`), `pr-<n>`, semver (`1.2.3`, `1.2`, `1`) for `v*` tags, and the commit SHA. A release is a `v1.2.3` tag. There is no `latest`.
+3. **Tags** come from `docker/metadata-action`: the branch name (so `main`), `pr-<n>`, semver (`1.2.3`, `1.2`, `1`) for `v*` tags, and the commit SHA. `latest` also moves with every push to `main` (`type=raw,value=latest,enable={{is_default_branch}}`; `flavor: latest=false` stops release tags from claiming it). A release is a `v1.2.3` tag.
 4. **Dockerfile:** pinned base images, a multi-stage build when there is a compile step, a non-root user, and state under an overridable volume path. Details are in the [`new-docker-app` skill](../skill/new-docker-app/SKILL.md).
 5. **No deploy from this repo.** Publishing the image ends the workflow.
 6. **Existing workflows** change to this style only when next touched for another reason.
@@ -24,7 +24,7 @@ Several top-level projects (`app-passkey`, `artifact-cache`, `jigseer`, `sworn`,
 - Every image has a traceable SHA tag, and releases have semver tags, with no manual tagging.
 - A failing test stops the image from being published.
 - Each project carries a copy of about 70 lines of workflow.
-- With no `latest`, consumers pin `main`, a version or a SHA.
+- `latest` is the newest `main` build, not the newest release. Consumers who want stability pin a version or a SHA.
 - Two older styles remain for now.
 
 ## Alternatives considered

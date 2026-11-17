@@ -8,7 +8,7 @@ Moved here from the `tphummel/multi-tool` repo (history stays there).
 
 Published to `ghcr.io/tphummel/multi-tool` by [`.github/workflows/multi-tool.yml`](../.github/workflows/multi-tool.yml), per [ADR 0006](../adr/0006-docker-image-projects.md). Platform is `linux/arm64` only.
 
-Tags: `main`, `pr-<n>`, semver for `v*` tags, and the commit SHA. There is no `latest` or date tag any more; pin `main`, a version or a SHA.
+Tags: `main`, `pr-<n>`, semver for `v*` tags, the commit SHA, and `latest` (the newest `main` build). The old date tag is gone.
 
 ## Build and run
 
