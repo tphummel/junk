@@ -285,6 +285,8 @@ async function send(r) {
     result.ms = Math.round(performance.now() - t0);
     result.error = e.name === "AbortError"
       ? "Cancelled."
+      : !navigator.onLine
+      ? "You are offline. The app works offline, but requests need a network connection."
       : `${e.message || "Request failed"}. In a browser this usually means the server is unreachable, is blocked by CORS (it must send Access-Control-Allow-Origin), or the page is HTTPS and the target is plain HTTP.`;
   } finally {
     inFlight = null;
@@ -418,3 +420,10 @@ window.addEventListener("storage", (e) => {
 });
 
 render();
+
+// Offline support (see sw.js). Registration failures are not fatal: the app works without it.
+if ("serviceWorker" in navigator) {
+  addEventListener("load", () => {
+    navigator.serviceWorker.register("/http-rocket/sw.js", { scope: "/http-rocket/" }).catch(() => {});
+  });
+}
