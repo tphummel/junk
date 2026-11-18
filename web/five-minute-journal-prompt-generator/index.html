@@ -18,6 +18,10 @@
     small { display: block; margin-top: 2rem; opacity: .7; }
     a { color: var(--accent); }
   </style>
+  <meta name="theme-color" content="#1d1f1e">
+  <link rel="icon" href="/five-minute-journal-prompt-generator/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/five-minute-journal-prompt-generator/apple-touch-icon.png">
+  <link rel="manifest" href="/five-minute-journal-prompt-generator/manifest.webmanifest">
 </head>
 <body>
 <main>
@@ -56,5 +60,12 @@
   };
   show();
 </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/five-minute-journal-prompt-generator/sw.js', { scope: '/five-minute-journal-prompt-generator/' }).catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

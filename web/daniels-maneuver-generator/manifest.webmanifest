@@ -1,0 +1,24 @@
+{
+  "name": "The daniels maneuver generator",
+  "short_name": "Daniels",
+  "description": "Designate a declassified incident with a generated case name.",
+  "start_url": "/daniels-maneuver-generator/",
+  "scope": "/daniels-maneuver-generator/",
+  "display": "standalone",
+  "background_color": "#ece6d6",
+  "theme_color": "#ece6d6",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

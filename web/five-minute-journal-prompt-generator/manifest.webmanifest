@@ -1,0 +1,24 @@
+{
+  "name": "5 minute journal prompt generator",
+  "short_name": "Journal prompts",
+  "description": "Random journal prompts with a five minute timer.",
+  "start_url": "/five-minute-journal-prompt-generator/",
+  "scope": "/five-minute-journal-prompt-generator/",
+  "display": "standalone",
+  "background_color": "#1d1f1e",
+  "theme_color": "#1d1f1e",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

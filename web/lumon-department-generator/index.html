@@ -68,6 +68,10 @@
             transform: translateY(2px);
         }
     </style>
+  <meta name="theme-color" content="#2c3e50">
+  <link rel="icon" href="/lumon-department-generator/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/lumon-department-generator/apple-touch-icon.png">
+  <link rel="manifest" href="/lumon-department-generator/manifest.webmanifest">
 </head>
 <body>
 
@@ -102,5 +106,12 @@
             document.getElementById('result').innerText = `${adj} ${noun} ${proc}`;
         }
     </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/lumon-department-generator/sw.js', { scope: '/lumon-department-generator/' }).catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

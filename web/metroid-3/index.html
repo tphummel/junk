@@ -8,6 +8,10 @@
   <meta name="description" content="Browser-only Super Metroid 100% checklist tracker and journal.">
   <link rel="stylesheet" href="style.css">
   <style id="page-style"></style>
+  <meta name="theme-color" content="#0C1315">
+  <link rel="icon" href="/metroid-3/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/metroid-3/apple-touch-icon.png">
+  <link rel="manifest" href="/metroid-3/manifest.webmanifest">
 </head>
 <body class="m3">
   <header class="app-header no-print">
@@ -22,5 +26,12 @@
   <input type="file" id="file-input" class="visually-hidden" multiple tabindex="-1" aria-hidden="true" accept=".json,.csv,.html,.htm,.txt,application/json,text/csv,text/html,text/plain">
   <noscript><p style="padding:1rem">Metroid 3 needs JavaScript. Everything is stored in your browser; nothing is sent anywhere.</p></noscript>
   <script type="module" src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/metroid-3/sw.js', { scope: '/metroid-3/' }).catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

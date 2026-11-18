@@ -110,6 +110,10 @@
             flex: 0 0 auto;
         }
     </style>
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="/checklist/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/checklist/apple-touch-icon.png">
+  <link rel="manifest" href="/checklist/manifest.webmanifest">
 </head>
 <body>
 
@@ -242,5 +246,12 @@
             </div>
         </div>
     </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/checklist/sw.js', { scope: '/checklist/' }).catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

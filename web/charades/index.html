@@ -73,6 +73,10 @@
     .game button { padding: 0.25rem 0.6rem; font-size: 0.85rem; }
     .game.current .info strong::after { content: " (open)"; color: var(--accent); font-weight: 400; }
   </style>
+  <meta name="theme-color" content="#1b1c1d">
+  <link rel="icon" href="/charades/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/charades/apple-touch-icon.png">
+  <link rel="manifest" href="/charades/manifest.webmanifest">
 </head>
 <body>
   <div id="flash" aria-hidden="true"></div>
@@ -643,6 +647,13 @@
       renderHistory()
     }
     renderAll()
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/charades/sw.js', { scope: '/charades/' }).catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>

@@ -80,6 +80,10 @@
     #env dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, Menlo, monospace; }
     pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8rem; background: var(--soft); padding: 0.5rem; border-radius: 6px; margin: 0.5rem 0 0; }
   </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/perfect-form/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/perfect-form/apple-touch-icon.png">
+  <link rel="manifest" href="/perfect-form/manifest.webmanifest">
 </head>
 <body>
   <h1>The Perfect Form</h1>
@@ -752,6 +756,13 @@
         }).catch(function (err) { show('Sign in failed: ' + err.name + ': ' + err.message); });
       });
     })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/perfect-form/sw.js', { scope: '/perfect-form/' }).catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>

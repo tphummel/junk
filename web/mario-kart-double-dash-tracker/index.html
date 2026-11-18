@@ -57,6 +57,10 @@
     .row input { flex: 1; }
     .editing { border-color: var(--accent); }
   </style>
+  <meta name="theme-color" content="#1b1c1d">
+  <link rel="icon" href="/mario-kart-double-dash-tracker/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/mario-kart-double-dash-tracker/apple-touch-icon.png">
+  <link rel="manifest" href="/mario-kart-double-dash-tracker/manifest.webmanifest">
 </head>
 <body>
   <div id="app"></div>
@@ -457,6 +461,13 @@
 
   window.addEventListener('hashchange', () => { editingRaceId = null; draft = null; entryError = ''; render(); });
   render();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/mario-kart-double-dash-tracker/sw.js', { scope: '/mario-kart-double-dash-tracker/' }).catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>
