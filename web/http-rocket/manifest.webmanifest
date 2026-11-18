@@ -1,0 +1,15 @@
+{
+  "name": "HTTP Rocket",
+  "short_name": "HTTP Rocket",
+  "description": "Browser-only HTTP client with saved requests in folders, variables, import/export and an audit log",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
