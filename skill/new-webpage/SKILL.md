@@ -88,9 +88,7 @@ const SCOPE_PATH = '/<name>/';
 
 const PRECACHE = [
   '/<name>/',
-  '/<name>/app.js',
-  '/<name>/model.js',
-  '/<name>/storage.js',
+  // every script, stylesheet, module and data file the page loads, e.g. '/<name>/app.js'
   '/<name>/manifest.webmanifest',
   '/<name>/icon.svg',
   '/<name>/icon-192.png',
