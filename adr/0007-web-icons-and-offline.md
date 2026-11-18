@@ -34,7 +34,8 @@ Every new webpage ships all of the following in its own directory, `web/<name>/`
    - It handles only `GET` requests for files under `/<name>/` (and pinned CDN files in `PRECACHE`). Other requests, including the page's own `fetch()` calls and anything under `/api/`, pass through untouched. A page that calls APIs or user-supplied URLs must never have those responses cached or replayed.
 5. **Offline behavior.** The page must load and work offline from its own files and browser storage. A feature that needs the network says so when offline rather than failing silently.
 6. **Existing pages** are exempt until they are next modified, as with palettes in ADR 0001. Adding the pieces to an existing page at any time is fine, and a page that already has some of them should be completed when touched. Migrated pages (ADR 0003) get the same treatment.
-7. The procedure and templates are in the [`new-webpage` skill](../skill/new-webpage/SKILL.md).
+7. **The index page is exempt.** `web/index.html` has no manifest, icons or service worker: it is a link registry, not an app (ADR 0003), and a worker at the site root would see every page's requests.
+8. The procedure and templates are in the [`new-webpage` skill](../skill/new-webpage/SKILL.md).
 
 ## Consequences
 
@@ -52,8 +53,8 @@ Every new webpage ships all of the following in its own directory, `web/<name>/`
 - **A generated precache list or Workbox.** Removes the `PRECACHE` upkeep, but needs a build step (ADR 0002).
 - **Cache first.** Faster, but pages would show stale code after a deploy until the cache name changes.
 - **Icons and service workers optional.** What produced the survey above.
-- **Retrofitting all existing pages now.** Mechanical but touches 20 pages that no one is working on; deferred.
+- **Retrofitting all existing pages now.** Mechanical but touches 20 pages that no one is working on; deferred to a follow-up by the owner.
 
 ## Open
 
-Whether the index page `web/index.html` should itself be installable, and whether `craps` and `eight-ball` should be fixed in a follow-up.
+The owner will retrofit the existing pages, including `craps` (no manifest or icons) and `eight-ball` (links to files that do not exist), in a follow-up change.
