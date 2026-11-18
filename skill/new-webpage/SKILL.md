@@ -14,7 +14,7 @@ Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../ad
 1. **Branch.** `git switch -c <name>` from an up-to-date `main`. Name is lowercase kebab-case.
 2. **Create `web/<name>/index.html`** from the template below. Put every other file the page needs (scripts, modules, data, images) in the same directory and reference it relatively.
 3. **Style it** with the [`golden-angle-styling` skill](../golden-angle-styling/SKILL.md): random seed, light and dark variables. Migrated webpages are exempt until they are next changed.
-4. **Icons, manifest and service worker** (ADR 0007; migrated pages are exempt until next changed). Pick an emoji, then:
+4. **Icons, manifest and service worker** (ADR 0007). Required for pages with no external dependencies, meaning no API or other-origin calls and no code loaded from a CDN; pages that have one are exempt, and migrated pages are exempt until next changed. Pick an emoji, then:
    ```sh
    node skill/new-webpage/scripts/make-icons.mjs <name> 🚀 [#background]   # needs Playwright + Chromium
    ```

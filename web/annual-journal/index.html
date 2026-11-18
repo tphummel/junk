@@ -33,6 +33,10 @@
         .mgrid .in { background: #f6c8c8; }
         .note { font-size: 0.8rem; color: #666; margin-top: 1.5rem; }
     </style>
+  <meta name="theme-color" content="#f6c8c8">
+  <link rel="icon" href="/annual-journal/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/annual-journal/apple-touch-icon.png">
+  <link rel="manifest" href="/annual-journal/manifest.webmanifest">
 </head>
 <body>
     <h1>Annual Journal Layout</h1>
@@ -201,5 +205,12 @@ document.getElementById("year").value = new Date().getFullYear() + 1;
 document.getElementById("controls").addEventListener("input", render);
 render();
 </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/annual-journal/sw.js', { scope: '/annual-journal/' }).catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

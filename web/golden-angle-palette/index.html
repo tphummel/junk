@@ -3,6 +3,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>golden angle palette</title>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/golden-angle-palette/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/golden-angle-palette/apple-touch-icon.png">
+  <link rel="manifest" href="/golden-angle-palette/manifest.webmanifest">
 <style>
   :root{color-scheme:light dark}
   body{font:16px system-ui,sans-serif;max-width:640px;margin:2rem auto;padding:0 1rem}
@@ -70,3 +74,10 @@ $("copycss").onclick=()=>copyText(css());
 for(const id of["c","ccw","min","lbg","dbg"])$(id).addEventListener("input",render);
 render();
 </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/golden-angle-palette/sw.js', { scope: '/golden-angle-palette/' }).catch(() => {});
+      });
+    }
+  </script>

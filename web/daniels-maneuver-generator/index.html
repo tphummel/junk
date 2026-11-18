@@ -98,6 +98,10 @@
             transform: translateY(2px);
         }
     </style>
+  <meta name="theme-color" content="#ece6d6">
+  <link rel="icon" href="/daniels-maneuver-generator/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/daniels-maneuver-generator/apple-touch-icon.png">
+  <link rel="manifest" href="/daniels-maneuver-generator/manifest.webmanifest">
 </head>
 <body>
 
@@ -165,5 +169,12 @@
             document.getElementById('result').innerText = `The ${noun} ${action}.`;
         }
     </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/daniels-maneuver-generator/sw.js', { scope: '/daniels-maneuver-generator/' }).catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

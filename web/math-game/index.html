@@ -132,6 +132,9 @@
 
     window.addEventListener('load', showMathProblem)
   </script>
+  <link rel="icon" href="/math-game/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/math-game/apple-touch-icon.png">
+  <link rel="manifest" href="/math-game/manifest.webmanifest">
 </head>
 
 <body>
@@ -180,6 +183,13 @@
   </p>
   <p>History</p>
   <table id="history"></table>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/math-game/sw.js', { scope: '/math-game/' }).catch(() => {});
+      });
+    }
+  </script>
 </body>
 
 </html>
