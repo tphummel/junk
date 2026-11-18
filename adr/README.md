@@ -11,6 +11,8 @@ How the site (`web/`), API (`api/`) and Docker image projects are built and ship
 | [0005](0005-cloudflare-workers-deployment.md) | `web/` and `api/` deploy to Cloudflare as one Worker through Workers Builds; previews per branch; config in `wrangler.jsonc` |
 | [0006](0006-docker-image-projects.md) | Docker image projects: one folder and workflow each, tested then built, tagged by metadata-action, pushed to GHCR; no deploy from the repo |
 | [0007](0007-web-icons-and-offline.md) | Every webpage ships icons, a manifest and a service worker (own files only, network first), so it installs and works offline |
+| [0008](0008-worker-storage.md) | _Proposed._ Worker projects store data in D1 (default), Durable Objects, KV or R2 with dedicated project-prefixed bindings, preview twins, migrations run by the deploy command, and account-wide limits rules |
+| [0009](0009-server-rendered-apps.md) | _Proposed._ Server-rendered apps are Hono apps (`html` templates) in a project folder, mounted at `/<name>` on the junk Worker, with static files in `web/<name>/static/` |
 
 ## Adding one
 
