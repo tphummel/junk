@@ -88,6 +88,9 @@
   const MOVES = ['rock', 'paper', 'scissors']
   const GLYPH = { rock: '✊', paper: '✋', scissors: '✌️' }
   const BEATS = { rock: 'scissors', paper: 'rock', scissors: 'paper' }
+  // Bots are served by the Worker API (api/rps-bot.ts). Each answers GET with { throw }.
+  const BOTS = [{ id: 'calvin', name: 'Calvin (bot)', path: '/api/rps-bot/calvin' }]
+  const botById = id => BOTS.find(b => b.id === id) || BOTS[0]
   const TABS = [['play', 'Play'], ['board', 'Leaderboard'], ['sessions', 'Sessions'], ['data', 'Data']]
 
   // ---- state ----
@@ -102,6 +105,9 @@
   const ui = {
     tab: 'play',
     form: { playerOne: '', playerTwo: '', moveOne: null, moveTwo: null },
+    mode: 'humans',
+    botId: BOTS[0].id,
+    botBusy: false,
     notice: null,
     boardScope: 'current'
   }
@@ -178,6 +184,92 @@
     return list
   }
 
+  // Throw mix per player: how many of each move they threw.
+  function throwStats (matches) {
+    const rows = new Map()
+    const add = (id, move) => {
+      if (!rows.has(id)) rows.set(id, { name: nameOf(state.players, id), counts: { rock: 0, paper: 0, scissors: 0 }, total: 0 })
+      const r = rows.get(id)
+      r.counts[move]++
+      r.total++
+    }
+    for (const m of matches) { add(m.playerOneId, m.moveOne); add(m.playerTwoId, m.moveTwo) }
+    return [...rows.values()].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
+  }
+
+  const chrono = matches => matches.slice().sort((a, b) => (a.playedAt < b.playedAt ? -1 : a.playedAt > b.playedAt ? 1 : 0))
+  const resultFor = (m, side) => m.outcome === 'draw' ? 'd' : (m.outcome === side ? 'w' : 'l')
+
+  // Win/loss streaks per player. Draws neither extend nor break a streak.
+  // current > 0 is a win streak, < 0 a losing streak.
+  function streaks (matches) {
+    const rows = new Map()
+    const row = id => {
+      if (!rows.has(id)) rows.set(id, { name: nameOf(state.players, id), current: 0, best: 0 })
+      return rows.get(id)
+    }
+    for (const m of chrono(matches)) {
+      for (const [id, side] of [[m.playerOneId, 'player_one'], [m.playerTwoId, 'player_two']]) {
+        const r = row(id)
+        const res = resultFor(m, side)
+        if (res === 'w') { r.current = r.current > 0 ? r.current + 1 : 1; r.best = Math.max(r.best, r.current) }
+        else if (res === 'l') r.current = r.current < 0 ? r.current - 1 : -1
+      }
+    }
+    return [...rows.values()].sort((a, b) => b.best - a.best || b.current - a.current || a.name.localeCompare(b.name))
+  }
+
+  // Record of each player against each opponent, from the row player's side.
+  function headToHead (matches) {
+    const ids = [...new Set(matches.flatMap(m => [m.playerOneId, m.playerTwoId]))]
+    const players = ids.map(id => ({ id, name: nameOf(state.players, id) })).sort((a, b) => a.name.localeCompare(b.name))
+    const rec = new Map()
+    const cell = (a, b) => {
+      const k = a + '|' + b
+      if (!rec.has(k)) rec.set(k, { w: 0, l: 0, d: 0 })
+      return rec.get(k)
+    }
+    for (const m of matches) {
+      cell(m.playerOneId, m.playerTwoId)[resultFor(m, 'player_one')]++
+      cell(m.playerTwoId, m.playerOneId)[resultFor(m, 'player_two')]++
+    }
+    return { players, get: (a, b) => rec.get(a + '|' + b) }
+  }
+
+  // Fun facts about the matches in scope; only the ones with enough data appear.
+  function highlights (matches) {
+    const facts = []
+    if (!matches.length) return facts
+    const draws = matches.filter(m => m.outcome === 'draw').length
+    facts.push(['🤝', 'Draw rate', `${Math.round(draws / matches.length * 100)}% of matches ended in a draw (${draws} of ${matches.length}).`])
+
+    const throws = { rock: 0, paper: 0, scissors: 0 }
+    for (const m of matches) { throws[m.moveOne]++; throws[m.moveTwo]++ }
+    const total = matches.length * 2
+    const [topMove, topCount] = Object.entries(throws).sort((a, b) => b[1] - a[1])[0]
+    facts.push([GLYPH[topMove], 'Favourite throw', `${topMove[0].toUpperCase() + topMove.slice(1)} was thrown ${Math.round(topCount / total * 100)}% of the time.`])
+
+    const pairs = new Map()
+    for (const m of matches) {
+      const k = [m.playerOneId, m.playerTwoId].sort().join('|')
+      pairs.set(k, (pairs.get(k) || 0) + 1)
+    }
+    const [pairKey, pairCount] = [...pairs.entries()].sort((a, b) => b[1] - a[1])[0]
+    const [a, b] = pairKey.split('|').map(id => nameOf(state.players, id))
+    facts.push(['⚔️', 'Biggest rivalry', `${a} vs ${b}: ${plural(pairCount, 'match')}.`])
+
+    const best = streaks(matches)[0]
+    if (best && best.best >= 2) facts.push(['🔥', 'Longest win streak', `${best.name} won ${best.best} in a row.`])
+
+    // most predictable: biggest share on one throw, at least 5 throws
+    const mix = throwStats(matches).filter(r => r.total >= 5).map(r => {
+      const [move, n] = Object.entries(r.counts).sort((x, y) => y[1] - x[1])[0]
+      return { name: r.name, move, share: n / r.total }
+    }).sort((x, y) => y.share - x.share || x.name.localeCompare(y.name))[0]
+    if (mix && mix.share > 0.4) facts.push(['🔮', 'Most predictable', `${mix.name} threw ${mix.move} ${Math.round(mix.share * 100)}% of the time.`])
+    return facts
+  }
+
   // ---- actions ----
   function defaultSessionName () {
     const base = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
@@ -198,9 +290,8 @@
 
   function recordMatch () {
     const f = ui.form
-    const session = currentSession()
     const errors = []
-    if (!session) errors.push('Start a session first.')
+    if (!currentSession()) errors.push('Start a session first.')
     if (!f.playerOne.trim()) errors.push('Player 1 name is required.')
     if (!f.playerTwo.trim()) errors.push('Player 2 name is required.')
     if (f.playerOne.trim() && f.playerTwo.trim() && sameName(f.playerOne, f.playerTwo)) errors.push('Players must be different people.')
@@ -210,24 +301,62 @@
       ui.notice = { type: 'error', text: errors.join(' ') }
       return
     }
-    const p1 = findOrCreate(state.players, f.playerOne)
-    const p2 = findOrCreate(state.players, f.playerTwo)
-    const outcome = outcomeOf(f.moveOne, f.moveTwo)
+    addMatch(f.playerOne, f.playerTwo, f.moveOne, f.moveTwo)
+    f.moveOne = f.moveTwo = null
+  }
+
+  // Stores a validated match and sets the result notice.
+  function addMatch (nameOne, nameTwo, moveOne, moveTwo) {
+    const session = currentSession()
+    const p1 = findOrCreate(state.players, nameOne)
+    const p2 = findOrCreate(state.players, nameTwo)
+    const outcome = outcomeOf(moveOne, moveTwo)
     state.matches.push({
       id: uid(), sessionId: session.id, playedAt: now(),
       playerOneId: p1.id, playerTwoId: p2.id,
-      moveOne: f.moveOne, moveTwo: f.moveTwo, outcome
+      moveOne, moveTwo, outcome
     })
     save()
     const text = outcome === 'draw'
-      ? `Draw: both threw ${f.moveOne}.`
+      ? `Draw: both threw ${moveOne}.`
       : outcome === 'player_one'
-        ? `${p1.name} wins: ${f.moveOne} beats ${f.moveTwo}.`
-        : `${p2.name} wins: ${f.moveTwo} beats ${f.moveOne}.`
-    ui.notice = { type: 'ok', text }
+        ? `${p1.name} wins: ${moveOne} beats ${moveTwo}.`
+        : `${p2.name} wins: ${moveTwo} beats ${moveOne}.`
+    ui.notice = { type: 'ok', text: `${GLYPH[moveOne]} vs ${GLYPH[moveTwo]} ${text}` }
     // players stay filled in for the rematch; only the moves reset
-    f.playerOne = p1.name; f.playerTwo = p2.name
-    f.moveOne = f.moveTwo = null
+    ui.form.playerOne = p1.name
+    if (ui.mode === 'humans') ui.form.playerTwo = p2.name
+  }
+
+  async function playBot () {
+    const f = ui.form
+    const bot = botById(ui.botId)
+    const errors = []
+    if (!currentSession()) errors.push('Start a session first.')
+    if (!f.playerOne.trim()) errors.push('Your name is required.')
+    else if (sameName(f.playerOne, bot.name)) errors.push('Pick a name different from the bot’s.')
+    if (!MOVES.includes(f.moveOne)) errors.push('Pick your move.')
+    if (errors.length) {
+      ui.notice = { type: 'error', text: errors.join(' ') }
+      return render()
+    }
+    ui.botBusy = true
+    ui.notice = null
+    render()
+    try {
+      const res = await fetch(bot.path, { cache: 'no-store' })
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      const botMove = (await res.json()).throw
+      if (!MOVES.includes(botMove)) throw new Error('unexpected reply')
+      // the session may have changed while waiting
+      if (!currentSession()) throw new Error('session ended')
+      addMatch(f.playerOne, bot.name, f.moveOne, botMove)
+      f.moveOne = null
+    } catch (e) {
+      ui.notice = { type: 'error', text: `${bot.name} could not be reached (${e.message}). Bots need a connection; nothing was recorded.` }
+    }
+    ui.botBusy = false
+    render()
   }
 
   function deleteMatch (id) {
@@ -395,6 +524,15 @@
     ))
   }
 
+  function modeToggle () {
+    const btn = (mode, label) => h('button', {
+      type: 'button', 'aria-pressed': String(ui.mode === mode), disabled: ui.botBusy,
+      onclick: () => { ui.mode = mode; ui.notice = null; ui.form.moveOne = ui.form.moveTwo = null; render() }
+    }, label)
+    return h('div', { class: 'seg', role: 'group', 'aria-label': 'Opponent', style: 'margin-top:0;margin-bottom:0.5rem' },
+      btn('humans', 'Two players'), btn('bot', 'Vs bot'))
+  }
+
   function textInput (key, id, list) {
     return h('input', {
       type: 'text', id, list, autocomplete: 'off', autocapitalize: 'words', value: ui.form[key],
@@ -445,16 +583,61 @@
     return h('table', null,
       h('thead', null, h('tr', null,
         h('th', { class: 'n' }, '#'), h('th', null, 'Player'), h('th', { class: 'n' }, 'W'), h('th', { class: 'n' }, 'L'),
-        h('th', { class: 'n' }, 'D'), h('th', { class: 'n' }, 'Win %'))),
+        h('th', { class: 'n' }, 'D'))),
       h('tbody', null, rows.map((r, i) => h('tr', null,
         h('td', { class: 'n' }, String(i + 1)),
         h('td', null, r.name),
         h('td', { class: 'n' }, String(r.wins)),
         h('td', { class: 'n' }, String(r.losses)),
-        h('td', { class: 'n' }, String(r.draws)),
-        h('td', { class: 'n' }, Math.round(r.winPct * 100) + '%')
+        h('td', { class: 'n' }, String(r.draws))
       )))
     )
+  }
+
+  // One row per player, one column per throw; cells are count and share of that player's throws.
+  function throwTable (matches) {
+    const rows = throwStats(matches)
+    if (!rows.length) return h('p', { class: 'muted' }, 'No throws yet.')
+    return h('table', null,
+      h('thead', null, h('tr', null, h('th', null, 'Player'),
+        MOVES.map(m => h('th', { class: 'n' }, `${GLYPH[m]} ${m[0].toUpperCase() + m.slice(1)}`)))),
+      h('tbody', null, rows.map(r => h('tr', null, h('td', null, r.name),
+        MOVES.map(m => h('td', { class: 'n' }, Math.round(r.counts[m] / r.total * 100) + '%'))))))
+  }
+
+  function streakTable (matches) {
+    const rows = streaks(matches)
+    if (!rows.length) return h('p', { class: 'muted' }, 'No matches yet.')
+    return h('table', null,
+      h('thead', null, h('tr', null, h('th', null, 'Player'), h('th', { class: 'n' }, 'Current'), h('th', { class: 'n' }, 'Best win run'))),
+      h('tbody', null, rows.map(r => h('tr', null,
+        h('td', null, r.name),
+        h('td', { class: 'n ' + (r.current > 0 ? 'won' : '') }, r.current > 0 ? 'W' + r.current : r.current < 0 ? 'L' + -r.current : '–'),
+        h('td', { class: 'n' }, String(r.best))))))
+  }
+
+  function headToHeadTable (matches) {
+    const { players, get } = headToHead(matches)
+    if (players.length < 2) return h('p', { class: 'muted' }, 'No matches yet.')
+    return h('div', { style: 'overflow-x:auto' }, h('table', null,
+      h('thead', null, h('tr', null, h('th', null, ''), players.map(p => h('th', { class: 'n' }, p.name)))),
+      h('tbody', null, players.map(row => h('tr', null,
+        h('td', null, h('strong', null, row.name)),
+        players.map(col => {
+          const r = row.id === col.id ? null : get(row.id, col.id)
+          return h('td', { class: 'n' + (r && r.w > r.l ? ' won' : '') }, row.id === col.id ? '' : r ? `${r.w}-${r.l}-${r.d}` : '·')
+        }))))))
+  }
+
+  function highlightList (matches) {
+    const facts = highlights(matches)
+    if (!facts.length) return h('p', { class: 'muted' }, 'No matches yet.')
+    return h('div', null, facts.map(([icon, title, text]) => h('div', { class: 'item' },
+      h('strong', null, icon + ' ' + title), h('div', { class: 'muted' }, text))))
+  }
+
+  function noticeEl () {
+    return ui.notice ? h('div', { class: 'notice ' + ui.notice.type, role: 'status', style: 'margin:1rem 0 0' }, ui.notice.text) : null
   }
 
   function viewPlay () {
@@ -467,18 +650,35 @@
     }
     const matches = sessionMatches(session.id).slice().reverse()
     return [
-      h('form', { class: 'card', onsubmit: e => { e.preventDefault(); recordMatch(); render() } },
-        h('label', { for: 'player-one' }, 'Player 1'),
-        textInput('playerOne', 'player-one', 'players'),
-        moveButtons('moveOne'),
-        h('label', { for: 'player-two' }, 'Player 2'),
-        textInput('playerTwo', 'player-two', 'players'),
-        moveButtons('moveTwo'),
-        h('button', { class: 'primary big', type: 'submit' }, 'Record match')
-      ),
+      ui.mode === 'bot'
+        ? h('form', { class: 'card', onsubmit: e => { e.preventDefault(); playBot() } },
+          modeToggle(),
+          h('label', { for: 'player-one' }, 'Your name'),
+          textInput('playerOne', 'player-one', 'players'),
+          moveButtons('moveOne'),
+          h('label', { for: 'bot' }, 'Opponent'),
+          h('select', { id: 'bot', style: 'width:100%', disabled: ui.botBusy, onchange: e => { ui.botId = e.target.value } },
+            BOTS.map(b => h('option', { value: b.id, selected: b.id === ui.botId }, b.name))),
+          h('button', { class: 'primary big', type: 'submit', disabled: ui.botBusy }, ui.botBusy ? 'Waiting for bot…' : 'Throw!'),
+          noticeEl()
+        )
+        : h('form', { class: 'card', onsubmit: e => { e.preventDefault(); recordMatch(); render() } },
+          modeToggle(),
+          h('label', { for: 'player-one' }, 'Player 1'),
+          textInput('playerOne', 'player-one', 'players'),
+          moveButtons('moveOne'),
+          h('label', { for: 'player-two' }, 'Player 2'),
+          textInput('playerTwo', 'player-two', 'players'),
+          moveButtons('moveTwo'),
+          h('button', { class: 'primary big', type: 'submit' }, 'Record match'),
+          noticeEl()
+        ),
       h('div', { class: 'card' },
         h('h2', null, 'Session leaderboard'),
         boardTable(matches)),
+      h('div', { class: 'card' },
+        h('h2', null, 'Session throw stats'),
+        throwTable(matches)),
       h('div', { class: 'card' },
         h('h2', null, `Recent matches (${matches.length} total)`),
         matches.length ? matchesTable(matches.slice(0, 10)) : h('p', { class: 'muted' }, 'No matches recorded yet.'))
@@ -498,7 +698,22 @@
       h('label', { for: 'scope', style: 'margin-top:0' }, 'Leaderboard for'),
       select,
       h('p', { class: 'muted' }, plural(matches.length, 'match') + '. Ranked by wins, then win percentage.'),
-      boardTable(matches))]
+      boardTable(matches)),
+    h('div', { class: 'card' },
+      h('h2', null, 'Throw stats'),
+      h('p', { class: 'muted' }, 'Share of each player’s throws.'),
+      throwTable(matches)),
+    h('div', { class: 'card' },
+      h('h2', null, 'Head to head'),
+      h('p', { class: 'muted' }, 'Wins-losses-draws of the row player against the column player.'),
+      headToHeadTable(matches)),
+    h('div', { class: 'card' },
+      h('h2', null, 'Streaks'),
+      h('p', { class: 'muted' }, 'Draws neither extend nor break a streak.'),
+      streakTable(matches)),
+    h('div', { class: 'card' },
+      h('h2', null, 'Highlights'),
+      highlightList(matches))]
   }
 
   function viewSessions () {
@@ -614,8 +829,10 @@
     const notice = saveFailed
       ? { type: 'error', text: 'Could not save to this browser’s storage. Export your data now to avoid losing it.' }
       : ui.notice
+    // on the Play tab the result notice sits under the throw button instead
+    const inline = ui.tab === 'play' && session && !saveFailed
     document.getElementById('view').replaceChildren(
-      ...(notice ? [h('div', { class: 'notice ' + notice.type, role: 'status' }, notice.text)] : []),
+      ...(notice && !inline ? [h('div', { class: 'notice ' + notice.type, role: 'status' }, notice.text)] : []),
       ...VIEWS[ui.tab]())
   }
 

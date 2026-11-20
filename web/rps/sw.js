@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rps-v1';
+const CACHE_NAME = 'rps-v2';
 
 const PRECACHE = [
   '/rps/',
@@ -25,6 +25,8 @@ self.addEventListener('activate', event => {
 // network first so page updates show up; cache is the offline fallback
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  // bot throws must always be live, never cached or replayed offline
+  if (new URL(event.request.url).pathname.startsWith('/api/')) return;
   event.respondWith(
     fetch(event.request)
       .then(response => {
