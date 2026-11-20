@@ -662,7 +662,9 @@ function renderStats(){
   const all=loadHistory(),p=$('statsPanel');
   const rows=statsTab==='all'?all:all.filter(x=>x.official===(statsTab==='official'));
   const st=computeStats(rows),mon=pacificDate().slice(0,7);
-  const month=st.ord.filter(x=>String(x.date).slice(0,7)===mon).reverse();
+  // current month, extended back to the past 10 days early in the month
+  const from=[mon+'-01',pacificDate(new Date(Date.now()-9*864e5))].sort()[0];
+  const month=st.ord.filter(x=>String(x.date)>=from).reverse();
   const pct=(w,n)=>n?Math.round(100*w/n)+'%':'–',t=ms=>ms==null?'–':fmtTime(ms),n=x=>x==null?'–':Math.round(x);
   const cell=(v,l)=>`<div><b>${v}</b>${l}</div>`;
   const tab=(k,l)=>`<button data-tab="${k}" ${k===statsTab?'style="background:#ffd54f"':''}>${l} (${k==='all'?all.length:all.filter(x=>x.official===(k==='official')).length})</button>`;
