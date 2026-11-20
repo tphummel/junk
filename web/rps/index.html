@@ -88,6 +88,9 @@
   const MOVES = ['rock', 'paper', 'scissors']
   const GLYPH = { rock: '✊', paper: '✋', scissors: '✌️' }
   const BEATS = { rock: 'scissors', paper: 'rock', scissors: 'paper' }
+  // Bots are served by the Worker API (api/rps-bot.ts). Each answers GET with { throw }.
+  const BOTS = [{ id: 'calvin', name: 'Calvin (bot)', path: '/api/rps-bot/calvin' }]
+  const botById = id => BOTS.find(b => b.id === id) || BOTS[0]
   const TABS = [['play', 'Play'], ['board', 'Leaderboard'], ['sessions', 'Sessions'], ['data', 'Data']]
 
   // ---- state ----
@@ -102,6 +105,9 @@
   const ui = {
     tab: 'play',
     form: { playerOne: '', playerTwo: '', moveOne: null, moveTwo: null },
+    mode: 'humans',
+    botId: BOTS[0].id,
+    botBusy: false,
     notice: null,
     boardScope: 'current'
   }
@@ -198,9 +204,8 @@
 
   function recordMatch () {
     const f = ui.form
-    const session = currentSession()
     const errors = []
-    if (!session) errors.push('Start a session first.')
+    if (!currentSession()) errors.push('Start a session first.')
     if (!f.playerOne.trim()) errors.push('Player 1 name is required.')
     if (!f.playerTwo.trim()) errors.push('Player 2 name is required.')
     if (f.playerOne.trim() && f.playerTwo.trim() && sameName(f.playerOne, f.playerTwo)) errors.push('Players must be different people.')
@@ -210,24 +215,62 @@
       ui.notice = { type: 'error', text: errors.join(' ') }
       return
     }
-    const p1 = findOrCreate(state.players, f.playerOne)
-    const p2 = findOrCreate(state.players, f.playerTwo)
-    const outcome = outcomeOf(f.moveOne, f.moveTwo)
+    addMatch(f.playerOne, f.playerTwo, f.moveOne, f.moveTwo)
+    f.moveOne = f.moveTwo = null
+  }
+
+  // Stores a validated match and sets the result notice.
+  function addMatch (nameOne, nameTwo, moveOne, moveTwo) {
+    const session = currentSession()
+    const p1 = findOrCreate(state.players, nameOne)
+    const p2 = findOrCreate(state.players, nameTwo)
+    const outcome = outcomeOf(moveOne, moveTwo)
     state.matches.push({
       id: uid(), sessionId: session.id, playedAt: now(),
       playerOneId: p1.id, playerTwoId: p2.id,
-      moveOne: f.moveOne, moveTwo: f.moveTwo, outcome
+      moveOne, moveTwo, outcome
     })
     save()
     const text = outcome === 'draw'
-      ? `Draw: both threw ${f.moveOne}.`
+      ? `Draw: both threw ${moveOne}.`
       : outcome === 'player_one'
-        ? `${p1.name} wins: ${f.moveOne} beats ${f.moveTwo}.`
-        : `${p2.name} wins: ${f.moveTwo} beats ${f.moveOne}.`
-    ui.notice = { type: 'ok', text }
+        ? `${p1.name} wins: ${moveOne} beats ${moveTwo}.`
+        : `${p2.name} wins: ${moveTwo} beats ${moveOne}.`
+    ui.notice = { type: 'ok', text: `${GLYPH[moveOne]} vs ${GLYPH[moveTwo]} ${text}` }
     // players stay filled in for the rematch; only the moves reset
-    f.playerOne = p1.name; f.playerTwo = p2.name
-    f.moveOne = f.moveTwo = null
+    ui.form.playerOne = p1.name
+    if (ui.mode === 'humans') ui.form.playerTwo = p2.name
+  }
+
+  async function playBot () {
+    const f = ui.form
+    const bot = botById(ui.botId)
+    const errors = []
+    if (!currentSession()) errors.push('Start a session first.')
+    if (!f.playerOne.trim()) errors.push('Your name is required.')
+    else if (sameName(f.playerOne, bot.name)) errors.push('Pick a name different from the bot’s.')
+    if (!MOVES.includes(f.moveOne)) errors.push('Pick your move.')
+    if (errors.length) {
+      ui.notice = { type: 'error', text: errors.join(' ') }
+      return render()
+    }
+    ui.botBusy = true
+    ui.notice = null
+    render()
+    try {
+      const res = await fetch(bot.path, { cache: 'no-store' })
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      const botMove = (await res.json()).throw
+      if (!MOVES.includes(botMove)) throw new Error('unexpected reply')
+      // the session may have changed while waiting
+      if (!currentSession()) throw new Error('session ended')
+      addMatch(f.playerOne, bot.name, f.moveOne, botMove)
+      f.moveOne = null
+    } catch (e) {
+      ui.notice = { type: 'error', text: `${bot.name} could not be reached (${e.message}). Bots need a connection; nothing was recorded.` }
+    }
+    ui.botBusy = false
+    render()
   }
 
   function deleteMatch (id) {
@@ -395,6 +438,15 @@
     ))
   }
 
+  function modeToggle () {
+    const btn = (mode, label) => h('button', {
+      type: 'button', 'aria-pressed': String(ui.mode === mode), disabled: ui.botBusy,
+      onclick: () => { ui.mode = mode; ui.notice = null; ui.form.moveOne = ui.form.moveTwo = null; render() }
+    }, label)
+    return h('div', { class: 'seg', role: 'group', 'aria-label': 'Opponent', style: 'margin-top:0;margin-bottom:0.5rem' },
+      btn('humans', 'Two players'), btn('bot', 'Vs bot'))
+  }
+
   function textInput (key, id, list) {
     return h('input', {
       type: 'text', id, list, autocomplete: 'off', autocapitalize: 'words', value: ui.form[key],
@@ -467,15 +519,27 @@
     }
     const matches = sessionMatches(session.id).slice().reverse()
     return [
-      h('form', { class: 'card', onsubmit: e => { e.preventDefault(); recordMatch(); render() } },
-        h('label', { for: 'player-one' }, 'Player 1'),
-        textInput('playerOne', 'player-one', 'players'),
-        moveButtons('moveOne'),
-        h('label', { for: 'player-two' }, 'Player 2'),
-        textInput('playerTwo', 'player-two', 'players'),
-        moveButtons('moveTwo'),
-        h('button', { class: 'primary big', type: 'submit' }, 'Record match')
-      ),
+      ui.mode === 'bot'
+        ? h('form', { class: 'card', onsubmit: e => { e.preventDefault(); playBot() } },
+          modeToggle(),
+          h('label', { for: 'player-one' }, 'Your name'),
+          textInput('playerOne', 'player-one', 'players'),
+          moveButtons('moveOne'),
+          h('label', { for: 'bot' }, 'Opponent'),
+          h('select', { id: 'bot', style: 'width:100%', disabled: ui.botBusy, onchange: e => { ui.botId = e.target.value } },
+            BOTS.map(b => h('option', { value: b.id, selected: b.id === ui.botId }, b.name))),
+          h('button', { class: 'primary big', type: 'submit', disabled: ui.botBusy }, ui.botBusy ? 'Waiting for bot…' : 'Throw!')
+        )
+        : h('form', { class: 'card', onsubmit: e => { e.preventDefault(); recordMatch(); render() } },
+          modeToggle(),
+          h('label', { for: 'player-one' }, 'Player 1'),
+          textInput('playerOne', 'player-one', 'players'),
+          moveButtons('moveOne'),
+          h('label', { for: 'player-two' }, 'Player 2'),
+          textInput('playerTwo', 'player-two', 'players'),
+          moveButtons('moveTwo'),
+          h('button', { class: 'primary big', type: 'submit' }, 'Record match')
+        ),
       h('div', { class: 'card' },
         h('h2', null, 'Session leaderboard'),
         boardTable(matches)),
