@@ -7,13 +7,14 @@ import { join, relative } from "node:path";
 import { test } from "node:test";
 import { contrastRatio } from "../web/golden-angle-palette/palette.js";
 import { createBag, makeRng } from "../web/tetris/src/game/bag.js";
-import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, ROWS } from "../web/tetris/src/game/board.js";
+import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, place, ROWS } from "../web/tetris/src/game/board.js";
 import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
-import { gravityTicks, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
+import { gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
+import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
 import { axisDirection, BUTTON, createGamepad, describePad, mapPad } from "../web/tetris/src/input/gamepad.js";
-import { INK, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
+import { INK, METAL, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
 
 const filled = (type = "T", pieceId = 99) => ({ type, pieceId });
 
@@ -103,21 +104,22 @@ test("gravity drops one row per gravityTicks(level) ticks", () => {
   assert.equal(game.current.y, y0 + 1);
 });
 
-test("hard drop scores 2 per row, locks and spawns the next piece", () => {
+test("hard drop locks and spawns the next piece, and scores nothing", () => {
   const game = createGame(3);
-  const rows = landingY(game) - game.current.y;
   const nextType = game.queue[0];
   step(game, ["hardDrop"]);
-  assert.equal(game.score, rows * 2);
+  assert.equal(game.score, 0);
   assert.equal(game.piecesPlaced, 1);
   assert.equal(game.current.type, nextType);
 });
 
-test("soft drop scores 1 per row", () => {
+test("soft drop moves the piece down faster and scores nothing", () => {
   const game = createGame(3);
+  const y0 = game.current.y;
   step(game, ["softDrop"]);
   step(game, ["softDrop"]);
-  assert.equal(game.score, 1);
+  assert.equal(game.current.y, y0 + 1);
+  assert.equal(game.score, 0);
 });
 
 test("hold: once per piece, resets on lock, first hold pulls from the queue", () => {
@@ -163,13 +165,13 @@ test("lock delay resets on moves, but only a limited number of times", () => {
   assert.ok(game.piecesPlaced >= 1, "the reset cap eventually lets it lock");
 });
 
-test("clearing a line scores lineScore * level and counts lines", () => {
+test("clearing a plain line scores 1 and counts the line", () => {
   const game = createGame(3);
   game.board[ROWS - 1] = Array.from({ length: COLS }, (_, c) => (c < 6 ? filled() : null));
   game.current = { type: "I", rot: 0, x: 6, y: ROWS - 2, id: 77 };
   step(game, ["hardDrop"]);
   assert.equal(game.lines, 1);
-  assert.equal(game.score, 100);
+  assert.equal(game.score, 1);
   assert.ok(game.board[ROWS - 1].every((c) => c === null));
 });
 
@@ -179,7 +181,7 @@ test("level goes up every 10 lines", () => {
   game.board[ROWS - 1] = Array.from({ length: COLS }, (_, c) => (c < 6 ? filled() : null));
   game.current = { type: "I", rot: 0, x: 6, y: ROWS - 2, id: 77 };
   step(game, ["hardDrop"]);
-  assert.equal(game.score, 100, "scored at the old level");
+  assert.equal(game.score, 1, "no level multiplier");
   assert.equal(game.level, 2);
 });
 
@@ -199,6 +201,156 @@ test("locking entirely above the visible field ends the game", () => {
   for (let r = HIDDEN_ROWS; r < ROWS; r++) game.board[r] = Array.from({ length: COLS }, (_, c) => (c === COLS - 1 ? null : filled()));
   step(game, ["hardDrop"]);
   assert.equal(game.over, true);
+});
+
+// --- squares ---------------------------------------------------------------------------------------
+
+/** Place four horizontal I pieces in rows top..top+3, columns col..col+3 (a gold square), ids from firstId. */
+function stackIs(board, col, top, firstId) {
+  for (let i = 0; i < 4; i++) place(board, "I", 0, col, top + i - 1, firstId + i);
+}
+
+test("four pieces of one type in a 4x4 make a gold square", () => {
+  const board = createBoard();
+  stackIs(board, 0, 18, 1);
+  const found = markSquares(board, 1);
+  assert.deepEqual(found, [{ id: 1, kind: "gold", row: 18, col: 0 }]);
+  assert.equal(board[18][0].square, "gold");
+  assert.equal(board[21][3].squareId, 1);
+});
+
+test("four pieces of mixed types in a 4x4 make a silver square", () => {
+  const board = createBoard();
+  place(board, "O", 0, 0, 18, 1);
+  place(board, "O", 0, 2, 18, 2);
+  place(board, "I", 0, 0, 19, 3); // fills row 20
+  place(board, "I", 0, 0, 20, 4); // fills row 21
+  assert.deepEqual(markSquares(board, 1), [{ id: 1, kind: "silver", row: 18, col: 0 }]);
+});
+
+test("no square: a gap, a partial piece, or too many pieces", () => {
+  const gap = createBoard();
+  stackIs(gap, 0, 18, 1);
+  gap[19][2] = null;
+  assert.deepEqual(markSquares(gap, 1), []);
+
+  const cut = createBoard();
+  stackIs(cut, 0, 18, 1);
+  cut[21][3] = { type: "I", pieceId: 77 }; // one cell of a different piece: 5 pieces, one with a single cell
+  assert.deepEqual(markSquares(cut, 1), []);
+
+  const many = createBoard();
+  for (let r = 18; r < 22; r++) for (let c = 0; c < 4; c++) many[r][c] = { type: "T", pieceId: 100 + r * 4 + c };
+  assert.deepEqual(markSquares(many, 1), [], "16 single-cell pieces");
+});
+
+test("a piece in a square is never reused by an overlapping region", () => {
+  const board = createBoard();
+  stackIs(board, 0, 18, 1);
+  stackIs(board, 4, 18, 5);
+  assert.equal(markSquares(board, 1).length, 2);
+  assert.equal(markSquares(board, 3).length, 0, "already marked");
+  // A fifth I next to the first two squares cannot make a region with cells of a marked square.
+  place(board, "I", 1, 7, 17, 9); // vertical I at column 9, rows 17-20 (box column 2)
+  assert.equal(markSquares(board, 3).length, 0);
+});
+
+test("squaresInRow counts each square once, by kind", () => {
+  const board = createBoard();
+  stackIs(board, 0, 18, 1);
+  place(board, "O", 0, 4, 18, 5);
+  place(board, "O", 0, 6, 18, 6);
+  place(board, "I", 0, 4, 19, 7);
+  place(board, "I", 0, 4, 20, 8);
+  markSquares(board, 1);
+  assert.deepEqual(squaresInRow(board[19]), { gold: 1, silver: 1 });
+  assert.deepEqual(squaresInRow(board[10]), { gold: 0, silver: 0 });
+});
+
+test("scoring table: every combination from the spec", () => {
+  const mix = { "1 multi": { gold: 0, silver: 1 }, "2 multi": { gold: 0, silver: 2 }, "1 mono": { gold: 1, silver: 0 }, "1 & 1": { gold: 1, silver: 1 }, "2 mono": { gold: 2, silver: 0 } };
+  const expected = {
+    1: [6, 11, 11, 16, 21],
+    2: [12, 22, 22, 32, 42],
+    3: [18, 33, 33, 48, 63],
+    4: [25, 45, 45, 65, 85],
+  };
+  for (const [lines, values] of Object.entries(expected)) {
+    Object.entries(mix).forEach(([name, row], i) => {
+      assert.equal(linePoints(Array.from({ length: Number(lines) }, () => row)), values[i], `${lines} lines, ${name}`);
+    });
+  }
+  assert.equal(linePoints([{ gold: 0, silver: 0 }]), 1, "a plain line is 1");
+  assert.equal(linePoints(Array.from({ length: 4 }, () => ({ gold: 0, silver: 0 }))), 5, "a plain tetris is 4 + 1");
+});
+
+/**
+ * A board with squares in rows 18-21 at the given columns, junk filling the remaining columns up to column 8,
+ * and column 9 left open for a vertical I. `fullRowsOnly` limits which of the four rows get their junk.
+ */
+function squareBoard(game, kinds, junkRows = [18, 19, 20, 21]) {
+  let id = 1;
+  kinds.forEach((kind, i) => {
+    if (kind === "gold") stackIs(game.board, i * 4, 18, id);
+    else {
+      place(game.board, "O", 0, i * 4, 18, id);
+      place(game.board, "O", 0, i * 4 + 2, 18, id + 1);
+      place(game.board, "I", 0, i * 4, 19, id + 2);
+      place(game.board, "I", 0, i * 4, 20, id + 3);
+    }
+    id += 4;
+  });
+  for (const r of junkRows) for (let c = kinds.length * 4; c < 9; c++) game.board[r][c] = { type: "T", pieceId: 1000 + r * 10 + c };
+  game.current = { type: "I", rot: 1, x: 7, y: 18, id: 900 };
+}
+
+test("clearing 4 lines through one gold square scores 45, one silver 25, two gold 85", () => {
+  for (const [kinds, points] of [[["gold"], 45], [["silver"], 25], [["gold", "gold"], 85], [["gold", "silver"], 65]]) {
+    const game = createGame(3);
+    squareBoard(game, kinds);
+    step(game, ["hardDrop"]);
+    assert.equal(game.lines, 4, kinds.join());
+    assert.equal(game.score, points, kinds.join());
+  }
+});
+
+test("a locked piece that completes a square forms it and counts it", () => {
+  const game = createGame(3);
+  for (let i = 0; i < 3; i++) place(game.board, "I", 0, 0, 18 + i - 1, i + 1);
+  game.current = { type: "I", rot: 0, x: 0, y: 20, id: 600 };
+  step(game, ["hardDrop"]);
+  assert.equal(game.goldSquares, 1);
+  assert.equal(game.silverSquares, 0);
+  assert.equal(game.board[21][0].square, "gold");
+});
+
+test("a partly cleared square keeps its bonus for the rows that are left", () => {
+  const game = createGame(3);
+  squareBoard(game, ["gold"], [21]); // only the bottom row can fill
+  step(game, ["hardDrop"]);
+  assert.equal(game.lines, 1);
+  assert.equal(game.score, 11, "1 line through a gold square");
+  // Three rows of the square remain, still marked, now at rows 19-21.
+  assert.equal(game.board[21][0].square, "gold");
+  assert.equal(game.board[19][0].square, "gold");
+  assert.equal(game.board[18][0], null);
+  // The bottom row is full again (square, the old I at column 9, new junk): any lock clears it, and the
+  // bonus for the square's remaining rows applies again.
+  for (let c = 4; c < 9; c++) game.board[21][c] = { type: "T", pieceId: 2000 + c };
+  game.current = { type: "O", rot: 0, x: 4, y: 0, id: 901 };
+  step(game, ["hardDrop"]);
+  assert.equal(game.lines, 2);
+  assert.equal(game.score, 22);
+  assert.equal(game.board[21][0].square, "gold", "two rows of the square are left");
+});
+
+test("metal colors: the engraved glyph reads on every stop, and the slab stands out from the board", () => {
+  for (const { stops } of Object.values(METAL)) {
+    for (const c of stops) {
+      assert.ok(contrastRatio(c.slice(1), INK.slice(1)) >= 4.5, `${INK} on ${c}`);
+      for (const bg of ["#2A3440", "#1B222B"]) assert.ok(contrastRatio(c.slice(1), bg.slice(1)) >= 3, `${c} on ${bg}`);
+    }
+  }
 });
 
 // --- determinism -----------------------------------------------------------------------------------

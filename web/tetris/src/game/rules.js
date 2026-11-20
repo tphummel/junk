@@ -2,7 +2,7 @@
 // and integers, so the game behaves identically on every machine.
 
 /** Bump when any rule, constant or table below changes in a way that alters how a seed plays out. */
-export const RULES_VERSION = 1;
+export const RULES_VERSION = 2;
 
 export const TICKS_PER_SECOND = 60;
 
@@ -21,16 +21,29 @@ export function gravityTicks(level) {
   return GRAVITY_TICKS[Math.min(level, GRAVITY_TICKS.length) - 1];
 }
 
-/** Base points for clearing 0 to 4 lines at once, multiplied by the level. */
-const LINE_POINTS = [0, 100, 300, 500, 800];
+// Scoring. A cleared line is worth LINE_POINT, plus a bonus for every square it passes through: a silver
+// (multi-color) square adds SILVER_LINE_BONUS and a gold (single-color) square adds GOLD_LINE_BONUS. Clearing
+// four lines at once adds TETRIS_BONUS. A row can pass through at most two squares (they are 4 wide, the board 10).
+// There is no level multiplier, and dropping a piece scores nothing.
+export const LINE_POINT = 1;
+export const SILVER_LINE_BONUS = 5;
+export const GOLD_LINE_BONUS = 10;
+export const TETRIS_BONUS = 1;
+export const SOFT_DROP_POINTS_PER_ROW = 0;
+export const HARD_DROP_POINTS_PER_ROW = 0;
 
-/** @param {number} lines 0 to 4 @param {number} level */
-export function lineScore(lines, level) {
-  return LINE_POINTS[lines] * level;
+/**
+ * Points for one line clear.
+ * @param {readonly { gold: number, silver: number }[]} rows one entry per cleared row: how many gold and silver
+ *   squares that row passes through
+ */
+export function linePoints(rows) {
+  let total = 0;
+  for (const row of rows) total += LINE_POINT + row.silver * SILVER_LINE_BONUS + row.gold * GOLD_LINE_BONUS;
+  if (rows.length === 4) total += TETRIS_BONUS;
+  return total;
 }
 
-export const SOFT_DROP_POINTS_PER_ROW = 1;
-export const HARD_DROP_POINTS_PER_ROW = 2;
 export const LINES_PER_LEVEL = 10;
 
 /** @param {number} startLevel @param {number} totalLines */

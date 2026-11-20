@@ -4,7 +4,11 @@ import { pieceCells } from "./pieces.js";
 
 /** @typedef {import("./pieces.js").PieceType} PieceType */
 /** @typedef {import("./pieces.js").Rotation} Rotation */
-/** @typedef {{ type: PieceType, pieceId: number }} Cell a filled cell; pieceId is what makes squares detectable */
+/**
+ * A filled cell. pieceId is what makes squares detectable; squareId and square are set (by squares.js) on the 16
+ * cells of a gold or silver square and stay on whatever is left of it after line clears.
+ * @typedef {{ type: PieceType, pieceId: number, squareId?: number, square?: "gold" | "silver" }} Cell
+ */
 /** @typedef {(Cell | null)[][]} Board rows from the top; row 0 is the first hidden row */
 
 export const COLS = 10;
@@ -48,6 +52,20 @@ export function place(board, type, rot, x, y, pieceId) {
   for (const [dx, dy] of pieceCells(type, rot)) {
     board[y + dy][x + dx] = { type, pieceId };
   }
+}
+
+/**
+ * Indexes of the rows that are completely filled, top to bottom.
+ * @param {Board} board
+ * @returns {number[]}
+ */
+export function fullRows(board) {
+  /** @type {number[]} */
+  const rows = [];
+  board.forEach((row, r) => {
+    if (row.every((c) => c !== null)) rows.push(r);
+  });
+  return rows;
 }
 
 /**

@@ -2,19 +2,20 @@
 // no clocks, no randomness beyond the seeded bag, no DOM, so seed + inputLog reproduces a round exactly.
 
 import { createBag } from "./bag.js";
-import { clearLines, collides, createBoard, HIDDEN_ROWS, place } from "./board.js";
+import { clearLines, collides, createBoard, fullRows, HIDDEN_ROWS, place } from "./board.js";
 import { kicksFor, pieceCells, spawnX } from "./pieces.js";
 import {
   gravityTicks,
   HARD_DROP_POINTS_PER_ROW,
   levelFor,
-  lineScore,
+  linePoints,
   LOCK_DELAY_TICKS,
   MAX_LOCK_RESETS,
   RULES_VERSION,
   SOFT_DROP_POINTS_PER_ROW,
   SOFT_DROP_TICKS,
 } from "./rules.js";
+import { markSquares, squaresInRow } from "./squares.js";
 
 /** @typedef {import("./pieces.js").PieceType} PieceType */
 /** @typedef {import("./pieces.js").Rotation} Rotation */
@@ -42,6 +43,9 @@ import {
  * @property {number} level
  * @property {number} startLevel
  * @property {number} piecesPlaced
+ * @property {number} nextSquareId id for the next square formed; ids start at 1
+ * @property {number} goldSquares gold (single-color) squares formed so far
+ * @property {number} silverSquares silver (mixed) squares formed so far
  * @property {number} holdsUsed
  * @property {boolean} over
  * @property {number} gravityCount ticks since the piece last fell
@@ -77,6 +81,9 @@ export function createGame(seed, options = {}) {
     level: startLevel,
     startLevel,
     piecesPlaced: 0,
+    nextSquareId: 1,
+    goldSquares: 0,
+    silverSquares: 0,
     holdsUsed: 0,
     over: false,
     gravityCount: 0,
@@ -183,7 +190,21 @@ function doHold(game) {
   spawn(game, incoming);
 }
 
-/** Write the piece into the board, clear lines, score, level up, and spawn the next piece. @param {Game} game */
+/** Mark any new squares on the board and count them. @param {Game} game */
+function formSquares(game) {
+  for (const sq of markSquares(game.board, game.nextSquareId)) {
+    game.nextSquareId = sq.id + 1;
+    if (sq.kind === "gold") game.goldSquares++;
+    else game.silverSquares++;
+  }
+}
+
+/**
+ * Write the piece into the board, find squares, clear lines (scoring any squares they pass through), level up,
+ * and spawn the next piece. Squares are found before the clear, so a piece that completes a square can clear a
+ * line through it at once, and again after it, because the rows above fall and can line up into a new one.
+ * @param {Game} game
+ */
 function lock(game) {
   const p = /** @type {Piece} */ (game.current);
   place(game.board, p.type, p.rot, p.x, p.y, p.id);
@@ -192,11 +213,14 @@ function lock(game) {
 
   // Lock-out: the whole piece is above the visible field.
   const lockedOut = pieceCells(p.type, p.rot).every(([, dy]) => p.y + dy < HIDDEN_ROWS);
+  formSquares(game);
+  const rows = fullRows(game.board).map((r) => squaresInRow(game.board[r]));
   const cleared = clearLines(game.board);
   if (cleared > 0) {
-    game.score += lineScore(cleared, game.level);
+    game.score += linePoints(rows);
     game.lines += cleared;
     game.level = levelFor(game.startLevel, game.lines);
+    formSquares(game);
   }
   if (lockedOut && cleared === 0) {
     game.current = null;

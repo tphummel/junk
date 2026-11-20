@@ -23,6 +23,16 @@ export const PIECE_COLORS = {
   L: "#E1781C",
 };
 
+/**
+ * Gold (single-color) and silver (mixed) squares are drawn as one metallic slab across the whole square.
+ * The stops run light to dark along the diagonal; the dark ones are still 4.5:1 against INK.
+ * @type {Record<"gold" | "silver", { stops: string[], edge: string, glyph: string }>}
+ */
+export const METAL = {
+  gold: { stops: ["#F7E08A", "#D9A520", "#B8860B", "#E9C65A"], edge: "#5A3E06", glyph: "\u2605" },
+  silver: { stops: ["#F4F6F9", "#B9C1CC", "#8E98A4", "#DDE2E8"], edge: "#3B4450", glyph: "\u25C6" },
+};
+
 /** Engraved letter and carved-outline color; a letter on every block keeps color from being the only cue. */
 export const INK = "#1A1208";
 
@@ -86,6 +96,44 @@ function drawBlock(ctx, type, px, py, size, alpha = 1) {
 }
 
 /**
+ * One cell of a gold or silver square: the slab's metal gradient, plus a dark border on every side that
+ * faces something other than the same square.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {import("../game/board.js").Board} board
+ * @param {number} r board row
+ * @param {number} c board column
+ * @param {{ kind: "gold" | "silver", minR: number, maxR: number, minC: number, maxC: number }} box the square's extent
+ * @param {number} size
+ */
+function drawSquareCell(ctx, board, r, c, box, size) {
+  const metal = METAL[box.kind];
+  const id = board[r][c]?.squareId;
+  const px = c * size;
+  const py = (r - HIDDEN_ROWS) * size;
+  const grad = ctx.createLinearGradient(
+    box.minC * size, (box.minR - HIDDEN_ROWS) * size, (box.maxC + 1) * size, (box.maxR + 1 - HIDDEN_ROWS) * size,
+  );
+  metal.stops.forEach((color, i) => grad.addColorStop(i / (metal.stops.length - 1), color));
+  ctx.fillStyle = grad;
+  ctx.fillRect(px, py, size, size);
+  // Faint seams between the cells of the slab.
+  ctx.strokeStyle = "rgba(0,0,0,0.16)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(px + 0.5, py + 0.5, size - 1, size - 1);
+
+  const same = (/** @type {number} */ rr, /** @type {number} */ cc) => board[rr]?.[cc]?.squareId === id;
+  const t = Math.max(2, size * 0.1);
+  ctx.fillStyle = metal.edge;
+  if (!same(r - 1, c)) ctx.fillRect(px, py, size, t);
+  if (!same(r + 1, c)) ctx.fillRect(px, py + size - t, size, t);
+  if (!same(r, c - 1)) ctx.fillRect(px, py, t, size);
+  if (!same(r, c + 1)) ctx.fillRect(px + size - t, py, t, size);
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  if (!same(r - 1, c)) ctx.fillRect(px + t, py + t, size - 2 * t, 1);
+  if (!same(r, c - 1)) ctx.fillRect(px + t, py + t, 1, size - 2 * t);
+}
+
+/**
  * Draw the visible board, the ghost and the current piece.
  * @param {HTMLCanvasElement} canvas
  * @param {Game} game
@@ -113,11 +161,42 @@ export function drawBoard(canvas, game, theme) {
   }
   ctx.stroke();
 
+  // Where each square is, so its cells can share one gradient and one glyph.
+  /** @type {Map<number, { kind: "gold" | "silver", minR: number, maxR: number, minC: number, maxC: number }>} */
+  const squares = new Map();
+  game.board.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      if (!cell?.squareId || !cell.square) return;
+      const box = squares.get(cell.squareId) ?? { kind: cell.square, minR: r, maxR: r, minC: c, maxC: c };
+      box.minR = Math.min(box.minR, r);
+      box.maxR = Math.max(box.maxR, r);
+      box.minC = Math.min(box.minC, c);
+      box.maxC = Math.max(box.maxC, c);
+      squares.set(cell.squareId, box);
+    });
+  });
+
   for (let r = HIDDEN_ROWS; r < game.board.length; r++) {
     game.board[r].forEach((cell, c) => {
-      if (cell) drawBlock(ctx, cell.type, c * size, (r - HIDDEN_ROWS) * size, size);
+      if (!cell) return;
+      const box = cell.squareId ? squares.get(cell.squareId) : undefined;
+      if (box) drawSquareCell(ctx, game.board, r, c, box, size);
+      else drawBlock(ctx, cell.type, c * size, (r - HIDDEN_ROWS) * size, size);
     });
   }
+  // A star on gold and a diamond on silver, so the kind never rests on color alone.
+  ctx.fillStyle = INK;
+  ctx.globalAlpha = 0.6;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  for (const box of squares.values()) {
+    const height = box.maxR - box.minR + 1;
+    ctx.font = `${Math.floor(size * (height >= 3 ? 1.8 : height >= 2 ? 1.2 : 0.8))}px system-ui, sans-serif`;
+    const cx = ((box.minC + box.maxC + 1) / 2) * size;
+    const cy = ((box.minR + box.maxR + 1) / 2 - HIDDEN_ROWS) * size;
+    if (cy > 0) ctx.fillText(METAL[box.kind].glyph, cx, cy);
+  }
+  ctx.globalAlpha = 1;
 
   const p = game.current;
   if (p) {

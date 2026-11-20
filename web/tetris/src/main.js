@@ -19,6 +19,13 @@ import { drawBoard, readTheme } from "./ui/render.js";
  * @property {number} seed
  * @property {number} startedAt epoch ms
  * @property {number} ticks
+ * @property {number} score
+ * @property {number} lines
+ * @property {number} level
+ * @property {number} piecesPlaced
+ * @property {number} goldSquares
+ * @property {number} silverSquares
+ * @property {number} holdsUsed
  * @property {{ t: number, action: GameAction }[]} inputLog
  */
 
@@ -65,7 +72,11 @@ function newGame() {
 
 /** @param {Game} g @returns {Round} */
 function newRound(g) {
-  return { rulesVersion: g.rulesVersion, seed: g.seed, startedAt: Date.now(), ticks: 0, inputLog: [] };
+  return {
+    rulesVersion: g.rulesVersion, seed: g.seed, startedAt: Date.now(), ticks: 0,
+    score: 0, lines: 0, level: g.level, piecesPlaced: 0, goldSquares: 0, silverSquares: 0, holdsUsed: 0,
+    inputLog: [],
+  };
 }
 
 /** @type {string | undefined} */
@@ -146,7 +157,10 @@ function tick() {
   step(game, actions);
   for (const action of actions) round.inputLog.push({ t: game.tick, action });
   if (game.over) {
-    round.ticks = game.tick;
+    Object.assign(round, {
+      ticks: game.tick, score: game.score, lines: game.lines, level: game.level, piecesPlaced: game.piecesPlaced,
+      goldSquares: game.goldSquares, silverSquares: game.silverSquares, holdsUsed: game.holdsUsed,
+    });
     rounds.push(round);
     setScreen("over");
     return false;
