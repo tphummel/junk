@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak, mergeEvents,
+  DEFAULT_SETTINGS, STEPS, TOTAL_SECONDS, addDays, dayRoutine, normalizeSettings, routineStats, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak, mergeEvents,
   monthGrid, normalizeAll, normalizeEvent, parseImport, summarize,
 } from "../web/toothup/logic.js";
 
@@ -31,7 +31,7 @@ test("routine: 8 facial/lingual steps of 15s per quadrant, then 5s of tongue", (
   assert.equal(TOTAL_SECONDS, 125);
 });
 
-test("normalizeEvent: rejects junk, clamps brush fields, zeroes them for floss and mouthwash", () => {
+test("normalizeEvent: rejects junk, clamps brush fields, omits them for floss and mouthwash", () => {
   assert.equal(normalizeEvent(null), null);
   assert.equal(normalizeEvent({ start: "x", seconds: 1 }), null);
   assert.equal(normalizeEvent({ start: 1000, seconds: -5 }), null);
@@ -39,7 +39,7 @@ test("normalizeEvent: rejects junk, clamps brush fields, zeroes them for floss a
   assert.deepEqual(normalizeEvent({ start: 1000.4, seconds: 90.6, quadrants: 4 }), { id: "s1000", type: "brush", start: 1000, seconds: 91, steps: 8 });
   assert.equal(normalizeEvent({ start: 1000, seconds: 5, steps: 99 }).steps, 9);
   assert.equal(normalizeEvent({ start: 1000, seconds: 5, steps: 3, quadrants: 4 }).steps, 3);
-  assert.deepEqual(normalizeEvent({ type: "floss", start: 2000, seconds: 50, steps: 3 }), { id: "f2000", type: "floss", start: 2000, seconds: 0, steps: 0 });
+  assert.deepEqual(normalizeEvent({ type: "floss", start: 2000, seconds: 50, steps: 3 }), { id: "f2000", type: "floss", start: 2000 });
   assert.equal(normalizeEvent({ type: "mouthwash", start: 3000 }).id, "m3000");
 });
 
@@ -130,4 +130,87 @@ test("formatClock rounds up", () => {
   assert.equal(formatClock(29.2), "0:30");
   assert.equal(formatClock(120), "2:00");
   assert.equal(formatClock(-1), "0:00");
+});
+
+// ---------- routine ----------
+const D = "2026-11-18";
+const AFTER = at("2026-11-25", 12); // "now" well after D, so every slot of D is due
+const full = (key, h, extra = {}) => s(key, h, extra);
+const routine = (events, now = AFTER) => dayRoutine(events, D, DEFAULT_SETTINGS, now);
+
+test("floss and mouthwash events carry no empty fields", () => {
+  assert.deepEqual(Object.keys(ev("floss", D)), ["id", "type", "start"]);
+  assert.deepEqual(JSON.parse(JSON.stringify(buildExport([ev("mouthwash", D)]))).events[0], ev("mouthwash", D));
+  assert.deepEqual(Object.keys(s(D)), ["id", "type", "start", "seconds", "steps"]);
+});
+
+test("normalizeSettings clamps to valid hours", () => {
+  assert.deepEqual(normalizeSettings(null), { morningEnd: 11, eveningStart: 17 });
+  assert.deepEqual(normalizeSettings({ morningEnd: 99, eveningStart: 1.5 }), { morningEnd: 11, eveningStart: 17 });
+  assert.deepEqual(normalizeSettings({ morningEnd: 9, eveningStart: 19 }), { morningEnd: 9, eveningStart: 19 });
+});
+
+test("a standard day fills every slot with no extras", () => {
+  const r = routine([
+    ev("mouthwash", D, 7), full(D, 7),
+    ev("floss", D, 21), full(D, 21), ev("mouthwash", D, 21),
+  ]);
+  assert.equal(r.done, 5);
+  assert.equal(r.total, 5);
+  assert.ok(r.complete);
+  assert.equal(r.extras.length, 0);
+});
+
+test("midday events and repeats are extras; the routine is still complete", () => {
+  const midday = full(D, 13);
+  const r = routine([ev("mouthwash", D, 7), full(D, 7), midday, ev("floss", D, 21), full(D, 21), ev("mouthwash", D, 21), ev("mouthwash", D, 22)]);
+  assert.ok(r.complete);
+  assert.deepEqual(r.extras.map((e) => e.id).sort(), [midday.id, ev("mouthwash", D, 22).id].sort());
+  assert.equal(r.roles.get(midday.id), "extra");
+});
+
+test("missing slots are reported; a partial brush does not count and becomes an extra", () => {
+  const partial = full(D, 8, { steps: 4 });
+  const r = routine([ev("mouthwash", D, 7), partial, ev("floss", D, 20)]);
+  assert.equal(r.done, 2);
+  assert.ok(!r.complete);
+  assert.deepEqual(r.windows[0].slots.map((x) => x.done), [true, false]);
+  assert.deepEqual(r.windows[1].slots.map((x) => x.done), [true, false, false]);
+  assert.equal(r.roles.get(partial.id), "extra");
+});
+
+test("window boundaries follow settings", () => {
+  const e = [ev("mouthwash", D, 10), full(D, 10)];
+  assert.equal(routine(e).windows[0].done, 2);
+  assert.equal(dayRoutine(e, D, { morningEnd: 9, eveningStart: 17 }, AFTER).windows[0].done, 0);
+  const late = [ev("floss", D, 17), full(D, 17), ev("mouthwash", D, 17)];
+  assert.equal(routine(late).windows[1].done, 3);
+  assert.equal(dayRoutine(late, D, { morningEnd: 11, eveningStart: 18 }, AFTER).windows[1].done, 0);
+});
+
+test("today: open slots are not due until their window ends; done slots always count", () => {
+  const day = "2026-11-20";
+  const settings = DEFAULT_SETTINGS;
+  const morning = [ev("mouthwash", day, 7), full(day, 7)];
+  const at9 = dayRoutine([], day, settings, at(day, 9));
+  assert.equal(at9.due, 0);
+  const at14 = dayRoutine(morning.slice(0, 1), day, settings, at(day, 14));
+  assert.equal(at14.due, 2); // morning window over: mouthwash done, brush missed
+  assert.equal(at14.done, 1);
+  const evening = dayRoutine([...morning, ev("floss", day, 19)], day, settings, at(day, 19, 30));
+  assert.equal(evening.done, 3);
+  assert.equal(evening.due, 3); // evening slots only due once done, until the day ends
+});
+
+test("routineStats counts from the first event and totals completion and extras", () => {
+  const std = (d) => [ev("mouthwash", d, 7), full(d, 7), ev("floss", d, 21), full(d, 21), ev("mouthwash", d, 21)];
+  const events = [...std("2026-11-18"), ...std("2026-11-19"), ev("mouthwash", "2026-11-19", 13), ev("mouthwash", "2026-11-20", 7)];
+  const now = at("2026-11-21", 8);
+  const r = routineStats(events, "2026-11-21", 30, DEFAULT_SETTINGS, now);
+  assert.equal(r.days, 4); // 18th to 21st, not 30 days
+  assert.equal(r.completeDays, 2);
+  assert.equal(r.extras, 1);
+  assert.equal(r.done, 5 + 5 + 1);
+  assert.equal(r.due, 5 + 5 + 5 + 0); // the 20th is over, the 21st morning is still open
+  assert.equal(routineStats([], "2026-11-21", 7, DEFAULT_SETTINGS).pct, null);
 });

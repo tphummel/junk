@@ -2,8 +2,9 @@
 
 /**
  * One thing that happened, with a timestamp. Floss and mouthwash are their own events, not flags on a brush.
- * @typedef {{ id: string, type: "brush" | "floss" | "mouthwash", start: number, seconds: number, steps: number }} Event
- *   start is epoch ms. seconds and steps (0-9 completed, see STEPS) only matter for brush events and are 0 otherwise.
+ * start is epoch ms. Only brush events carry seconds (timer time, pauses excluded) and steps (0-9 completed, see STEPS).
+ * @typedef {{ id: string, type: "floss" | "mouthwash", start: number }
+ *   | { id: string, type: "brush", start: number, seconds: number, steps: number }} Event
  */
 
 export const QUADRANTS = ["Upper right", "Upper left", "Lower left", "Lower right"];
@@ -62,7 +63,8 @@ export function normalizeEvent(e) {
   // v1 recorded `quadrants` (0-4, outer and inner together); that is two steps each.
   const steps = !brush ? 0 : Math.max(0, Math.min(STEPS.length, Math.round(e.steps !== undefined ? Number(e.steps) || 0 : (Number(e.quadrants) || 0) * 2)));
   const id = typeof e.id === "string" && e.id ? e.id : `${ID_PREFIX[type]}${Math.round(start)}`;
-  return { id, type, start: Math.round(start), seconds: Math.round(seconds), steps };
+  const base = { id, type, start: Math.round(start) };
+  return brush ? { ...base, seconds: Math.round(seconds), steps } : base;
 }
 
 /**
@@ -81,7 +83,7 @@ export function normalizeAll(list) {
     }
     events.push(e);
     if (e.type === "brush" && raw.type === undefined && raw.flossed) {
-      events.push({ id: `f${e.start}`, type: "floss", start: e.start + e.seconds * 1000, seconds: 0, steps: 0 });
+      events.push({ id: `f${e.start}`, type: "floss", start: e.start + e.seconds * 1000 });
     }
   }
   return { events, skipped };
@@ -201,4 +203,86 @@ export function monthGrid(year, month) {
 export function formatClock(s) {
   const t = Math.max(0, Math.ceil(s));
   return `${Math.floor(t / 60)}:${pad(t % 60)}`;
+}
+
+// ---------- standard routine ----------
+
+/** What a normal day looks like. A slot is filled by the first matching event inside its window. */
+export const ROUTINE = {
+  morning: ["mouthwash", "brush"],
+  evening: ["floss", "brush", "mouthwash"],
+};
+/** Morning window is before `morningEnd` o'clock; evening is from `eveningStart` o'clock. In between, events are extras. */
+export const DEFAULT_SETTINGS = { morningEnd: 11, eveningStart: 17 };
+
+/** @param {any} s */
+export function normalizeSettings(s) {
+  const hour = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
+  return {
+    morningEnd: hour(s?.morningEnd, 6, 14, DEFAULT_SETTINGS.morningEnd),
+    eveningStart: hour(s?.eveningStart, 14, 22, DEFAULT_SETTINGS.eveningStart),
+  };
+}
+
+/** A brush only fills a slot if the whole routine was done. @param {Event} e */
+const counts = (e) => e.type !== "brush" || e.steps >= STEPS.length;
+
+/**
+ * Check one day against the routine. Events outside both windows, partial brushes and repeats are extras.
+ * A slot is due once it is done or its window has ended (the evening window ends with the day).
+ * @param {Event[]} events any events; other days are ignored
+ * @param {string} day YYYY-MM-DD
+ * @param {{ morningEnd: number, eveningStart: number }} settings
+ * @param {number} now epoch ms, for deciding which slots of today are still open
+ */
+export function dayRoutine(events, day, settings, now = Date.now()) {
+  const list = events.filter((e) => dayKey(e.start) === day).sort((a, b) => a.start - b.start);
+  const today = dayKey(now);
+  const used = new Set();
+  /** @type {Map<string, string>} event id -> "morning" | "evening" | "extra" */
+  const roles = new Map();
+  const windows = ["morning", "evening"].map((name) => {
+    const inWindow = (e) => {
+      const h = new Date(e.start).getHours();
+      return name === "morning" ? h < settings.morningEnd : h >= settings.eveningStart;
+    };
+    const over = day < today || (name === "morning" && day === today && new Date(now).getHours() >= settings.morningEnd);
+    const slots = ROUTINE[name].map((type) => {
+      const event = list.find((e) => e.type === type && !used.has(e.id) && inWindow(e) && counts(e)) || null;
+      if (event) {
+        used.add(event.id);
+        roles.set(event.id, name);
+      }
+      return { type, event, done: !!event, due: !!event || over };
+    });
+    return { name, slots, done: slots.filter((x) => x.done).length, due: slots.filter((x) => x.due).length, total: slots.length };
+  });
+  const extras = list.filter((e) => !used.has(e.id));
+  for (const e of extras) roles.set(e.id, "extra");
+  const done = windows.reduce((t, w) => t + w.done, 0);
+  const due = windows.reduce((t, w) => t + w.due, 0);
+  const total = windows.reduce((t, w) => t + w.total, 0);
+  return { windows, extras, roles, done, due, total, complete: done === total };
+}
+
+/**
+ * Routine adherence over the last `days` days. Counting starts at the first logged event so days before you began
+ * using the app are not misses.
+ * @param {Event[]} events
+ */
+export function routineStats(events, today, days, settings, now = Date.now()) {
+  if (!events.length) return { done: 0, due: 0, pct: null, completeDays: 0, days: 0, extras: 0 };
+  const first = dayKey(Math.min(...events.map((e) => e.start)));
+  let k = addDays(today, -(days - 1));
+  if (k < first) k = first;
+  let done = 0, due = 0, completeDays = 0, extras = 0, n = 0;
+  for (; k <= today; k = addDays(k, 1)) {
+    const r = dayRoutine(events, k, settings, now);
+    done += r.done;
+    due += r.due;
+    extras += r.extras.length;
+    if (r.complete) completeDays++;
+    n++;
+  }
+  return { done, due, pct: due ? Math.round((done / due) * 100) : null, completeDays, days: n, extras };
 }

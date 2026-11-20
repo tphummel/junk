@@ -1,25 +1,27 @@
 import {
   STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak,
-  mergeEvents, monthGrid, normalizeAll, normalizeEvent, parseDay, parseImport, summarize,
+  mergeEvents, monthGrid, normalizeAll, normalizeEvent, normalizeSettings, parseDay, parseImport, routineStats, dayRoutine, summarize,
 } from "./logic.js";
 
 const STORE = "toothup:v2";
 const OLD_STORE = "toothup:v1"; // sessions with a flossed flag; migrated on first load
 const $ = (id) => document.getElementById(id);
 
-/** @type {{ events: import("./logic.js").Event[] }} */
-let state = { events: [] };
+/** @type {{ events: import("./logic.js").Event[], settings: { morningEnd: number, eveningStart: number } }} */
+let state = { events: [], settings: normalizeSettings(null) };
 try {
   const raw = localStorage.getItem(STORE) ?? localStorage.getItem(OLD_STORE);
   const saved = JSON.parse(raw || "null");
   if (saved) {
     state.events = normalizeAll(saved.events || saved.sessions || []).events;
+    state.settings = normalizeSettings(saved.settings);
   }
 } catch {}
 
 function save() {
+  queueMicrotask(() => typeof renderToday === "function" && renderToday());
   try {
-    localStorage.setItem(STORE, JSON.stringify(state));
+    localStorage.setItem(STORE, JSON.stringify({ events: state.events, settings: state.settings }));
   } catch {
     toast("Could not save to this browser's storage");
   }
@@ -290,43 +292,57 @@ let view = (() => {
   return { y: d.getFullYear(), m: d.getMonth(), selected: today() };
 })();
 
+const SLOT_ICON = { brush: "🪥", floss: "🧵", mouthwash: "💧" };
+
+/** "Morning ✓💧 ✓🪥" style summary of a day's routine windows. */
+function routineText(r) {
+  return r.windows
+    .map((w) => `${w.name === "morning" ? "Morning" : "Evening"} ${w.slots.map((x) => `${x.done ? "✓" : x.due ? "✗" : "○"}${SLOT_ICON[x.type]}`).join(" ")}`)
+    .join(" · ");
+}
+
+function renderToday() {
+  const r = dayRoutine(state.events, today(), state.settings);
+  $("today").textContent = `${routineText(r)}${r.extras.length ? ` · +${r.extras.length}` : ""}`;
+}
+
 function renderStats() {
   const t = today();
-  const w = summarize(state.events, t, 7);
   const m = summarize(state.events, t, 30);
+  const w7 = routineStats(state.events, t, 7, state.settings);
+  const w30 = routineStats(state.events, t, 30, state.settings);
+  const pct = (r) => (r.pct === null ? "–" : `${r.pct}%`);
   const tiles = [
-    ["Streak", currentStreak(state.events, t), "days"],
-    ["Best streak", longestStreak(state.events), "days"],
-    ["7 days", `${w.daysBrushed}/7`, "days brushed"],
-    ["30 days", `${m.daysBrushed}/30`, "days brushed"],
+    ["Streak", currentStreak(state.events, t), "days brushed"],
+    ["Best streak", longestStreak(state.events), "days brushed"],
+    ["Routine", pct(w7), "last 7 days"],
+    ["Routine", pct(w30), "last 30 days"],
+    ["Full days", w30.completeDays, `of ${w30.days}, last 30`],
+    ["Extras", w30.extras, "last 30 days"],
     ["Flossed", `${m.flossDays}/30`, "days, last 30"],
     ["Mouthwash", `${m.mouthwashDays}/30`, "days, last 30"],
     ["Average", m.brushes ? formatClock(m.avgSeconds) : "–", "per brush"],
-    ["Brushes", m.brushes, "last 30 days"],
-    ["Per day", m.perDay, "brushes, 30 days"],
   ];
   $("tiles").innerHTML = tiles
     .map(([k, v, u]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`)
     .join("");
   renderCalendar();
   renderDay();
+  renderToday();
 }
 
 function renderCalendar() {
-  const byDay = groupByDay(state.events);
   const t = today();
   $("month-label").textContent = new Date(view.y, view.m, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
   $("cal-body").innerHTML = monthGrid(view.y, view.m)
     .map((week) => `<tr>${week.map((k) => {
       if (!k) return "<td></td>";
-      const list = byDay.get(k) || [];
-      const n = (type) => list.filter((e) => e.type === type).length;
-      const brushes = n("brush");
-      const floss = n("floss") > 0;
-      const rinse = n("mouthwash") > 0;
-      const label = `${parseDay(k).toLocaleDateString(undefined, { dateStyle: "full" })}: ${brushes} brush${brushes === 1 ? "" : "es"}${floss ? ", flossed" : ""}${rinse ? ", mouthwash" : ""}`;
-      return `<td><button class="day l${Math.min(brushes, 2)}${k === t ? " today" : ""}${k === view.selected ? " sel" : ""}" data-day="${k}" aria-label="${label}">` +
-        `${Number(k.slice(8))}<span class="mark">${floss ? "✦" : ""}${rinse ? "●" : ""}</span></button></td>`;
+      const r = dayRoutine(state.events, k, state.settings);
+      const level = r.complete ? 2 : r.done > 0 ? 1 : 0;
+      const extra = r.extras.length;
+      const label = `${parseDay(k).toLocaleDateString(undefined, { dateStyle: "full" })}: ${r.done} of ${r.total} routine steps${extra ? `, ${extra} extra` : ""}`;
+      return `<td><button class="day l${level}${k === t ? " today" : ""}${k === view.selected ? " sel" : ""}" data-day="${k}" aria-label="${label}">` +
+        `${Number(k.slice(8))}<span class="mark">${extra ? "+" + extra : ""}</span></button></td>`;
     }).join("")}</tr>`)
     .join("");
 }
@@ -334,8 +350,10 @@ function renderCalendar() {
 const TYPE_LABEL = { brush: "Brush", floss: "Floss", mouthwash: "Mouthwash" };
 
 function renderDay() {
-  const list = (groupByDay(state.events).get(view.selected) || []).slice().sort((a, b) => a.start - b.start);
+  const r = dayRoutine(state.events, view.selected, state.settings);
+  const list = state.events.filter((e) => dayKey(e.start) === view.selected).sort((a, b) => a.start - b.start);
   $("day-title").textContent = parseDay(view.selected).toLocaleDateString(undefined, { dateStyle: "full" });
+  $("day-routine").textContent = `${routineText(r)}${r.extras.length ? ` · ${r.extras.length} extra` : ""}`;
   const ul = $("day-list");
   ul.innerHTML = "";
   if (!list.length) ul.innerHTML = '<li class="muted">Nothing logged.</li>';
@@ -343,7 +361,8 @@ function renderDay() {
     const li = document.createElement("li");
     const time = new Date(s.start).toLocaleTimeString(undefined, { timeStyle: "short" });
     const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.steps}/${STEPS.length} steps` : "";
-    li.append(`${time} · ${TYPE_LABEL[s.type]}${detail} `);
+    const role = r.roles.get(s.id);
+    li.append(`${time} · ${TYPE_LABEL[s.type]}${detail} · ${role === "extra" ? "extra" : role} `);
     const del = document.createElement("button");
     del.className = "link";
     del.textContent = "delete";
@@ -395,6 +414,17 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
   };
 });
 
+// ---------- settings ----------
+$("morning-end").value = String(state.settings.morningEnd);
+$("evening-start").value = String(state.settings.eveningStart);
+for (const id of ["morning-end", "evening-start"]) {
+  $(id).onchange = () => {
+    state.settings = normalizeSettings({ morningEnd: Number($("morning-end").value), eveningStart: Number($("evening-start").value) });
+    save();
+    renderStats();
+  };
+}
+
 // ---------- data ----------
 function renderData() {
   $("count").textContent = `${state.events.length} event${state.events.length === 1 ? "" : "s"} stored on this device.`;
@@ -435,3 +465,4 @@ $("clear").onclick = () => {
 };
 
 renderBrush();
+renderToday();
