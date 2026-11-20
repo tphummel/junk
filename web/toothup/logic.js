@@ -39,22 +39,34 @@ export function dayKey(t) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-/** A day runs from this hour (local clock) to the same hour the next morning, so a routine at 12:30am still belongs to the night before. */
-export const DAY_STARTS_AT = 4;
+/**
+ * User settings, stored with the data and included in exports.
+ * dayStartsAt: a day runs from this hour (local clock) to the same hour the next morning, so a routine at 12:30am
+ * still belongs to the night before.
+ * @typedef {{ dayStartsAt: number }} Settings
+ */
+export const DEFAULT_SETTINGS = { dayStartsAt: 4 };
+export const MAX_DAY_STARTS_AT = 6;
 
-/** The day (YYYY-MM-DD) a moment belongs to, given the UTC offset in minutes where you were. */
-export function dayOf(ms, offset) {
-  return new Date(ms + offset * 60000 - DAY_STARTS_AT * 3600000).toISOString().slice(0, 10);
+/** Validate settings from storage or an import; returns null if malformed. @param {any} s @returns {Settings | null} */
+export function normalizeSettings(s) {
+  const h = s?.dayStartsAt;
+  return Number.isInteger(h) && h >= 0 && h <= MAX_DAY_STARTS_AT ? { dayStartsAt: h } : null;
 }
 
-/** The day an event belongs to, in the time zone you were in when it happened. @param {Event} e */
-export function eventDay(e) {
-  return dayOf(e.start, e.offset);
+/** The day (YYYY-MM-DD) a moment belongs to, given the UTC offset in minutes where you were. @param {Settings} settings */
+export function dayOf(ms, offset, settings) {
+  return new Date(ms + offset * 60000 - settings.dayStartsAt * 3600000).toISOString().slice(0, 10);
 }
 
-/** The current day on this device, using the same cutoff as events. */
-export function todayKey(now = Date.now()) {
-  return dayOf(now, -new Date(now).getTimezoneOffset());
+/** The day an event belongs to, in the time zone you were in when it happened. @param {Event} e @param {Settings} settings */
+export function eventDay(e, settings) {
+  return dayOf(e.start, e.offset, settings);
+}
+
+/** The current day on this device. @param {Settings} settings */
+export function todayKey(settings, now = Date.now()) {
+  return dayOf(now, -new Date(now).getTimezoneOffset(), settings);
 }
 
 /** @param {string} key @returns {Date} local midnight */
@@ -93,12 +105,12 @@ export function normalizeEvents(list) {
   return { events, skipped: list.length - events.length };
 }
 
-/** @param {Event[]} events */
-export function buildExport(events, now = Date.now()) {
-  return { app: EXPORT_APP, version: EXPORT_VERSION, exported: new Date(now).toISOString(), events };
+/** @param {Event[]} events @param {Settings} settings */
+export function buildExport(events, settings, now = Date.now()) {
+  return { app: EXPORT_APP, version: EXPORT_VERSION, exported: new Date(now).toISOString(), settings, events };
 }
 
-/** Parse an export file's text. @param {string} text @returns {{ events: Event[], skipped: number }} */
+/** Parse an export file's text. @param {string} text @returns {{ events: Event[], skipped: number, settings: Settings }} */
 export function parseImport(text) {
   let data;
   try {
@@ -107,8 +119,10 @@ export function parseImport(text) {
     throw new Error("Not valid JSON");
   }
   if (data?.app !== EXPORT_APP) throw new Error("Not a toothup export");
+  const settings = normalizeSettings(data.settings);
+  if (!settings) throw new Error("Invalid settings");
   if (!Array.isArray(data.events)) throw new Error("No events found");
-  return normalizeEvents(data.events);
+  return { ...normalizeEvents(data.events), settings };
 }
 
 /** Merge by id; incoming wins on conflict. Sorted by start. @param {Event[]} a @param {Event[]} b */
@@ -140,11 +154,11 @@ export function makeEvent(events, type, start, opts = {}) {
   return type === "brush" ? { ...base, seconds: opts.seconds, steps: opts.steps } : base;
 }
 
-/** Events grouped by the day they belong to (see eventDay). @param {Event[]} events @returns {Map<string, Event[]>} */
-export function groupByDay(events) {
+/** Events grouped by the day they belong to (see eventDay). @param {Event[]} events @param {Settings} settings @returns {Map<string, Event[]>} */
+export function groupByDay(events, settings) {
   const map = new Map();
   for (const e of events) {
-    const k = eventDay(e);
+    const k = eventDay(e, settings);
     if (!map.has(k)) map.set(k, []);
     map.get(k).push(e);
   }
@@ -176,14 +190,14 @@ export function dayGoals(list) {
   return { done, roles, extras: list.length - Object.values(done).reduce((a, b) => a + b, 0), complete: done.brush >= GOALS.brush };
 }
 
-/** Days on which both brushes were done. @param {Event[]} events @returns {Set<string>} */
-function completeDays(events) {
-  return new Set([...groupByDay(events)].filter(([, list]) => dayGoals(list).complete).map(([k]) => k));
+/** Days on which both brushes were done. @param {Event[]} events @param {Settings} settings @returns {Set<string>} */
+function completeDays(events, settings) {
+  return new Set([...groupByDay(events, settings)].filter(([, list]) => dayGoals(list).complete).map(([k]) => k));
 }
 
 /** Consecutive complete days up to today, or up to yesterday if today is not complete yet. */
-export function currentStreak(events, today) {
-  const days = completeDays(events);
+export function currentStreak(events, today, settings) {
+  const days = completeDays(events, settings);
   let k = days.has(today) ? today : addDays(today, -1);
   let n = 0;
   while (days.has(k)) {
@@ -193,11 +207,11 @@ export function currentStreak(events, today) {
   return n;
 }
 
-export function longestStreak(events) {
+export function longestStreak(events, settings) {
   let best = 0;
   let run = 0;
   let prev = null;
-  for (const k of [...completeDays(events)].sort()) {
+  for (const k of [...completeDays(events, settings)].sort()) {
     run = prev && addDays(prev, 1) === k ? run + 1 : 1;
     best = Math.max(best, run);
     prev = k;
@@ -209,11 +223,12 @@ export function longestStreak(events) {
  * Stats over the last `days` days ending today. Counting starts at your first event, and today only counts once its
  * brushes are done, so an unfinished day is never a miss.
  * @param {Event[]} events
+ * @param {Settings} settings
  */
-export function rangeStats(events, today, days) {
+export function rangeStats(events, today, days, settings) {
   const out = { days: 0, fullDays: 0, brushPct: null, flossDays: 0, mouthwashDays: 0, extras: 0, avgSeconds: 0 };
   if (!events.length) return out;
-  const byDay = groupByDay(events);
+  const byDay = groupByDay(events, settings);
   let k = addDays(today, -(days - 1));
   const first = [...byDay.keys()].sort()[0];
   if (k < first) k = first;

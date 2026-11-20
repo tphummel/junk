@@ -181,11 +181,16 @@
       <div class="box">
         <h2>Daily goals</h2>
         <p class="muted">Two full brushes a day is the goal that counts. Floss once and mouthwash twice sit on top of it, and anything beyond a goal is an extra. Days follow the time zone you were in when you logged each event.</p>
+        <div class="row">
+          <label for="day-starts-at">A new day starts at</label>
+          <select id="day-starts-at"></select>
+        </div>
+        <p class="muted">Anything before this hour counts toward the day before, such as a brush at 12:30am. Changing it regroups your history.</p>
       </div>
       <div class="box">
         <h2>Your data</h2>
         <p id="count" class="muted"></p>
-        <p>Everything stays on this device. Export a JSON backup, or import one to merge it in (matching entries are not duplicated).</p>
+        <p>Everything stays on this device. Export a JSON backup with your settings, or import one: events merge in (matching entries are not duplicated) and the imported settings replace the current ones.</p>
         <div class="row">
           <button id="export">Export JSON</button>
           <input type="file" id="import" accept="application/json,.json" hidden>

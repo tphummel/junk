@@ -3,14 +3,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DAY_STARTS_AT, GOALS, STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayGoals, eventDay, formatClock, groupByDay,
-  longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, parseImport, rangeStats,
+  DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayGoals, eventDay, formatClock, groupByDay,
+  longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings, parseImport, rangeStats,
 } from "../web/toothup/logic.js";
 
 const at = (key, h = 8) => {
   const [y, m, d] = key.split("-").map(Number);
   return Date.UTC(y, m - 1, d, h);
 };
+const S = DEFAULT_SETTINGS; // day starts at 4:00
 /** A full brush by default; pass opts to override. */
 const brush = (key, h = 8, opts = {}) => makeEvent([], "brush", at(key, h), { seconds: 125, steps: 9, offset: 0, ...opts });
 const ev = (type, key, h = 8) => makeEvent([], type, at(key, h), { offset: 0 });
@@ -56,31 +57,31 @@ test("normalizeEvent keeps well-formed events and rejects everything else", () =
 test("events stay on the day they happened when the time zone changes", () => {
   // Same moment, 03:00 UTC. In New York (UTC-5) it is the evening of the 19th; in Tokyo (UTC+9) it is noon on the 20th.
   const t = Date.UTC(2026, 10, 20, 3);
-  assert.equal(eventDay(makeEvent([], "floss", t, { offset: -300 })), "2026-11-19");
-  assert.equal(eventDay(makeEvent([], "floss", t, { offset: 540 })), "2026-11-20");
+  assert.equal(eventDay(makeEvent([], "floss", t, { offset: -300 }), S), "2026-11-19");
+  assert.equal(eventDay(makeEvent([], "floss", t, { offset: 540 }), S), "2026-11-20");
   // Brushing in New York at 21:00 and then in Tokyo the next morning gives two events on two days, not a shifted pair.
   const ny = makeEvent([], "brush", Date.UTC(2026, 10, 20, 2), { seconds: 125, steps: 9, offset: -300 });
   const tokyo = makeEvent([], "brush", Date.UTC(2026, 10, 20, 22), { seconds: 125, steps: 9, offset: 540 });
-  assert.deepEqual([...groupByDay([ny, tokyo]).keys()], ["2026-11-19", "2026-11-21"]);
+  assert.deepEqual([...groupByDay([ny, tokyo], S).keys()], ["2026-11-19", "2026-11-21"]);
 });
 
 test("the day rolls over at 4am, not midnight: a 12:30am routine belongs to the night before", () => {
   const late = ev("floss", "2026-11-21", 0);
   const brushed = brush("2026-11-21", 0);
-  assert.equal(DAY_STARTS_AT, 4);
-  assert.equal(eventDay(late), "2026-11-20");
-  assert.equal(eventDay(brushed), "2026-11-20");
-  assert.equal(eventDay(ev("floss", "2026-11-21", 3)), "2026-11-20");
-  assert.equal(eventDay(ev("floss", "2026-11-21", 4)), "2026-11-21");
+  assert.equal(S.dayStartsAt, 4);
+  assert.equal(eventDay(late, S), "2026-11-20");
+  assert.equal(eventDay(brushed, S), "2026-11-20");
+  assert.equal(eventDay(ev("floss", "2026-11-21", 3), S), "2026-11-20");
+  assert.equal(eventDay(ev("floss", "2026-11-21", 4), S), "2026-11-21");
   // The late brush completes the previous day instead of starting a new one.
-  const g = dayGoals(groupByDay([brush("2026-11-20", 7), brushed]).get("2026-11-20"));
+  const g = dayGoals(groupByDay([brush("2026-11-20", 7), brushed], S).get("2026-11-20"));
   assert.ok(g.complete);
 });
 
 test("the cutoff applies in the local clock of wherever you were", () => {
   // 12:30am in Tokyo on the 21st is 15:30 UTC on the 20th; it still belongs to the 20th there.
   const e = makeEvent([], "floss", Date.UTC(2026, 10, 20, 15, 30), { offset: 540 });
-  assert.equal(eventDay(e), "2026-11-20");
+  assert.equal(eventDay(e, S), "2026-11-20");
 });
 
 test("a day is complete with two full brushes; floss and mouthwash are tracked on top", () => {
@@ -117,17 +118,17 @@ test("streaks count days with both brushes", () => {
     ...["2026-11-14", "2026-11-15", "2026-11-17", "2026-11-18", "2026-11-19"].flatMap(fullDay),
     brush("2026-11-16"), ev("floss", "2026-11-16"), // only one brush: breaks the streak
   ];
-  assert.equal(currentStreak(list, "2026-11-19"), 3);
-  assert.equal(currentStreak(list, "2026-11-20"), 3); // today not finished yet
-  assert.equal(currentStreak(list, "2026-11-21"), 0);
-  assert.equal(longestStreak(list), 3);
-  assert.equal(longestStreak([]), 0);
+  assert.equal(currentStreak(list, "2026-11-19", S), 3);
+  assert.equal(currentStreak(list, "2026-11-20", S), 3); // today not finished yet
+  assert.equal(currentStreak(list, "2026-11-21", S), 0);
+  assert.equal(longestStreak(list, S), 3);
+  assert.equal(longestStreak([], S), 0);
 });
 
 test("rangeStats: counts from the first event, ignores an unfinished today, tracks floss and mouthwash goals", () => {
   const std = (d) => [...fullDay(d), ev("floss", d, 21), ev("mouthwash", d, 7), ev("mouthwash", d, 21)];
   const events = [...std("2026-11-18"), ...fullDay("2026-11-19"), brush("2026-11-20", 7), ev("floss", "2026-11-19", 13), ev("floss", "2026-11-19", 14)];
-  const r = rangeStats(events, "2026-11-20", 30); // the 20th has one brush, so it is still open
+  const r = rangeStats(events, "2026-11-20", 30, S); // the 20th has one brush, so it is still open
   assert.equal(r.days, 2); // the 18th and 19th, not 30 days
   assert.equal(r.fullDays, 2);
   assert.equal(r.brushPct, 100);
@@ -135,13 +136,13 @@ test("rangeStats: counts from the first event, ignores an unfinished today, trac
   assert.equal(r.mouthwashDays, 1);
   assert.equal(r.extras, 1); // the second floss on the 19th (the first one meets the goal)
   assert.equal(r.avgSeconds, 125);
-  assert.equal(rangeStats(events, "2026-11-20", 1).days, 0);
-  assert.equal(rangeStats([], "2026-11-20", 7).brushPct, null);
+  assert.equal(rangeStats(events, "2026-11-20", 1, S).days, 0);
+  assert.equal(rangeStats([], "2026-11-20", 7, S).brushPct, null);
 });
 
 test("rangeStats: a missed brush lowers the brushing percentage", () => {
   const events = [...fullDay("2026-11-18"), brush("2026-11-19")];
-  const r = rangeStats(events, "2026-11-20", 7);
+  const r = rangeStats(events, "2026-11-20", 7, S);
   assert.equal(r.days, 2);
   assert.equal(r.brushPct, 75);
   assert.equal(r.fullDays, 1);
@@ -157,9 +158,10 @@ test("monthGrid pads to whole Sunday-first weeks", () => {
 
 test("export then import round-trips events; merge dedupes by id", () => {
   const list = [brush("2026-11-19"), ev("floss", "2026-11-20"), ev("mouthwash", "2026-11-20", 21)];
-  const { events, skipped } = parseImport(JSON.stringify(buildExport(list)));
+  const { events, skipped, settings } = parseImport(JSON.stringify(buildExport(list, { dayStartsAt: 2 })));
   assert.deepEqual(events, list);
   assert.equal(skipped, 0);
+  assert.deepEqual(settings, { dayStartsAt: 2 }); // settings travel with the data
   const merged = mergeEvents(list, [...events, brush("2026-11-21")]);
   assert.equal(merged.added, 1);
   assert.equal(merged.events.length, 4);
@@ -167,11 +169,35 @@ test("export then import round-trips events; merge dedupes by id", () => {
 
 test("parseImport skips bad events and rejects other files", () => {
   const good = brush("2026-11-19");
-  assert.deepEqual(parseImport(JSON.stringify({ app: "toothup", events: [good, { nope: true }] })), { events: [good], skipped: 1 });
+  const file = (extra) => JSON.stringify({ app: "toothup", settings: S, events: [good], ...extra });
+  assert.deepEqual(parseImport(file({ events: [good, { nope: true }] })), { events: [good], skipped: 1, settings: S });
   assert.throws(() => parseImport("not json"), /valid JSON/);
   assert.throws(() => parseImport("[]"), /toothup export/);
-  assert.throws(() => parseImport('{"app":"other","events":[]}'), /toothup export/);
-  assert.throws(() => parseImport('{"app":"toothup"}'), /No events/);
+  assert.throws(() => parseImport(file({ app: "other" })), /toothup export/);
+  assert.throws(() => parseImport(file({ settings: undefined })), /Invalid settings/);
+  assert.throws(() => parseImport(file({ settings: { dayStartsAt: 9 } })), /Invalid settings/);
+  assert.throws(() => parseImport(file({ events: undefined })), /No events/);
+});
+
+test("normalizeSettings accepts whole hours 0-6 and rejects everything else", () => {
+  assert.deepEqual(normalizeSettings({ dayStartsAt: 0 }), { dayStartsAt: 0 });
+  assert.deepEqual(normalizeSettings({ dayStartsAt: 6, extra: 1 }), { dayStartsAt: 6 });
+  for (const bad of [null, {}, { dayStartsAt: 7 }, { dayStartsAt: -1 }, { dayStartsAt: 4.5 }, { dayStartsAt: "4" }]) {
+    assert.equal(normalizeSettings(bad), null);
+  }
+});
+
+test("dayStartsAt moves the cutoff: at 0 the day is midnight to midnight, at 6 a 5am routine still belongs to the night before", () => {
+  const early = ev("floss", "2026-11-21", 5);
+  assert.equal(eventDay(early, S), "2026-11-21");
+  assert.equal(eventDay(early, { dayStartsAt: 6 }), "2026-11-20");
+  const lateNight = ev("floss", "2026-11-21", 0);
+  assert.equal(eventDay(lateNight, { dayStartsAt: 0 }), "2026-11-21");
+  assert.equal(eventDay(lateNight, S), "2026-11-20");
+  // Changing the setting regroups the same events, and streaks and stats follow.
+  const events = [brush("2026-11-20", 7), brush("2026-11-21", 1)];
+  assert.equal(longestStreak(events, S), 1); // both on the 20th
+  assert.equal(longestStreak(events, { dayStartsAt: 0 }), 0); // one brush on each day
 });
 
 test("formatClock rounds up", () => {

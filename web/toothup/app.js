@@ -1,24 +1,25 @@
 import {
-  GOALS, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
-  makeEvent, mergeEvents, monthGrid, normalizeEvents, parseDay, parseImport, rangeStats, todayKey,
+  DEFAULT_SETTINGS, GOALS, MAX_DAY_STARTS_AT, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
+  makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, todayKey,
 } from "./logic.js";
 
 const STORE = "toothup:v2";
 const $ = (id) => document.getElementById(id);
 
-/** @type {{ events: import("./logic.js").Event[] }} */
-let state = { events: [] };
+/** @type {{ events: import("./logic.js").Event[], settings: import("./logic.js").Settings }} */
+let state = { events: [], settings: DEFAULT_SETTINGS };
 try {
   const saved = JSON.parse(localStorage.getItem(STORE) || "null");
   if (saved) {
     state.events = normalizeEvents(saved.events).events;
+    state.settings = normalizeSettings(saved.settings) ?? DEFAULT_SETTINGS;
   }
 } catch {}
 
 function save() {
   renderToday();
   try {
-    localStorage.setItem(STORE, JSON.stringify({ events: state.events }));
+    localStorage.setItem(STORE, JSON.stringify({ events: state.events, settings: state.settings }));
   } catch {
     toast("Could not save to this browser's storage");
   }
@@ -282,7 +283,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // ---------- stats ----------
-const today = () => todayKey();
+const today = () => todayKey(state.settings);
 /** The calendar shows the month of the given day and selects it. */
 const viewOf = (day) => {
   const d = parseDay(day);
@@ -299,7 +300,7 @@ function goalsText(g) {
   return parts.join(" · ");
 }
 
-const eventsOn = (day) => groupByDay(state.events).get(day) || [];
+const eventsOn = (day) => groupByDay(state.events, state.settings).get(day) || [];
 
 function renderToday() {
   $("today").textContent = goalsText(dayGoals(eventsOn(today())));
@@ -307,12 +308,12 @@ function renderToday() {
 
 function renderStats() {
   const t = today();
-  const w7 = rangeStats(state.events, t, 7);
-  const w30 = rangeStats(state.events, t, 30);
+  const w7 = rangeStats(state.events, t, 7, state.settings);
+  const w30 = rangeStats(state.events, t, 30, state.settings);
   const pct = (r) => (r.brushPct === null ? "–" : `${r.brushPct}%`);
   const tiles = [
-    ["Streak", currentStreak(state.events, t), "days, both brushes"],
-    ["Best streak", longestStreak(state.events), "days, both brushes"],
+    ["Streak", currentStreak(state.events, t, state.settings), "days, both brushes"],
+    ["Best streak", longestStreak(state.events, state.settings), "days, both brushes"],
     ["Brushing", pct(w7), "last 7 days"],
     ["Brushing", pct(w30), "last 30 days"],
     ["Full days", w30.fullDays, `of ${w30.days}, last 30`],
@@ -331,7 +332,7 @@ function renderStats() {
 
 function renderCalendar() {
   const t = today();
-  const byDay = groupByDay(state.events);
+  const byDay = groupByDay(state.events, state.settings);
   $("month-label").textContent = new Date(view.y, view.m, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
   $("cal-body").innerHTML = monthGrid(view.y, view.m)
     .map((week) => `<tr>${week.map((k) => {
@@ -408,13 +409,24 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
   };
 });
 
+// ---------- settings ----------
+const hourLabel = (h) => `${h}:00`;
+for (let h = 0; h <= MAX_DAY_STARTS_AT; h++) $("day-starts-at").add(new Option(hourLabel(h), String(h)));
+$("day-starts-at").value = String(state.settings.dayStartsAt);
+$("day-starts-at").onchange = () => {
+  state.settings = { dayStartsAt: Number($("day-starts-at").value) };
+  save();
+  view = viewOf(today());
+  renderStats();
+};
+
 // ---------- data ----------
 function renderData() {
   $("count").textContent = `${state.events.length} event${state.events.length === 1 ? "" : "s"} stored on this device.`;
 }
 
 $("export").onclick = () => {
-  const blob = new Blob([JSON.stringify(buildExport(state.events), null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(buildExport(state.events, state.settings), null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `toothup-${dayKey(Date.now())}.json`;
@@ -428,9 +440,12 @@ $("import").onchange = async (e) => {
   e.target.value = "";
   if (!file) return;
   try {
-    const { events, skipped } = parseImport(await file.text());
+    const { events, skipped, settings } = parseImport(await file.text());
     const merged = mergeEvents(state.events, events);
     state.events = merged.events;
+    state.settings = settings;
+    view = viewOf(today());
+    $("day-starts-at").value = String(settings.dayStartsAt);
     save();
     renderData();
     toast(`Imported ${merged.added} new, ${events.length - merged.added} already present${skipped ? `, ${skipped} skipped` : ""}.`);
