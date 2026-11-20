@@ -32,13 +32,13 @@ function toast(msg) {
 }
 
 // ---------- tabs ----------
-const tabs = ["brush", "stats", "data"];
+const tabs = ["brush", "calendar", "stats", "data"];
 function showTab(name) {
   for (const t of tabs) {
     $(`tab-${t}`).setAttribute("aria-selected", String(t === name));
     $(`view-${t}`).hidden = t !== name;
   }
-  if (name === "stats") renderStats();
+  if (name === "stats" || name === "calendar") renderStats();
   if (name === "data") renderData();
 }
 for (const t of tabs) $(`tab-${t}`).addEventListener("click", () => showTab(t));
@@ -89,6 +89,10 @@ function startStep(i) {
 function begin() {
   audio()?.resume?.();
   if (run.phase === "idle" || run.phase === "done") {
+    if (run.phase === "done") {
+      flossed = false;
+      $("floss").setAttribute("aria-pressed", "false");
+    }
     run.begun = Date.now();
     run.elapsed = 0;
     run.savedId = null;
@@ -144,7 +148,7 @@ function finish(quadrants) {
   run.left = 0;
   const s = normalizeSession({
     id: `s${run.begun}`, start: run.begun, seconds: run.elapsed,
-    flossed: $("floss").checked, quadrants,
+    flossed: flossed, quadrants,
   });
   state.sessions = mergeSessions(state.sessions, [s]).sessions;
   run.savedId = s.id;
@@ -169,25 +173,70 @@ function reset() {
   renderBrush();
 }
 
+const RING = 2 * Math.PI * 46;
+const SVGNS = "http://www.w3.org/2000/svg";
+
+/** Draw both arches. Screen left is the user's left; quadrant order is UR, UL, LL, LR. */
+function buildMouth() {
+  const svg = $("mouth");
+  const radii = [10.5, 10, 11.5, 10, 10.5, 13.5, 14]; // incisors to molars
+  const arch = (cy, ry, up, qLeft, qRight) => {
+    for (const [side, q] of [[-1, qLeft], [1, qRight]]) {
+      const g = document.createElementNS(SVGNS, "g");
+      g.dataset.q = String(q);
+      radii.forEach((r, i) => {
+        const a = ((i + 0.55) / 7) * (Math.PI / 2) * 0.97;
+        const c = document.createElementNS(SVGNS, "circle");
+        c.setAttribute("cx", String(100 + side * 82 * Math.sin(a)));
+        c.setAttribute("cy", String(cy + (up ? -1 : 1) * ry * Math.cos(a)));
+        c.setAttribute("r", String(r));
+        g.append(c);
+      });
+      svg.append(g);
+    }
+  };
+  arch(112, 100, true, 1, 0);
+  arch(158, 94, false, 2, 3);
+  for (const [x, t] of [[12, "L"], [188, "R"]]) {
+    const el = document.createElementNS(SVGNS, "text");
+    el.setAttribute("x", String(x));
+    el.setAttribute("y", "139");
+    el.setAttribute("text-anchor", "middle");
+    el.setAttribute("class", "lr");
+    el.textContent = t;
+    svg.append(el);
+  }
+}
+buildMouth();
+
 function renderBrush() {
   const idle = run.phase === "idle";
   const done = run.phase === "done";
-  const left = idle ? state.perQuadrant : run.left;
-  $("clock").textContent = done ? "Done" : formatClock(left);
+  const live = run.phase === "running" || run.phase === "paused";
+  const per = state.perQuadrant;
+  const total = per * QUADRANTS.length;
+  const remaining = idle ? total : done ? 0 : run.left + (QUADRANTS.length - 1 - run.step) * per;
+  $("total").textContent = formatClock(remaining);
+  $("clock").textContent = done ? "Done" : formatClock(idle ? per : run.left);
   $("quad-name").textContent = done ? "Nice work" : idle ? "Ready" : QUADRANTS[run.step];
   $("progress").textContent = done
     ? `${formatClock(run.elapsed)} brushed`
-    : idle ? `4 quadrants × ${state.perQuadrant}s`
-    : `Quadrant ${run.step + 1} of 4${run.phase === "paused" ? " (paused)" : ""}`;
-  document.querySelectorAll("#mouth [data-q]").forEach((el) => {
+    : idle ? `${QUADRANTS.length} × ${per}s`
+    : `${run.step + 1} of 4${run.phase === "paused" ? " · paused" : ""}`;
+  const mouth = $("mouth");
+  mouth.classList.toggle("live", live);
+  mouth.classList.toggle("finished", done);
+  mouth.querySelectorAll("g[data-q]").forEach((el) => {
     const i = Number(el.dataset.q);
-    const active = !idle && !done && i === run.step;
-    el.classList.toggle("active", active);
-    el.classList.toggle("done", done || (!idle && i < run.step));
-    el.setAttribute("aria-current", active ? "step" : "false");
+    el.classList.toggle("active", live && i === run.step);
+    el.classList.toggle("done", live && i < run.step);
   });
-  const live = run.phase === "running" || run.phase === "paused";
-  $("go").textContent = run.phase === "running" ? "Pause" : live ? "Resume" : done ? "Brush again" : "Start";
+  const arc = document.querySelector("#go .arc");
+  arc.style.strokeDasharray = String(RING);
+  arc.style.strokeDashoffset = String(RING * (1 - remaining / total));
+  const label = run.phase === "running" ? "Pause" : live ? "Resume" : done ? "Brush again" : "Start";
+  $("go").setAttribute("aria-label", label);
+  document.querySelector("#go .glyph").textContent = run.phase === "running" ? "❚❚" : "▶";
   $("go").onclick = run.phase === "running" ? pause : begin;
   $("skip").hidden = !live;
   $("stop").hidden = !live;
@@ -203,11 +252,14 @@ $("per-quad").onchange = (e) => {
   save();
   if (run.phase === "idle") renderBrush();
 };
-$("floss").addEventListener("change", () => {
+let flossed = false;
+$("floss").addEventListener("click", () => {
+  flossed = !flossed;
+  $("floss").setAttribute("aria-pressed", String(flossed));
   if (run.phase === "done" && run.savedId) {
     const s = state.sessions.find((x) => x.id === run.savedId);
     if (s) {
-      s.flossed = $("floss").checked;
+      s.flossed = flossed;
       save();
     }
   }
