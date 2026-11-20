@@ -109,8 +109,7 @@
     botId: BOTS[0].id,
     botBusy: false,
     notice: null,
-    boardScope: 'current',
-    statsPlayer: 'all'
+    boardScope: 'current'
   }
 
   function load () {
@@ -185,24 +184,17 @@
     return list
   }
 
-  // Per-throw breakdown: how often each move was thrown and how it fared.
-  // Each match contributes two throws; playerId limits it to one player's.
-  function throwStats (matches, playerId) {
-    const rows = MOVES.map(move => ({ move, count: 0, wins: 0, losses: 0, draws: 0 }))
-    const add = (move, result) => {
-      const r = rows[MOVES.indexOf(move)]
-      r.count++
-      r[result]++
+  // Throw mix per player: how many of each move they threw.
+  function throwStats (matches) {
+    const rows = new Map()
+    const add = (id, move) => {
+      if (!rows.has(id)) rows.set(id, { name: nameOf(state.players, id), counts: { rock: 0, paper: 0, scissors: 0 }, total: 0 })
+      const r = rows.get(id)
+      r.counts[move]++
+      r.total++
     }
-    for (const m of matches) {
-      const one = m.outcome === 'draw' ? 'draws' : m.outcome === 'player_one' ? 'wins' : 'losses'
-      const two = m.outcome === 'draw' ? 'draws' : m.outcome === 'player_two' ? 'wins' : 'losses'
-      if (!playerId || m.playerOneId === playerId) add(m.moveOne, one)
-      if (!playerId || m.playerTwoId === playerId) add(m.moveTwo, two)
-    }
-    const total = rows.reduce((n, r) => n + r.count, 0)
-    for (const r of rows) r.pct = total ? r.count / total : 0
-    return { rows, total }
+    for (const m of matches) { add(m.playerOneId, m.moveOne); add(m.playerTwoId, m.moveTwo) }
+    return [...rows.values()].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
   }
 
   // ---- actions ----
@@ -530,17 +522,15 @@
     )
   }
 
-  function throwTable (matches, playerId) {
-    const { rows, total } = throwStats(matches, playerId)
-    if (!total) return h('p', { class: 'muted' }, 'No throws yet.')
-    const n = v => h('td', { class: 'n' }, String(v))
+  // One row per player, one column per throw; cells are count and share of that player's throws.
+  function throwTable (matches) {
+    const rows = throwStats(matches)
+    if (!rows.length) return h('p', { class: 'muted' }, 'No throws yet.')
     return h('table', null,
-      h('thead', null, h('tr', null,
-        h('th', null, 'Throw'), h('th', { class: 'n' }, '#'), h('th', { class: 'n' }, '% of total'),
-        h('th', { class: 'n' }, 'W'), h('th', { class: 'n' }, 'L'), h('th', { class: 'n' }, 'D'))),
-      h('tbody', null, rows.map(r => h('tr', null,
-        h('td', null, `${GLYPH[r.move]} ${r.move[0].toUpperCase() + r.move.slice(1)}`),
-        n(r.count), n(Math.round(r.pct * 100) + '%'), n(r.wins), n(r.losses), n(r.draws)))))
+      h('thead', null, h('tr', null, h('th', null, 'Player'),
+        MOVES.map(m => h('th', { class: 'n' }, `${GLYPH[m]} ${m[0].toUpperCase() + m.slice(1)}`)))),
+      h('tbody', null, rows.map(r => h('tr', null, h('td', null, r.name),
+        MOVES.map(m => h('td', { class: 'n' }, `${r.counts[m]} (${Math.round(r.counts[m] / r.total * 100)}%)`))))))
   }
 
   function noticeEl () {
@@ -601,10 +591,6 @@
       h('option', { value: 'all', selected: scopeId === 'all' }, 'All time'),
       state.sessions.slice().reverse().map(s => h('option', { value: s.id, selected: scopeId === s.id },
         s.name + (current && s.id === current.id ? ' (current)' : ''))))
-    const players = [...new Set(matches.flatMap(m => [m.playerOneId, m.playerTwoId]))]
-      .map(id => byId(state.players, id)).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name))
-    if (ui.statsPlayer !== 'all' && !players.some(p => p.id === ui.statsPlayer)) ui.statsPlayer = 'all'
-    const statsPlayer = ui.statsPlayer
     return [h('div', { class: 'card' },
       h('label', { for: 'scope', style: 'margin-top:0' }, 'Leaderboard for'),
       select,
@@ -612,12 +598,8 @@
       boardTable(matches)),
     h('div', { class: 'card' },
       h('h2', null, 'Throw stats'),
-      h('label', { for: 'stats-player', style: 'margin-top:0' }, 'Player'),
-      h('select', { id: 'stats-player', onchange: e => { ui.statsPlayer = e.target.value; render() } },
-        h('option', { value: 'all', selected: statsPlayer === 'all' }, 'All players'),
-        players.map(p => h('option', { value: p.id, selected: statsPlayer === p.id }, p.name))),
-      h('p', { class: 'muted' }, 'How often each throw was used and how it fared (wins, losses, draws).'),
-      throwTable(matches, statsPlayer === 'all' ? null : statsPlayer))]
+      h('p', { class: 'muted' }, 'Count and share of each player’s throws.'),
+      throwTable(matches))]
   }
 
   function viewSessions () {
