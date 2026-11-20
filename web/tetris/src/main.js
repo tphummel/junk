@@ -4,6 +4,7 @@
 import { TICKS_PER_SECOND } from "./game/rules.js";
 import { createGame, step } from "./game/state.js";
 import { createRepeater } from "./input/actions.js";
+import { createGamepad, describePad } from "./input/gamepad.js";
 import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
 import { drawBoard, readTheme } from "./ui/render.js";
@@ -30,7 +31,18 @@ const overlay = $("overlay");
 const overlayTitle = $("overlay-title");
 const overlayText = $("overlay-text");
 
+const padStatus = $("pad-status");
+const padDebug = $("pad-debug");
+const padPanel = /** @type {HTMLDetailsElement} */ ($("pad-panel"));
+
 const keyboard = createKeyboard(window);
+const gamepad = createGamepad(window, {
+  onConnect: () => refreshStatus(),
+  onDisconnect: () => {
+    refreshStatus();
+    if (screen === "playing") setScreen("paused", "Controller disconnected.\nReconnect it and press Start, or press Esc to continue with the keyboard.");
+  },
+});
 const repeater = createRepeater();
 const hud = createHud(document);
 let theme = readTheme();
@@ -56,24 +68,48 @@ function newRound(g) {
   return { rulesVersion: g.rulesVersion, seed: g.seed, startedAt: Date.now(), ticks: 0, inputLog: [] };
 }
 
-/** @param {Screen} next */
-function setScreen(next) {
-  screen = next;
-  keyboard.clear();
-  repeater.reset();
-  const texts = {
-    title: ["Tetris", "Press Enter or Space to start.\nArrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause."],
-    paused: ["Paused", "Press Esc to resume, or Backspace to quit."],
-    over: ["Game over", `Score ${game.score}, ${game.lines} lines, level ${game.level}.\nPress Enter to play again.`],
-  };
-  if (next === "playing") {
+/** @type {string | undefined} */
+let note;
+
+/** The overlay for the current screen. */
+function renderOverlay() {
+  if (screen === "playing") {
     overlay.hidden = true;
     return;
   }
-  const [title, text] = texts[next];
+  const pad = gamepad.pad();
+  /** @type {Record<Exclude<Screen, "playing">, [string, string]>} */
+  const texts = {
+    title: [
+      "Tetris",
+      (pad
+        ? "Press A or Enter to start.\nD-pad move, A/B rotate, shoulder hold, up hard drop, Start pause."
+        : "Press Enter to start, or press any button on your controller to connect it.") +
+        "\nKeyboard: arrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause.",
+    ],
+    paused: ["Paused", note ?? "Press Esc or Start to resume, Backspace or B to quit."],
+    over: ["Game over", `Score ${game.score}, ${game.lines} lines, level ${game.level}.\nPress A or Enter to play again.`],
+  };
+  const [title, text] = texts[screen];
   overlayTitle.textContent = title;
   overlayText.textContent = text;
   overlay.hidden = false;
+}
+
+/** Controller line under the board. */
+function refreshStatus() {
+  const pad = gamepad.pad();
+  padStatus.textContent = pad ? `Controller: ${describePad(pad)}` : "Controller: none (press any button to connect)";
+  if (screen === "title") renderOverlay();
+}
+
+/** @param {Screen} next @param {string} [message] replaces the paused text, e.g. after a disconnect */
+function setScreen(next, message) {
+  screen = next;
+  note = message;
+  keyboard.clear();
+  repeater.reset();
+  renderOverlay();
 }
 
 function startRound() {
@@ -93,11 +129,12 @@ function onMenuAction(action) {
 
 /** Run one game tick from the keyboard state. */
 function tick() {
-  const held = keyboard.held();
+  const pad = gamepad.poll();
+  const held = new Set([...keyboard.held(), ...pad.held]);
   /** @type {GameAction[]} */
   const actions = [];
   for (const dir of repeater.update(held)) actions.push(dir);
-  for (const a of keyboard.takePressed()) {
+  for (const a of [...keyboard.takePressed(), ...pad.pressed]) {
     if (a === "pause") {
       onMenuAction("pause");
       return false;
@@ -115,6 +152,14 @@ function tick() {
     return false;
   }
   return true;
+}
+
+/** Raw pad state for comparing against a gamepad tester: id, mapping, pressed buttons and axes. */
+function padReadout() {
+  const pad = gamepad.pad();
+  if (!pad) return "no controller";
+  const pressed = Array.from(pad.buttons, (b, i) => (b.pressed ? i : -1)).filter((i) => i >= 0);
+  return `id: ${pad.id}\nmapping: ${pad.mapping || "(none)"}\nbuttons down: ${pressed.join(", ") || "-"}\naxes: ${Array.from(pad.axes, (v) => v.toFixed(2)).join(", ")}`;
 }
 
 let last = performance.now();
@@ -139,9 +184,10 @@ function frame(now) {
     if (n === MAX_TICKS_PER_FRAME) acc = 0;
   } else {
     acc = 0;
-    for (const a of keyboard.takePressed()) onMenuAction(a);
+    for (const a of [...keyboard.takePressed(), ...gamepad.poll().pressed]) onMenuAction(a);
   }
 
+  if (padPanel.open) padDebug.textContent = padReadout();
   drawBoard(boardCanvas, game, theme);
   hud.update(game, theme);
   requestAnimationFrame(frame);
@@ -160,4 +206,5 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
 });
 
 setScreen("title");
+refreshStatus();
 requestAnimationFrame(frame);

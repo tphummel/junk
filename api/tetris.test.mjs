@@ -12,6 +12,7 @@ import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
 import { gravityTicks, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
+import { axisDirection, BUTTON, createGamepad, describePad, mapPad } from "../web/tetris/src/input/gamepad.js";
 import { INK, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
 
 const filled = (type = "T", pieceId = 99) => ({ type, pieceId });
@@ -240,6 +241,87 @@ test("repeater: the most recently pressed direction wins", () => {
   const rep = createRepeater({ das: 3, arr: 1 });
   assert.deepEqual(rep.update(new Set(["left"])), ["left"]);
   assert.deepEqual(rep.update(new Set(["left", "right"])), ["right"]);
+});
+
+// --- gamepad ---------------------------------------------------------------------------------------
+
+/** A fake standard-mapping pad. `down` lists pressed button indexes; `axes` is [leftX, leftY]. */
+function fakePad({ down = [], axes = [0, 0], mapping = "standard", connected = true, id = "Xbox 360 Controller (STANDARD GAMEPAD Vendor: 045e Product: 028e)" } = {}) {
+  return {
+    id, mapping, connected, axes,
+    buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: down.includes(i), touched: false, value: down.includes(i) ? 1 : 0 })),
+  };
+}
+
+test("mapPad: d-pad, face buttons, shoulders and start", () => {
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.LEFT] }))], ["left"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.RIGHT] }))], ["right"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.DOWN] }))], ["softDrop"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.UP] }))], ["hardDrop"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.A] }))].sort(), ["confirm", "rotateCW"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.B] }))].sort(), ["back", "rotateCCW"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.LB] }))], ["hold"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.RB] }))], ["hold"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.START] }))], ["pause"]);
+  assert.equal(mapPad(fakePad()).size, 0);
+});
+
+test("stick: dead zone ignores drift, a firm push moves, up never hard-drops", () => {
+  assert.equal(axisDirection(0.15), 0);
+  assert.equal(axisDirection(-0.2), 0);
+  assert.equal(axisDirection(0.4), 0, "past the dead zone but not a firm push");
+  assert.equal(axisDirection(0.6), 1);
+  assert.equal(axisDirection(-0.9), -1);
+  assert.deepEqual([...mapPad(fakePad({ axes: [-0.9, 0.1] }))], ["left"]);
+  assert.deepEqual([...mapPad(fakePad({ axes: [0.1, 0.9] }))], ["softDrop"]);
+  assert.equal(mapPad(fakePad({ axes: [0, -1] })).size, 0, "stick up does nothing");
+});
+
+test("createGamepad: held directions are state, other buttons fire once per press", () => {
+  let pad = fakePad({ down: [BUTTON.LEFT, BUTTON.A] });
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [null, pad] } });
+  let r = gp.poll();
+  assert.deepEqual([...r.held], ["left"]);
+  assert.deepEqual([...r.pressed].sort(), ["confirm", "rotateCW"]);
+  r = gp.poll();
+  assert.deepEqual([...r.held], ["left"], "still held");
+  assert.deepEqual(r.pressed, [], "A does not repeat while held");
+  pad = fakePad();
+  r = gp.poll();
+  assert.equal(r.held.size, 0);
+  pad = fakePad({ down: [BUTTON.A] });
+  assert.deepEqual([...gp.poll().pressed].sort(), ["confirm", "rotateCW"], "a new press fires again");
+});
+
+test("createGamepad: no pad or a disconnected pad gives nothing; the first connected pad wins", () => {
+  let pads = [null];
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => pads } });
+  assert.equal(gp.poll().pad, null);
+  pads = [fakePad({ connected: false, down: [BUTTON.UP] }), fakePad({ down: [BUTTON.LEFT] }), fakePad({ down: [BUTTON.RIGHT] })];
+  assert.deepEqual([...gp.poll().held], ["left"]);
+});
+
+test("createGamepad: connect and disconnect callbacks", () => {
+  const target = new EventTarget();
+  let pads = [fakePad()];
+  const calls = [];
+  createGamepad(target, {
+    nav: { getGamepads: () => pads },
+    onConnect: () => calls.push("connect"),
+    onDisconnect: () => calls.push("disconnect"),
+  });
+  target.dispatchEvent(new Event("gamepadconnected"));
+  pads = [fakePad({ connected: false })];
+  target.dispatchEvent(new Event("gamepaddisconnected"));
+  assert.deepEqual(calls, ["connect", "disconnect"]);
+  pads = [fakePad({ connected: false }), fakePad()];
+  target.dispatchEvent(new Event("gamepaddisconnected"));
+  assert.deepEqual(calls, ["connect", "disconnect"], "another pad is still attached: no disconnect");
+});
+
+test("describePad names the pad and flags a non-standard mapping", () => {
+  assert.equal(describePad(fakePad()), "Xbox 360 Controller");
+  assert.match(describePad(fakePad({ mapping: "", id: "8BitDo Pro 2" })), /non-standard mapping/);
 });
 
 // --- page files ------------------------------------------------------------------------------------

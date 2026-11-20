@@ -58,8 +58,10 @@
     .scene {
       position: relative;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       overflow: hidden;
       background: linear-gradient(to bottom, var(--sky-top) 0, var(--sky-bottom) 64%, var(--sand) 64%, var(--sand-dark) 100%);
     }
@@ -157,7 +159,7 @@
     .field { position: relative; }
     #board {
       display: block;
-      height: min(80vh, calc((100vw - 2 * var(--mini) - 150px) * 2));
+      height: min(76vh, calc((100vw - 2 * var(--mini) - 150px) * 2));
       aspect-ratio: 1 / 2;
       border: 6px solid var(--wood);
       border-radius: 4px;
@@ -177,6 +179,19 @@
     dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; }
     dd { margin: 0 0 6px; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
     dd:last-child { margin-bottom: 0; }
+    /* Controller status; open it to see the raw pad state for comparing with a gamepad tester. */
+    .padbar {
+      position: relative;
+      margin-top: 22px;
+      max-width: 92vw;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: var(--wood);
+      color: var(--cream);
+      font-size: 0.8rem;
+    }
+    .padbar summary { cursor: pointer; }
+    .padbar pre { margin: 6px 0 0; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
     #overlay {
       position: absolute;
       inset: 6px;
@@ -222,6 +237,12 @@
           <dt>Lines</dt><dd id="lines">0</dd>
         </dl>
       </aside>
+    </div>
+    <div class="padbar">
+      <details id="pad-panel">
+        <summary id="pad-status">Controller: none (press any button to connect)</summary>
+        <pre id="pad-debug"></pre>
+      </details>
     </div>
   </main>
   <script type="module" src="/tetris/src/main.js"></script>
