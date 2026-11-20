@@ -109,7 +109,8 @@
     botId: BOTS[0].id,
     botBusy: false,
     notice: null,
-    boardScope: 'current'
+    boardScope: 'current',
+    statsPlayer: 'all'
   }
 
   function load () {
@@ -182,6 +183,26 @@
     for (const r of list) r.winPct = r.played ? r.wins / r.played : 0
     list.sort((x, y) => y.wins - x.wins || y.winPct - x.winPct || x.losses - y.losses || x.name.localeCompare(y.name))
     return list
+  }
+
+  // Per-throw breakdown: how often each move was thrown and how it fared.
+  // Each match contributes two throws; playerId limits it to one player's.
+  function throwStats (matches, playerId) {
+    const rows = MOVES.map(move => ({ move, count: 0, wins: 0, losses: 0, draws: 0 }))
+    const add = (move, result) => {
+      const r = rows[MOVES.indexOf(move)]
+      r.count++
+      r[result]++
+    }
+    for (const m of matches) {
+      const one = m.outcome === 'draw' ? 'draws' : m.outcome === 'player_one' ? 'wins' : 'losses'
+      const two = m.outcome === 'draw' ? 'draws' : m.outcome === 'player_two' ? 'wins' : 'losses'
+      if (!playerId || m.playerOneId === playerId) add(m.moveOne, one)
+      if (!playerId || m.playerTwoId === playerId) add(m.moveTwo, two)
+    }
+    const total = rows.reduce((n, r) => n + r.count, 0)
+    for (const r of rows) r.pct = total ? r.count / total : 0
+    return { rows, total }
   }
 
   // ---- actions ----
@@ -509,6 +530,23 @@
     )
   }
 
+  function throwTable (matches, playerId) {
+    const { rows, total } = throwStats(matches, playerId)
+    if (!total) return h('p', { class: 'muted' }, 'No throws yet.')
+    const n = v => h('td', { class: 'n' }, String(v))
+    return h('table', null,
+      h('thead', null, h('tr', null,
+        h('th', null, 'Throw'), h('th', { class: 'n' }, '#'), h('th', { class: 'n' }, '% of total'),
+        h('th', { class: 'n' }, 'W'), h('th', { class: 'n' }, 'L'), h('th', { class: 'n' }, 'D'))),
+      h('tbody', null, rows.map(r => h('tr', null,
+        h('td', null, `${GLYPH[r.move]} ${r.move[0].toUpperCase() + r.move.slice(1)}`),
+        n(r.count), n(Math.round(r.pct * 100) + '%'), n(r.wins), n(r.losses), n(r.draws)))))
+  }
+
+  function noticeEl () {
+    return ui.notice ? h('div', { class: 'notice ' + ui.notice.type, role: 'status', style: 'margin:1rem 0 0' }, ui.notice.text) : null
+  }
+
   function viewPlay () {
     const session = currentSession()
     if (!session) {
@@ -528,7 +566,8 @@
           h('label', { for: 'bot' }, 'Opponent'),
           h('select', { id: 'bot', style: 'width:100%', disabled: ui.botBusy, onchange: e => { ui.botId = e.target.value } },
             BOTS.map(b => h('option', { value: b.id, selected: b.id === ui.botId }, b.name))),
-          h('button', { class: 'primary big', type: 'submit', disabled: ui.botBusy }, ui.botBusy ? 'Waiting for bot…' : 'Throw!')
+          h('button', { class: 'primary big', type: 'submit', disabled: ui.botBusy }, ui.botBusy ? 'Waiting for bot…' : 'Throw!'),
+          noticeEl()
         )
         : h('form', { class: 'card', onsubmit: e => { e.preventDefault(); recordMatch(); render() } },
           modeToggle(),
@@ -538,11 +577,15 @@
           h('label', { for: 'player-two' }, 'Player 2'),
           textInput('playerTwo', 'player-two', 'players'),
           moveButtons('moveTwo'),
-          h('button', { class: 'primary big', type: 'submit' }, 'Record match')
+          h('button', { class: 'primary big', type: 'submit' }, 'Record match'),
+          noticeEl()
         ),
       h('div', { class: 'card' },
         h('h2', null, 'Session leaderboard'),
         boardTable(matches)),
+      h('div', { class: 'card' },
+        h('h2', null, 'Session throw stats'),
+        throwTable(matches)),
       h('div', { class: 'card' },
         h('h2', null, `Recent matches (${matches.length} total)`),
         matches.length ? matchesTable(matches.slice(0, 10)) : h('p', { class: 'muted' }, 'No matches recorded yet.'))
@@ -558,11 +601,23 @@
       h('option', { value: 'all', selected: scopeId === 'all' }, 'All time'),
       state.sessions.slice().reverse().map(s => h('option', { value: s.id, selected: scopeId === s.id },
         s.name + (current && s.id === current.id ? ' (current)' : ''))))
+    const players = [...new Set(matches.flatMap(m => [m.playerOneId, m.playerTwoId]))]
+      .map(id => byId(state.players, id)).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name))
+    if (ui.statsPlayer !== 'all' && !players.some(p => p.id === ui.statsPlayer)) ui.statsPlayer = 'all'
+    const statsPlayer = ui.statsPlayer
     return [h('div', { class: 'card' },
       h('label', { for: 'scope', style: 'margin-top:0' }, 'Leaderboard for'),
       select,
       h('p', { class: 'muted' }, plural(matches.length, 'match') + '. Ranked by wins, then win percentage.'),
-      boardTable(matches))]
+      boardTable(matches)),
+    h('div', { class: 'card' },
+      h('h2', null, 'Throw stats'),
+      h('label', { for: 'stats-player', style: 'margin-top:0' }, 'Player'),
+      h('select', { id: 'stats-player', onchange: e => { ui.statsPlayer = e.target.value; render() } },
+        h('option', { value: 'all', selected: statsPlayer === 'all' }, 'All players'),
+        players.map(p => h('option', { value: p.id, selected: statsPlayer === p.id }, p.name))),
+      h('p', { class: 'muted' }, 'How often each throw was used and how it fared (wins, losses, draws).'),
+      throwTable(matches, statsPlayer === 'all' ? null : statsPlayer))]
   }
 
   function viewSessions () {
@@ -678,8 +733,10 @@
     const notice = saveFailed
       ? { type: 'error', text: 'Could not save to this browser’s storage. Export your data now to avoid losing it.' }
       : ui.notice
+    // on the Play tab the result notice sits under the throw button instead
+    const inline = ui.tab === 'play' && session && !saveFailed
     document.getElementById('view').replaceChildren(
-      ...(notice ? [h('div', { class: 'notice ' + notice.type, role: 'status' }, notice.text)] : []),
+      ...(notice && !inline ? [h('div', { class: 'notice ' + notice.type, role: 'status' }, notice.text)] : []),
       ...VIEWS[ui.tab]())
   }
 
