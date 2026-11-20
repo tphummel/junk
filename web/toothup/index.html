@@ -164,7 +164,7 @@
         <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
         <tbody id="cal-body"></tbody>
       </table>
-      <p class="legend">Solid: routine complete · Muted: partly done · +n extras · <button id="this-month" class="link">today</button></p>
+      <p class="legend">Solid: both brushes · Muted: one · +n extras · <button id="this-month" class="link">today</button></p>
       <h2 id="day-title"></h2>
       <p id="day-routine" class="muted"></p>
       <ul id="day-list"></ul>
@@ -179,16 +179,8 @@
     <section id="view-data" hidden>
       <h2 style="display:none">Settings</h2>
       <div class="box">
-        <h2>Daily routine</h2>
-        <p class="muted">Morning: mouthwash, brush. Evening: floss, brush, mouthwash. Anything else, or outside these windows, counts as an extra.</p>
-        <div class="row">
-          <label for="morning-end">Morning ends at</label>
-          <select id="morning-end"><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option><option value="13">13:00</option></select>
-        </div>
-        <div class="row" style="margin-top:.5rem">
-          <label for="evening-start">Evening starts at</label>
-          <select id="evening-start"><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option></select>
-        </div>
+        <h2>Daily goals</h2>
+        <p class="muted">Two full brushes a day is the goal that counts. Floss once and mouthwash twice sit on top of it, and anything beyond a goal is an extra. Days follow the time zone you were in when you logged each event.</p>
       </div>
       <div class="box">
         <h2>Your data</h2>

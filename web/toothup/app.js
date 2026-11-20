@@ -1,25 +1,24 @@
 import {
-  STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayKey, formatClock, longestStreak,
-  makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, routineStats, dayRoutine, summarize,
+  GOALS, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
+  makeEvent, mergeEvents, monthGrid, normalizeEvents, parseDay, parseImport, rangeStats,
 } from "./logic.js";
 
 const STORE = "toothup:v2";
 const $ = (id) => document.getElementById(id);
 
-/** @type {{ events: import("./logic.js").Event[], settings: { morningEnd: number, eveningStart: number } }} */
-let state = { events: [], settings: normalizeSettings(null) };
+/** @type {{ events: import("./logic.js").Event[] }} */
+let state = { events: [] };
 try {
   const saved = JSON.parse(localStorage.getItem(STORE) || "null");
   if (saved) {
     state.events = normalizeEvents(saved.events).events;
-    state.settings = normalizeSettings(saved.settings);
   }
 } catch {}
 
 function save() {
   renderToday();
   try {
-    localStorage.setItem(STORE, JSON.stringify({ events: state.events, settings: state.settings }));
+    localStorage.setItem(STORE, JSON.stringify({ events: state.events }));
   } catch {
     toast("Could not save to this browser's storage");
   }
@@ -289,36 +288,36 @@ let view = (() => {
   return { y: d.getFullYear(), m: d.getMonth(), selected: today() };
 })();
 
-const SLOT_ICON = { brush: "🪥", floss: "🧵", mouthwash: "💧" };
+const ICON = { brush: "🪥", floss: "🧵", mouthwash: "💧" };
 
-/** "Morning ✓💧 ✓🪥" style summary of a day's routine windows. */
-function routineText(r) {
-  return r.windows
-    .map((w) => `${w.name === "morning" ? "Morning" : "Evening"} ${w.slots.map((x) => `${x.done ? "✓" : x.due ? "✗" : "○"}${SLOT_ICON[x.type]}`).join(" ")}`)
-    .join(" · ");
+/** "🪥 1/2 · 🧵 1/1 · 💧 0/2 · +1 extra" for one day's goals. */
+function goalsText(g) {
+  const parts = Object.keys(GOALS).map((type) => `${ICON[type]} ${g.done[type]}/${GOALS[type]}`);
+  if (g.extras) parts.push(`+${g.extras} extra`);
+  return parts.join(" · ");
 }
 
+const eventsOn = (day) => groupByDay(state.events).get(day) || [];
+
 function renderToday() {
-  const r = dayRoutine(state.events, today(), state.settings);
-  $("today").textContent = `${routineText(r)}${r.extras.length ? ` · +${r.extras.length}` : ""}`;
+  $("today").textContent = goalsText(dayGoals(eventsOn(today())));
 }
 
 function renderStats() {
   const t = today();
-  const m = summarize(state.events, t, 30);
-  const w7 = routineStats(state.events, t, 7, state.settings);
-  const w30 = routineStats(state.events, t, 30, state.settings);
-  const pct = (r) => (r.pct === null ? "–" : `${r.pct}%`);
+  const w7 = rangeStats(state.events, t, 7);
+  const w30 = rangeStats(state.events, t, 30);
+  const pct = (r) => (r.brushPct === null ? "–" : `${r.brushPct}%`);
   const tiles = [
-    ["Streak", currentStreak(state.events, t), "days brushed"],
-    ["Best streak", longestStreak(state.events), "days brushed"],
-    ["Routine", pct(w7), "last 7 days"],
-    ["Routine", pct(w30), "last 30 days"],
-    ["Full days", w30.completeDays, `of ${w30.days}, last 30`],
+    ["Streak", currentStreak(state.events, t), "days, both brushes"],
+    ["Best streak", longestStreak(state.events), "days, both brushes"],
+    ["Brushing", pct(w7), "last 7 days"],
+    ["Brushing", pct(w30), "last 30 days"],
+    ["Full days", w30.fullDays, `of ${w30.days}, last 30`],
     ["Extras", w30.extras, "last 30 days"],
-    ["Flossed", `${m.flossDays}/30`, "days, last 30"],
-    ["Mouthwash", `${m.mouthwashDays}/30`, "days, last 30"],
-    ["Average", m.brushes ? formatClock(m.avgSeconds) : "–", "per brush"],
+    ["Floss goal", `${w30.flossDays}/${w30.days}`, "days, last 30"],
+    ["Mouthwash goal", `${w30.mouthwashDays}/${w30.days}`, "days, last 30"],
+    ["Average", w30.avgSeconds ? formatClock(w30.avgSeconds) : "–", "per brush"],
   ];
   $("tiles").innerHTML = tiles
     .map(([k, v, u]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`)
@@ -330,16 +329,16 @@ function renderStats() {
 
 function renderCalendar() {
   const t = today();
+  const byDay = groupByDay(state.events);
   $("month-label").textContent = new Date(view.y, view.m, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
   $("cal-body").innerHTML = monthGrid(view.y, view.m)
     .map((week) => `<tr>${week.map((k) => {
       if (!k) return "<td></td>";
-      const r = dayRoutine(state.events, k, state.settings);
-      const level = r.complete ? 2 : r.done > 0 ? 1 : 0;
-      const extra = r.extras.length;
-      const label = `${parseDay(k).toLocaleDateString(undefined, { dateStyle: "full" })}: ${r.done} of ${r.total} routine steps${extra ? `, ${extra} extra` : ""}`;
+      const g = dayGoals(byDay.get(k) || []);
+      const level = g.complete ? 2 : g.done.brush > 0 ? 1 : 0;
+      const label = `${parseDay(k).toLocaleDateString(undefined, { dateStyle: "full" })}: ${goalsText(g)}`;
       return `<td><button class="day l${level}${k === t ? " today" : ""}${k === view.selected ? " sel" : ""}" data-day="${k}" aria-label="${label}">` +
-        `${Number(k.slice(8))}<span class="mark">${extra ? "+" + extra : ""}</span></button></td>`;
+        `${Number(k.slice(8))}<span class="mark">${g.extras ? "+" + g.extras : ""}</span></button></td>`;
     }).join("")}</tr>`)
     .join("");
 }
@@ -347,19 +346,19 @@ function renderCalendar() {
 const TYPE_LABEL = { brush: "Brush", floss: "Floss", mouthwash: "Mouthwash" };
 
 function renderDay() {
-  const r = dayRoutine(state.events, view.selected, state.settings);
-  const list = state.events.filter((e) => dayKey(e.start) === view.selected).sort((a, b) => a.start - b.start);
+  const list = eventsOn(view.selected).sort((a, b) => a.start - b.start);
+  const g = dayGoals(list);
   $("day-title").textContent = parseDay(view.selected).toLocaleDateString(undefined, { dateStyle: "full" });
-  $("day-routine").textContent = `${routineText(r)}${r.extras.length ? ` · ${r.extras.length} extra` : ""}`;
+  $("day-routine").textContent = goalsText(g);
   const ul = $("day-list");
   ul.innerHTML = "";
   if (!list.length) ul.innerHTML = '<li class="muted">Nothing logged.</li>';
   for (const s of list) {
     const li = document.createElement("li");
-    const time = new Date(s.start).toLocaleTimeString(undefined, { timeStyle: "short" });
+    // Show the time where you were when it happened, not in the current zone.
+    const time = new Date(s.start + s.offset * 60000).toLocaleTimeString(undefined, { timeStyle: "short", timeZone: "UTC" });
     const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.steps}/${STEPS.length} steps` : "";
-    const role = r.roles.get(s.id);
-    li.append(`${time} · ${TYPE_LABEL[s.type]}${detail} · ${role === "extra" ? "extra" : role} `);
+    li.append(`${time} · ${TYPE_LABEL[s.type]}${detail}${g.roles.get(s.id) === "extra" ? " · extra" : ""} `);
     const del = document.createElement("button");
     del.className = "link";
     del.textContent = "delete";
@@ -409,17 +408,6 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
     renderStats();
   };
 });
-
-// ---------- settings ----------
-$("morning-end").value = String(state.settings.morningEnd);
-$("evening-start").value = String(state.settings.eveningStart);
-for (const id of ["morning-end", "evening-start"]) {
-  $(id).onchange = () => {
-    state.settings = normalizeSettings({ morningEnd: Number($("morning-end").value), eveningStart: Number($("evening-start").value) });
-    save();
-    renderStats();
-  };
-}
 
 // ---------- data ----------
 function renderData() {

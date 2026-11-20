@@ -2,9 +2,11 @@
 
 /**
  * One thing that happened, with a timestamp. Floss and mouthwash are their own events, not flags on a brush.
- * start is epoch ms. Only brush events carry seconds (timer time, pauses excluded) and steps (0-9 completed, see STEPS).
- * @typedef {{ id: string, type: "floss" | "mouthwash", start: number }
- *   | { id: string, type: "brush", start: number, seconds: number, steps: number }} Event
+ * start is epoch ms. offset is the UTC offset in minutes (east positive) where you were at the time, so an event
+ * stays on the calendar day you experienced it after you change time zones. Only brush events carry seconds
+ * (timer time, pauses excluded) and steps (0-9 completed, see STEPS).
+ * @typedef {{ id: string, type: "floss" | "mouthwash", start: number, offset: number }
+ *   | { id: string, type: "brush", start: number, offset: number, seconds: number, steps: number }} Event
  */
 
 export const QUADRANTS = ["Upper right", "Upper left", "Lower left", "Lower right"];
@@ -37,6 +39,11 @@ export function dayKey(t) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+/** The calendar day an event belongs to, in the time zone you were in when it happened. @param {Event} e */
+export function eventDay(e) {
+  return new Date(e.start + e.offset * 60000).toISOString().slice(0, 10);
+}
+
 /** @param {string} key @returns {Date} local midnight */
 export function parseDay(key) {
   const [y, m, d] = key.split("-").map(Number);
@@ -57,12 +64,14 @@ export function addDays(key, n) {
 export function normalizeEvent(e) {
   if (!e || typeof e.id !== "string" || !e.id || !TYPES.includes(e.type)) return null;
   const start = Math.round(Number(e.start));
-  if (!(start > 0)) return null;
-  if (e.type !== "brush") return { id: e.id, type: e.type, start };
+  const offset = Math.round(Number(e.offset));
+  if (!(start > 0) || !(Math.abs(offset) <= 14 * 60)) return null;
+  const base = { id: e.id, type: e.type, start, offset };
+  if (e.type !== "brush") return base;
   const seconds = Math.round(Number(e.seconds));
   const steps = Math.round(Number(e.steps));
   if (!(seconds >= 0) || !(steps >= 0 && steps <= STEPS.length)) return null;
-  return { id: e.id, type: "brush", start, seconds, steps };
+  return { ...base, seconds, steps };
 }
 
 /** Validate a list, dropping bad entries. @param {any[]} list @returns {{ events: Event[], skipped: number }} */
@@ -102,35 +111,66 @@ export function mergeEvents(a, b) {
 
 /**
  * Create an event with an id derived from its type and timestamp, nudging `start` by a millisecond if that id is taken.
+ * `offset` defaults to this device's current UTC offset.
  * @param {Event[]} events existing events
  * @param {Event["type"]} type
  * @param {number} start epoch ms
- * @param {{ seconds: number, steps: number }} [brush] required for brush events
+ * @param {{ seconds?: number, steps?: number, offset?: number }} [opts] seconds and steps are required for brush events
  * @returns {Event}
  */
-export function makeEvent(events, type, start, brush) {
+export function makeEvent(events, type, start, opts = {}) {
   const ids = new Set(events.map((e) => e.id));
   start = Math.round(start);
   while (ids.has(`${ID_PREFIX[type]}${start}`)) start += 1;
-  const base = { id: `${ID_PREFIX[type]}${start}`, type, start };
-  return type === "brush" ? { ...base, ...brush } : base;
+  const offset = opts.offset ?? -new Date(start).getTimezoneOffset();
+  const base = { id: `${ID_PREFIX[type]}${start}`, type, start, offset };
+  return type === "brush" ? { ...base, seconds: opts.seconds, steps: opts.steps } : base;
 }
 
-/** Events grouped by local day, optionally only one type. @param {Event[]} events @param {Event["type"]} [type] @returns {Map<string, Event[]>} */
-export function groupByDay(events, type) {
+/** Events grouped by the day they belong to (see eventDay). @param {Event[]} events @returns {Map<string, Event[]>} */
+export function groupByDay(events) {
   const map = new Map();
-  for (const s of events) {
-    if (type && s.type !== type) continue;
-    const k = dayKey(s.start);
+  for (const e of events) {
+    const k = eventDay(e);
     if (!map.has(k)) map.set(k, []);
-    map.get(k).push(s);
+    map.get(k).push(e);
   }
   return map;
 }
 
-/** Consecutive days with a brush, counting back from today (or from yesterday if today has none yet). */
+// ---------- daily goals ----------
+
+/** What a day needs. Brushing is the key goal; floss and mouthwash sit on top of it. */
+export const GOALS = { brush: 2, mouthwash: 2, floss: 1 };
+
+/** A brush only counts if the whole routine was done. @param {Event} e */
+const countable = (e) => e.type !== "brush" || e.steps >= STEPS.length;
+
+/**
+ * Check one day's events against GOALS. Events beyond a goal, and partial brushes, are extras.
+ * `complete` means the key goal is met: two full brushes.
+ * @param {Event[]} list the events of a single day
+ */
+export function dayGoals(list) {
+  const done = { brush: 0, floss: 0, mouthwash: 0 };
+  /** @type {Map<string, "goal" | "extra">} */
+  const roles = new Map();
+  for (const e of [...list].sort((a, b) => a.start - b.start)) {
+    const credited = countable(e) && done[e.type] < GOALS[e.type];
+    if (credited) done[e.type]++;
+    roles.set(e.id, credited ? "goal" : "extra");
+  }
+  return { done, roles, extras: list.length - Object.values(done).reduce((a, b) => a + b, 0), complete: done.brush >= GOALS.brush };
+}
+
+/** Days on which both brushes were done. @param {Event[]} events @returns {Set<string>} */
+function completeDays(events) {
+  return new Set([...groupByDay(events)].filter(([, list]) => dayGoals(list).complete).map(([k]) => k));
+}
+
+/** Consecutive complete days up to today, or up to yesterday if today is not complete yet. */
 export function currentStreak(events, today) {
-  const days = groupByDay(events, "brush");
+  const days = completeDays(events);
   let k = days.has(today) ? today : addDays(today, -1);
   let n = 0;
   while (days.has(k)) {
@@ -141,11 +181,10 @@ export function currentStreak(events, today) {
 }
 
 export function longestStreak(events) {
-  const keys = [...groupByDay(events, "brush").keys()].sort();
   let best = 0;
   let run = 0;
   let prev = null;
-  for (const k of keys) {
+  for (const k of [...completeDays(events)].sort()) {
     run = prev && addDays(prev, 1) === k ? run + 1 : 1;
     best = Math.max(best, run);
     prev = k;
@@ -153,25 +192,39 @@ export function longestStreak(events) {
   return best;
 }
 
-/** Stats over the last `days` days ending today. @param {Event[]} events */
-export function summarize(events, today, days) {
-  const from = addDays(today, -(days - 1));
-  const inRange = events.filter((s) => {
-    const k = dayKey(s.start);
-    return k >= from && k <= today;
-  });
-  const of = (type) => inRange.filter((s) => s.type === type);
-  const distinctDays = (list) => new Set(list.map((s) => dayKey(s.start))).size;
-  const brushes = of("brush");
-  const total = brushes.reduce((t, s) => t + s.seconds, 0);
-  return {
-    brushes: brushes.length,
-    daysBrushed: distinctDays(brushes),
-    flossDays: distinctDays(of("floss")),
-    mouthwashDays: distinctDays(of("mouthwash")),
-    avgSeconds: brushes.length ? Math.round(total / brushes.length) : 0,
-    perDay: Math.round((brushes.length / days) * 10) / 10,
-  };
+/**
+ * Stats over the last `days` days ending today. Counting starts at your first event, and today only counts once its
+ * brushes are done, so an unfinished day is never a miss.
+ * @param {Event[]} events
+ */
+export function rangeStats(events, today, days) {
+  const out = { days: 0, fullDays: 0, brushPct: null, flossDays: 0, mouthwashDays: 0, extras: 0, avgSeconds: 0 };
+  if (!events.length) return out;
+  const byDay = groupByDay(events);
+  let k = addDays(today, -(days - 1));
+  const first = [...byDay.keys()].sort()[0];
+  if (k < first) k = first;
+  let brushes = 0, brushSeconds = 0, brushEvents = 0;
+  for (; k <= today; k = addDays(k, 1)) {
+    const list = byDay.get(k) || [];
+    const g = dayGoals(list);
+    for (const e of list) {
+      if (e.type === "brush") {
+        brushSeconds += e.seconds;
+        brushEvents++;
+      }
+    }
+    if (k === today && !g.complete) continue;
+    out.days++;
+    out.fullDays += g.complete ? 1 : 0;
+    out.flossDays += g.done.floss >= GOALS.floss ? 1 : 0;
+    out.mouthwashDays += g.done.mouthwash >= GOALS.mouthwash ? 1 : 0;
+    out.extras += g.extras;
+    brushes += g.done.brush;
+  }
+  out.brushPct = out.days ? Math.round((brushes / (out.days * GOALS.brush)) * 100) : null;
+  out.avgSeconds = brushEvents ? Math.round(brushSeconds / brushEvents) : 0;
+  return out;
 }
 
 /** Weeks (Sunday first) of day keys for a month; days outside the month are null. @param {number} year @param {number} month 0-11 */
@@ -190,86 +243,4 @@ export function monthGrid(year, month) {
 export function formatClock(s) {
   const t = Math.max(0, Math.ceil(s));
   return `${Math.floor(t / 60)}:${pad(t % 60)}`;
-}
-
-// ---------- standard routine ----------
-
-/** What a normal day looks like. A slot is filled by the first matching event inside its window. */
-export const ROUTINE = {
-  morning: ["mouthwash", "brush"],
-  evening: ["floss", "brush", "mouthwash"],
-};
-/** Morning window is before `morningEnd` o'clock; evening is from `eveningStart` o'clock. In between, events are extras. */
-export const DEFAULT_SETTINGS = { morningEnd: 11, eveningStart: 17 };
-
-/** @param {any} s */
-export function normalizeSettings(s) {
-  const hour = (v, lo, hi, d) => (Number.isInteger(v) && v >= lo && v <= hi ? v : d);
-  return {
-    morningEnd: hour(s?.morningEnd, 6, 14, DEFAULT_SETTINGS.morningEnd),
-    eveningStart: hour(s?.eveningStart, 14, 22, DEFAULT_SETTINGS.eveningStart),
-  };
-}
-
-/** A brush only fills a slot if the whole routine was done. @param {Event} e */
-const counts = (e) => e.type !== "brush" || e.steps >= STEPS.length;
-
-/**
- * Check one day against the routine. Events outside both windows, partial brushes and repeats are extras.
- * A slot is due once it is done or its window has ended (the evening window ends with the day).
- * @param {Event[]} events any events; other days are ignored
- * @param {string} day YYYY-MM-DD
- * @param {{ morningEnd: number, eveningStart: number }} settings
- * @param {number} now epoch ms, for deciding which slots of today are still open
- */
-export function dayRoutine(events, day, settings, now = Date.now()) {
-  const list = events.filter((e) => dayKey(e.start) === day).sort((a, b) => a.start - b.start);
-  const today = dayKey(now);
-  const used = new Set();
-  /** @type {Map<string, string>} event id -> "morning" | "evening" | "extra" */
-  const roles = new Map();
-  const windows = ["morning", "evening"].map((name) => {
-    const inWindow = (e) => {
-      const h = new Date(e.start).getHours();
-      return name === "morning" ? h < settings.morningEnd : h >= settings.eveningStart;
-    };
-    const over = day < today || (name === "morning" && day === today && new Date(now).getHours() >= settings.morningEnd);
-    const slots = ROUTINE[name].map((type) => {
-      const event = list.find((e) => e.type === type && !used.has(e.id) && inWindow(e) && counts(e)) || null;
-      if (event) {
-        used.add(event.id);
-        roles.set(event.id, name);
-      }
-      return { type, event, done: !!event, due: !!event || over };
-    });
-    return { name, slots, done: slots.filter((x) => x.done).length, due: slots.filter((x) => x.due).length, total: slots.length };
-  });
-  const extras = list.filter((e) => !used.has(e.id));
-  for (const e of extras) roles.set(e.id, "extra");
-  const done = windows.reduce((t, w) => t + w.done, 0);
-  const due = windows.reduce((t, w) => t + w.due, 0);
-  const total = windows.reduce((t, w) => t + w.total, 0);
-  return { windows, extras, roles, done, due, total, complete: done === total };
-}
-
-/**
- * Routine adherence over the last `days` days. Counting starts at the first logged event so days before you began
- * using the app are not misses.
- * @param {Event[]} events
- */
-export function routineStats(events, today, days, settings, now = Date.now()) {
-  if (!events.length) return { done: 0, due: 0, pct: null, completeDays: 0, days: 0, extras: 0 };
-  const first = dayKey(Math.min(...events.map((e) => e.start)));
-  let k = addDays(today, -(days - 1));
-  if (k < first) k = first;
-  let done = 0, due = 0, completeDays = 0, extras = 0, n = 0;
-  for (; k <= today; k = addDays(k, 1)) {
-    const r = dayRoutine(events, k, settings, now);
-    done += r.done;
-    due += r.due;
-    extras += r.extras.length;
-    if (r.complete) completeDays++;
-    n++;
-  }
-  return { done, due, pct: due ? Math.round((done / due) * 100) : null, completeDays, days: n, extras };
 }
