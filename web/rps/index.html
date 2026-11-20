@@ -510,14 +510,13 @@
     return h('table', null,
       h('thead', null, h('tr', null,
         h('th', { class: 'n' }, '#'), h('th', null, 'Player'), h('th', { class: 'n' }, 'W'), h('th', { class: 'n' }, 'L'),
-        h('th', { class: 'n' }, 'D'), h('th', { class: 'n' }, 'Win %'))),
+        h('th', { class: 'n' }, 'D'))),
       h('tbody', null, rows.map((r, i) => h('tr', null,
         h('td', { class: 'n' }, String(i + 1)),
         h('td', null, r.name),
         h('td', { class: 'n' }, String(r.wins)),
         h('td', { class: 'n' }, String(r.losses)),
-        h('td', { class: 'n' }, String(r.draws)),
-        h('td', { class: 'n' }, Math.round(r.winPct * 100) + '%')
+        h('td', { class: 'n' }, String(r.draws))
       )))
     )
   }
