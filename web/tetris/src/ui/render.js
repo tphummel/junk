@@ -9,19 +9,22 @@ import { landingY } from "../game/state.js";
 /** @typedef {{ board: string, grid: string, text: string }} Theme */
 
 /**
- * Hand-chosen piece colors, each about 4.2:1 against both board backgrounds (#F2F2F2 light, #0A0A0A dark),
- * so one set works in both modes. A letter is drawn on every block so color is never the only cue.
+ * Hand-chosen block colors, bright like carved stone inlays. Each is at least 4:1 against both board
+ * backgrounds (#2A3440 light, #1B222B dark) and 6:1 against the engraved letter color INK.
  * @type {Record<PieceType, string>}
  */
 export const PIECE_COLORS = {
-  I: "#1A7F93",
-  O: "#897218",
-  T: "#B235DB",
-  S: "#18862A",
-  Z: "#DA302B",
-  J: "#456BDE",
-  L: "#B05E1F",
+  I: "#18A1C3",
+  O: "#AC9315",
+  T: "#EA55DE",
+  S: "#15AA21",
+  Z: "#EC6974",
+  J: "#6093EB",
+  L: "#E1781C",
 };
+
+/** Engraved letter and carved-outline color; a letter on every block keeps color from being the only cue. */
+export const INK = "#1A1208";
 
 /** Read the page's current colors from its CSS variables, so the canvas follows light and dark mode. @returns {Theme} */
 export function readTheme() {
@@ -47,6 +50,7 @@ export function fitCanvas(canvas) {
 }
 
 /**
+ * One block: a bright face, a carved inset outline and an engraved letter, lit from the top left.
  * @param {CanvasRenderingContext2D} ctx
  * @param {PieceType} type
  * @param {number} px left
@@ -56,17 +60,28 @@ export function fitCanvas(canvas) {
  */
 function drawBlock(ctx, type, px, py, size, alpha = 1) {
   ctx.globalAlpha = alpha;
+  const lw = Math.max(1, size * 0.07);
   ctx.fillStyle = PIECE_COLORS[type];
   ctx.fillRect(px, py, size, size);
-  ctx.fillStyle = "rgba(255,255,255,0.28)";
-  ctx.fillRect(px, py, size, Math.max(1, size * 0.12));
-  ctx.fillStyle = "rgba(0,0,0,0.28)";
-  ctx.fillRect(px, py + size - Math.max(1, size * 0.12), size, Math.max(1, size * 0.12));
-  ctx.fillStyle = "#fff";
-  ctx.font = `bold ${Math.floor(size * 0.5)}px system-ui, sans-serif`;
+  // Bevel: light on the top and left edges, shade on the bottom and right.
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.fillRect(px, py, size, lw);
+  ctx.fillRect(px, py, lw, size);
+  ctx.fillStyle = "rgba(0,0,0,0.4)";
+  ctx.fillRect(px, py + size - lw, size, lw);
+  ctx.fillRect(px + size - lw, py, lw, size);
+  // Carved outline inset from the edge.
+  const inset = size * 0.2;
+  ctx.strokeStyle = INK;
+  ctx.globalAlpha = alpha * 0.55;
+  ctx.lineWidth = lw;
+  ctx.strokeRect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = INK;
+  ctx.font = `bold ${Math.floor(size * 0.4)}px system-ui, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(type, px + size / 2, py + size / 2 + size * 0.04);
+  ctx.fillText(type, px + size / 2, py + size / 2 + size * 0.03);
   ctx.globalAlpha = 1;
 }
 
@@ -79,10 +94,13 @@ function drawBlock(ctx, type, px, py, size, alpha = 1) {
 export function drawBoard(canvas, game, theme) {
   const ctx = fitCanvas(canvas);
   const size = Math.min(canvas.width / COLS, canvas.height / VISIBLE_ROWS);
-  ctx.fillStyle = theme.board;
+  const stone = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  stone.addColorStop(0, theme.board);
+  stone.addColorStop(1, theme.grid);
+  ctx.fillStyle = stone;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = theme.grid;
+  ctx.strokeStyle = "rgba(255,255,255,0.07)";
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (let c = 1; c < COLS; c++) {

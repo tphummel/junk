@@ -12,7 +12,7 @@ import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
 import { gravityTicks, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
-import { PIECE_COLORS } from "../web/tetris/src/ui/render.js";
+import { INK, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
 
 const filled = (type = "T", pieceId = 99) => ({ type, pieceId });
 
@@ -244,13 +244,15 @@ test("repeater: the most recently pressed direction wins", () => {
 
 // --- page files ------------------------------------------------------------------------------------
 
-test("piece colors: distinct, and readable (3:1) on both board backgrounds", () => {
+test("piece colors: distinct, 3:1 on the board stone in both modes, and the engraved letter reads on them", () => {
   const colors = Object.values(PIECE_COLORS);
   assert.equal(new Set(colors).size, 7);
+  // Both ends of the board's stone gradient in light mode (#2A3440 to #323E4B) and dark mode (#1B222B to #232C36).
   for (const c of colors) {
-    for (const bg of ["#F2F2F2", "#0A0A0A"]) {
+    for (const bg of ["#2A3440", "#323E4B", "#1B222B", "#232C36"]) {
       assert.ok(contrastRatio(c.slice(1), bg.slice(1)) >= 3, `${c} on ${bg}`);
     }
+    assert.ok(contrastRatio(c.slice(1), INK.slice(1)) >= 4.5, `${INK} on ${c}`);
   }
 });
 
