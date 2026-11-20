@@ -2,16 +2,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEFAULT_SETTINGS, STEPS, TOTAL_SECONDS, addDays, dayRoutine, normalizeSettings, routineStats, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak, mergeEvents,
-  monthGrid, normalizeAll, normalizeEvent, parseImport, summarize,
+  DEFAULT_SETTINGS, STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayKey, dayRoutine, formatClock, groupByDay,
+  longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings, parseImport,
+  routineStats, summarize,
 } from "../web/toothup/logic.js";
 
 const at = (key, h = 8) => {
   const [y, m, d] = key.split("-").map(Number);
   return new Date(y, m - 1, d, h).getTime();
 };
-const s = (key, h = 8, extra = {}) => normalizeEvent({ type: "brush", start: at(key, h), seconds: 125, steps: 9, ...extra });
-const ev = (type, key, h = 8) => normalizeEvent({ type, start: at(key, h) });
+const s = (key, h = 8, extra = {}) => makeEvent([], "brush", at(key, h), { seconds: 125, steps: 9, ...extra });
+const ev = (type, key, h = 8) => makeEvent([], type, at(key, h));
 
 test("addDays and dayKey cross month and year boundaries", () => {
   assert.equal(addDays("2026-12-31", 1), "2027-01-01");
@@ -31,27 +32,23 @@ test("routine: 8 facial/lingual steps of 15s per quadrant, then 5s of tongue", (
   assert.equal(TOTAL_SECONDS, 125);
 });
 
-test("normalizeEvent: rejects junk, clamps brush fields, omits them for floss and mouthwash", () => {
-  assert.equal(normalizeEvent(null), null);
-  assert.equal(normalizeEvent({ start: "x", seconds: 1 }), null);
-  assert.equal(normalizeEvent({ start: 1000, seconds: -5 }), null);
-  assert.equal(normalizeEvent({ type: "gargle", start: 1000 }), null);
-  assert.deepEqual(normalizeEvent({ start: 1000.4, seconds: 90.6, quadrants: 4 }), { id: "s1000", type: "brush", start: 1000, seconds: 91, steps: 8 });
-  assert.equal(normalizeEvent({ start: 1000, seconds: 5, steps: 99 }).steps, 9);
-  assert.equal(normalizeEvent({ start: 1000, seconds: 5, steps: 3, quadrants: 4 }).steps, 3);
-  assert.deepEqual(normalizeEvent({ type: "floss", start: 2000, seconds: 50, steps: 3 }), { id: "f2000", type: "floss", start: 2000 });
-  assert.equal(normalizeEvent({ type: "mouthwash", start: 3000 }).id, "m3000");
+test("makeEvent: ids come from type and time, and a taken id moves the start by 1 ms", () => {
+  assert.deepEqual(makeEvent([], "floss", 2000), { id: "f2000", type: "floss", start: 2000 });
+  assert.deepEqual(makeEvent([], "brush", 1000, { seconds: 90, steps: 8 }), { id: "s1000", type: "brush", start: 1000, seconds: 90, steps: 8 });
+  const taken = [makeEvent([], "floss", 1000)];
+  assert.equal(makeEvent(taken, "floss", 1000).start, 1001);
+  assert.equal(makeEvent(taken, "mouthwash", 1000).start, 1000);
 });
 
-test("v1 sessions with flossed become a brush plus a separate timestamped floss event", () => {
-  const { events, skipped } = normalizeAll([
-    { id: "s5000", start: 5000, seconds: 120, quadrants: 4, flossed: true },
-    { id: "s9000", start: 9000, seconds: 60, quadrants: 2, flossed: false },
-  ]);
-  assert.equal(skipped, 0);
-  assert.deepEqual(events.map((e) => [e.type, e.id, e.start]), [
-    ["brush", "s5000", 5000], ["floss", "f5000", 125000], ["brush", "s9000", 9000],
-  ]);
+test("normalizeEvent keeps well-formed events and rejects everything else", () => {
+  const brush = { id: "s1", type: "brush", start: 1000, seconds: 125, steps: 9 };
+  assert.deepEqual(normalizeEvent(brush), brush);
+  assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5 });
+  for (const bad of [
+    null, {}, { ...brush, id: "" }, { ...brush, type: "gargle" }, { ...brush, start: "x" }, { ...brush, start: 0 },
+    { ...brush, seconds: -1 }, { ...brush, steps: 10 }, { ...brush, steps: undefined },
+  ]) assert.equal(normalizeEvent(bad), null);
+  assert.deepEqual(normalizeEvents([brush, { nope: true }]), { events: [brush], skipped: 1 });
 });
 
 test("streaks count brush events only", () => {
@@ -99,9 +96,7 @@ test("monthGrid pads to whole Sunday-first weeks", () => {
 
 test("export then import round-trips events; merge dedupes by id", () => {
   const list = [s("2026-11-19"), ev("floss", "2026-11-20"), ev("mouthwash", "2026-11-20", 21)];
-  const out = buildExport(list);
-  assert.equal(out.version, 2);
-  const { events, skipped } = parseImport(JSON.stringify(out));
+  const { events, skipped } = parseImport(JSON.stringify(buildExport(list)));
   assert.deepEqual(events, list);
   assert.equal(skipped, 0);
   const merged = mergeEvents(list, [...events, s("2026-11-21")]);
@@ -109,21 +104,14 @@ test("export then import round-trips events; merge dedupes by id", () => {
   assert.equal(merged.events.length, 4);
 });
 
-test("parseImport reads v1 exports and bare arrays, skips bad rows, rejects other files", () => {
-  const v1 = { app: "toothup", version: 1, sessions: [{ id: "s7000", start: 7000, seconds: 30, quadrants: 1, flossed: true }] };
-  assert.deepEqual(parseImport(JSON.stringify(v1)).events.map((e) => e.type), ["brush", "floss"]);
-  const r = parseImport(JSON.stringify([{ start: 5000, seconds: 10 }, { nope: true }]));
-  assert.equal(r.events.length, 1);
-  assert.equal(r.skipped, 1);
+test("parseImport skips bad events and rejects other files", () => {
+  const good = s("2026-11-19");
+  const r = parseImport(JSON.stringify({ app: "toothup", events: [good, { nope: true }] }));
+  assert.deepEqual(r, { events: [good], skipped: 1 });
   assert.throws(() => parseImport("not json"), /valid JSON/);
+  assert.throws(() => parseImport("[]"), /toothup export/);
   assert.throws(() => parseImport('{"app":"other","events":[]}'), /toothup export/);
   assert.throws(() => parseImport('{"app":"toothup"}'), /No events/);
-});
-
-test("freshStart avoids an id already taken by the same type", () => {
-  const list = [normalizeEvent({ type: "floss", start: 1000 })];
-  assert.equal(freshStart(list, "floss", 1000), 1001);
-  assert.equal(freshStart(list, "mouthwash", 1000), 1000);
 });
 
 test("formatClock rounds up", () => {

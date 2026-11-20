@@ -1,25 +1,23 @@
 import {
-  STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak,
-  mergeEvents, monthGrid, normalizeAll, normalizeEvent, normalizeSettings, parseDay, parseImport, routineStats, dayRoutine, summarize,
+  STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayKey, formatClock, longestStreak,
+  makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, routineStats, dayRoutine, summarize,
 } from "./logic.js";
 
 const STORE = "toothup:v2";
-const OLD_STORE = "toothup:v1"; // sessions with a flossed flag; migrated on first load
 const $ = (id) => document.getElementById(id);
 
 /** @type {{ events: import("./logic.js").Event[], settings: { morningEnd: number, eveningStart: number } }} */
 let state = { events: [], settings: normalizeSettings(null) };
 try {
-  const raw = localStorage.getItem(STORE) ?? localStorage.getItem(OLD_STORE);
-  const saved = JSON.parse(raw || "null");
+  const saved = JSON.parse(localStorage.getItem(STORE) || "null");
   if (saved) {
-    state.events = normalizeAll(saved.events || saved.sessions || []).events;
+    state.events = normalizeEvents(saved.events).events;
     state.settings = normalizeSettings(saved.settings);
   }
 } catch {}
 
 function save() {
-  queueMicrotask(() => typeof renderToday === "function" && renderToday());
+  renderToday();
   try {
     localStorage.setItem(STORE, JSON.stringify({ events: state.events, settings: state.settings }));
   } catch {
@@ -145,7 +143,7 @@ function finish(steps) {
   if (steps < STEPS.length) run.elapsed += STEPS[run.step].seconds - Math.ceil(run.left);
   run.phase = "done";
   run.left = 0;
-  const s = normalizeEvent({ type: "brush", id: `s${run.begun}`, start: run.begun, seconds: run.elapsed, steps });
+  const s = makeEvent(state.events, "brush", run.begun, { seconds: run.elapsed, steps });
   state.events = mergeEvents(state.events, [s]).events;
   save();
   cue(true);
@@ -268,8 +266,7 @@ for (const type of ["floss", "mouthwash"]) {
       state.events = state.events.filter((e) => e.id !== logged[type]);
       logged[type] = null;
     } else {
-      const start = freshStart(state.events, type, Date.now());
-      const e = normalizeEvent({ type, start });
+      const e = makeEvent(state.events, type, Date.now());
       state.events = mergeEvents(state.events, [e]).events;
       logged[type] = e.id;
       cue(false);
@@ -406,8 +403,7 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
     const now = new Date();
     const isToday = view.selected === today();
     base.setHours(isToday ? now.getHours() : 12, isToday ? now.getMinutes() : 0, 0, 0);
-    const start = freshStart(state.events, type, base.getTime());
-    const e = normalizeEvent({ type, start, seconds: TOTAL_SECONDS, steps: STEPS.length });
+    const e = makeEvent(state.events, type, base.getTime(), { seconds: TOTAL_SECONDS, steps: STEPS.length });
     state.events = mergeEvents(state.events, [e]).events;
     save();
     renderStats();
