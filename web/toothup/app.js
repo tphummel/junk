@@ -1,5 +1,5 @@
 import {
-  QUADRANTS, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak,
+  STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak,
   mergeEvents, monthGrid, normalizeAll, normalizeEvent, parseDay, parseImport, summarize,
 } from "./logic.js";
 
@@ -7,14 +7,13 @@ const STORE = "toothup:v2";
 const OLD_STORE = "toothup:v1"; // sessions with a flossed flag; migrated on first load
 const $ = (id) => document.getElementById(id);
 
-/** @type {{ events: import("./logic.js").Event[], perQuadrant: number }} */
-let state = { events: [], perQuadrant: 30 };
+/** @type {{ events: import("./logic.js").Event[] }} */
+let state = { events: [] };
 try {
   const raw = localStorage.getItem(STORE) ?? localStorage.getItem(OLD_STORE);
   const saved = JSON.parse(raw || "null");
   if (saved) {
     state.events = normalizeAll(saved.events || saved.sessions || []).events;
-    state.perQuadrant = [15, 20, 30, 45, 60].includes(saved.perQuadrant) ? saved.perQuadrant : 30;
   }
 } catch {}
 
@@ -84,7 +83,7 @@ async function keepAwake(on) {
 
 function startStep(i) {
   run.step = i;
-  run.left = state.perQuadrant;
+  run.left = STEPS[i].seconds;
   run.endAt = Date.now() + run.left * 1000;
 }
 
@@ -110,11 +109,11 @@ function tick() {
   if (run.phase !== "running") return;
   run.left = Math.max(0, (run.endAt - Date.now()) / 1000);
   if (run.left <= 0) {
-    run.elapsed += state.perQuadrant;
-    if (run.step + 1 < QUADRANTS.length) {
+    run.elapsed += STEPS[run.step].seconds;
+    if (run.step + 1 < STEPS.length) {
       startStep(run.step + 1);
       cue(false);
-    } else return finish(4);
+    } else return finish(STEPS.length);
   }
   renderBrush();
 }
@@ -130,21 +129,21 @@ function pause() {
 
 function skip() {
   if (run.phase === "idle" || run.phase === "done") return;
-  run.elapsed += state.perQuadrant - Math.ceil(run.left);
-  if (run.step + 1 < QUADRANTS.length) {
+  run.elapsed += STEPS[run.step].seconds - Math.ceil(run.left);
+  if (run.step + 1 < STEPS.length) {
     startStep(run.step + 1);
     cue(false);
     renderBrush();
-  } else finish(4);
+  } else finish(STEPS.length);
 }
 
-function finish(quadrants) {
+function finish(steps) {
   clearInterval(run.timer);
   keepAwake(false);
-  if (quadrants < 4) run.elapsed += state.perQuadrant - Math.ceil(run.left);
+  if (steps < STEPS.length) run.elapsed += STEPS[run.step].seconds - Math.ceil(run.left);
   run.phase = "done";
   run.left = 0;
-  const s = normalizeEvent({ type: "brush", id: `s${run.begun}`, start: run.begun, seconds: run.elapsed, quadrants });
+  const s = normalizeEvent({ type: "brush", id: `s${run.begun}`, start: run.begun, seconds: run.elapsed, steps });
   state.events = mergeEvents(state.events, [s]).events;
   save();
   cue(true);
@@ -163,42 +162,46 @@ function reset() {
   keepAwake(false);
   run.phase = "idle";
   run.step = 0;
-  run.left = state.perQuadrant;
+  run.left = STEPS[0].seconds;
   renderBrush();
 }
 
 const RING = 2 * Math.PI * 46;
 const SVGNS = "http://www.w3.org/2000/svg";
 
-/** Draw both arches. Screen left is the user's left; quadrant order is UR, UL, LL, LR. */
+/** Draw both arches with a facial (outer) and lingual (inner) guide line per quadrant. Screen left is the user's left. */
 function buildMouth() {
   const svg = $("mouth");
   const radii = [10.5, 10, 11.5, 10, 10.5, 13.5, 14]; // incisors to molars
+  const SPAN = (Math.PI / 2) * 0.97;
+  const mk = (name, attrs, parent = svg) => {
+    const el = document.createElementNS(SVGNS, name);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
+    parent.append(el);
+    return el;
+  };
   const arch = (cy, ry, up, qLeft, qRight) => {
     for (const [side, q] of [[-1, qLeft], [1, qRight]]) {
-      const g = document.createElementNS(SVGNS, "g");
-      g.dataset.q = String(q);
+      const g = mk("g", { "data-q": q });
       radii.forEach((r, i) => {
-        const a = ((i + 0.55) / 7) * (Math.PI / 2) * 0.97;
-        const c = document.createElementNS(SVGNS, "circle");
-        c.setAttribute("cx", String(100 + side * 82 * Math.sin(a)));
-        c.setAttribute("cy", String(cy + (up ? -1 : 1) * ry * Math.cos(a)));
-        c.setAttribute("r", String(r));
-        g.append(c);
+        const a = ((i + 0.55) / 7) * SPAN;
+        mk("circle", { cx: 100 + side * 82 * Math.sin(a), cy: cy + (up ? -1 : 1) * ry * Math.cos(a), r }, g);
       });
-      svg.append(g);
+      // Guide lines follow the same ellipse, pushed out (facial) or in (lingual) past the teeth.
+      for (const [surface, d] of [["facial", 19], ["lingual", -19]]) {
+        const pts = [];
+        for (let k = 0; k <= 16; k++) {
+          const a = (k / 16) * SPAN;
+          pts.push(`${(100 + side * (82 + d) * Math.sin(a)).toFixed(1)},${(cy + (up ? -1 : 1) * (ry + d) * Math.cos(a)).toFixed(1)}`);
+        }
+        mk("polyline", { points: pts.join(" "), class: "guide", "data-q": q, "data-surface": surface, fill: "none" });
+      }
     }
   };
   arch(112, 100, true, 1, 0);
   arch(158, 94, false, 2, 3);
-  for (const [x, t] of [[12, "L"], [188, "R"]]) {
-    const el = document.createElementNS(SVGNS, "text");
-    el.setAttribute("x", String(x));
-    el.setAttribute("y", "139");
-    el.setAttribute("text-anchor", "middle");
-    el.setAttribute("class", "lr");
-    el.textContent = t;
-    svg.append(el);
+  for (const [x, t] of [[10, "L"], [190, "R"]]) {
+    mk("text", { x, y: 139, "text-anchor": "middle", class: "lr" }).textContent = t;
   }
 }
 buildMouth();
@@ -207,27 +210,36 @@ function renderBrush() {
   const idle = run.phase === "idle";
   const done = run.phase === "done";
   const live = run.phase === "running" || run.phase === "paused";
-  const per = state.perQuadrant;
-  const total = per * QUADRANTS.length;
-  const remaining = idle ? total : done ? 0 : run.left + (QUADRANTS.length - 1 - run.step) * per;
+  const step = STEPS[idle || done ? 0 : run.step];
+  const remaining = idle ? TOTAL_SECONDS
+    : done ? 0
+    : run.left + STEPS.slice(run.step + 1).reduce((t, st) => t + st.seconds, 0);
   $("total").textContent = formatClock(remaining);
-  $("clock").textContent = done ? "Done" : formatClock(idle ? per : run.left);
-  $("quad-name").textContent = done ? "Nice work" : idle ? "Ready" : QUADRANTS[run.step];
+  $("clock").textContent = done ? "Done" : formatClock(idle ? step.seconds : run.left);
+  $("quad-name").textContent = done ? "Nice work" : idle ? "Ready" : step.surface === "tongue" ? "Tongue 👅" : step.label;
   $("progress").textContent = done
     ? `${formatClock(run.elapsed)} brushed`
-    : idle ? `${QUADRANTS.length} × ${per}s`
-    : `${run.step + 1} of 4${run.phase === "paused" ? " · paused" : ""}`;
+    : idle ? `${STEPS.length} steps · ${formatClock(TOTAL_SECONDS)}`
+    : `${run.step + 1} of ${STEPS.length}${run.phase === "paused" ? " · paused" : ""}`;
   const mouth = $("mouth");
   mouth.classList.toggle("live", live);
   mouth.classList.toggle("finished", done);
+  const cur = live ? run.step : -1;
+  // A step's index is 2*quadrant (facial) or 2*quadrant+1 (lingual).
+  const idx = (q, surface) => q * 2 + (surface === "lingual" ? 1 : 0);
   mouth.querySelectorAll("g[data-q]").forEach((el) => {
-    const i = Number(el.dataset.q);
-    el.classList.toggle("active", live && i === run.step);
-    el.classList.toggle("done", live && i < run.step);
+    const q = Number(el.dataset.q);
+    el.classList.toggle("active", live && STEPS[cur]?.quadrant === q);
+    el.classList.toggle("done", live && cur >= idx(q, "lingual") + 1);
+  });
+  mouth.querySelectorAll(".guide").forEach((el) => {
+    const i = idx(Number(el.dataset.q), el.dataset.surface);
+    el.classList.toggle("active", live && i === cur);
+    el.classList.toggle("done", done || (live && i < cur));
   });
   const arc = document.querySelector("#go .arc");
   arc.style.strokeDasharray = String(RING);
-  arc.style.strokeDashoffset = String(RING * (1 - remaining / total));
+  arc.style.strokeDashoffset = String(RING * (1 - remaining / TOTAL_SECONDS));
   const label = run.phase === "running" ? "Pause" : live ? "Resume" : done ? "Brush again" : "Start";
   $("go").setAttribute("aria-label", label);
   document.querySelector("#go .glyph").textContent = run.phase === "running" ? "❚❚" : "▶";
@@ -235,17 +247,10 @@ function renderBrush() {
   $("skip").hidden = !live;
   $("stop").hidden = !live;
   $("reset").hidden = idle;
-  $("per-quad").disabled = live;
 }
 $("skip").onclick = skip;
 $("stop").onclick = stopEarly;
 $("reset").onclick = reset;
-$("per-quad").value = String(state.perQuadrant);
-$("per-quad").onchange = (e) => {
-  state.perQuadrant = Number(e.target.value);
-  save();
-  if (run.phase === "idle") renderBrush();
-};
 // Floss and mouthwash are separate events stamped when tapped. Tapping again undoes that tap.
 /** Ids logged from this screen for the current routine. @type {{ floss: string | null, mouthwash: string | null }} */
 const logged = { floss: null, mouthwash: null };
@@ -337,7 +342,7 @@ function renderDay() {
   for (const s of list) {
     const li = document.createElement("li");
     const time = new Date(s.start).toLocaleTimeString(undefined, { timeStyle: "short" });
-    const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.quadrants}/4 quadrants` : "";
+    const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.steps}/${STEPS.length} steps` : "";
     li.append(`${time} · ${TYPE_LABEL[s.type]}${detail} `);
     const del = document.createElement("button");
     del.className = "link";
@@ -383,7 +388,7 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
     const isToday = view.selected === today();
     base.setHours(isToday ? now.getHours() : 12, isToday ? now.getMinutes() : 0, 0, 0);
     const start = freshStart(state.events, type, base.getTime());
-    const e = normalizeEvent({ type, start, seconds: state.perQuadrant * 4, quadrants: 4 });
+    const e = normalizeEvent({ type, start, seconds: TOTAL_SECONDS, steps: STEPS.length });
     state.events = mergeEvents(state.events, [e]).events;
     save();
     renderStats();

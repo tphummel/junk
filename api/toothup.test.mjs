@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  addDays, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak, mergeEvents,
+  STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak, mergeEvents,
   monthGrid, normalizeAll, normalizeEvent, parseImport, summarize,
 } from "../web/toothup/logic.js";
 
@@ -10,7 +10,7 @@ const at = (key, h = 8) => {
   const [y, m, d] = key.split("-").map(Number);
   return new Date(y, m - 1, d, h).getTime();
 };
-const s = (key, h = 8, extra = {}) => normalizeEvent({ type: "brush", start: at(key, h), seconds: 120, quadrants: 4, ...extra });
+const s = (key, h = 8, extra = {}) => normalizeEvent({ type: "brush", start: at(key, h), seconds: 125, steps: 9, ...extra });
 const ev = (type, key, h = 8) => normalizeEvent({ type, start: at(key, h) });
 
 test("addDays and dayKey cross month and year boundaries", () => {
@@ -19,13 +19,27 @@ test("addDays and dayKey cross month and year boundaries", () => {
   assert.equal(dayKey(at("2026-11-20", 23)), "2026-11-20");
 });
 
+test("routine: 8 facial/lingual steps of 15s per quadrant, then 5s of tongue", () => {
+  assert.equal(STEPS.length, 9);
+  assert.deepEqual(STEPS.slice(0, 8).map((x) => x.seconds), Array(8).fill(15));
+  assert.deepEqual(STEPS.slice(0, 4).map((x) => x.label), [
+    "Upper right facial", "Upper right lingual", "Upper left facial", "Upper left lingual",
+  ]);
+  assert.deepEqual(STEPS.slice(0, 8).map((x) => x.surface), ["facial", "lingual", "facial", "lingual", "facial", "lingual", "facial", "lingual"]);
+  assert.deepEqual(STEPS.slice(0, 8).map((x) => x.quadrant), [0, 0, 1, 1, 2, 2, 3, 3]);
+  assert.deepEqual(STEPS[8], { label: "Tongue", quadrant: null, surface: "tongue", seconds: 5 });
+  assert.equal(TOTAL_SECONDS, 125);
+});
+
 test("normalizeEvent: rejects junk, clamps brush fields, zeroes them for floss and mouthwash", () => {
   assert.equal(normalizeEvent(null), null);
   assert.equal(normalizeEvent({ start: "x", seconds: 1 }), null);
   assert.equal(normalizeEvent({ start: 1000, seconds: -5 }), null);
   assert.equal(normalizeEvent({ type: "gargle", start: 1000 }), null);
-  assert.deepEqual(normalizeEvent({ start: 1000.4, seconds: 90.6, quadrants: 9 }), { id: "s1000", type: "brush", start: 1000, seconds: 91, quadrants: 4 });
-  assert.deepEqual(normalizeEvent({ type: "floss", start: 2000, seconds: 50, quadrants: 3 }), { id: "f2000", type: "floss", start: 2000, seconds: 0, quadrants: 0 });
+  assert.deepEqual(normalizeEvent({ start: 1000.4, seconds: 90.6, quadrants: 4 }), { id: "s1000", type: "brush", start: 1000, seconds: 91, steps: 8 });
+  assert.equal(normalizeEvent({ start: 1000, seconds: 5, steps: 99 }).steps, 9);
+  assert.equal(normalizeEvent({ start: 1000, seconds: 5, steps: 3, quadrants: 4 }).steps, 3);
+  assert.deepEqual(normalizeEvent({ type: "floss", start: 2000, seconds: 50, steps: 3 }), { id: "f2000", type: "floss", start: 2000, seconds: 0, steps: 0 });
   assert.equal(normalizeEvent({ type: "mouthwash", start: 3000 }).id, "m3000");
 });
 
@@ -52,7 +66,7 @@ test("streaks count brush events only", () => {
 
 test("summarize counts brushes, floss days and mouthwash days separately", () => {
   const list = [
-    s("2026-11-20", 8), s("2026-11-20", 20, { seconds: 60 }),
+    s("2026-11-20", 8, { seconds: 120 }), s("2026-11-20", 20, { seconds: 60 }),
     ev("floss", "2026-11-20", 20), ev("mouthwash", "2026-11-20", 8), ev("mouthwash", "2026-11-20", 20), ev("mouthwash", "2026-11-05"),
     s("2026-11-01"), s("2026-10-01"),
   ];

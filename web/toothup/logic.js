@@ -2,11 +2,27 @@
 
 /**
  * One thing that happened, with a timestamp. Floss and mouthwash are their own events, not flags on a brush.
- * @typedef {{ id: string, type: "brush" | "floss" | "mouthwash", start: number, seconds: number, quadrants: number }} Event
- *   start is epoch ms. seconds and quadrants (0-4 completed) only matter for brush events and are 0 otherwise.
+ * @typedef {{ id: string, type: "brush" | "floss" | "mouthwash", start: number, seconds: number, steps: number }} Event
+ *   start is epoch ms. seconds and steps (0-9 completed, see STEPS) only matter for brush events and are 0 otherwise.
  */
 
 export const QUADRANTS = ["Upper right", "Upper left", "Lower left", "Lower right"];
+export const STEP_SECONDS = 15;
+export const TONGUE_SECONDS = 5;
+
+/**
+ * The brushing routine: each quadrant's outer (facial) then inner (lingual) surfaces, then the tongue.
+ * @typedef {{ label: string, quadrant: number | null, surface: "facial" | "lingual" | "tongue", seconds: number }} Step
+ * @type {Step[]}
+ */
+export const STEPS = [
+  ...QUADRANTS.flatMap((name, quadrant) =>
+    /** @type {const} */ (["facial", "lingual"]).map((surface) => ({
+      label: `${name} ${surface}`, quadrant, surface, seconds: STEP_SECONDS,
+    }))),
+  { label: "Tongue", quadrant: null, surface: "tongue", seconds: TONGUE_SECONDS },
+];
+export const TOTAL_SECONDS = STEPS.reduce((t, st) => t + st.seconds, 0);
 export const TYPES = ["brush", "floss", "mouthwash"];
 export const EXPORT_APP = "toothup";
 export const EXPORT_VERSION = 2;
@@ -43,9 +59,10 @@ export function normalizeEvent(e) {
   const brush = type === "brush";
   const seconds = brush ? Number(e.seconds) : 0;
   if (!Number.isFinite(seconds) || seconds < 0) return null;
-  const quadrants = brush ? Math.max(0, Math.min(4, Math.round(Number(e.quadrants) || 0))) : 0;
+  // v1 recorded `quadrants` (0-4, outer and inner together); that is two steps each.
+  const steps = !brush ? 0 : Math.max(0, Math.min(STEPS.length, Math.round(e.steps !== undefined ? Number(e.steps) || 0 : (Number(e.quadrants) || 0) * 2)));
   const id = typeof e.id === "string" && e.id ? e.id : `${ID_PREFIX[type]}${Math.round(start)}`;
-  return { id, type, start: Math.round(start), seconds: Math.round(seconds), quadrants };
+  return { id, type, start: Math.round(start), seconds: Math.round(seconds), steps };
 }
 
 /**
@@ -64,7 +81,7 @@ export function normalizeAll(list) {
     }
     events.push(e);
     if (e.type === "brush" && raw.type === undefined && raw.flossed) {
-      events.push({ id: `f${e.start}`, type: "floss", start: e.start + e.seconds * 1000, seconds: 0, quadrants: 0 });
+      events.push({ id: `f${e.start}`, type: "floss", start: e.start + e.seconds * 1000, seconds: 0, steps: 0 });
     }
   }
   return { events, skipped };
