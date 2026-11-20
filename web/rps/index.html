@@ -530,7 +530,7 @@
       h('thead', null, h('tr', null, h('th', null, 'Player'),
         MOVES.map(m => h('th', { class: 'n' }, `${GLYPH[m]} ${m[0].toUpperCase() + m.slice(1)}`)))),
       h('tbody', null, rows.map(r => h('tr', null, h('td', null, r.name),
-        MOVES.map(m => h('td', { class: 'n' }, `${r.counts[m]} (${Math.round(r.counts[m] / r.total * 100)}%)`))))))
+        MOVES.map(m => h('td', { class: 'n' }, Math.round(r.counts[m] / r.total * 100) + '%'))))))
   }
 
   function noticeEl () {
@@ -598,7 +598,7 @@
       boardTable(matches)),
     h('div', { class: 'card' },
       h('h2', null, 'Throw stats'),
-      h('p', { class: 'muted' }, 'Count and share of each player’s throws.'),
+      h('p', { class: 'muted' }, 'Share of each player’s throws.'),
       throwTable(matches))]
   }
 
