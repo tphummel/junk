@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yahtzee-v2';
+const CACHE_NAME = 'yahtzee-v3';
 
 const PRECACHE = [
   '/yahtzee/',

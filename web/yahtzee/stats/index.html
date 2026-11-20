@@ -331,7 +331,11 @@ function render() {
   }
 
   // game list, newest first
-  html += `<h2>Games</h2>` + [...games].reverse().map((g) =>
+  // this month's games, or the last 10 if fewer than 10 so far
+  const mon = dateKey(new Date()).slice(0, 7);
+  const monthGames = games.filter((g) => g.date.slice(0, 7) === mon);
+  const shown = monthGames.length >= 10 ? monthGames : games.slice(-10);
+  html += `<h2>Games</h2>` + [...shown].reverse().map((g) =>
     `<details><summary>${esc(shortDate(g.date))} · #${g.rec.puzzle} · <b>${g.t.total}</b>` +
     `${g.complete ? '' : ' <span class="muted">(in progress)</span>'}` +
     `${g.timed && g.complete ? ` <span class="muted">· ${duration(g.duration)}</span>` : ''}</summary>${transcript(g)}</details>`).join('');

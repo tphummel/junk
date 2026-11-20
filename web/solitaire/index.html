@@ -661,7 +661,10 @@ let statsTab='official';
 function renderStats(){
   const all=loadHistory(),p=$('statsPanel');
   const rows=statsTab==='all'?all:all.filter(x=>x.official===(statsTab==='official'));
-  const st=computeStats(rows);
+  const st=computeStats(rows),mon=pacificDate().slice(0,7);
+  // current month, extended back to the past 10 days early in the month
+  const from=[mon+'-01',pacificDate(new Date(Date.now()-9*864e5))].sort()[0];
+  const month=st.ord.filter(x=>String(x.date)>=from).reverse();
   const pct=(w,n)=>n?Math.round(100*w/n)+'%':'–',t=ms=>ms==null?'–':fmtTime(ms),n=x=>x==null?'–':Math.round(x);
   const cell=(v,l)=>`<div><b>${v}</b>${l}</div>`;
   const tab=(k,l)=>`<button data-tab="${k}" ${k===statsTab?'style="background:#ffd54f"':''}>${l} (${k==='all'?all.length:all.filter(x=>x.official===(k==='official')).length})</button>`;
@@ -670,8 +673,8 @@ function renderStats(){
     <div class="sgrid">${cell(st.played,'Played')}${cell(st.won,'Won')}${cell(st.lost,'Lost')}${cell(pct(st.won,st.played),'Win rate')}
       ${cell(st.cur,'Current streak')}${cell(st.best,'Best streak')}${cell(t(st.bestTime),'Best time')}${cell(t(st.avgTime),'Avg win time')}
       ${cell(n(st.fewest),'Fewest moves')}${cell(n(st.avgMoves),'Avg win moves')}</div>
-        ${st.played?`<table><tr><th>Ended</th><th>Game</th><th>Result</th><th>Time</th><th>Moves</th></tr>${
-      st.ord.slice(-10).reverse().map(x=>`<tr><td>${new Date(x.at).toLocaleString([],{dateStyle:'short',timeStyle:'short'})}</td><td>${x.mode==='daily'?'Daily '+x.date:'Random #'+x.deal}</td><td>${x.end==='abandoned'?'abandoned':x.result}</td><td>${fmtTime(x.durationMs)}</td><td>${x.moves}</td></tr>`).join('')}</table>`:'<div>No finished games yet.</div>'}
+        ${st.played?`<table><tr><th>Game</th><th>Result</th><th>Time</th><th>Moves</th></tr>${
+      month.map(x=>`<tr><td>${x.date}${x.mode==='daily'?'':' random'} #${x.deal}</td><td>${x.end==='abandoned'?'abandoned':x.result}${x.result==='won'?'':' ('+(x.foundation||0)+')'}</td><td>${fmtTime(x.durationMs)}</td><td>${x.moves}</td></tr>`).join('')}</table>`:'<div>No finished games yet.</div>'}
     <div class="row"><button id="statsClose">Close</button><button id="statsExport">Export JSON</button><button id="statsImport">Import JSON</button><input type="file" id="statsFile" accept=".json,application/json" hidden></div>`;
   p.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{statsTab=b.dataset.tab;renderStats()});
   $('statsClose').onclick=()=>{p.hidden=true};
