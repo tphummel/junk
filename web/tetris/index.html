@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Tetris</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #2DD277 cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #1D874D;
+      --support: #4C8164;
+      --accent:  #A72DD2;
+      --bg: #FFFFFF;
+      --text: #111111;
+      --board: #F2F2F2;
+      --grid: #DADADA;
+      --mini: clamp(64px, 14vw, 110px);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #2DD277;
+        --support: #5FA17C;
+        --accent:  #B54DD9;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --board: #0A0A0A;
+        --grid: #242424;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+    }
+    .game { display: flex; gap: 16px; align-items: flex-start; padding: 16px; }
+    .side { width: var(--mini); display: flex; flex-direction: column; gap: 8px; }
+    h2 { margin: 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); }
+    .mini { width: var(--mini); height: calc(var(--mini) * 0.75); display: block; border: 1px solid var(--support); }
+    .field { position: relative; }
+    #board {
+      display: block;
+      height: min(86vh, calc((100vw - 2 * var(--mini) - 64px) * 2));
+      aspect-ratio: 1 / 2;
+      border: 2px solid var(--primary);
+    }
+    dl { margin: 8px 0 0; }
+    dt { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); }
+    dd { margin: 0 0 8px; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+    #overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      gap: 8px;
+      padding: 16px;
+      text-align: center;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+    }
+    #overlay[hidden] { display: none; }
+    #overlay-title { margin: 0; font-size: 1.8rem; color: var(--primary); }
+    #overlay-text { margin: 0; white-space: pre-line; font-size: 0.95rem; }
+    @media (prefers-reduced-motion: no-preference) {
+      #overlay { transition: opacity 0.15s; }
+    }
+  </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/tetris/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/tetris/apple-touch-icon.png">
+  <link rel="manifest" href="/tetris/manifest.webmanifest">
+</head>
+<body>
+  <main class="game">
+    <aside class="side">
+      <h2>Hold</h2>
+      <canvas id="hold" class="mini" aria-label="Held piece"></canvas>
+    </aside>
+    <div class="field">
+      <canvas id="board" aria-label="Tetris board"></canvas>
+      <div id="overlay">
+        <h1 id="overlay-title">Tetris</h1>
+        <p id="overlay-text"></p>
+      </div>
+    </div>
+    <aside class="side">
+      <h2>Next</h2>
+      <canvas id="next0" class="mini" aria-label="Next piece"></canvas>
+      <canvas id="next1" class="mini" aria-label="Second next piece"></canvas>
+      <canvas id="next2" class="mini" aria-label="Third next piece"></canvas>
+      <dl>
+        <dt>Score</dt><dd id="score">0</dd>
+        <dt>Level</dt><dd id="level">1</dd>
+        <dt>Lines</dt><dd id="lines">0</dd>
+      </dl>
+    </aside>
+  </main>
+  <script type="module" src="/tetris/src/main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/tetris/sw.js', { scope: '/tetris/' }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
