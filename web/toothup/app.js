@@ -1,6 +1,6 @@
 import {
   GOALS, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
-  makeEvent, mergeEvents, monthGrid, normalizeEvents, parseDay, parseImport, rangeStats,
+  makeEvent, mergeEvents, monthGrid, normalizeEvents, parseDay, parseImport, rangeStats, todayKey,
 } from "./logic.js";
 
 const STORE = "toothup:v2";
@@ -282,11 +282,13 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // ---------- stats ----------
-const today = () => dayKey(Date.now());
-let view = (() => {
-  const d = new Date();
-  return { y: d.getFullYear(), m: d.getMonth(), selected: today() };
-})();
+const today = () => todayKey();
+/** The calendar shows the month of the given day and selects it. */
+const viewOf = (day) => {
+  const d = parseDay(day);
+  return { y: d.getFullYear(), m: d.getMonth(), selected: day };
+};
+let view = viewOf(today());
 
 const ICON = { brush: "🪥", floss: "🧵", mouthwash: "💧" };
 
@@ -389,20 +391,17 @@ function shiftMonth(n) {
 $("prev").onclick = () => shiftMonth(-1);
 $("next").onclick = () => shiftMonth(1);
 $("this-month").onclick = () => {
-  const d = new Date();
-  view = { y: d.getFullYear(), m: d.getMonth(), selected: today() };
+  view = viewOf(today());
   renderStats();
 };
 
 document.querySelectorAll("[data-log]").forEach((btn) => {
   btn.onclick = () => {
     // Log an event on the selected day without the timer: now if it's today, otherwise noon.
-    const type = btn.dataset.log;
-    const base = parseDay(view.selected);
-    const now = new Date();
-    const isToday = view.selected === today();
-    base.setHours(isToday ? now.getHours() : 12, isToday ? now.getMinutes() : 0, 0, 0);
-    const e = makeEvent(state.events, type, base.getTime(), { seconds: TOTAL_SECONDS, steps: STEPS.length });
+    const noon = parseDay(view.selected);
+    noon.setHours(12);
+    const when = view.selected === today() ? Date.now() : noon.getTime();
+    const e = makeEvent(state.events, btn.dataset.log, when, { seconds: TOTAL_SECONDS, steps: STEPS.length });
     state.events = mergeEvents(state.events, [e]).events;
     save();
     renderStats();

@@ -39,9 +39,22 @@ export function dayKey(t) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-/** The calendar day an event belongs to, in the time zone you were in when it happened. @param {Event} e */
+/** A day runs from this hour (local clock) to the same hour the next morning, so a routine at 12:30am still belongs to the night before. */
+export const DAY_STARTS_AT = 4;
+
+/** The day (YYYY-MM-DD) a moment belongs to, given the UTC offset in minutes where you were. */
+export function dayOf(ms, offset) {
+  return new Date(ms + offset * 60000 - DAY_STARTS_AT * 3600000).toISOString().slice(0, 10);
+}
+
+/** The day an event belongs to, in the time zone you were in when it happened. @param {Event} e */
 export function eventDay(e) {
-  return new Date(e.start + e.offset * 60000).toISOString().slice(0, 10);
+  return dayOf(e.start, e.offset);
+}
+
+/** The current day on this device, using the same cutoff as events. */
+export function todayKey(now = Date.now()) {
+  return dayOf(now, -new Date(now).getTimezoneOffset());
 }
 
 /** @param {string} key @returns {Date} local midnight */

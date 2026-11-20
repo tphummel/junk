@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  GOALS, STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayGoals, eventDay, formatClock, groupByDay,
+  DAY_STARTS_AT, GOALS, STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayGoals, eventDay, formatClock, groupByDay,
   longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, parseImport, rangeStats,
 } from "../web/toothup/logic.js";
 
@@ -62,6 +62,25 @@ test("events stay on the day they happened when the time zone changes", () => {
   const ny = makeEvent([], "brush", Date.UTC(2026, 10, 20, 2), { seconds: 125, steps: 9, offset: -300 });
   const tokyo = makeEvent([], "brush", Date.UTC(2026, 10, 20, 22), { seconds: 125, steps: 9, offset: 540 });
   assert.deepEqual([...groupByDay([ny, tokyo]).keys()], ["2026-11-19", "2026-11-21"]);
+});
+
+test("the day rolls over at 4am, not midnight: a 12:30am routine belongs to the night before", () => {
+  const late = ev("floss", "2026-11-21", 0);
+  const brushed = brush("2026-11-21", 0);
+  assert.equal(DAY_STARTS_AT, 4);
+  assert.equal(eventDay(late), "2026-11-20");
+  assert.equal(eventDay(brushed), "2026-11-20");
+  assert.equal(eventDay(ev("floss", "2026-11-21", 3)), "2026-11-20");
+  assert.equal(eventDay(ev("floss", "2026-11-21", 4)), "2026-11-21");
+  // The late brush completes the previous day instead of starting a new one.
+  const g = dayGoals(groupByDay([brush("2026-11-20", 7), brushed]).get("2026-11-20"));
+  assert.ok(g.complete);
+});
+
+test("the cutoff applies in the local clock of wherever you were", () => {
+  // 12:30am in Tokyo on the 21st is 15:30 UTC on the 20th; it still belongs to the 20th there.
+  const e = makeEvent([], "floss", Date.UTC(2026, 10, 20, 15, 30), { offset: 540 });
+  assert.equal(eventDay(e), "2026-11-20");
 });
 
 test("a day is complete with two full brushes; floss and mouthwash are tracked on top", () => {
