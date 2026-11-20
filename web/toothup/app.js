@@ -1,17 +1,19 @@
 import {
-  QUADRANTS, buildExport, currentStreak, dayKey, formatClock, groupByDay, longestStreak,
-  mergeSessions, monthGrid, normalizeSession, parseDay, parseImport, summarize,
+  QUADRANTS, buildExport, currentStreak, dayKey, formatClock, freshStart, groupByDay, longestStreak,
+  mergeEvents, monthGrid, normalizeAll, normalizeEvent, parseDay, parseImport, summarize,
 } from "./logic.js";
 
-const STORE = "toothup:v1";
+const STORE = "toothup:v2";
+const OLD_STORE = "toothup:v1"; // sessions with a flossed flag; migrated on first load
 const $ = (id) => document.getElementById(id);
 
-/** @type {{ sessions: import("./logic.js").Session[], perQuadrant: number }} */
-let state = { sessions: [], perQuadrant: 30 };
+/** @type {{ events: import("./logic.js").Event[], perQuadrant: number }} */
+let state = { events: [], perQuadrant: 30 };
 try {
-  const saved = JSON.parse(localStorage.getItem(STORE) || "null");
+  const raw = localStorage.getItem(STORE) ?? localStorage.getItem(OLD_STORE);
+  const saved = JSON.parse(raw || "null");
   if (saved) {
-    state.sessions = (saved.sessions || []).map(normalizeSession).filter(Boolean);
+    state.events = normalizeAll(saved.events || saved.sessions || []).events;
     state.perQuadrant = [15, 20, 30, 45, 60].includes(saved.perQuadrant) ? saved.perQuadrant : 30;
   }
 } catch {}
@@ -45,7 +47,7 @@ for (const t of tabs) $(`tab-${t}`).addEventListener("click", () => showTab(t));
 
 // ---------- timer ----------
 /** idle | running | paused | done */
-const run = { phase: "idle", step: 0, endAt: 0, left: 0, begun: 0, elapsed: 0, savedId: null, timer: 0, wake: null };
+const run = { phase: "idle", step: 0, endAt: 0, left: 0, begun: 0, elapsed: 0, timer: 0, wake: null };
 
 function audio() {
   try {
@@ -89,14 +91,10 @@ function startStep(i) {
 function begin() {
   audio()?.resume?.();
   if (run.phase === "idle" || run.phase === "done") {
-    if (run.phase === "done") {
-      flossed = false;
-      $("floss").setAttribute("aria-pressed", "false");
-    }
+    if (run.phase === "done") clearLogged();
     run.begun = Date.now();
     run.elapsed = 0;
-    run.savedId = null;
-    startStep(0);
+        startStep(0);
   } else {
     run.endAt = Date.now() + run.left * 1000; // resume from paused
   }
@@ -146,12 +144,8 @@ function finish(quadrants) {
   if (quadrants < 4) run.elapsed += state.perQuadrant - Math.ceil(run.left);
   run.phase = "done";
   run.left = 0;
-  const s = normalizeSession({
-    id: `s${run.begun}`, start: run.begun, seconds: run.elapsed,
-    flossed: flossed, quadrants,
-  });
-  state.sessions = mergeSessions(state.sessions, [s]).sessions;
-  run.savedId = s.id;
+  const s = normalizeEvent({ type: "brush", id: `s${run.begun}`, start: run.begun, seconds: run.elapsed, quadrants });
+  state.events = mergeEvents(state.events, [s]).events;
   save();
   cue(true);
   renderBrush();
@@ -252,18 +246,31 @@ $("per-quad").onchange = (e) => {
   save();
   if (run.phase === "idle") renderBrush();
 };
-let flossed = false;
-$("floss").addEventListener("click", () => {
-  flossed = !flossed;
-  $("floss").setAttribute("aria-pressed", String(flossed));
-  if (run.phase === "done" && run.savedId) {
-    const s = state.sessions.find((x) => x.id === run.savedId);
-    if (s) {
-      s.flossed = flossed;
-      save();
-    }
+// Floss and mouthwash are separate events stamped when tapped. Tapping again undoes that tap.
+/** Ids logged from this screen for the current routine. @type {{ floss: string | null, mouthwash: string | null }} */
+const logged = { floss: null, mouthwash: null };
+function clearLogged() {
+  for (const type of ["floss", "mouthwash"]) {
+    logged[type] = null;
+    $(type).setAttribute("aria-pressed", "false");
   }
-});
+}
+for (const type of ["floss", "mouthwash"]) {
+  $(type).addEventListener("click", () => {
+    if (logged[type]) {
+      state.events = state.events.filter((e) => e.id !== logged[type]);
+      logged[type] = null;
+    } else {
+      const start = freshStart(state.events, type, Date.now());
+      const e = normalizeEvent({ type, start });
+      state.events = mergeEvents(state.events, [e]).events;
+      logged[type] = e.id;
+      cue(false);
+    }
+    $(type).setAttribute("aria-pressed", String(!!logged[type]));
+    save();
+  });
+}
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && run.phase === "running") {
     keepAwake(true);
@@ -280,15 +287,18 @@ let view = (() => {
 
 function renderStats() {
   const t = today();
-  const w = summarize(state.sessions, t, 7);
-  const m = summarize(state.sessions, t, 30);
+  const w = summarize(state.events, t, 7);
+  const m = summarize(state.events, t, 30);
   const tiles = [
-    ["Streak", currentStreak(state.sessions, t), "days"],
-    ["Best streak", longestStreak(state.sessions), "days"],
+    ["Streak", currentStreak(state.events, t), "days"],
+    ["Best streak", longestStreak(state.events), "days"],
     ["7 days", `${w.daysBrushed}/7`, "days brushed"],
     ["30 days", `${m.daysBrushed}/30`, "days brushed"],
     ["Flossed", `${m.flossDays}/30`, "days, last 30"],
-    ["Average", m.sessions ? formatClock(m.avgSeconds) : "–", "per brush"],
+    ["Mouthwash", `${m.mouthwashDays}/30`, "days, last 30"],
+    ["Average", m.brushes ? formatClock(m.avgSeconds) : "–", "per brush"],
+    ["Brushes", m.brushes, "last 30 days"],
+    ["Per day", m.perDay, "brushes, 30 days"],
   ];
   $("tiles").innerHTML = tiles
     .map(([k, v, u]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`)
@@ -298,38 +308,43 @@ function renderStats() {
 }
 
 function renderCalendar() {
-  const byDay = groupByDay(state.sessions);
+  const byDay = groupByDay(state.events);
   const t = today();
   $("month-label").textContent = new Date(view.y, view.m, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
   $("cal-body").innerHTML = monthGrid(view.y, view.m)
     .map((week) => `<tr>${week.map((k) => {
       if (!k) return "<td></td>";
       const list = byDay.get(k) || [];
-      const floss = list.some((s) => s.flossed);
-      const level = Math.min(list.length, 2);
-      const label = `${parseDay(k).toLocaleDateString(undefined, { dateStyle: "full" })}: ${list.length} brush${list.length === 1 ? "" : "es"}${floss ? ", flossed" : ""}`;
-      return `<td><button class="day l${level}${k === t ? " today" : ""}${k === view.selected ? " sel" : ""}" data-day="${k}" aria-label="${label}">` +
-        `${Number(k.slice(8))}<span class="mark">${floss ? "✦" : ""}</span></button></td>`;
+      const n = (type) => list.filter((e) => e.type === type).length;
+      const brushes = n("brush");
+      const floss = n("floss") > 0;
+      const rinse = n("mouthwash") > 0;
+      const label = `${parseDay(k).toLocaleDateString(undefined, { dateStyle: "full" })}: ${brushes} brush${brushes === 1 ? "" : "es"}${floss ? ", flossed" : ""}${rinse ? ", mouthwash" : ""}`;
+      return `<td><button class="day l${Math.min(brushes, 2)}${k === t ? " today" : ""}${k === view.selected ? " sel" : ""}" data-day="${k}" aria-label="${label}">` +
+        `${Number(k.slice(8))}<span class="mark">${floss ? "✦" : ""}${rinse ? "●" : ""}</span></button></td>`;
     }).join("")}</tr>`)
     .join("");
 }
 
+const TYPE_LABEL = { brush: "Brush", floss: "Floss", mouthwash: "Mouthwash" };
+
 function renderDay() {
-  const list = (groupByDay(state.sessions).get(view.selected) || []).slice().sort((a, b) => a.start - b.start);
+  const list = (groupByDay(state.events).get(view.selected) || []).slice().sort((a, b) => a.start - b.start);
   $("day-title").textContent = parseDay(view.selected).toLocaleDateString(undefined, { dateStyle: "full" });
   const ul = $("day-list");
   ul.innerHTML = "";
-  if (!list.length) ul.innerHTML = '<li class="muted">No brushing logged.</li>';
+  if (!list.length) ul.innerHTML = '<li class="muted">Nothing logged.</li>';
   for (const s of list) {
     const li = document.createElement("li");
     const time = new Date(s.start).toLocaleTimeString(undefined, { timeStyle: "short" });
-    li.append(`${time} · ${formatClock(s.seconds)} · ${s.quadrants}/4 quadrants${s.flossed ? " · flossed" : ""} `);
+    const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.quadrants}/4 quadrants` : "";
+    li.append(`${time} · ${TYPE_LABEL[s.type]}${detail} `);
     const del = document.createElement("button");
     del.className = "link";
     del.textContent = "delete";
     del.onclick = () => {
-      if (!confirm("Delete this brushing?")) return;
-      state.sessions = state.sessions.filter((x) => x.id !== s.id);
+      if (!confirm(`Delete this ${s.type} entry?`)) return;
+      state.events = state.events.filter((x) => x.id !== s.id);
       save();
       renderStats();
     };
@@ -359,25 +374,29 @@ $("this-month").onclick = () => {
   renderStats();
 };
 
-$("log-manual").onclick = () => {
-  // Log a brushing on the selected day without the timer, at noon unless it's today.
-  const base = parseDay(view.selected);
-  base.setHours(view.selected === today() ? new Date().getHours() : 12, view.selected === today() ? new Date().getMinutes() : 0, 0, 0);
-  let start = base.getTime();
-  while (state.sessions.some((s) => s.start === start)) start += 1000;
-  const s = normalizeSession({ id: `s${start}`, start, seconds: state.perQuadrant * 4, flossed: false, quadrants: 4 });
-  state.sessions = mergeSessions(state.sessions, [s]).sessions;
-  save();
-  renderStats();
-};
+document.querySelectorAll("[data-log]").forEach((btn) => {
+  btn.onclick = () => {
+    // Log an event on the selected day without the timer: now if it's today, otherwise noon.
+    const type = btn.dataset.log;
+    const base = parseDay(view.selected);
+    const now = new Date();
+    const isToday = view.selected === today();
+    base.setHours(isToday ? now.getHours() : 12, isToday ? now.getMinutes() : 0, 0, 0);
+    const start = freshStart(state.events, type, base.getTime());
+    const e = normalizeEvent({ type, start, seconds: state.perQuadrant * 4, quadrants: 4 });
+    state.events = mergeEvents(state.events, [e]).events;
+    save();
+    renderStats();
+  };
+});
 
 // ---------- data ----------
 function renderData() {
-  $("count").textContent = `${state.sessions.length} brushing${state.sessions.length === 1 ? "" : "s"} stored on this device.`;
+  $("count").textContent = `${state.events.length} event${state.events.length === 1 ? "" : "s"} stored on this device.`;
 }
 
 $("export").onclick = () => {
-  const blob = new Blob([JSON.stringify(buildExport(state.sessions), null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(buildExport(state.events), null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `toothup-${dayKey(Date.now())}.json`;
@@ -391,12 +410,12 @@ $("import").onchange = async (e) => {
   e.target.value = "";
   if (!file) return;
   try {
-    const { sessions, skipped } = parseImport(await file.text());
-    const merged = mergeSessions(state.sessions, sessions);
-    state.sessions = merged.sessions;
+    const { events, skipped } = parseImport(await file.text());
+    const merged = mergeEvents(state.events, events);
+    state.events = merged.events;
     save();
     renderData();
-    toast(`Imported ${merged.added} new, ${sessions.length - merged.added} already present${skipped ? `, ${skipped} skipped` : ""}.`);
+    toast(`Imported ${merged.added} new, ${events.length - merged.added} already present${skipped ? `, ${skipped} skipped` : ""}.`);
   } catch (err) {
     toast(`Import failed: ${err.message}`);
   }
@@ -404,7 +423,7 @@ $("import").onchange = async (e) => {
 
 $("clear").onclick = () => {
   if (!confirm("Delete all brushing history on this device? Export first if you want a copy.")) return;
-  state.sessions = [];
+  state.events = [];
   save();
   renderData();
   toast("History cleared.");

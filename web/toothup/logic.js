@@ -1,13 +1,16 @@
 // Pure logic for toothup: sessions, stats, calendar and import/export. No DOM, so the API test suite can import it.
 
 /**
- * @typedef {{ id: string, start: number, seconds: number, flossed: boolean, quadrants: number }} Session
- *   start is epoch ms, seconds is time actually brushed, quadrants is 0-4 completed.
+ * One thing that happened, with a timestamp. Floss and mouthwash are their own events, not flags on a brush.
+ * @typedef {{ id: string, type: "brush" | "floss" | "mouthwash", start: number, seconds: number, quadrants: number }} Event
+ *   start is epoch ms. seconds and quadrants (0-4 completed) only matter for brush events and are 0 otherwise.
  */
 
 export const QUADRANTS = ["Upper right", "Upper left", "Lower left", "Lower right"];
+export const TYPES = ["brush", "floss", "mouthwash"];
 export const EXPORT_APP = "toothup";
-export const EXPORT_VERSION = 1;
+export const EXPORT_VERSION = 2;
+const ID_PREFIX = { brush: "s", floss: "f", mouthwash: "m" }; // brush keeps "s" so v1 ids stay stable
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -30,25 +33,51 @@ export function addDays(key, n) {
   return dayKey(d);
 }
 
-/** Validate and normalize one session; returns null if unusable. @param {any} s @returns {Session | null} */
-export function normalizeSession(s) {
-  if (!s || typeof s !== "object") return null;
-  const start = Number(s.start);
-  const seconds = Number(s.seconds);
-  if (!Number.isFinite(start) || start <= 0 || !Number.isFinite(seconds) || seconds < 0) return null;
-  const quadrants = Math.max(0, Math.min(4, Math.round(Number(s.quadrants) || 0)));
-  const id = typeof s.id === "string" && s.id ? s.id : `s${Math.round(start)}`;
-  return { id, start: Math.round(start), seconds: Math.round(seconds), flossed: !!s.flossed, quadrants };
-}
-
-/** @param {Session[]} sessions */
-export function buildExport(sessions, now = Date.now()) {
-  return { app: EXPORT_APP, version: EXPORT_VERSION, exported: new Date(now).toISOString(), sessions };
+/** Validate and normalize one event; returns null if unusable. A missing type means brush (v1 data). @param {any} e @returns {Event | null} */
+export function normalizeEvent(e) {
+  if (!e || typeof e !== "object") return null;
+  const type = e.type === undefined ? "brush" : e.type;
+  if (!TYPES.includes(type)) return null;
+  const start = Number(e.start);
+  if (!Number.isFinite(start) || start <= 0) return null;
+  const brush = type === "brush";
+  const seconds = brush ? Number(e.seconds) : 0;
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  const quadrants = brush ? Math.max(0, Math.min(4, Math.round(Number(e.quadrants) || 0))) : 0;
+  const id = typeof e.id === "string" && e.id ? e.id : `${ID_PREFIX[type]}${Math.round(start)}`;
+  return { id, type, start: Math.round(start), seconds: Math.round(seconds), quadrants };
 }
 
 /**
- * Parse an export file's text. Accepts the export object or a bare array of sessions.
- * @param {string} text @returns {{ sessions: Session[], skipped: number }}
+ * Normalize a list of raw events. v1 sessions carried `flossed: true`; each becomes a brush event plus a separate
+ * floss event stamped at the end of the brush (the real time was not recorded).
+ * @param {any[]} list @returns {{ events: Event[], skipped: number }}
+ */
+export function normalizeAll(list) {
+  const events = [];
+  let skipped = 0;
+  for (const raw of list) {
+    const e = normalizeEvent(raw);
+    if (!e) {
+      skipped++;
+      continue;
+    }
+    events.push(e);
+    if (e.type === "brush" && raw.type === undefined && raw.flossed) {
+      events.push({ id: `f${e.start}`, type: "floss", start: e.start + e.seconds * 1000, seconds: 0, quadrants: 0 });
+    }
+  }
+  return { events, skipped };
+}
+
+/** @param {Event[]} events */
+export function buildExport(events, now = Date.now()) {
+  return { app: EXPORT_APP, version: EXPORT_VERSION, exported: new Date(now).toISOString(), events };
+}
+
+/**
+ * Parse an export file's text. Accepts a v2 export (`events`), a v1 export (`sessions`) or a bare array.
+ * @param {string} text @returns {{ events: Event[], skipped: number }}
  */
 export function parseImport(text) {
   let data;
@@ -58,33 +87,34 @@ export function parseImport(text) {
     throw new Error("Not valid JSON");
   }
   if (data && !Array.isArray(data) && data.app !== EXPORT_APP) throw new Error("Not a toothup export");
-  const list = Array.isArray(data) ? data : data?.sessions;
-  if (!Array.isArray(list)) throw new Error("No sessions found");
-  const sessions = [];
-  let skipped = 0;
-  for (const raw of list) {
-    const s = normalizeSession(raw);
-    if (s) sessions.push(s);
-    else skipped++;
-  }
-  return { sessions, skipped };
+  const list = Array.isArray(data) ? data : data?.events ?? data?.sessions;
+  if (!Array.isArray(list)) throw new Error("No events found");
+  return normalizeAll(list);
 }
 
-/** Merge by id; incoming wins on conflict. Sorted by start. @param {Session[]} a @param {Session[]} b */
-export function mergeSessions(a, b) {
+/** Merge by id; incoming wins on conflict. Sorted by start. @param {Event[]} a @param {Event[]} b */
+export function mergeEvents(a, b) {
   const map = new Map(a.map((s) => [s.id, s]));
   let added = 0;
   for (const s of b) {
     if (!map.has(s.id)) added++;
     map.set(s.id, s);
   }
-  return { sessions: [...map.values()].sort((x, y) => x.start - y.start), added };
+  return { events: [...map.values()].sort((x, y) => x.start - y.start), added };
 }
 
-/** @param {Session[]} sessions @returns {Map<string, Session[]>} */
-export function groupByDay(sessions) {
+/** Unused id for a new event of `type` at `start` (ids derive from the timestamp). @param {Event[]} events */
+export function freshStart(events, type, start) {
+  const ids = new Set(events.map((e) => e.id));
+  while (ids.has(`${ID_PREFIX[type]}${start}`)) start += 1;
+  return start;
+}
+
+/** Events grouped by local day, optionally only one type. @param {Event[]} events @param {Event["type"]} [type] @returns {Map<string, Event[]>} */
+export function groupByDay(events, type) {
   const map = new Map();
-  for (const s of sessions) {
+  for (const s of events) {
+    if (type && s.type !== type) continue;
     const k = dayKey(s.start);
     if (!map.has(k)) map.set(k, []);
     map.get(k).push(s);
@@ -94,7 +124,7 @@ export function groupByDay(sessions) {
 
 /** Consecutive days with a session, counting back from today (or from yesterday if today has none yet). */
 export function currentStreak(sessions, today) {
-  const days = groupByDay(sessions);
+  const days = groupByDay(sessions, "brush");
   let k = days.has(today) ? today : addDays(today, -1);
   let n = 0;
   while (days.has(k)) {
@@ -105,7 +135,7 @@ export function currentStreak(sessions, today) {
 }
 
 export function longestStreak(sessions) {
-  const keys = [...groupByDay(sessions).keys()].sort();
+  const keys = [...groupByDay(sessions, "brush").keys()].sort();
   let best = 0;
   let run = 0;
   let prev = null;
@@ -117,22 +147,24 @@ export function longestStreak(sessions) {
   return best;
 }
 
-/** Stats over the last `days` days ending today. */
-export function summarize(sessions, today, days) {
+/** Stats over the last `days` days ending today. @param {Event[]} events */
+export function summarize(events, today, days) {
   const from = addDays(today, -(days - 1));
-  const inRange = sessions.filter((s) => {
+  const inRange = events.filter((s) => {
     const k = dayKey(s.start);
     return k >= from && k <= today;
   });
-  const daysBrushed = new Set(inRange.map((s) => dayKey(s.start))).size;
-  const flossDays = new Set(inRange.filter((s) => s.flossed).map((s) => dayKey(s.start))).size;
-  const total = inRange.reduce((t, s) => t + s.seconds, 0);
+  const of = (type) => inRange.filter((s) => s.type === type);
+  const distinctDays = (list) => new Set(list.map((s) => dayKey(s.start))).size;
+  const brushes = of("brush");
+  const total = brushes.reduce((t, s) => t + s.seconds, 0);
   return {
-    sessions: inRange.length,
-    daysBrushed,
-    flossDays,
-    avgSeconds: inRange.length ? Math.round(total / inRange.length) : 0,
-    perDay: Math.round((inRange.length / days) * 10) / 10,
+    brushes: brushes.length,
+    daysBrushed: distinctDays(brushes),
+    flossDays: distinctDays(of("floss")),
+    mouthwashDays: distinctDays(of("mouthwash")),
+    avgSeconds: brushes.length ? Math.round(total / brushes.length) : 0,
+    perDay: Math.round((brushes.length / days) * 10) / 10,
   };
 }
 

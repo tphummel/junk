@@ -77,15 +77,15 @@
     #quad-name { font-size: 1.1rem; }
     #progress { font-size: .85rem; }
     .bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .75rem; padding-top: .5rem; }
-    .bar .left { display: flex; gap: .5rem; align-items: center; }
+    .bar .left { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
     #total { text-align: right; font-size: 2rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--primary); }
     #go { width: 6rem; height: 6rem; padding: 0; border-radius: 50%; background: none; border: 0; position: relative; }
     #go svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
     #go .track { stroke: var(--support); opacity: .35; }
     #go .arc { stroke: var(--primary); transition: stroke-dashoffset .25s linear; }
     #go .glyph { position: relative; font-size: 1.75rem; color: var(--text); }
-    #floss { padding: .5rem .75rem; }
-    #floss[aria-pressed="false"] { background: none; color: var(--primary); }
+    .bar .left button[aria-pressed] { padding: .4rem .6rem; font-size: .9rem; }
+    .bar .left button[aria-pressed="false"] { background: none; color: var(--primary); }
     #reset { padding: .5rem; width: 2.75rem; font-size: 1.4rem; line-height: 1; }
     #tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1rem; }
     .tile { border: 1px solid var(--support); border-radius: .5rem; padding: .5rem; text-align: center; }
@@ -130,6 +130,7 @@
       <div class="bar">
         <div class="left">
           <button id="floss" aria-pressed="false">Floss</button>
+          <button id="mouthwash" aria-pressed="false">Rinse</button>
           <button id="reset" class="secondary" aria-label="Reset" hidden>↻</button>
         </div>
         <button id="go" aria-label="Start">
@@ -158,10 +159,15 @@
         <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
         <tbody id="cal-body"></tbody>
       </table>
-      <p class="legend">Muted fill: 1 brush · Solid fill: 2+ · ✦ flossed · <button id="this-month" class="link">today</button></p>
+      <p class="legend">Muted fill: 1 brush · Solid fill: 2+ · ✦ flossed · ● mouthwash · <button id="this-month" class="link">today</button></p>
       <h2 id="day-title"></h2>
       <ul id="day-list"></ul>
-      <button id="log-manual" class="secondary">Log a brushing without the timer</button>
+      <p class="muted" style="margin-bottom:.25rem">Add to this day without the timer:</p>
+      <div class="row">
+        <button class="secondary" data-log="brush">Brush</button>
+        <button class="secondary" data-log="floss">Floss</button>
+        <button class="secondary" data-log="mouthwash">Mouthwash</button>
+      </div>
     </section>
 
     <section id="view-data" hidden>
