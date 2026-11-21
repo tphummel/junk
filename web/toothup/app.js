@@ -293,9 +293,9 @@ const viewOf = (day) => {
 };
 let view = viewOf(today());
 
-const ICON = { brush: "🪥", floss: "🧵", mouthwash: "💧" };
+const ICON = { brush: "🪥", floss: "🧵", mouthwash: "🌊" };
 
-/** ["🪥 1/2", "🧵 1/1", "💧 0/2", "+1 extra"] for one day's goals. */
+/** ["🪥 1/2", "🧵 1/1", "🌊 0/2", "+1 extra"] for one day's goals. */
 function goalsParts(g) {
   const parts = Object.keys(GOALS).map((type) => `${ICON[type]} ${g.done[type]}/${GOALS[type]}`);
   if (g.extras) parts.push(`+${g.extras} extra`);
