@@ -36,9 +36,14 @@ test("pouncer gets the game's bonus; winners can tie", () => {
   assert.equal(gameTotals(g("x", [r("a", 1, true)], { bonus: 9 }))[0].total, 10);
 });
 
-test("standings rank by total with averages for fluid rosters", () => {
+test("standings rank by average per game played, not total", () => {
   const s = standings(games);
+  // b: 57 over 3 games = 19; a: 33 over 2 = 16.5; c: 12 over 2 = 6
   assert.deepEqual(s.map((x) => x.playerId), ["b", "a", "c"]);
+  assert.equal(s[0].avg, 19);
+  const late = standings([g("9", [r("x", 30, true), r("y", 5)]), g("10", [r("y", 6, true), r("z", 1)])]);
+  assert.equal(late[0].playerId, "x");
+  assert.equal(late[0].wins, 1);
   const b = s.find((x) => x.playerId === "b");
   assert.equal(b.total, 10 + 35 + 12);
   assert.equal(b.played, 3);

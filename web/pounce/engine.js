@@ -48,8 +48,8 @@ function playersIn(games) {
 }
 
 /**
- * Per-player totals over the games they played, best total first.
- * Players come and go, so average per game is shown beside the raw total.
+ * Per-player results over the games they played, ranked by average score per game.
+ * Players come and go, so the average is fair to anyone who joined late; total and wins are shown too.
  * @param {Game[]} games
  */
 export function standings(games) {
@@ -67,7 +67,7 @@ export function standings(games) {
       }
       return { playerId, played, total, avg: played ? total / played : 0, wins, pounces, best };
     })
-    .sort((a, b) => b.total - a.total || b.avg - a.avg);
+    .sort((a, b) => b.avg - a.avg || b.total - a.total);
 }
 
 /**

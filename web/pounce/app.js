@@ -199,8 +199,8 @@ function reportsView(games) {
     </section>
     <section>
       <h2>Leaderboard</h2>
-      <table><thead><tr><th>#</th><th>Player</th><th>Total</th><th>Avg</th><th>GP</th><th>W</th><th>Pounces</th><th>Best</th></tr></thead><tbody>
-      ${st.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(nameOf(r.playerId))}</td><td><b>${r.total}</b></td><td>${r.avg.toFixed(1)}</td><td>${r.played}</td><td>${r.wins}</td><td>${r.pounces}</td><td>${r.best}</td></tr>`).join('')}
+      <table><thead><tr><th>#</th><th>Player</th><th>Avg</th><th>Wins</th><th>GP</th><th>Total</th><th>Pounces</th><th>Best</th></tr></thead><tbody>
+      ${st.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(nameOf(r.playerId))}</td><td><b>${r.avg.toFixed(1)}</b></td><td>${r.wins}</td><td>${r.played}</td><td>${r.total}</td><td>${r.pounces}</td><td>${r.best}</td></tr>`).join('')}
       </tbody></table>
       ${games.length > 1 ? chart(games) : ''}
     </section>
