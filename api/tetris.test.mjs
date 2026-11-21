@@ -601,6 +601,37 @@ test("piece colors: distinct, 3:1 on the board stone in both modes, and the engr
   }
 });
 
+test("stages: cream text on wood and the button ink on cream reach 4.5:1 in every stage and mode", () => {
+  const html = readFileSync(new URL("../web/tetris/index.html", import.meta.url), "utf8");
+  const css = html.slice(html.indexOf("<style>"), html.indexOf("</style>"));
+  // Split into the light rules and the rules inside the dark-mode media blocks.
+  const parts = css.split("@media (prefers-color-scheme: dark) {");
+  const light = parts[0];
+  const dark = parts.slice(1).join("\n");
+  /** Collect the vars a mode sets for a stage, on top of the default (savanna) vars of the same mode. */
+  const vars = (text, selector) => {
+    const out = {};
+    const re = new RegExp(`${selector.replace(/[[\]"]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "g");
+    for (const m of text.matchAll(re)) for (const d of m[1].matchAll(/--([\w-]+):\s*(#[0-9A-Fa-f]{6})/g)) out[d[1]] = d[2];
+    return out;
+  };
+  const stages = ["savanna", "pagoda", "temple"];
+  for (const [mode, text] of [["light", light], ["dark", dark]]) {
+    const base = vars(text, ":root");
+    for (const stage of stages) {
+      const v = { ...base, ...(stage === "savanna" ? {} : vars(text, `:root[data-stage="${stage}"]`)) };
+      for (const k of ["wood", "wood-dark", "cream"]) assert.ok(v[k], `${stage} ${mode} sets --${k}`);
+      assert.ok(contrastRatio(v.cream.slice(1), v.wood.slice(1)) >= 4.5, `${stage} ${mode}: cream on wood`);
+      assert.ok(contrastRatio(v["wood-dark"].slice(1), v.cream.slice(1)) >= 4.5, `${stage} ${mode}: button ink on cream`);
+      assert.equal(v.board, base.board, `${stage} ${mode}: same board stone, so block contrast holds`);
+    }
+  }
+});
+
+test("the controller's Select button changes the stage", () => {
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.BACK] }))], ["stage"]);
+});
+
 test("service worker PRECACHE lists exactly the page's files, and they all exist", () => {
   const dir = new URL("../web/tetris/", import.meta.url).pathname;
   const sw = readFileSync(join(dir, "sw.js"), "utf8");

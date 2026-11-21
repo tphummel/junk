@@ -68,6 +68,35 @@ function saveBindings(all) {
   }
 }
 
+// Stages re-skin the scene (see the CSS in index.html). The choice is remembered per browser.
+const STAGES = /** @type {const} */ ([["savanna", "Savanna"], ["pagoda", "Pagoda"], ["temple", "Temple"]]);
+const STAGE_KEY = "tetris-stage";
+const stageButton = $("stage-btn");
+let stageIndex = 0;
+
+/** @param {number} i */
+function applyStage(i) {
+  stageIndex = ((i % STAGES.length) + STAGES.length) % STAGES.length;
+  const [id, label] = STAGES[stageIndex];
+  document.documentElement.dataset.stage = id;
+  stageButton.textContent = `Stage: ${label}`;
+  theme = readTheme();
+  try {
+    localStorage.setItem(STAGE_KEY, id);
+  } catch {
+    // The stage still changes for this visit.
+  }
+}
+function loadStage() {
+  try {
+    const i = STAGES.findIndex(([id]) => id === localStorage.getItem(STAGE_KEY));
+    if (i >= 0) applyStage(i);
+  } catch {
+    // Storage blocked: stay on the default stage.
+  }
+}
+stageButton.addEventListener("click", () => applyStage(stageIndex + 1));
+
 /** Last message from the "set hard drop" button, shown in the status panel. */
 let bindNote = "";
 
@@ -128,9 +157,9 @@ function renderOverlay() {
       (pad
         ? "Press A or Enter to start.\nD-pad move, A/B rotate, shoulder hold, up hard drop, Start pause."
         : "Press Enter to start, or press any button on your controller to connect it.") +
-        "\nKeyboard: arrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause.",
+        "\nKeyboard: arrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause.\nT or Select changes the stage.",
     ],
-    paused: ["Paused", note ?? "Press Esc or Start to resume, Backspace or B to quit."],
+    paused: ["Paused", note ?? "Press Esc or Start to resume, Backspace or B to quit.\nT or Select changes the stage."],
     over: ["Game over", `Score ${game.score}, ${game.lines} lines, level ${game.level}.\nPress A or Enter to play again.`],
   };
   const [title, text] = texts[screen];
@@ -164,7 +193,8 @@ function startRound() {
 
 /** Handle menu-style presses (confirm, back, pause). @param {string} action */
 function onMenuAction(action) {
-  if (screen === "title" && (action === "confirm" || action === "hardDrop")) startRound();
+  if (action === "stage" && screen !== "playing") applyStage(stageIndex + 1);
+  else if (screen === "title" && (action === "confirm" || action === "hardDrop")) startRound();
   else if (screen === "playing" && action === "pause") setScreen("paused");
   else if (screen === "paused" && action === "pause") setScreen("playing");
   else if (screen === "paused" && action === "back") setScreen("title");
@@ -280,6 +310,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   theme = readTheme();
 });
 
+loadStage();
 setScreen("title");
 refreshStatus();
 requestAnimationFrame(frame);

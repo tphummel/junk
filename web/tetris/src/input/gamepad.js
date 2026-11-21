@@ -108,6 +108,7 @@ export function mapPad(pad, deadzone = STICK_DEADZONE, bindings = {}) {
   }
   if (button(BUTTON.LB) || button(BUTTON.RB)) down.add("hold");
   if (button(BUTTON.START)) down.add("pause");
+  if (button(BUTTON.BACK)) down.add("stage");
   return down;
 }
 
