@@ -199,9 +199,7 @@ function reportsView(games) {
     </section>
     <section>
       <h2>Leaderboard</h2>
-      <table><thead><tr><th>#</th><th>Player</th><th>Avg</th><th>Wins</th><th>GP</th><th>Total</th><th>Pounces</th><th>Best</th></tr></thead><tbody>
-      ${st.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(nameOf(r.playerId))}</td><td><b>${r.avg.toFixed(1)}</b></td><td>${r.wins}</td><td>${r.played}</td><td>${r.total}</td><td>${r.pounces}</td><td>${r.best}</td></tr>`).join('')}
-      </tbody></table>
+      ${leaderboardTable(st)}
       ${games.length > 1 ? chart(games) : ''}
     </section>
     <section>
@@ -212,6 +210,13 @@ function reportsView(games) {
     </section>
     ${paceView(games)}
     ${h2hView(games)}`;
+}
+
+/** Rank, name, average score (total / games played), wins. @param {ReturnType<typeof standings>} st */
+function leaderboardTable(st) {
+  return `<table><thead><tr><th>Rank</th><th>Name</th><th>Score Avg &darr;</th><th>Wins</th></tr></thead><tbody>
+    ${st.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(nameOf(r.playerId))}</td><td>${r.avg.toFixed(3)} <span class="muted">(${r.total} / ${r.played})</span></td><td>${r.wins}</td></tr>`).join('')}
+    </tbody></table>`;
 }
 
 /** @param {number | null} n */
@@ -248,9 +253,7 @@ function allTimeInner() {
   const games = allGames();
   const st = standings(games);
   return `<p>${games.length} games across ${db.sessions.length} sessions</p>
-    <table><thead><tr><th>Player</th><th>GP</th><th>Win %</th><th>Avg</th><th>Pounces</th></tr></thead><tbody>
-    ${st.sort((a, b) => b.wins / (b.played || 1) - a.wins / (a.played || 1)).map((r) => `<tr><td>${esc(nameOf(r.playerId))}</td><td>${r.played}</td><td>${Math.round((r.wins / r.played) * 100)}%</td><td>${r.avg.toFixed(1)}</td><td>${r.pounces}</td></tr>`).join('')}
-    </tbody></table>
+    ${leaderboardTable(st)}
     <table><thead><tr><th>Venue</th><th>Games</th><th>Avg length</th></tr></thead><tbody>
     ${venueStats(games).map((v) => `<tr><td>${esc(v.venue)}</td><td>${v.games}</td><td>${formatDuration(v.avgMs)}</td></tr>`).join('')}</tbody></table>
     ${h2hView(games)}`;
