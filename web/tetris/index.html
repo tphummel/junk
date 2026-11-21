@@ -66,6 +66,11 @@
     }
     dl { margin: 0; }
     .grade { color: var(--primary); font-weight: 700; }
+    .counts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+    .counts dt { font-size: 0.6rem; letter-spacing: 0.06em; }
+    .counts dd { margin: 0; font-size: 1rem; }
+    /* Short screens (a phone held sideways) have no room for the counters. */
+    @media (max-height: 520px) { .moves { display: none; } }
     .mode { font-size: clamp(0.85rem, 2.4dvh, 1.1rem); }
     .badge {
       display: inline-block;
@@ -151,6 +156,16 @@
         <dt>Lines/sec</dt><dd id="lps">0.00</dd>
         <dt>Grade</dt><dd class="grade"><span id="grade">-</span> <span id="natural" class="badge" hidden>Natural</span></dd>
       </dl>
+      <section class="panel moves">
+        <h2>Moves</h2>
+        <dl class="counts">
+          <div title="Counter-clockwise spins"><dt>CCW</dt><dd id="spins-ccw">0</dd></div>
+          <div title="Clockwise spins"><dt>CW</dt><dd id="spins-cw">0</dd></div>
+          <div title="Rows soft-dropped"><dt>Soft</dt><dd id="soft-drops">0</dd></div>
+          <div title="Pieces hard-dropped"><dt>Hard</dt><dd id="hard-drops">0</dd></div>
+          <div title="Swaps with the held piece"><dt>Swaps</dt><dd id="swaps">0</dd></div>
+        </dl>
+      </section>
     </aside>
     <div class="field">
       <canvas id="board" aria-label="Tetris board"></canvas>

@@ -21,6 +21,13 @@ export function createHud(doc) {
   const grade = el("grade");
   const natural = el("natural");
   const modeEl = el("mode");
+  const counts = {
+    spinsCCW: el("spins-ccw"),
+    spinsCW: el("spins-cw"),
+    softDrops: el("soft-drops"),
+    hardDrops: el("hard-drops"),
+    holdsUsed: el("swaps"),
+  };
 
   return {
     /** @param {Game} game @param {Theme} theme @param {string} modeLabel the difficulty being played */
@@ -34,6 +41,7 @@ export function createHud(doc) {
       grade.textContent = stats.grade;
       natural.hidden = !stats.natural;
       modeEl.textContent = modeLabel;
+      for (const [key, node] of Object.entries(counts)) node.textContent = String(game[/** @type {keyof typeof counts} */ (key)]);
       drawMini(hold, game.hold, theme, !game.canHold);
       next.forEach((canvas, i) => drawMini(canvas, game.queue[i] ?? null, theme));
     },

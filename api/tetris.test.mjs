@@ -550,6 +550,81 @@ test("game time counts ticks: 60 per second, shown as m:ss.t", () => {
   assert.equal(formatTime(game.tick), "0:01.5");
 });
 
+// --- move counters ---------------------------------------------------------------------------------
+
+test("counters: successful spins are counted by direction", () => {
+  const game = createGame(3);
+  step(game, ["rotateCW"]);
+  step(game, ["rotateCW"]);
+  step(game, ["rotateCCW"]);
+  assert.equal(game.spinsCW, 2);
+  assert.equal(game.spinsCCW, 1);
+});
+
+test("counters: a spin that is blocked is not counted", () => {
+  const game = createGame(3);
+  // A horizontal I walled in on every side: no rotation or kick can fit.
+  for (let r = 10; r <= 14; r++) game.board[r] = Array.from({ length: COLS }, () => filled());
+  for (let c = 3; c <= 6; c++) game.board[11][c] = null;
+  game.current = { type: "I", rot: 0, x: 3, y: 10, id: 50 };
+  step(game, ["rotateCW", "rotateCCW"]);
+  assert.equal(game.current.rot, 0, "it did not turn");
+  assert.equal(game.spinsCW, 0);
+  assert.equal(game.spinsCCW, 0);
+});
+
+test("counters: soft drop counts rows fallen, not ticks held", () => {
+  const game = createGame(3);
+  const y0 = game.current.y;
+  for (let i = 0; i < 10; i++) step(game, ["softDrop"]);
+  assert.equal(game.softDrops, game.current.y - y0);
+  assert.equal(game.softDrops, 5, "10 ticks at a row every 2 ticks");
+  const before = game.softDrops;
+  for (let i = 0; i < 5; i++) step(game, []);
+  assert.equal(game.softDrops, before, "gravity alone is not a soft drop");
+});
+
+test("counters: a hard drop counts once per piece, however many presses it takes to lock", () => {
+  const game = createGame(3);
+  step(game, ["hardDrop"]);
+  assert.equal(game.hardDrops, 1);
+  step(game, ["hardDrop"]); // locks the same piece
+  assert.equal(game.piecesPlaced, 1);
+  assert.equal(game.hardDrops, 1, "the locking press is the same hard drop");
+  step(game, ["hardDrop"]);
+  step(game, ["hardDrop"]);
+  assert.equal(game.hardDrops, 2, "the next piece is a second hard drop");
+  // A piece that just locks by itself is not a hard drop.
+  const idle = createGame(3);
+  for (let i = 0; i < 2000 && idle.piecesPlaced === 0; i++) step(idle, []);
+  assert.equal(idle.piecesPlaced, 1);
+  assert.equal(idle.hardDrops, 0);
+});
+
+test("counters: swaps are the successful holds only", () => {
+  const game = createGame(3);
+  step(game, ["hold"]);
+  step(game, ["hold"]); // not allowed again for this piece
+  assert.equal(game.holdsUsed, 1);
+  slam(game);
+  step(game, ["hold"]);
+  assert.equal(game.holdsUsed, 2);
+});
+
+test("counters do not change the round, and a replay reproduces them", () => {
+  const seed = 99;
+  const log = [];
+  const game = createGame(seed);
+  for (let t = 0; t < 400; t++) {
+    const actions = t % 50 === 3 ? ["rotateCW"] : t % 50 === 6 ? ["rotateCCW"] : t % 50 === 9 ? ["softDrop"] : t % 50 === 12 ? ["hold"] : t % 80 === 79 ? ["hardDrop"] : [];
+    step(game, actions);
+    for (const action of actions) log.push({ t: game.tick, action });
+  }
+  const again = replay(seed, log, game.tick);
+  for (const k of ["spinsCW", "spinsCCW", "softDrops", "hardDrops", "holdsUsed"]) assert.equal(again[k], game[k], k);
+  assert.ok(game.spinsCW > 0 && game.holdsUsed > 0, "the counters actually moved");
+});
+
 // --- natural ---------------------------------------------------------------------------------------
 
 const at = (m, sec) => (m * 60 + sec) * 60; // ticks for m:ss

@@ -58,7 +58,12 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @property {number} nextSquareId id for the next square formed; ids start at 1
  * @property {number} goldSquares gold (single-color) squares formed so far
  * @property {number} silverSquares silver (mixed) squares formed so far
- * @property {number} holdsUsed
+ * @property {number} spinsCW rotations that succeeded, clockwise
+ * @property {number} spinsCCW rotations that succeeded, counter-clockwise
+ * @property {number} softDrops rows a piece fell while soft drop was held
+ * @property {number} hardDrops pieces that were hard-dropped (a second press to lock the same piece is not counted again)
+ * @property {boolean} hardDropUsed whether the piece in play has been hard-dropped already
+ * @property {number} holdsUsed swaps with the held piece
  * @property {boolean} over
  * @property {GameEvent[]} events what happened in the last step; replaced at the start of every step
  * @property {number} garbageMilli garbage rows per second times 1000 (0 for Practice); integers keep it exact
@@ -105,6 +110,11 @@ export function createGame(seed, options = {}) {
     nextSquareId: 1,
     goldSquares: 0,
     silverSquares: 0,
+    spinsCW: 0,
+    spinsCCW: 0,
+    softDrops: 0,
+    hardDrops: 0,
+    hardDropUsed: false,
     holdsUsed: 0,
     over: false,
     events: [],
@@ -144,6 +154,7 @@ function spawn(/** @type {Game} */ game, /** @type {PieceType} */ type) {
   game.lockTimer = 0;
   game.lockResets = 0;
   game.lowestY = piece.y;
+  game.hardDropUsed = false;
   if (collides(game.board, type, piece.rot, piece.x, piece.y)) {
     game.current = null;
     game.over = true;
@@ -183,6 +194,8 @@ function tryRotate(game, dir) {
       p.rot = to;
       p.x += dx;
       p.y += dy;
+      if (dir > 0) game.spinsCW++;
+      else game.spinsCCW++;
       if (p.y > game.lowestY) newLowest(game);
       afterMove(game);
       return;
@@ -366,6 +379,10 @@ export function step(game, actions) {
       case "rotateCCW": tryRotate(game, -1); break;
       case "softDrop": soft = true; break;
       case "hardDrop":
+        if (!game.hardDropUsed) {
+          game.hardDropUsed = true;
+          game.hardDrops++;
+        }
         if (grounded(game)) {
           // Already resting: a second press locks it now.
           lockNow = true;
@@ -394,7 +411,10 @@ export function step(game, actions) {
   // Gravity: one row per `interval` ticks; soft drop shortens the interval.
   game.gravityCount++;
   const interval = soft ? Math.min(gravityTicks(game.level), SOFT_DROP_TICKS) : gravityTicks(game.level);
-  if (game.gravityCount >= interval && tryFall(game) && soft) game.score += SOFT_DROP_POINTS_PER_ROW;
+  if (game.gravityCount >= interval && tryFall(game) && soft) {
+    game.score += SOFT_DROP_POINTS_PER_ROW;
+    game.softDrops++;
+  }
 
   // Lock: a resting piece locks after the delay.
   if (grounded(game)) {
