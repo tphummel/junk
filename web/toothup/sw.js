@@ -8,6 +8,7 @@ const PRECACHE = [
   '/toothup/app.js',
   '/toothup/health.js',
   '/toothup/logic.js',
+  '/toothup/nomie.js',
   '/toothup/apple-touch-icon.png',
   '/toothup/icon-192.png',
   '/toothup/icon-512.png',

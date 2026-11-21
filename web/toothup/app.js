@@ -3,6 +3,7 @@ import {
   makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
 } from "./logic.js";
 import { readHealthExport } from "./health.js";
+import { parseNomie } from "./nomie.js";
 
 const STORE = "toothup:v2";
 const $ = (id) => document.getElementById(id);
@@ -557,6 +558,24 @@ $("health").onchange = async (e) => {
     toast(`Import failed: ${err.message}`);
   } finally {
     $("health-btn").disabled = false;
+  }
+};
+
+$("nomie-btn").onclick = () => $("nomie").click();
+$("nomie").onchange = async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  try {
+    const { events, skipped } = parseNomie(await file.text());
+    if (!events.length) throw new Error("no #floss_teeth or #mouthwash events found");
+    const merged = mergeEvents(state.events, events);
+    state.events = merged.events;
+    save();
+    renderData();
+    toast(`Imported ${merged.added} new floss and mouthwash events from Nomie, ${events.length - merged.added} already present${skipped ? `, ${skipped} skipped` : ""}.`);
+  } catch (err) {
+    toast(`Import failed: ${err.message}`);
   }
 };
 
