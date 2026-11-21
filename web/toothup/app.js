@@ -420,8 +420,8 @@ const REMINDER_INFO = {
   head: { label: "Brush head", title: "Toothbrush head change", icon: "🪥", done: "Changed", confirm: "Mark your brush head as changed today?" },
 };
 
-const countdownText = (days) =>
-  days < 0 ? `${-days} day${days === -1 ? "" : "s"} late` : days === 0 ? "due today" : days === 1 ? "tomorrow" : `${days} days`;
+const plural = (n) => `${n} day${n === 1 ? "" : "s"}`;
+const countdownText = (days) => (days < 0 ? `${plural(-days)} late` : days === 0 ? "due today" : `in ${plural(days)}`);
 
 /** Update one reminder and refresh everything that shows it. @param {"dentist" | "head"} type @param {Partial<import("./logic.js").Reminder>} patch */
 function setReminder(type, patch) {
@@ -449,9 +449,9 @@ function renderReminders() {
 for (const type of REMINDER_TYPES) {
   const info = REMINDER_INFO[type];
   const card = document.querySelector(`.reminder[data-reminder="${type}"]`);
-  card.querySelector(".r-label").textContent = `${info.icon} ${info.label}`;
-  card.querySelector(".r-action").textContent = info.done;
-  card.querySelector(".r-done").onclick = () => confirm(info.confirm) && setReminder(type, { last: today() });
+  const button = card.querySelector(".r-done");
+  button.textContent = info.icon;
+  button.onclick = () => confirm(info.confirm) && setReminder(type, { last: today() });
 }
 
 // ---------- settings ----------
