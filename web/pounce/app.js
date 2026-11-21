@@ -1,6 +1,6 @@
 // pounce UI: sessions, roster, game timer, result entry and reports. State lives in localStorage.
 import {
-  cumulative, DEFAULT_BONUS, formatDuration, gameTotals, gameWinners, headToHeadAll, pounceStats, paceStats,
+  cumulative, DEFAULT_BONUS, DEFAULT_PILE, formatDuration, gameTotals, gameWinners, headToHeadAll, pounceStats, paceStats,
   SCORE_MAX, SCORE_MIN, standings, validateResults, venueStats,
 } from './engine.js';
 
@@ -9,7 +9,7 @@ const app = /** @type {HTMLElement} */ (document.getElementById('app'));
 
 /** @typedef {{ id: string, name: string }} Player */
 /** @typedef {{ startedAt: number, endedAt: number | null, scores: Record<string, string>, pouncer: string | null, notes?: string }} Current */
-/** @typedef {{ id: string, venue: string, bonus: number, createdAt: number, present: string[], games: any[], current: Current | null }} Session */
+/** @typedef {{ id: string, venue: string, bonus: number, pile?: number, handicaps?: Record<string, number>, createdAt: number, present: string[], games: any[], current: Current | null }} Session */
 
 /** @type {{ players: Player[], sessions: Session[] }} */
 let db = load();
@@ -42,6 +42,11 @@ function playerByName(raw) {
   return p;
 }
 
+/** Session's standard pounce pile. @param {Session} s */
+const pileOf = (s) => s.pile ?? DEFAULT_PILE;
+/** Cards a player starts with: the session pile unless handicapped. @param {Session} s @param {string} id */
+const startPile = (s, id) => Math.min(pileOf(s), s.handicaps?.[id] ?? pileOf(s));
+
 const route = () => location.hash.match(/^#\/s\/(\w+)/)?.[1] ?? null;
 /** @returns {Session | undefined} */
 const currentSession = () => db.sessions.find((s) => s.id === route());
@@ -65,6 +70,7 @@ function homeView() {
       <form data-form="new-session" class="row">
         <input name="venue" placeholder="Venue" list="venues" value="${esc(last?.venue ?? '')}" autocomplete="off">
         <datalist id="venues">${venues.map((v) => `<option value="${esc(v)}">`).join('')}</datalist>
+        <label class="inline">Pile <input name="pile" type="number" inputmode="numeric" min="1" max="52" value="${last?.pile ?? DEFAULT_PILE}" class="narrow"></label>
         <label class="inline">Pounce bonus <input name="bonus" type="number" inputmode="numeric" min="0" max="60" value="${last?.bonus ?? DEFAULT_BONUS}" class="narrow"></label>
         <button class="primary">Start session</button>
       </form>
@@ -96,9 +102,10 @@ function sessionView(s) {
     <details class="settings"><summary>Session settings</summary>
       <div class="row">
         <label class="inline">Venue <input data-field="venue" value="${esc(s.venue)}"></label>
+        <label class="inline">Pile size <input data-field="pile" type="number" inputmode="numeric" min="1" max="52" value="${pileOf(s)}" class="narrow"></label>
         <label class="inline">Pounce bonus <input data-field="bonus" type="number" inputmode="numeric" min="0" max="60" value="${s.bonus}" class="narrow"></label>
       </div>
-      <p class="muted">Changing the bonus affects future games; saved games keep the bonus they were played with.</p>
+      <p class="muted">Changing the bonus or pile affects future games; saved games keep the rules they were played with.</p>
     </details>
     ${rosterView(s)}
     ${gamePanel(s, cur)}
@@ -136,7 +143,7 @@ function gamePanel(s, cur) {
   }
   const rows = s.present.map((id) => `
     <div class="entry">
-      <span class="who">${esc(nameOf(id))}</span>
+      <button type="button" class="who namebtn" data-act="edit-player" data-id="${id}" title="Edit name or handicap">${esc(nameOf(id))}${startPile(s, id) < pileOf(s) ? ` <span class="badge">${startPile(s, id)} cards</span>` : ''}</button>
       <input data-score="${id}" type="number" inputmode="numeric" min="${SCORE_MIN}" max="${SCORE_MAX}" step="1" placeholder="0" aria-label="${esc(nameOf(id))} score">
       <button type="button" class="sign" data-act="neg" data-id="${id}" title="Flip sign">&plusmn;</button>
       <label class="pounce"><input type="radio" name="pouncer" value="${id}"> Pounced</label>
@@ -197,7 +204,7 @@ function reportsView(games) {
   return `
     <section>
       <h2>Last game</h2>
-      <p>${gameTotals(last).sort((a, b) => b.total - a.total).map((t) => `<span class="${gameWinners(last).includes(t.playerId) ? 'win' : ''}">${esc(nameOf(t.playerId))} ${t.total}${t.pounced ? ' ⚡' : ''}</span>`).join(' · ')}
+      <p>${gameTotals(last).sort((a, b) => b.total - a.total).map((t) => `<span class="${gameWinners(last).includes(t.playerId) ? 'win' : ''}">${esc(nameOf(t.playerId))}${t.pile ? ` <small>(${t.pile} cards)</small>` : ''} ${t.total}${t.pounced ? ' ⚡' : ''}</span>`).join(' · ')}
       <span class="muted">(${formatDuration(last.durationMs)})</span>
       <button class="link" data-act="del-game" data-id="${last.id}">delete</button></p>
       ${last.notes ? `<p class="note">${esc(last.notes)}</p>` : ''}
@@ -295,6 +302,7 @@ app.addEventListener('click', (e) => {
   const id = /** @type {HTMLElement} */ (t).dataset.id ?? '';
   const s = currentSession();
   if (act === 'export') return exportData();
+  if (act === 'edit-player') { const cs = currentSession(); if (cs) openPlayerModal(cs, /** @type {HTMLElement} */ (t).dataset.id ?? ''); return; }
   if (act === 'del-session') {
     if (confirm('Delete this session and its games?')) db.sessions = db.sessions.filter((x) => x.id !== id);
   } else if (!s) {
@@ -337,6 +345,9 @@ app.addEventListener('input', (e) => {
     s.current.pouncer = el.value;
   } else if (el.dataset.field === 'venue') {
     s.venue = el.value;
+  } else if (el.dataset.field === 'pile') {
+    const n = Number(el.value);
+    if (Number.isInteger(n) && n >= 1 && n <= 52) s.pile = n;
   } else if (el.dataset.field === 'bonus') {
     const n = Number(el.value);
     if (Number.isInteger(n) && n >= 0) s.bonus = n;
@@ -359,9 +370,11 @@ app.addEventListener('submit', (e) => {
   const s = currentSession();
   if (kind === 'new-session') {
     const bonus = Number(data.get('bonus'));
+    const pile = Number(data.get('pile'));
     /** @type {Session} */
     const ns = {
       id: uid(), venue: String(data.get('venue') ?? '').trim(), bonus: Number.isInteger(bonus) && bonus >= 0 ? bonus : DEFAULT_BONUS,
+      pile: Number.isInteger(pile) && pile >= 1 ? pile : DEFAULT_PILE, handicaps: {},
       createdAt: Date.now(), present: [], games: [], current: null,
     };
     // Start with whoever played last time; drop anyone who is not here today.
@@ -381,7 +394,8 @@ app.addEventListener('submit', (e) => {
     if (validateResults(results).length) return;
     const notes = (s.current.notes ?? '').trim();
     s.games.push({
-      id: uid(), startedAt: s.current.startedAt, durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, results,
+      id: uid(), startedAt: s.current.startedAt, durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, pile: pileOf(s),
+      results: results.map((r) => ({ ...r, ...(startPile(s, r.playerId) < pileOf(s) ? { pile: startPile(s, r.playerId) } : {}) })),
       ...(notes ? { notes } : {}),
     });
     s.current = null;
@@ -398,6 +412,49 @@ setInterval(() => {
   const t = document.getElementById('timer');
   if (s?.current && !s.current.endedAt && t) t.textContent = formatDuration(Date.now() - s.current.startedAt);
 }, 500);
+
+/** Edit a player's name (all sessions) and their starting pile for this session. @param {Session} s @param {string} id */
+function openPlayerModal(s, id) {
+  const player = db.players.find((p) => p.id === id);
+  if (!player) return;
+  const pile = pileOf(s);
+  const dlg = document.createElement('dialog');
+  dlg.innerHTML = `<form method="dialog" class="modal">
+    <h2>Edit player</h2>
+    <label>Name <input name="name" value="${esc(player.name)}" autocomplete="off" required></label>
+    <label>Starts with <input name="cards" type="number" inputmode="numeric" min="1" max="${pile - 1}" step="1" placeholder="${pile}" value="${s.handicaps?.[id] ?? ''}" class="narrow"> cards in pounce pile</label>
+    <p class="muted">Standard pile is ${pile}. A smaller pile is a handicap for this player in this game and the rest of the session. Leave empty for no handicap.</p>
+    <p class="error" data-modal-error></p>
+    <div class="row"><button class="primary" value="save">Save</button>
+      <button type="button" data-clear>Remove handicap</button>
+      <button type="button" data-cancel class="link">Cancel</button></div>
+    <p class="muted">Renaming changes this player in every session.</p></form>`;
+  document.body.append(dlg);
+  const form = /** @type {HTMLFormElement} */ (dlg.querySelector('form'));
+  const cards = /** @type {HTMLInputElement} */ (form.elements.namedItem('cards'));
+  form.querySelector('[data-cancel]')?.addEventListener('click', () => dlg.close());
+  form.querySelector('[data-clear]')?.addEventListener('click', () => { cards.value = ''; });
+  dlg.addEventListener('close', () => dlg.remove());
+  form.addEventListener('input', () => { const e = form.querySelector('[data-modal-error]'); if (e) e.textContent = ''; });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = String(new FormData(form).get('name') ?? '').trim().replace(/\s+/g, ' ');
+    const err = /** @type {HTMLElement} */ (form.querySelector('[data-modal-error]'));
+    const n = cards.value === '' ? null : Number(cards.value);
+    if (!name) { err.textContent = 'Name is required.'; return; }
+    if (db.players.some((p) => p.id !== id && p.name.toLowerCase() === name.toLowerCase())) { err.textContent = 'Another player already has that name.'; return; }
+    if (n !== null && (!Number.isInteger(n) || n < 1)) { err.textContent = 'Cards must be a whole number of 1 or more.'; return; }
+    player.name = name;
+    s.handicaps ??= {};
+    if (n === null || n >= pile) delete s.handicaps[id];
+    else s.handicaps[id] = n;
+    save();
+    dlg.close();
+    render();
+  });
+  dlg.showModal();
+  /** @type {HTMLInputElement | null} */ (form.querySelector('[name=name]'))?.select();
+}
 
 function exportData() {
   const a = document.createElement('a');

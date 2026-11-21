@@ -5,9 +5,10 @@
 export const SCORE_MIN = -26;
 export const SCORE_MAX = 60;
 export const DEFAULT_BONUS = 5;
+export const DEFAULT_PILE = 13; // cards in each player's starting pounce pile
 
-/** @typedef {{ playerId: string, score: number, pounced: boolean }} Result */
-/** @typedef {{ id: string, sessionId: string, venue: string, startedAt: number, durationMs: number, bonus: number, results: Result[] }} Game */
+/** @typedef {{ playerId: string, score: number, pounced: boolean, pile?: number }} Result pile is set only for a handicapped start (fewer cards than the game's pile) */
+/** @typedef {{ id: string, sessionId: string, venue: string, startedAt: number, durationMs: number, bonus: number, pile?: number, results: Result[] }} Game */
 /** @typedef {Result & { total: number }} Total */
 
 /** @param {unknown} n */
