@@ -2,6 +2,7 @@
 // The game advances only through step(), 60 times per game second, so rendering speed never changes play.
 
 import { TICKS_PER_SECOND } from "./game/rules.js";
+import { gameSeconds, gradePerf, lineRate } from "./game/stats.js";
 import { createGame, step } from "./game/state.js";
 import { createRepeater } from "./input/actions.js";
 import { createGamepad, describeBinding, describePad } from "./input/gamepad.js";
@@ -132,7 +133,12 @@ function renderOverlay() {
         "\nHard drop falls at once; slide or turn before it settles, or press again to lock.",
     ],
     paused: ["Paused", note ?? "Press Esc or Start to resume, Backspace or B to quit."],
-    over: ["Game over", `Score ${game.score}, ${game.lines} lines, level ${game.level}.\nPress A or Enter to play again.`],
+    over: [
+      "Game over",
+      `Score ${game.score}, ${game.lines} lines, level ${game.level}.\n${lineRate(gameSeconds(game.tick), game.lines).toFixed(2)} lines/sec` +
+        (game.lines > 0 ? `, grade ${gradePerf(gameSeconds(game.tick), game.lines)}` : "") +
+        ".\nPress A or Enter to play again.",
+    ],
   };
   const [title, text] = texts[screen];
   overlayTitle.textContent = title;

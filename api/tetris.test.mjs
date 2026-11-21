@@ -11,6 +11,7 @@ import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, place, ROWS } fro
 import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
 import { FLOURISH_ENTRY_DELAY_TICKS, gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
 import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
+import { formatTime, gameSeconds, gradePerf, lineRate } from "../web/tetris/src/game/stats.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
 import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
@@ -481,6 +482,50 @@ test("a clear through a square pauses; a plain clear does not", () => {
   assert.equal(plain.lines, 1);
   assert.ok(plain.current, "the next piece is in play at once");
   assert.equal(plain.entryDelay, 0);
+});
+
+// --- stats -----------------------------------------------------------------------------------------
+
+// The rating table as written in the original gradePerf(), top to bottom: [upper bound, grade].
+const PHP_GRADES = [
+  [0.6, "F"], [0.63, "D-"], [0.67, "D"], [0.7, "D+"], [0.73, "C-"], [0.77, "C"], [0.8, "C+"], [0.83, "B-"],
+  [0.87, "B"], [0.9, "B+"], [0.93, "A-"], [0.97, "A"], [1.0, "A+"], [1.05, "1S-"], [1.15, "1S"], [1.2, "1S+"],
+  [1.25, "2S-"], [1.35, "2S"], [1.4, "2S+"], [1.45, "3S-"], [1.55, "3S"], [1.6, "3S+"], [1.65, "4S-"],
+  [1.75, "4S"], [1.8, "4S+"], [1.85, "5S-"], [1.95, "5S"], [2, "5S+"],
+];
+
+test("gradePerf: every boundary, just under and exactly at the bound", () => {
+  // 1000 seconds, so lines / 1000 is the rate and the comparisons are exact.
+  PHP_GRADES.forEach(([bound, grade], i) => {
+    const at = Math.round(bound * 1000);
+    assert.equal(gradePerf(1000, at - 1), grade, `just under ${bound}`);
+    const above = i + 1 < PHP_GRADES.length ? PHP_GRADES[i + 1][1] : "XS";
+    assert.equal(gradePerf(1000, at), above, `exactly ${bound}`);
+  });
+  assert.equal(gradePerf(1000, 5000), "XS", "well past 2 lines per second");
+});
+
+test("gradePerf: no time is rate 0 and an F, and a few spot checks", () => {
+  assert.equal(lineRate(0, 10), 0);
+  assert.equal(gradePerf(0, 10), "F");
+  assert.equal(gradePerf(100, 0), "F");
+  assert.equal(gradePerf(100, 85), "B");
+  assert.equal(gradePerf(100, 99), "A+");
+  assert.equal(gradePerf(100, 110), "1S");
+  assert.equal(gradePerf(Number.NaN, 1), "F", "an unusable time counts as no time, like the original");
+  assert.equal(gradePerf(100, Number.NaN), "NA");
+});
+
+test("game time counts ticks: 60 per second, shown as m:ss.t", () => {
+  assert.equal(gameSeconds(120), 2);
+  assert.equal(formatTime(0), "0:00.0");
+  assert.equal(formatTime(59), "0:00.9");
+  assert.equal(formatTime(60), "0:01.0");
+  assert.equal(formatTime(60 * 65 + 30), "1:05.5");
+  assert.equal(formatTime(60 * 60 * 10), "10:00.0");
+  const game = createGame(3);
+  for (let i = 0; i < 90; i++) step(game, []);
+  assert.equal(formatTime(game.tick), "0:01.5");
 });
 
 // --- determinism -----------------------------------------------------------------------------------

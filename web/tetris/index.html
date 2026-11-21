@@ -65,6 +65,7 @@
       border-radius: 6px;
     }
     dl { margin: 0; }
+    .grade { color: var(--primary); font-weight: 700; }
     dd { margin: 0 0 clamp(2px, 1dvh, 8px); font-size: clamp(1rem, 3.2dvh, 1.35rem); font-variant-numeric: tabular-nums; }
     #overlay {
       position: absolute;
@@ -114,6 +115,11 @@
         <h2>Hold</h2>
         <canvas id="hold" class="mini" aria-label="Held piece"></canvas>
       </section>
+      <dl>
+        <dt>Time</dt><dd id="time">0:00.0</dd>
+        <dt>Lines/sec</dt><dd id="lps">0.00</dd>
+        <dt>Grade</dt><dd id="grade" class="grade">-</dd>
+      </dl>
     </aside>
     <div class="field">
       <canvas id="board" aria-label="Tetris board"></canvas>
