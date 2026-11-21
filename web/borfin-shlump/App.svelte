@@ -17,10 +17,12 @@
 
   function computeStatus() {
     const now = new Date();
+    // the most recent 6am: today's, or yesterday's if it is not yet 6am
     const six = new Date(now);
     six.setHours(6, 0, 0, 0);
+    if (now < six) six.setDate(six.getDate() - 1);
     if (updatedAt) {
-      status = now > six && updatedAt < six ? 'shlumped' : 'unshlumped';
+      status = updatedAt < six ? 'shlumped' : 'unshlumped';
     }
     computeNightAir();
   }
@@ -79,14 +81,24 @@
 
 <style>
   button {
+    font: inherit;
     font-size: 1.2em;
     padding: 0.5em 1em;
+    background: var(--primary);
+    color: var(--bg);
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
   .error {
-    color: red;
+    color: var(--accent);
   }
   .warning {
-    color: orange;
+    color: var(--accent);
     font-weight: bold;
   }
 </style>

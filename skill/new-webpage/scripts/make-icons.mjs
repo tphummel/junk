@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Render an emoji to the icon files a webpage needs (ADR 0007). Usage:
+// Render an emoji to the icon files a webpage needs (ADR 0008). Usage:
 //   node skill/new-webpage/scripts/make-icons.mjs <name> <emoji> [background-hex]
 // Writes web/<name>/{apple-touch-icon.png,icon-192.png,icon-512.png,icon.svg}. Needs Playwright with Chromium
 // (`npm i -D playwright` somewhere, or `NODE_PATH=$(npm root -g)`); nothing here runs at deploy time.

@@ -1,6 +1,6 @@
 # 0007: Webpages ship icons, a manifest and a service worker
 
-- Status: Accepted
+- Status: Superseded by [0008](0008-pwa-for-all-offline-for-self-contained.md)
 - Date: 2026-11-18
 
 ## Context
