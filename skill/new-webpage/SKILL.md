@@ -7,18 +7,18 @@ metadata:
 
 # New webpage
 
-Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../adr/0002-no-web-build-step.md) (no build step), [0001](../../adr/0001-web-styling.md) (colors) and [0007](../../adr/0007-web-icons-and-offline.md) (icons, manifest, service worker). This is the procedure.
+Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../adr/0002-no-web-build-step.md) (no build step), [0001](../../adr/0001-web-styling.md) (colors) and [0008](../../adr/0008-pwa-for-all-offline-for-self-contained.md) (icons, manifest, service worker; supersedes 0007). This is the procedure.
 
 ## Steps
 
 1. **Branch.** `git switch -c <name>` from an up-to-date `main`. Name is lowercase kebab-case.
 2. **Create `web/<name>/index.html`** from the template below. Put every other file the page needs (scripts, modules, data, images) in the same directory and reference it relatively.
 3. **Style it** with the [`golden-angle-styling` skill](../golden-angle-styling/SKILL.md): random seed, light and dark variables. Migrated webpages are exempt until they are next changed.
-4. **Icons, manifest and service worker** (ADR 0007). Required for pages with no external dependencies, meaning no API or other-origin calls and no code loaded from a CDN; pages that have one are exempt, and migrated pages are exempt until next changed. Pick an emoji, then:
+4. **Icons and manifest, and a service worker if self-contained** (ADR 0008, which supersedes ADR 0007). Icons, manifest and head tags are required for every page, including ones that call an API or load code from a CDN; migrated pages are exempt until next changed. The service worker is only for pages with no external dependencies (no API or other-origin calls, no CDN code); a page with one ships no `sw.js` and does not register one. Pick an emoji, then:
    ```sh
    node skill/new-webpage/scripts/make-icons.mjs <name> 🚀 [#background]   # needs Playwright + Chromium
    ```
-   It writes `icon.svg`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png` into `web/<name>/`. Then add `manifest.webmanifest` and `sw.js` from the templates below, the `<head>` tags, and the registration snippet. List every file the page needs in `PRECACHE`: one missing file stops the worker from installing.
+   It writes `icon.svg`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png` into `web/<name>/`. Then add `manifest.webmanifest` and the `<head>` tags from the templates below. For a self-contained page also add `sw.js` and the registration snippet, and list every file the page needs in `PRECACHE`: one missing file stops the worker from installing.
 5. **Register it.** Add one `<li>` in `web/index.html` under the heading for the project's class (Tools, Games, Toys; add a section only if none fits), in alphabetical order. The user adds type emoji; leave them out unless asked:
    ```html
    <li><a href="/<name>/">display name</a>: short description</li>
@@ -48,6 +48,7 @@ Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../ad
 </head>
 <body>
   <!-- ... -->
+  <!-- service worker registration: self-contained pages only (ADR 0008); omit if the page has an API or CDN dependency -->
   <script>
     if ('serviceWorker' in navigator) {
       addEventListener('load', () => {
@@ -155,6 +156,6 @@ Source: `https://github.com/tphummel/blog/tree/main/static/<name>/`.
 
 - `/<name>/` loads in the PR preview with no console errors, in both color schemes.
 - The entry is under the right heading in `web/index.html`, in order.
-- The service worker installs (DevTools > Application), every `PRECACHE` file exists, and with the network off (DevTools > Network > Offline) a reload still loads the page.
+- For a self-contained page: the service worker installs (DevTools > Application), every `PRECACHE` file exists, and with the network off (DevTools > Network > Offline) a reload still loads the page. A page with external dependencies has no service worker.
 - The manifest has no errors in DevTools > Application, and the icons show there.
 - `npm run types && npm run typecheck && npm test` pass (if an API or shared module is involved).

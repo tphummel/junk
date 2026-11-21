@@ -10,7 +10,8 @@ How the site (`web/`), API (`api/`) and Docker image projects are built and ship
 | [0004](0004-apis.md) | How an API is structured, validated, tested and given state |
 | [0005](0005-cloudflare-workers-deployment.md) | `web/` and `api/` deploy to Cloudflare as one Worker through Workers Builds; previews per branch; config in `wrangler.jsonc` |
 | [0006](0006-docker-image-projects.md) | Docker image projects: one folder and workflow each, tested then built, tagged by metadata-action, pushed to GHCR; no deploy from the repo |
-| [0007](0007-web-icons-and-offline.md) | Webpages with no external dependencies ship icons, a manifest and a service worker (own files only, network first), so they install and work offline |
+| [0007](0007-web-icons-and-offline.md) | Superseded by 0008: icons, manifest and service worker for self-contained pages only |
+| [0008](0008-pwa-for-all-offline-for-self-contained.md) | Every webpage ships icons and a manifest so it installs; only pages with no external dependencies add a service worker and work offline |
 
 ## Adding one
 
