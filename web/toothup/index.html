@@ -116,7 +116,8 @@
     .reminder-setting h3 { margin: 0 0 .25rem; font-size: 1rem; color: var(--primary); }
     .reminder-setting .row { margin-bottom: .25rem; }
     input[type="number"], input[type="date"] { font: inherit; padding: .4rem .5rem; border-radius: .5rem; border: 2px solid var(--primary); background: var(--bg); color: var(--text); }
-    #today { text-align: center; font-size: .85rem; padding-top: .5rem; }
+    .bar .right { display: flex; flex-direction: column; align-items: flex-end; gap: .25rem; }
+    #today { text-align: right; font-size: .85rem; line-height: 1.4; }
     .legend { font-size: .8rem; color: var(--support); margin: .5rem 0 1rem; }
     #day-list { padding-left: 1.25rem; }
     #toast { min-height: 1.5rem; margin-top: 1rem; color: var(--accent); font-weight: 600; }
@@ -150,7 +151,6 @@
           </div>
         </div>
       </div>
-      <div id="today" class="muted" aria-label="Today's routine"></div>
       <div class="bar">
         <div class="left">
           <button id="floss" aria-pressed="false">Floss</button>
@@ -164,7 +164,10 @@
           </svg>
           <span class="glyph">▶</span>
         </button>
-        <div id="total" aria-label="Total time left">2:00</div>
+        <div class="right">
+          <div id="today" class="muted" aria-label="Today's routine"></div>
+          <div id="total" aria-label="Total time left">2:00</div>
+        </div>
       </div>
     </section>
 
