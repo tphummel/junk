@@ -619,6 +619,22 @@ test("counters: a hard drop counts once per piece, however many presses it takes
   assert.equal(idle.hardDrops, 0);
 });
 
+test("counters: mono (gold) and multi (silver) squares are counted as they are made", () => {
+  const gold = createGame(3);
+  for (let i = 0; i < 3; i++) place(gold.board, "I", 0, 0, 18 + i - 1, i + 1);
+  gold.current = { type: "I", rot: 0, x: 0, y: 20, id: 600 };
+  slam(gold);
+  assert.deepEqual([gold.goldSquares, gold.silverSquares], [1, 0]);
+
+  const silver = createGame(3);
+  place(silver.board, "O", 0, 0, 18, 1);
+  place(silver.board, "O", 0, 2, 18, 2);
+  place(silver.board, "I", 0, 0, 19, 3); // fills row 20
+  silver.current = { type: "I", rot: 0, x: 0, y: 20, id: 600 }; // fills row 21
+  slam(silver);
+  assert.deepEqual([silver.goldSquares, silver.silverSquares], [0, 1]);
+});
+
 test("counters: swaps are the successful holds only", () => {
   const game = createGame(3);
   step(game, ["hold"]);

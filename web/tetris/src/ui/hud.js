@@ -27,6 +27,8 @@ export function createHud(doc) {
     movesLeft: el("moves-left"),
     movesRight: el("moves-right"),
     softDrops: el("soft-drops"),
+    goldSquares: el("mono-squares"),
+    silverSquares: el("multi-squares"),
     hardDrops: el("hard-drops"),
     holdsUsed: el("swaps"),
   };
