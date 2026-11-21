@@ -8,93 +8,218 @@
   <style>
     :root {
       color-scheme: light dark;
-      /* golden-angle seed: #D22DAC cw */
-      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
-      --primary: #D02DAB;
-      --support: #A15F91;
-      --accent:  #4E841C;
+      /* golden-angle seed: #2D9BD2 cw */
+      /* primary/support/accent >= 4.5:1 on --bg (#FFFFFF light, #111111 dark) */
+      --primary: #257EAB;
+      --support: #547C90;
+      --accent:  #D22D6B;
       --bg: #FFFFFF;
-      --text: #111111;
+      --surface: #FFFFFF;
+      --line: #D5E2EA;
+      --text: #10181D;
+      --muted: #4B6370;
+      --tint: 0%; /* light keeps links at 4.5:1 on the featured cards */
+      --shadow: 0 1px 2px #0002, 0 8px 24px -12px #257EAB66;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --primary: #D439B1;
-        --support: #A66797;
-        --accent:  #7CD22D;
+        --primary: #2D9BD2;
+        --support: #5F8BA1;
+        --accent:  #D7447C;
         --bg: #111111;
-        --text: #EEEEEE;
+        --surface: #1A2126;
+        --line: #2A353C;
+        --text: #EEF3F6;
+        --muted: #9DB2BF;
+        --tint: 12%;
+        --shadow: 0 1px 2px #0008, 0 8px 24px -12px #2D9BD288;
       }
     }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font: 1rem/1.5 system-ui, sans-serif;
-      max-width: 40rem;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-    h1, h2, h3, a { color: var(--primary); }
-    h2 { border-bottom: 1px solid var(--support); padding-bottom: 0.25rem; margin-top: 2rem; }
-    h3 { margin-bottom: 0; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 1rem/1.5 system-ui, sans-serif; }
+    .wrap { max-width: 68rem; margin: 0 auto; padding: 0 1rem 4rem; }
+    header { padding: 3rem 0 1.5rem; }
+    h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); line-height: 1; margin: 0; letter-spacing: -0.04em; }
+    h1 span { color: var(--primary); }
+    .sub { color: var(--muted); margin: 0.5rem 0 0; max-width: 36rem; }
+    a { color: var(--primary); }
     a:hover, a:focus-visible { color: var(--accent); }
-    ul { list-style: none; padding: 0; }
+    h2 { font-size: 0.85rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 2rem 0 0.75rem; display: flex; gap: 0.5rem; align-items: center; }
+    h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+    ul { list-style: none; padding: 0; margin: 0; }
     li { margin: 0.25rem 0; }
-    .muted { color: var(--support); }
+
+    /* enhanced view: only when script has run (body.js) */
+    .bar { display: none; }
+    .js .bar { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); margin-top: 1.5rem; padding: 0.75rem 0; border-bottom: 1px solid var(--line); display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    .search { flex: 1 1 16rem; position: relative; }
+    .search input { width: 100%; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem; padding: 0.7rem 3rem 0.7rem 1rem; }
+    .search input:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+    kbd { font: 0.8rem ui-monospace, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 0.35rem; padding: 0 0.4rem; color: var(--muted); }
+    .search kbd { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); }
+    .chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .chip { font: inherit; font-size: 0.9rem; cursor: pointer; color: var(--text); background: none; border: 1px solid var(--line); border-radius: 99px; padding: 0.3rem 0.8rem; }
+    .chip[aria-pressed=true] { background: var(--primary); border-color: var(--primary); color: var(--bg); }
+    .chip:focus-visible, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .count { color: var(--muted); font-size: 0.9rem; margin-left: auto; }
+    h2 small { font-weight: 400; letter-spacing: 0; }
+
+    .js ul.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; }
+    .js ul.grid li { margin: 0; }
+    .card { display: flex; gap: 0.8rem; align-items: flex-start; height: 100%; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; padding: 0.9rem; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
+    .card:hover, .card:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--primary); }
+    .ico { flex: none; width: 3rem; height: 3rem; border-radius: 0.85rem; display: grid; place-items: center; overflow: hidden; font-weight: 700; font-size: 1.4rem; color: var(--primary); background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 25%, var(--bg)), color-mix(in srgb, var(--accent) 22%, var(--bg))); }
+    .ico img { width: 72%; height: 72%; object-fit: contain; }
+    .name { font-weight: 600; line-height: 1.25; color: var(--primary); }
+    .desc { font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .badge { display: inline-block; margin: 0.35rem 0.35rem 0 0; font: 0.7rem ui-monospace, monospace; border: 1px solid var(--accent); color: var(--accent); border-radius: 0.3rem; padding: 0 0.35rem; text-decoration: none; }
+    a.badge:hover, a.badge:focus-visible { background: var(--accent); color: var(--bg); }
+
+    /* featured: larger, accent-tinted */
+    .js ul.featured { grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+    .featured .card { padding: 1.1rem; border-color: color-mix(in srgb, var(--primary) 45%, var(--line)); background: linear-gradient(135deg, color-mix(in srgb, var(--primary) var(--tint), var(--surface)), var(--surface)); }
+    .featured .ico { width: 3.75rem; height: 3.75rem; font-size: 1.8rem; border-radius: 1rem; }
+    .featured .name { font-size: 1.15rem; }
+    .featured .desc { -webkit-line-clamp: 2; font-size: 0.9rem; }
+    h2.star { color: var(--accent); }
+
+    .empty { display: none; text-align: center; color: var(--muted); padding: 4rem 0; }
+    footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
+    @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover, .card:focus-visible { transform: none; } }
   </style>
 </head>
 <body>
-  <h1>junk</h1>
-  <p class="muted">Tools, games, and toys.</p>
+<div class="wrap">
+  <header>
+    <h1>junk<span>.</span></h1>
+    <p class="sub">Tools, games, and toys.</p>
+  </header>
+
+  <div class="bar">
+    <div class="search"><input id="q" type="search" placeholder="Search…" autocomplete="off" aria-label="Search projects"><kbd>/</kbd></div>
+    <div class="chips" id="chips"></div>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
 
   <!--
     Add each new project as one <li> under the heading for its class.
     Alphabetical by name within a section. One line per project: the main link
-    first, then extra links (api, image) after it.
-      <li><a href="/name/">name</a> <a href="/api/name/">api</a>: short description</li>
+    first, then extra links (api, image) after it. data-icon is the icon file in
+    the project's folder (icon.svg for new pages); leave it off if there is none.
+      <li data-icon="icon.svg"><a href="/name/">name</a> <a href="/api/name/">api</a>: short description</li>
+    Featured is for the things used every day; list them here as well as under their class.
   -->
 
-  <h2>🛠️ Tools</h2>
+  <main id="main">
+  <h2 class="star" data-featured>Featured</h2>
+  <ul data-featured>
+    <li data-icon="icon-192.png"><a href="/solitaire/">daily solitaire</a>: daily Klondike, everyone gets the same deal each day, plus random practice deals</li>
+    <li data-icon="icon.svg"><a href="/toothup/">toothup</a>: offline toothbrushing timer that guides you through each quadrant, with flossing, calendar history and JSON import/export</li>
+  </ul>
+
+  <h2>Tools</h2>
   <ul>
-    <li><a href="/annual-journal/">annual journal layout</a></li>
-    <li><a href="/checklist/">kids weekly checklist</a></li>
-    <li><a href="/five-minute-journal-prompt-generator/">5 minute journal prompt generator</a></li>
-    <li><a href="/golden-angle-palette/">golden angle palette</a> <a href="/api/golden-angle-palette/e4572e">api</a>: light and dark color palette from a seed color</li>
+    <li data-icon="icon.svg"><a href="/annual-journal/">annual journal layout</a></li>
+    <li data-icon="icon.svg"><a href="/checklist/">kids weekly checklist</a></li>
+    <li data-icon="icon.svg"><a href="/five-minute-journal-prompt-generator/">5 minute journal prompt generator</a></li>
+    <li data-icon="icon.svg"><a href="/golden-angle-palette/">golden angle palette</a> <a href="/api/golden-angle-palette/e4572e">api</a>: light and dark color palette from a seed color</li>
     <li><a href="/api/health">health</a>: status and current time</li>
-    <li><a href="/http-rocket/">HTTP Rocket</a>: browser-only HTTP client with saved requests in folders, variables, import/export and an audit log</li>
-    <li><a href="/metroid-3/">Metroid 3</a>: Super Metroid 100% checklist tracker and journal, with print and static HTML export</li>
+    <li data-icon="icon.svg"><a href="/http-rocket/">HTTP Rocket</a>: browser-only HTTP client with saved requests in folders, variables, import/export and an audit log</li>
+    <li data-icon="icon.svg"><a href="/metroid-3/">Metroid 3</a>: Super Metroid 100% checklist tracker and journal, with print and static HTML export</li>
     <li><a href="/mlb-scoreboard/">MLB scoreboard</a></li>
-    <li><a href="/perfect-form/">perfect form</a>: mobile web form fields for testing iOS autofill, password managers and passkeys</li>
-    <li><a href="/toothup/">toothup</a>: offline toothbrushing timer that guides you through each quadrant, with flossing, calendar history and JSON import/export</li>
+    <li data-icon="icon.svg"><a href="/perfect-form/">perfect form</a>: mobile web form fields for testing iOS autofill, password managers and passkeys</li>
+    <li data-icon="icon.svg"><a href="/toothup/">toothup</a>: offline toothbrushing timer that guides you through each quadrant, with flossing, calendar history and JSON import/export</li>
   </ul>
 
-  <h2>🎮 Games</h2>
+  <h2>Games</h2>
   <ul>
-    <li><a href="/charades/">charades and pictionary</a>: team scoring, a clue picker and a timer</li>
+    <li data-icon="icon.svg"><a href="/charades/">charades and pictionary</a>: team scoring, a clue picker and a timer</li>
     <li><a href="/craps/">craps simulator</a></li>
-    <li><a href="/mario-kart-double-dash-tracker/">Mario Kart: Double Dash!! tracker</a></li>
-    <li><a href="/math-game/">math game</a></li>
-    <li><a href="/pounce/">pounce</a>: scoreboard with a game timer, fluid roster, head-to-head and session reports</li>
-    <li><a href="/rps/">rock paper scissors tracker</a></li>
-    <li><a href="/solitaire/">daily solitaire</a></li>
-    <li><a href="/tetris/">tetris</a>: gold and silver squares score bonuses on line clears, with a seeded 7-bag, hold and wall kicks; keyboard or controller</li>
-    <li><a href="/timecat/">timecat</a></li>
-    <li><a href="/yahtzee/">daily yahtzee</a></li>
+    <li data-icon="icon.svg"><a href="/mario-kart-double-dash-tracker/">Mario Kart: Double Dash!! tracker</a></li>
+    <li data-icon="icon.svg"><a href="/math-game/">math game</a></li>
+    <li data-icon="icon.svg"><a href="/pounce/">pounce</a>: scoreboard with a game timer, fluid roster, head-to-head and session reports</li>
+    <li data-icon="icon-192.png"><a href="/rps/">rock paper scissors tracker</a></li>
+    <li data-icon="icon-192.png"><a href="/solitaire/">daily solitaire</a>: daily Klondike, everyone gets the same deal each day, plus random practice deals</li>
+    <li data-icon="icon.svg"><a href="/tetris/">tetris</a>: gold and silver squares score bonuses on line clears, with a seeded 7-bag, hold and wall kicks; keyboard or controller</li>
+    <li data-icon="icon.svg"><a href="/timecat/">timecat</a></li>
+    <li data-icon="icon-192.png"><a href="/yahtzee/">daily yahtzee</a></li>
   </ul>
 
-  <h2>🧸 Toys</h2>
+  <h2>Toys</h2>
   <ul>
-    <li><a href="/borfin-shlump/">borfin shlump</a></li>
+    <li data-icon="icon.svg"><a href="/borfin-shlump/">borfin shlump</a></li>
     <li><a href="/card-shuffle-svelte/">card shuffle</a></li>
-    <li><a href="/daniels-maneuver-generator/">the daniels maneuver generator</a></li>
-    <li><a href="/eight-ball/">magic eight ball</a></li>
+    <li data-icon="icon.svg"><a href="/daniels-maneuver-generator/">the daniels maneuver generator</a></li>
+    <li data-icon="icon.svg"><a href="/eight-ball/">magic eight ball</a></li>
     <li><a href="/fidget/">fidget toy</a></li>
     <li><a href="/fidget-v2/">fidget toy v2</a></li>
-    <li><a href="/lumon-department-generator/">lumon department generator</a></li>
+    <li data-icon="icon.svg"><a href="/lumon-department-generator/">lumon department generator</a></li>
     <li><a href="/pixel-wall-svelte/">pixel wall</a></li>
   </ul>
-  <h3>RPS bots</h3>
+  <h2>RPS bots</h2>
   <ul>
     <li><a href="/api/rps-bot/calvin">calvin</a></li>
   </ul>
+  </main>
+  <p class="empty" id="empty">Nothing matches.</p>
+  <footer></footer>
+</div>
+<script>
+(() => {
+  document.body.classList.add('js');
+  const main = document.getElementById('main'), q = document.getElementById('q'), chips = document.getElementById('chips');
+  const sections = [];
+  for (const h of main.querySelectorAll('h2')) {
+    const ul = h.nextElementSibling, featured = h.hasAttribute('data-featured');
+    const items = [...ul.children].map(li => {
+      const [a, ...extra] = li.querySelectorAll('a');
+      const desc = li.textContent.replace(a.textContent, '').replace(extra.map(e => e.textContent).join(' '), '').replace(/^[\s:]+/, '').trim();
+      const card = document.createElement('a'); card.className = 'card'; card.href = a.getAttribute('href');
+      const ico = document.createElement('span'); ico.className = 'ico'; ico.setAttribute('aria-hidden', 'true');
+      const letter = () => { ico.textContent = a.textContent.trim()[0].toUpperCase(); };
+      if (li.dataset.icon) { const img = new Image(); img.alt = ''; img.src = card.href + li.dataset.icon; img.onerror = () => { img.remove(); letter(); }; ico.append(img); } else letter();
+      const txt = document.createElement('span');
+      const name = document.createElement('div'); name.className = 'name'; name.textContent = a.textContent;
+      txt.append(name);
+      if (desc) { const d = document.createElement('div'); d.className = 'desc'; d.textContent = desc; txt.append(d); }
+      card.append(ico, txt);
+      const out = document.createElement('li'); out.append(card);
+      for (const e of extra) { const b = document.createElement('a'); b.className = 'badge'; b.href = e.getAttribute('href'); b.textContent = e.textContent; txt.append(b); }
+      return { li: out, text: (a.textContent + ' ' + desc).toLowerCase() };
+    });
+    ul.replaceChildren(...items.map(i => i.li)); ul.classList.add('grid'); if (featured) ul.classList.add('featured');
+    const count = document.createElement('small'); h.append(count);
+    sections.push({ name: featured ? 'Featured' : h.firstChild.textContent.trim(), h, ul, items, count, featured });
+  }
+  const classes = sections.filter(s => !s.featured).map(s => s.name);
+  let active = null;
+  for (const c of ['All', ...classes]) {
+    const b = document.createElement('button'); b.className = 'chip'; b.textContent = c; b.setAttribute('aria-pressed', c === 'All');
+    b.onclick = () => { active = c === 'All' ? null : c; for (const x of chips.children) x.setAttribute('aria-pressed', x === b); render(); };
+    chips.append(b);
+  }
+  function render() {
+    const t = q.value.trim().toLowerCase(); let n = 0;
+    for (const s of sections) {
+      const show = s.featured ? !t && !active : !active || active === s.name;
+      let k = 0;
+      for (const i of s.items) { const m = show && (!t || i.text.includes(t)); i.li.hidden = !m; if (m && !s.featured) k++; }
+      s.h.hidden = s.ul.hidden = !show || !s.items.some(i => !i.li.hidden);
+      s.count.textContent = s.featured ? '' : ' ' + k; n += k;
+    }
+    document.getElementById('count').textContent = n + ' shown';
+    document.getElementById('empty').style.display = n ? 'none' : 'block';
+  }
+  q.addEventListener('input', render);
+  q.addEventListener('keydown', e => {
+    if (e.key === 'Enter') main.querySelector('li:not([hidden]) .card')?.click();
+    if (e.key === 'Escape') { q.value = ''; render(); q.blur(); }
+  });
+  addEventListener('keydown', e => { if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); } });
+  document.querySelector('footer').innerHTML = '<kbd>/</kbd> focuses search, Enter opens the first match.';
+  render();
+})();
+</script>
 </body>
 </html>
