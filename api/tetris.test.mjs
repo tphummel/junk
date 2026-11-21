@@ -352,6 +352,30 @@ test("clearing 4 lines through one gold square scores 45, one silver 25, two gol
   }
 });
 
+test("the real game scores all 20 cells of the spec's table", () => {
+  // Columns of the table: the squares each cleared line passes through. 1 line, 2 lines and 3 lines clear the bottom
+  // rows of the squares; "tetris" clears all four rows.
+  const columns = [
+    ["1 multi", ["silver"]],
+    ["2 multi", ["silver", "silver"]],
+    ["1 mono", ["gold"]],
+    ["1 & 1", ["gold", "silver"]],
+    ["2 mono", ["gold", "gold"]],
+  ];
+  const table = { 1: [6, 11, 11, 16, 21], 2: [12, 22, 22, 32, 42], 3: [18, 33, 33, 48, 63], 4: [25, 45, 45, 65, 85] };
+  for (const [lines, values] of Object.entries(table)) {
+    const n = Number(lines);
+    columns.forEach(([name, kinds], i) => {
+      const game = createGame(3);
+      const bottomRows = Array.from({ length: n }, (_, k) => ROWS - n + k);
+      squareBoard(game, kinds, bottomRows); // squares in rows 18-21; only the bottom n rows are filled in
+      slam(game); // a vertical I drops into the open column 9
+      assert.equal(game.lines, n, `${name}, ${lines} lines: rows cleared`);
+      assert.equal(game.score, values[i], `${name}, ${lines} lines`);
+    });
+  }
+});
+
 test("a locked piece that completes a square forms it and counts it", () => {
   const game = createGame(3);
   for (let i = 0; i < 3; i++) place(game.board, "I", 0, 0, 18 + i - 1, i + 1);
