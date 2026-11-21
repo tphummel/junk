@@ -1,6 +1,6 @@
 import {
-  DEFAULT_SETTINGS, GOALS, MAX_DAY_STARTS_AT, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
-  makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, todayKey,
+  DEFAULT_SETTINGS, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
+  makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
 } from "./logic.js";
 
 const STORE = "toothup:v2";
@@ -18,6 +18,7 @@ try {
 
 function save() {
   renderToday();
+  renderReminders();
   try {
     localStorage.setItem(STORE, JSON.stringify({ events: state.events, settings: state.settings }));
   } catch {
@@ -41,6 +42,7 @@ function showTab(name) {
   }
   if (name === "stats" || name === "calendar") renderStats();
   if (name === "data") renderData();
+  if (name === "brush") renderReminders();
 }
 for (const t of tabs) $(`tab-${t}`).addEventListener("click", () => showTab(t));
 
@@ -409,16 +411,91 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
   };
 });
 
+// ---------- reminders (dentist, brush head) ----------
+const REMINDER_INFO = {
+  dentist: { label: "Dentist", title: "Dentist visit", icon: "🦷", done: "Visited", confirm: "Mark your dentist visit as done today?" },
+  head: { label: "Brush head", title: "Toothbrush head change", icon: "🪥", done: "Changed", confirm: "Mark your brush head as changed today?" },
+};
+
+const countdownText = (days) =>
+  days < 0 ? `${-days} day${days === -1 ? "" : "s"} late` : days === 0 ? "due today" : days === 1 ? "tomorrow" : `${days} days`;
+
+/** Update one reminder and refresh everything that shows it. @param {"dentist" | "head"} type @param {Partial<import("./logic.js").Reminder>} patch */
+function setReminder(type, patch) {
+  const reminders = { ...state.settings.reminders, [type]: { ...state.settings.reminders[type], ...patch } };
+  state.settings = { ...state.settings, reminders };
+  save();
+  syncSettingsForm();
+}
+
+/** The countdown cards in the corners of the main screen; a reminder with no date is hidden. */
+function renderReminders() {
+  for (const type of REMINDER_TYPES) {
+    const card = document.querySelector(`.reminder[data-reminder="${type}"]`);
+    const status = reminderStatus(state.settings.reminders[type], today());
+    card.hidden = !status;
+    if (!status) continue;
+    card.classList.toggle("overdue", status.days < 0);
+    card.querySelector(".r-count").textContent = countdownText(status.days);
+    card.title = `Due ${parseDay(status.due).toLocaleDateString(undefined, { dateStyle: "medium" })}`;
+  }
+}
+
+for (const type of REMINDER_TYPES) {
+  const info = REMINDER_INFO[type];
+  const card = document.querySelector(`.reminder[data-reminder="${type}"]`);
+  card.querySelector(".r-label").textContent = `${info.icon} ${info.label}`;
+  const done = card.querySelector(".r-done");
+  done.textContent = info.done;
+  done.onclick = () => confirm(info.confirm) && setReminder(type, { last: today() });
+}
+
 // ---------- settings ----------
-const hourLabel = (h) => `${h}:00`;
-for (let h = 0; h <= MAX_DAY_STARTS_AT; h++) $("day-starts-at").add(new Option(hourLabel(h), String(h)));
-$("day-starts-at").value = String(state.settings.dayStartsAt);
+for (let h = 0; h <= MAX_DAY_STARTS_AT; h++) $("day-starts-at").add(new Option(`${h}:00`, String(h)));
 $("day-starts-at").onchange = () => {
-  state.settings = { dayStartsAt: Number($("day-starts-at").value) };
+  state.settings = { ...state.settings, dayStartsAt: Number($("day-starts-at").value) };
   save();
   view = viewOf(today());
   renderStats();
 };
+
+$("reminder-settings").innerHTML = REMINDER_TYPES.map((type) => `
+  <div class="reminder-setting">
+    <h3>${REMINDER_INFO[type].title}</h3>
+    <div class="row">
+      <label for="rem-${type}-every">Every</label>
+      <input id="rem-${type}-every" type="number" min="1" max="${MAX_REMINDER_MONTHS}" inputmode="numeric" style="width:4.5rem">
+      <span>months</span>
+    </div>
+    <div class="row">
+      <label for="rem-${type}-last">Last done</label>
+      <input id="rem-${type}-last" type="date">
+      <button class="link" id="rem-${type}-clear">clear</button>
+    </div>
+  </div>`).join("");
+for (const type of REMINDER_TYPES) {
+  $(`rem-${type}-every`).onchange = (e) => {
+    const n = Number(e.target.value);
+    if (Number.isInteger(n) && n >= 1 && n <= MAX_REMINDER_MONTHS) setReminder(type, { everyMonths: n });
+    else {
+      syncSettingsForm();
+      toast(`Enter a whole number of months from 1 to ${MAX_REMINDER_MONTHS}.`);
+    }
+  };
+  $(`rem-${type}-last`).onchange = (e) => setReminder(type, { last: e.target.value || null });
+  $(`rem-${type}-clear`).onclick = () => setReminder(type, { last: null });
+}
+
+/** Show the saved settings in the form fields. */
+function syncSettingsForm() {
+  $("day-starts-at").value = String(state.settings.dayStartsAt);
+  for (const type of REMINDER_TYPES) {
+    const r = state.settings.reminders[type];
+    $(`rem-${type}-every`).value = String(r.everyMonths);
+    $(`rem-${type}-last`).value = r.last ?? "";
+  }
+}
+syncSettingsForm();
 
 // ---------- data ----------
 function renderData() {
@@ -445,8 +522,8 @@ $("import").onchange = async (e) => {
     state.events = merged.events;
     state.settings = settings;
     view = viewOf(today());
-    $("day-starts-at").value = String(settings.dayStartsAt);
     save();
+    syncSettingsForm();
     renderData();
     toast(`Imported ${merged.added} new, ${events.length - merged.added} already present${skipped ? `, ${skipped} skipped` : ""}.`);
   } catch (err) {
@@ -464,3 +541,4 @@ $("clear").onclick = () => {
 
 renderBrush();
 renderToday();
+renderReminders();

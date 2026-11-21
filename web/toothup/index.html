@@ -105,6 +105,16 @@
     .day.today { border-width: 2px; border-color: var(--accent); }
     .day.sel { outline: 3px solid var(--text); outline-offset: 1px; }
     .day .mark { position: absolute; right: 3px; bottom: 0; font-size: .65rem; }
+    .reminder { position: absolute; top: 0; width: 5.5rem; text-align: center; font-size: .75rem; line-height: 1.25; }
+    .reminder.left { left: 0; }
+    .reminder.right { right: 0; }
+    .r-count { font-weight: 700; font-size: .9rem; color: var(--primary); }
+    .reminder.overdue .r-count { color: var(--accent); }
+    .r-done { padding: .2rem .5rem; min-height: 2.25rem; margin-top: .15rem; font-size: .75rem; }
+    .reminder-setting { margin-bottom: 1rem; }
+    .reminder-setting h3 { margin: 0 0 .25rem; font-size: 1rem; color: var(--primary); }
+    .reminder-setting .row { margin-bottom: .25rem; }
+    input[type="number"], input[type="date"] { font: inherit; padding: .4rem .5rem; border-radius: .5rem; border: 2px solid var(--primary); background: var(--bg); color: var(--text); }
     #today { text-align: center; font-size: .85rem; padding-top: .5rem; }
     .legend { font-size: .8rem; color: var(--support); margin: .5rem 0 1rem; }
     #day-list { padding-left: 1.25rem; }
@@ -120,6 +130,16 @@
     <main>
     <section id="view-brush">
       <div id="mouth-wrap">
+        <div class="reminder left" data-reminder="head" hidden>
+          <div class="r-label"></div>
+          <div class="r-count"></div>
+          <button class="secondary r-done"></button>
+        </div>
+        <div class="reminder right" data-reminder="dentist" hidden>
+          <div class="r-label"></div>
+          <div class="r-count"></div>
+          <button class="secondary r-done"></button>
+        </div>
         <svg id="mouth" viewBox="-12 -12 224 294" role="img" aria-label="Upper and lower teeth with outer and inner surface guides. Left and right are your own left and right."></svg>
         <div id="center">
           <div id="clock" role="timer" aria-live="off">0:30</div>
@@ -186,6 +206,11 @@
           <select id="day-starts-at"></select>
         </div>
         <p class="muted">Anything before this hour counts toward the day before, such as a brush at 12:30am. Changing it regroups your history.</p>
+      </div>
+      <div class="box">
+        <h2>Reminders</h2>
+        <p class="muted">Set when you last did each one to show a countdown in a corner of the main screen, with a button to reset it to today.</p>
+        <div id="reminder-settings"></div>
       </div>
       <div class="box">
         <h2>Your data</h2>
