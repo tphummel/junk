@@ -29,6 +29,7 @@ header h1{font-size:18px;margin:0}
 .stats b{font-weight:600}
 .live{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:13px;opacity:.9;font-variant-numeric:tabular-nums}
 .live b{font-weight:600}
+.board.paused{filter:blur(10px);opacity:.5;pointer-events:none}
 button{font:inherit;border:0;border-radius:6px;padding:6px 12px;background:#fff;color:var(--ink);cursor:pointer}
 button.danger{background:#ffcdd2}
 button.accent{background:#ffeeb3}
@@ -80,6 +81,7 @@ a{color:#fff}
   </div>
   <div class="live" id="live" aria-label="Live game statistics"></div>
   <button id="auto" hidden>Auto-solve</button>
+  <button id="pause" hidden>Pause</button>
   <button id="surrender" class="danger">Surrender</button>
   <button id="random" hidden>Random puzzle</button>
   <button id="daily" hidden>Today’s puzzle</button>
@@ -326,6 +328,8 @@ let sel=null; // {addr, idx, n}
 let busy=false; // true while Auto-solve is playing
 const $=id=>document.getElementById(id);
 const ended=()=>!!S.e;
+const paused=()=>S.p!=null&&!S.e; // S.p = when the clock was paused; resuming shifts S.s forward by the pause
+const nowT=()=>S.p!=null?S.p:Date.now();
 const isRandom=()=>S.r!=null;
 const dealOf=()=>isRandom()?S.r:dealNumber(S.d);
 const isStale=()=>!isRandom()&&S.d!==pacificDate();
@@ -356,7 +360,7 @@ function save(){
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}
 }
 function act(mv){
-  if(ended())return false;
+  if(ended()||paused())return false;
   const now=Date.now();if(S.s==null)S.s=now;
   mv.t=now-S.s;
   if(!apply(g,mv))return false;
@@ -368,12 +372,12 @@ function act(mv){
 }
 function surrender(){
   if(ended()||busy||!confirm('Surrender and end this game?'))return;
-  const now=Date.now();if(S.s==null)S.s=now;
-  S.e=[now-S.s,'surrender'];sel=null;recordResult();save();render();
+  const now=nowT();if(S.s==null)S.s=now;
+  S.e=[now-S.s,'surrender'];delete S.p;sel=null;recordResult();save();render();
 }
 
 function onClick(e){
-  if(ended()||busy||performance.now()-dragEndedAt<40)return; // a drop also fires a click
+  if(ended()||busy||paused()||performance.now()-dragEndedAt<40)return; // a drop also fires a click
   const cardEl=e.target.closest('[data-idx]'),pileEl=e.target.closest('[data-pile]');
   if(!pileEl)return;
   const addr=pileEl.dataset.pile,idx=cardEl?+cardEl.dataset.idx:-1;
@@ -434,7 +438,10 @@ function render(){
   $('date').textContent=isRandom()?`Deal ${S.r}`:S.d+(isStale()?' (past)':'');
   $('moves').textContent=g.log.length;
   $('surrender').hidden=ended()||busy;
-  $('auto').hidden=ended()||busy||g.tab.some(p=>p.some(x=>!x.up));
+  $('pause').hidden=ended()||busy||S.s==null;
+  $('pause').textContent=paused()?'Resume':'Pause';
+  $('board').classList.toggle('paused',paused());
+  $('auto').hidden=ended()||busy||paused()||g.tab.some(p=>p.some(x=>!x.up));
   const played=dailyPlayed();
   $('random').hidden=busy||!played;
   $('daily').hidden=busy||!isRandom()||played;
@@ -471,13 +478,13 @@ function renderLive(){
   tick();
 }
 const fmtTime=ms=>{const s=Math.floor(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
-const elapsed=()=>S.e?S.e[0]:(S.s==null?0:Date.now()-S.s);
+const elapsed=()=>S.e?S.e[0]:(S.s==null?0:nowT()-S.s);
 function tick(){
   $('time').textContent=fmtTime(elapsed());
   const pace=$('pace');if(!pace)return;
   const ms=elapsed(),n=g.log.length;
-  const last=n&&!ended()?Date.now()-new Date(g.log[n-1].at).getTime():0;
-  pace.innerHTML=`Pace <b>${ms>=10000&&n?(n*60000/ms).toFixed(1):'–'}</b> moves/min`+(last>=10000?` · Idle <b>${fmtTime(last)}</b>`:'');
+  const last=n&&!ended()&&!paused()?Date.now()-new Date(g.log[n-1].at).getTime():0;
+  pace.innerHTML=(paused()?'<b>Paused</b> · ':'')+`Pace <b>${ms>=10000&&n?(n*60000/ms).toFixed(1):'–'}</b> moves/min`+(last>=10000?` · Idle <b>${fmtTime(last)}</b>`:'');
 }
 setInterval(()=>{if(!ended())tick()},1000);
 
@@ -632,7 +639,7 @@ function endDrag(x,y,cancelled){
   setTimeout(()=>{d.box.remove();d.cards.forEach(c=>c.classList.remove('lifted'))},160);
 }
 $('board').addEventListener('pointerdown',e=>{
-  if(ended()||busy||drag||(e.pointerType==='mouse'&&e.button!==0))return;
+  if(ended()||busy||paused()||drag||(e.pointerType==='mouse'&&e.button!==0))return;
   const src=sourceAt(e.target);if(!src)return;
   const r=e.target.closest('[data-idx]').getBoundingClientRect();
   drag={id:e.pointerId,x:e.clientX,y:e.clientY,src,dx:e.clientX-r.left,dy:e.clientY-r.top,active:false};
@@ -646,6 +653,11 @@ document.addEventListener('pointerup',e=>{if(drag&&e.pointerId===drag.id)endDrag
 document.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id)endDrag(e.clientX,e.clientY,true)});
 $('board').addEventListener('contextmenu',e=>e.preventDefault()); // no long-press menu on a card
 $('surrender').addEventListener('click',surrender);
+$('pause').addEventListener('click',()=>{
+  if(ended()||busy||S.s==null)return;
+  if(paused()){S.s+=Date.now()-S.p;delete S.p}else{S.p=Date.now();sel=null}
+  save();render();
+});
 function autoSolve(){
   if(ended()||busy)return;
   const r=solveGame(g,300000);
@@ -665,7 +677,7 @@ function leaveGame(){
   if(busy)return false;
   if(!ended()&&S.m.length){
     if(!confirm('Leave this game? It will be recorded as lost.'))return false;
-    S.e=[Date.now()-S.s,'abandoned'];recordResult();
+    S.e=[nowT()-S.s,'abandoned'];delete S.p;recordResult();
   }
   return true;
 }

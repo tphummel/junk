@@ -1,4 +1,4 @@
-const CACHE_NAME = 'solitaire-v4';
+const CACHE_NAME = 'solitaire-v5';
 
 const PRECACHE = [
   '/solitaire/',
