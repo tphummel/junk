@@ -307,3 +307,34 @@ test("readHealthExport: reads export.xml from a zip or directly, deduplicating r
 function brushOnly() {
   return [brushFromRecord(R1)];
 }
+
+// ---------- Nomie import ----------
+import { parseNomie } from "../web/toothup/nomie.js";
+
+const nomie = (...notes) =>
+  JSON.stringify({ nomie: { number: "5.6.4" }, events: notes.map((note, i) => ({ _id: `e${i}`, note, start: 1700000000000 + i * 1000, end: 1700000001000 + i * 1000, offset: 480 })) });
+
+test("parseNomie: tags become floss and mouthwash events, with the offset flipped to east positive", () => {
+  const { events, skipped } = parseNomie(nomie("#floss_teeth", "#mouthwash ", "#sneeze"));
+  assert.equal(skipped, 0);
+  assert.deepEqual(events, [
+    { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480 },
+    { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480 },
+  ]);
+  assert.ok(events.every((e) => normalizeEvent(e)));
+});
+
+test("parseNomie: one note can hold both, a (0) value is not done, other tags and look-alike tags are ignored", () => {
+  const both = parseNomie(nomie("#floss_and_mouthwash #floss_teeth(1) #mouthwash(1)"));
+  assert.deepEqual(both.events.map((e) => e.type).sort(), ["floss", "mouthwash"]);
+  assert.deepEqual(parseNomie(nomie("#floss_and_mouthwash #floss_teeth(0) #mouthwash(1)")).events.map((e) => e.type), ["mouthwash"]);
+  assert.deepEqual(parseNomie(nomie("#peed #floss_teeth")).events.map((e) => e.type), ["floss"]);
+  assert.equal(parseNomie(nomie("#floss_teeth_maybe", "#mouthwashes", "note #floss")).events.length, 0);
+});
+
+test("parseNomie: merges idempotently and rejects other files", () => {
+  const { events } = parseNomie(nomie("#floss_teeth", "#mouthwash"));
+  assert.equal(mergeEvents(events, parseNomie(nomie("#floss_teeth", "#mouthwash")).events).added, 0);
+  assert.throws(() => parseNomie("{}"), /Not a Nomie export/);
+  assert.throws(() => parseNomie("nope"), /Not valid JSON/);
+});

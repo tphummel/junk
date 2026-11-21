@@ -235,6 +235,11 @@
           <input type="file" id="health" accept=".zip,.xml,application/zip,text/xml" hidden>
           <button class="secondary" id="health-btn">Import Apple Health</button>
         </div>
+        <p>To bring in floss and mouthwash from Nomie, choose its data export (.json). Only <code>#floss_teeth</code> and <code>#mouthwash</code> events are used, and a tag with a value of 0 is skipped as not done.</p>
+        <div class="row">
+          <input type="file" id="nomie" accept="application/json,.json" hidden>
+          <button class="secondary" id="nomie-btn">Import Nomie</button>
+        </div>
       </div>
       <div class="box">
         <h2>Danger zone</h2>
