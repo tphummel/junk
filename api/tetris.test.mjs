@@ -13,7 +13,7 @@ import { gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/ga
 import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
-import { axisDirection, BUTTON, createGamepad, describePad, mapPad } from "../web/tetris/src/input/gamepad.js";
+import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
 import { INK, METAL, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
 
 const filled = (type = "T", pieceId = 99) => ({ type, pieceId });
@@ -469,6 +469,55 @@ test("createGamepad: connect and disconnect callbacks", () => {
   pads = [fakePad({ connected: false }), fakePad()];
   target.dispatchEvent(new Event("gamepaddisconnected"));
   assert.deepEqual(calls, ["connect", "disconnect"], "another pad is still attached: no disconnect");
+});
+
+test("detectBinding finds the control that was pressed, ignoring what was already down", () => {
+  const rest = snapshotPad(fakePad({ down: [BUTTON.A], axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] }));
+  assert.equal(detectBinding(rest, fakePad({ down: [BUTTON.A], axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] })), null, "nothing new");
+  assert.deepEqual(detectBinding(rest, fakePad({ down: [BUTTON.A, 12], axes: [0, 0] })), { type: "button", index: 12 });
+  assert.deepEqual(detectBinding(rest, fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, -1] })), { type: "axis", index: 9, value: -1 }, "a hat switch");
+  assert.equal(detectBinding(rest, fakePad({ axes: [0, 0.3] })), null, "a small wobble is not a press");
+});
+
+test("a learned axis or button binds hard drop on top of d-pad up", () => {
+  const hat = { hardDrop: { type: "axis", index: 9, value: -1 } };
+  const axes = (v) => [0, 0, 0, 0, 0, 0, 0, 0, 0, v];
+  assert.deepEqual([...mapPad(fakePad({ axes: axes(-1) }), 0.2, hat)], ["hardDrop"]);
+  assert.equal(mapPad(fakePad({ axes: axes(1.29) }), 0.2, hat).size, 0, "neutral hat");
+  assert.equal(mapPad(fakePad({ axes: axes(-0.43) }), 0.2, hat).size, 0, "another hat direction");
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.UP] }), 0.2, hat)], ["hardDrop"], "d-pad up still works");
+  const btn = { hardDrop: { type: "button", index: 3 } };
+  assert.ok(bindingDown(fakePad({ down: [3] }), btn.hardDrop));
+  assert.equal(describeBinding(hat.hardDrop), "axis 9 at -1.00");
+  assert.equal(describeBinding(btn.hardDrop), "button 3");
+});
+
+test("createGamepad.learn: captures the next control, fires no action for it, then uses it", () => {
+  let pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] });
+  let saved = {};
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [pad] }, bindings: () => saved });
+  assert.equal(gp.learn((b) => { saved = { hardDrop: b }; }), true);
+  assert.equal(gp.learning, true);
+  assert.deepEqual(gp.poll().pressed, [], "nothing while learning and nothing pressed yet");
+  pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, -1] });
+  const r = gp.poll();
+  assert.deepEqual(r.pressed, [], "the learning press is not also a drop");
+  assert.equal(gp.learning, false);
+  assert.deepEqual(saved, { hardDrop: { type: "axis", index: 9, value: -1 } });
+  assert.deepEqual(gp.poll().pressed, [], "still held: no edge");
+  pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] });
+  gp.poll();
+  pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, -1] });
+  assert.deepEqual(gp.poll().pressed, ["hardDrop"], "pressing it again hard-drops");
+});
+
+test("createGamepad.learn needs a pad, and can be cancelled", () => {
+  const none = createGamepad(new EventTarget(), { nav: { getGamepads: () => [null] } });
+  assert.equal(none.learn(() => {}), false);
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [fakePad()] } });
+  gp.learn(() => assert.fail("cancelled"));
+  gp.cancelLearn();
+  assert.equal(gp.learning, false);
 });
 
 test("describePad names the pad and flags a non-standard mapping", () => {

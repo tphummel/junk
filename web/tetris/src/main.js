@@ -4,7 +4,7 @@
 import { TICKS_PER_SECOND } from "./game/rules.js";
 import { createGame, step } from "./game/state.js";
 import { createRepeater } from "./input/actions.js";
-import { createGamepad, describePad } from "./input/gamepad.js";
+import { createGamepad, describeBinding, describePad } from "./input/gamepad.js";
 import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
 import { drawBoard, readTheme } from "./ui/render.js";
@@ -42,8 +42,37 @@ const padStatus = $("pad-status");
 const padDebug = $("pad-debug");
 const padPanel = /** @type {HTMLDetailsElement} */ ($("pad-panel"));
 
+/** @typedef {import("./input/gamepad.js").Bindings} Bindings */
+const BINDINGS_KEY = "tetris-pad-bindings";
+
+/** Learned controls per pad id, kept in localStorage. Storage can be blocked or empty, so every access is guarded. */
+/** @returns {Record<string, Bindings>} */
+function loadBindings() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(BINDINGS_KEY) ?? "{}");
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+/** @type {Record<string, Bindings>} */
+let savedBindings = loadBindings();
+/** @param {Record<string, Bindings>} all */
+function saveBindings(all) {
+  savedBindings = all;
+  try {
+    localStorage.setItem(BINDINGS_KEY, JSON.stringify(all));
+  } catch {
+    // The binding still works for this visit.
+  }
+}
+
+/** Last message from the "set hard drop" button, shown in the status panel. */
+let bindNote = "";
+
 const keyboard = createKeyboard(window);
 const gamepad = createGamepad(window, {
+  bindings: (pad) => savedBindings[pad.id] ?? {},
   onConnect: () => refreshStatus(),
   onDisconnect: () => {
     refreshStatus();
@@ -173,8 +202,35 @@ function padReadout() {
   const pad = gamepad.pad();
   if (!pad) return "no controller";
   const pressed = Array.from(pad.buttons, (b, i) => (b.pressed ? i : -1)).filter((i) => i >= 0);
-  return `id: ${pad.id}\nmapping: ${pad.mapping || "(none)"}\nbuttons down: ${pressed.join(", ") || "-"}\naxes: ${Array.from(pad.axes, (v) => v.toFixed(2)).join(", ")}`;
+  const hard = savedBindings[pad.id]?.hardDrop;
+  return [
+    `id: ${pad.id}`,
+    `mapping: ${pad.mapping || "(none)"}`,
+    `buttons down: ${pressed.join(", ") || "-"}`,
+    `axes: ${Array.from(pad.axes, (v) => v.toFixed(2)).join(", ")}`,
+    `hard drop: d-pad up${hard ? ` or ${describeBinding(hard)}` : ""}`,
+    bindNote,
+  ].filter(Boolean).join("\n");
 }
+
+$("pad-bind").addEventListener("click", () => {
+  if (screen === "playing") setScreen("paused");
+  const started = gamepad.learn((binding) => {
+    const pad = gamepad.pad();
+    if (pad) saveBindings({ ...savedBindings, [pad.id]: { ...savedBindings[pad.id], hardDrop: binding } });
+    bindNote = `Saved: hard drop is now ${describeBinding(binding)}.`;
+  });
+  bindNote = started ? "Press the control you want for hard drop (up on the d-pad)..." : "Connect a controller first: press any button on it.";
+});
+$("pad-reset").addEventListener("click", () => {
+  gamepad.cancelLearn();
+  const pad = gamepad.pad();
+  if (pad) {
+    const { [pad.id]: _removed, ...rest } = savedBindings;
+    saveBindings(rest);
+  }
+  bindNote = "Hard drop reset to d-pad up.";
+});
 
 let last = performance.now();
 let acc = 0;

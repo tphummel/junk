@@ -191,6 +191,16 @@
       font-size: 0.8rem;
     }
     .padbar summary { cursor: pointer; }
+    .padtools { margin: 6px 0 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .padtools button {
+      font: inherit;
+      padding: 3px 10px;
+      border: 2px solid var(--wood-dark);
+      border-radius: 4px;
+      background: var(--cream);
+      color: var(--wood-dark);
+      cursor: pointer;
+    }
     .padbar pre { margin: 6px 0 0; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
     #overlay {
       position: absolute;
@@ -242,6 +252,10 @@
       <details id="pad-panel">
         <summary id="pad-status">Controller: none (press any button to connect)</summary>
         <pre id="pad-debug"></pre>
+        <p class="padtools">
+          <button id="pad-bind" type="button">Set hard drop control</button>
+          <button id="pad-reset" type="button">Reset</button>
+        </p>
       </details>
     </div>
   </main>
