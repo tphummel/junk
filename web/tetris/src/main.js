@@ -33,6 +33,8 @@ import { bestByMode, browserStorage, loadScores, saveScore } from "./ui/scores.j
  * @property {number} holdsUsed
  * @property {number} spinsCW
  * @property {number} spinsCCW
+ * @property {number} movesLeft
+ * @property {number} movesRight
  * @property {number} softDrops
  * @property {number} hardDrops
  * @property {{ t: number, action: GameAction }[]} inputLog
@@ -121,7 +123,7 @@ function newRound(g, mode) {
   return {
     rulesVersion: g.rulesVersion, seed: g.seed, mode, startedAt: Date.now(), ticks: 0,
     score: 0, lines: 0, level: g.level, piecesPlaced: 0, goldSquares: 0, silverSquares: 0, holdsUsed: 0,
-    spinsCW: 0, spinsCCW: 0, softDrops: 0, hardDrops: 0,
+    spinsCW: 0, spinsCCW: 0, movesLeft: 0, movesRight: 0, softDrops: 0, hardDrops: 0,
     inputLog: [],
   };
 }
@@ -265,7 +267,8 @@ function finishRound(how) {
   Object.assign(round, {
     ticks: game.tick, score: game.score, lines: game.lines, level: game.level, piecesPlaced: game.piecesPlaced,
     goldSquares: game.goldSquares, silverSquares: game.silverSquares, holdsUsed: game.holdsUsed,
-    spinsCW: game.spinsCW, spinsCCW: game.spinsCCW, softDrops: game.softDrops, hardDrops: game.hardDrops,
+    spinsCW: game.spinsCW, spinsCCW: game.spinsCCW, movesLeft: game.movesLeft, movesRight: game.movesRight,
+    softDrops: game.softDrops, hardDrops: game.hardDrops,
   });
   rounds.push(round);
   /** @type {import("./ui/scores.js").ScoreRecord} */
@@ -273,7 +276,8 @@ function finishRound(how) {
     at: Date.now(), mode, ended: how, score: game.score, lines: game.lines, level: game.level, ticks: game.tick,
     rate: stats.rate, grade: stats.grade, natural: stats.natural, piecesPlaced: game.piecesPlaced,
     goldSquares: game.goldSquares, silverSquares: game.silverSquares, seed: game.seed, rulesVersion: game.rulesVersion,
-    spinsCW: game.spinsCW, spinsCCW: game.spinsCCW, softDrops: game.softDrops, hardDrops: game.hardDrops, swaps: game.holdsUsed,
+    spinsCW: game.spinsCW, spinsCCW: game.spinsCCW, movesLeft: game.movesLeft, movesRight: game.movesRight,
+    softDrops: game.softDrops, hardDrops: game.hardDrops, swaps: game.holdsUsed,
   };
   const before = bests[mode];
   const saved = saveScore(storage, record);

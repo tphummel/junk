@@ -24,6 +24,8 @@ export function createHud(doc) {
   const counts = {
     spinsCCW: el("spins-ccw"),
     spinsCW: el("spins-cw"),
+    movesLeft: el("moves-left"),
+    movesRight: el("moves-right"),
     softDrops: el("soft-drops"),
     hardDrops: el("hard-drops"),
     holdsUsed: el("swaps"),

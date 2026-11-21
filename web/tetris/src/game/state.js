@@ -60,6 +60,8 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @property {number} silverSquares silver (mixed) squares formed so far
  * @property {number} spinsCW rotations that succeeded, clockwise
  * @property {number} spinsCCW rotations that succeeded, counter-clockwise
+ * @property {number} movesLeft columns moved left (each successful step is one)
+ * @property {number} movesRight columns moved right
  * @property {number} softDrops rows a piece fell while soft drop was held
  * @property {number} hardDrops pieces that were hard-dropped (a second press to lock the same piece is not counted again)
  * @property {boolean} hardDropUsed whether the piece in play has been hard-dropped already
@@ -112,6 +114,8 @@ export function createGame(seed, options = {}) {
     silverSquares: 0,
     spinsCW: 0,
     spinsCCW: 0,
+    movesLeft: 0,
+    movesRight: 0,
     softDrops: 0,
     hardDrops: 0,
     hardDropUsed: false,
@@ -182,6 +186,8 @@ function tryMove(game, dx) {
   const p = /** @type {Piece} */ (game.current);
   if (collides(game.board, p.type, p.rot, p.x + dx, p.y)) return;
   p.x += dx;
+  if (dx < 0) game.movesLeft++;
+  else game.movesRight++;
   afterMove(game);
 }
 

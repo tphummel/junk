@@ -24,6 +24,8 @@ export const MAX_SCORES = 200;
  * @property {number} silverSquares
  * @property {number} [spinsCW] successful clockwise rotations (this and the next four are missing from older saves)
  * @property {number} [spinsCCW]
+ * @property {number} [movesLeft] columns moved left
+ * @property {number} [movesRight] columns moved right
  * @property {number} [softDrops] rows fallen under soft drop
  * @property {number} [hardDrops] pieces hard-dropped
  * @property {number} [swaps] swaps with the held piece

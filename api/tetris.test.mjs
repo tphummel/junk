@@ -573,6 +573,24 @@ test("counters: a spin that is blocked is not counted", () => {
   assert.equal(game.spinsCCW, 0);
 });
 
+test("counters: each successful step left or right is counted, a blocked one is not", () => {
+  const game = createGame(3);
+  step(game, ["left"]);
+  step(game, ["left"]);
+  step(game, ["right"]);
+  assert.equal(game.movesLeft, 2);
+  assert.equal(game.movesRight, 1);
+  // Push into the wall until the piece cannot go further left: those pushes count nothing.
+  for (let i = 0; i < 10; i++) step(game, ["left"]);
+  const p = game.current;
+  assert.ok(collides(game.board, p.type, p.rot, p.x - 1, p.y), "the piece is against the wall");
+  const atWall = game.movesLeft;
+  step(game, ["left"]);
+  step(game, ["left"]);
+  assert.equal(game.movesLeft, atWall, "pushing into the wall counts nothing");
+  assert.equal(game.movesRight, 1, "right steps are counted separately");
+});
+
 test("counters: soft drop counts rows fallen, not ticks held", () => {
   const game = createGame(3);
   const y0 = game.current.y;
@@ -621,7 +639,7 @@ test("counters do not change the round, and a replay reproduces them", () => {
     for (const action of actions) log.push({ t: game.tick, action });
   }
   const again = replay(seed, log, game.tick);
-  for (const k of ["spinsCW", "spinsCCW", "softDrops", "hardDrops", "holdsUsed"]) assert.equal(again[k], game[k], k);
+  for (const k of ["spinsCW", "spinsCCW", "movesLeft", "movesRight", "softDrops", "hardDrops", "holdsUsed"]) assert.equal(again[k], game[k], k);
   assert.ok(game.spinsCW > 0 && game.holdsUsed > 0, "the counters actually moved");
 });
 
