@@ -38,15 +38,24 @@ export const SOFT_DROP_POINTS_PER_ROW = 0;
 export const HARD_DROP_POINTS_PER_ROW = 0;
 
 /**
- * Points for one line clear.
+ * Points for one line clear, split by where they came from.
  * @param {readonly { gold: number, silver: number }[]} rows one entry per cleared row: how many gold and silver
  *   squares that row passes through
+ * @returns {{ lines: number, squares: number, tetris: number }}
+ */
+export function linePointsBreakdown(rows) {
+  let squares = 0;
+  for (const row of rows) squares += row.silver * SILVER_LINE_BONUS + row.gold * GOLD_LINE_BONUS;
+  return { lines: rows.length * LINE_POINT, squares, tetris: rows.length === 4 ? TETRIS_BONUS : 0 };
+}
+
+/**
+ * Points for one line clear.
+ * @param {readonly { gold: number, silver: number }[]} rows as for linePointsBreakdown
  */
 export function linePoints(rows) {
-  let total = 0;
-  for (const row of rows) total += LINE_POINT + row.silver * SILVER_LINE_BONUS + row.gold * GOLD_LINE_BONUS;
-  if (rows.length === 4) total += TETRIS_BONUS;
-  return total;
+  const b = linePointsBreakdown(rows);
+  return b.lines + b.squares + b.tetris;
 }
 
 export const LINES_PER_LEVEL = 10;

@@ -10,13 +10,14 @@ import { createBag, makeRng } from "../web/tetris/src/game/bag.js";
 import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, place, pushGarbageRow, ROWS } from "../web/tetris/src/game/board.js";
 import { DIFFICULTIES, difficultyById } from "../web/tetris/src/game/difficulty.js";
 import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
-import { FLOURISH_ENTRY_DELAY_TICKS, gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
+import { FLOURISH_ENTRY_DELAY_TICKS, gravityTicks, linePoints, linePointsBreakdown, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
 import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { formatTime, gameSeconds, gradePerf, isNatural, lineRate, naturalNumber, summarize } from "../web/tetris/src/game/stats.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
 import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
 import { createEffects } from "../web/tetris/src/ui/effects.js";
+import { buildScorecard, SCORECARD_FORMAT, scorecardFilename, scorecardJson, scorecardSections } from "../web/tetris/src/ui/scorecard.js";
 import { bestByMode, loadScores, MAX_SCORES, saveScore, SCORES_KEY } from "../web/tetris/src/ui/scores.js";
 import { createKeyboard } from "../web/tetris/src/input/keyboard.js";
 import { GARBAGE_COLOR, INK, METAL, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
@@ -657,6 +658,129 @@ test("counters do not change the round, and a replay reproduces them", () => {
   const again = replay(seed, log, game.tick);
   for (const k of ["spinsCW", "spinsCCW", "movesLeft", "movesRight", "softDrops", "hardDrops", "holdsUsed"]) assert.equal(again[k], game[k], k);
   assert.ok(game.spinsCW > 0 && game.holdsUsed > 0, "the counters actually moved");
+});
+
+// --- scorecard -------------------------------------------------------------------------------------
+
+test("linePointsBreakdown splits points by source and adds up to linePoints", () => {
+  const rows = Array.from({ length: 4 }, () => ({ gold: 1, silver: 1 }));
+  assert.deepEqual(linePointsBreakdown(rows), { lines: 4, squares: 60, tetris: 1 });
+  assert.equal(linePoints(rows), 65);
+  assert.deepEqual(linePointsBreakdown([{ gold: 0, silver: 0 }]), { lines: 1, squares: 0, tetris: 0 });
+  for (const n of [1, 2, 3, 4]) {
+    for (const row of [{ gold: 0, silver: 0 }, { gold: 1, silver: 0 }, { gold: 0, silver: 2 }, { gold: 1, silver: 1 }]) {
+      const rs = Array.from({ length: n }, () => row);
+      const b = linePointsBreakdown(rs);
+      assert.equal(b.lines + b.squares + b.tetris, linePoints(rs));
+    }
+  }
+});
+
+test("the game records the order pieces are dealt, when pieces lock, clears and where the points came from", () => {
+  const game = createGame(3);
+  const first = game.current.type;
+  const queued = game.queue.slice();
+  assert.deepEqual(game.dealt, [{ type: first, tick: 0 }]);
+  slam(game);
+  slam(game);
+  assert.deepEqual(game.dealt.map((d) => d.type), [first, queued[0], queued[1]], "the order they came off the bag");
+  assert.equal(game.locks.length, 2);
+  assert.deepEqual(game.locks.map((l) => l.type), [first, queued[0]]);
+  assert.ok(game.locks[1].tick >= game.locks[0].tick);
+  // A swap deals a piece from the bag only when the hold slot is empty.
+  const h = createGame(3);
+  const dealtBefore = h.dealt.length;
+  step(h, ["hold"]);
+  assert.equal(h.dealt.length, dealtBefore + 1, "first hold pulls the next piece");
+  slam(h);
+  step(h, ["hold"]);
+  assert.equal(h.dealt.length, dealtBefore + 2, "a swap returns the held piece, which is not dealt again; the slam dealt one");
+});
+
+test("clears, point sources and garbage rows are tallied", () => {
+  const game = createGame(3);
+  squareBoard(game, ["gold"]);
+  slam(game);
+  assert.deepEqual(game.clears, [0, 0, 0, 0, 1]);
+  assert.deepEqual([game.pointsLines, game.pointsSquares, game.pointsTetris], [4, 40, 1]);
+  assert.equal(game.pointsLines + game.pointsSquares + game.pointsTetris, game.score);
+
+  const plain = createGame(3);
+  plain.board[ROWS - 1] = Array.from({ length: COLS }, (_, c) => (c < 6 ? filled() : null));
+  plain.current = { type: "I", rot: 0, x: 6, y: ROWS - 2, id: 77 };
+  slam(plain);
+  assert.deepEqual(plain.clears, [0, 1, 0, 0, 0]);
+
+  const g = createGame(4, { garbagePerSecond: 0.65 });
+  g.garbagePending = 3;
+  slam(g);
+  assert.equal(g.garbageRows, 3);
+});
+
+/** Play a short deterministic round and return the game and its log, like the page does. */
+function playRound(seed, options) {
+  const game = createGame(seed, options);
+  const inputLog = [];
+  for (let t = 0; t < 900 && !game.over; t++) {
+    const actions = t % 40 === 5 ? ["rotateCW"] : t % 40 === 10 ? ["left"] : t % 40 === 15 ? ["hardDrop"] : t % 40 === 20 ? ["hardDrop"] : [];
+    step(game, actions);
+    for (const action of actions) inputLog.push({ t: game.tick, action });
+  }
+  return { game, inputLog };
+}
+
+test("buildScorecard: result, piece order and counters, all from the game", () => {
+  const { game, inputLog } = playRound(21);
+  const card = buildScorecard({ game, mode: "easy", garbagePerSecond: 0.65, ended: "ended", startedAt: Date.UTC(2026, 10, 21, 14, 30, 5), inputLog });
+  assert.equal(card.app, "tetris");
+  assert.equal(card.format, SCORECARD_FORMAT);
+  assert.equal(card.mode, "easy");
+  assert.equal(card.startedAt, "2026-11-21T14:30:05.000Z");
+  assert.equal(card.seed, 21);
+  assert.equal(card.tickRate, 60);
+  assert.equal(card.result.ticks, game.tick);
+  assert.equal(card.result.seconds, Math.round(game.tick / 60 * 1000) / 1000);
+  assert.equal(card.result.time, formatTime(game.tick));
+  assert.equal(card.pieces.played, game.piecesPlaced);
+  assert.equal(card.pieces.sequence, game.dealt.map((d) => d.type).join(""));
+  assert.equal(Object.values(card.pieces.byType).reduce((a, b) => a + b, 0), game.piecesPlaced, "the piece mix adds up to the pieces played");
+  assert.equal(card.moves.hardDrops, game.hardDrops);
+  assert.equal(card.moves.left, game.movesLeft);
+  assert.equal(card.garbage.perSecond, 0.65);
+  assert.equal(card.inputLog.length, inputLog.length);
+  assert.ok(card.pieces.played > 3, "the round actually played");
+});
+
+test("the exported JSON parses back to the same data, and seed + inputLog replays the round", () => {
+  const { game, inputLog } = playRound(77);
+  const card = buildScorecard({ game, mode: "practice", garbagePerSecond: 0, ended: "topout", startedAt: 0, inputLog });
+  const text = scorecardJson(card);
+  assert.deepEqual(JSON.parse(text), JSON.parse(JSON.stringify(card)), "a faithful copy");
+  assert.ok(text.endsWith("}\n"));
+  assert.ok(text.includes('{"t":'), "inputs one per line");
+  const back = JSON.parse(text);
+  const again = replay(back.seed, back.inputLog, back.result.ticks);
+  assert.equal(again.score, game.score);
+  assert.equal(again.piecesPlaced, game.piecesPlaced);
+  assert.equal(snapshot(again), snapshot(game));
+  assert.equal(again.dealt.map((d) => d.type).join(""), back.pieces.sequence, "the same pieces in the same order");
+});
+
+test("scorecardJson also writes lists of saved scores; filenames carry the mode and start time", () => {
+  const out = scorecardJson({ app: "tetris", format: 1, scores: [rec({ score: 1 }), rec({ score: 2 })] });
+  assert.equal(JSON.parse(out).scores.length, 2);
+  assert.equal(scorecardJson({ a: [], b: {} }), '{\n  "a": [],\n  "b": {}\n}\n');
+  assert.equal(scorecardFilename({ mode: "hard", startedAt: "2026-11-21T14:30:05.000Z" }), "tetris-hard-20261121-143005.json");
+});
+
+test("scorecardSections: every group is present, garbage only when there was garbage", () => {
+  const { game, inputLog } = playRound(5);
+  const practice = buildScorecard({ game, mode: "practice", garbagePerSecond: 0, ended: "ended", startedAt: 0, inputLog });
+  assert.deepEqual(scorecardSections(practice).map((s) => s.title), ["Time", "Lines", "Points", "Moves", "Piece mix"]);
+  const hard = buildScorecard({ game, mode: "hard", garbagePerSecond: 1.1, ended: "ended", startedAt: 0, inputLog });
+  assert.deepEqual(scorecardSections(hard).map((s) => s.title), ["Time", "Lines", "Points", "Moves", "Garbage", "Piece mix"]);
+  const mix = scorecardSections(practice).find((s) => s.title === "Piece mix");
+  assert.deepEqual(mix.items.map(([t]) => t), ["I", "O", "T", "S", "Z", "J", "L"]);
 });
 
 // --- natural ---------------------------------------------------------------------------------------

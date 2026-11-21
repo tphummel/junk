@@ -11,6 +11,7 @@ import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
 import { createEffects } from "./ui/effects.js";
 import { drawBoard, readTheme } from "./ui/render.js";
+import { buildScorecard, scorecardFilename, scorecardJson, scorecardSections } from "./ui/scorecard.js";
 import { bestByMode, browserStorage, loadScores, saveScore } from "./ui/scores.js";
 
 /** @typedef {import("./game/state.js").Game} Game */
@@ -48,6 +49,8 @@ const boardCanvas = /** @type {HTMLCanvasElement} */ ($("board"));
 const overlay = $("overlay");
 const overlayTitle = $("overlay-title");
 const overlayText = $("overlay-text");
+const overlayCard = $("overlay-card");
+const scorecardEl = $("scorecard");
 
 const padStatus = $("pad-status");
 const padDebug = $("pad-debug");
@@ -108,7 +111,7 @@ let round = newRound(game, mode);
 const rounds = [];
 const storage = browserStorage();
 let bests = bestByMode(loadScores(storage));
-/** @type {{ record: import("./ui/scores.js").ScoreRecord, newBest: boolean, saved: boolean } | null} */
+/** @type {{ record: import("./ui/scores.js").ScoreRecord, card: import("./ui/scorecard.js").Scorecard, newBest: boolean, saved: boolean } | null} */
 let lastResult = null;
 
 /** @param {string} mode difficulty id @returns {Game} */
@@ -137,6 +140,64 @@ let menuIndex = 0;
 /** @type {MenuItem[]} */
 let menuItems = [];
 
+/** Say what the last export did, on the game-over card. */
+let exportNote = "";
+
+/** Offer a text file to the browser as a download. @param {string} filename @param {string} text */
+function downloadText(filename, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/** Copy text to the clipboard, with an old-fashioned fallback. @param {string} text @returns {Promise<boolean>} */
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      ok = false;
+    }
+    ta.remove();
+    return ok;
+  }
+}
+
+function exportRound() {
+  if (!lastResult) return;
+  downloadText(scorecardFilename(lastResult.card), scorecardJson(lastResult.card));
+  exportNote = "Downloaded the round as JSON.";
+  renderOverlay();
+}
+
+async function copyRound() {
+  if (!lastResult) return;
+  const ok = await copyText(scorecardJson(lastResult.card));
+  exportNote = ok ? "Copied the round as JSON." : "Could not copy: use Download JSON instead.";
+  renderOverlay();
+}
+
+function exportAllScores() {
+  const scores = loadScores(storage);
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..*/, "").replace("T", "-");
+  downloadText(`tetris-scores-${stamp}.json`, scorecardJson({ app: "tetris", format: 1, exportedAt: new Date().toISOString(), scores }));
+}
+
 /** @param {import("./ui/scores.js").ScoreRecord} r */
 function describeRecord(r) {
   return `${r.score} \u00b7 ${r.grade}${r.natural ? " \u00b7 NATURAL" : ""}`;
@@ -145,11 +206,15 @@ function describeRecord(r) {
 /** Menu items for the screen being shown. @returns {MenuItem[]} */
 function menuFor(/** @type {Screen} */ screenName) {
   if (screenName === "title") {
-    return DIFFICULTIES.map((d) => ({
-      label: d.grade ? `${d.label} (${d.grade})` : d.label,
-      detail: bests[d.id] ? `best ${describeRecord(bests[d.id])}` : "",
-      run: () => startRound(d.id),
-    }));
+    const saved = loadScores(storage).length;
+    return [
+      ...DIFFICULTIES.map((d) => ({
+        label: d.grade ? `${d.label} (${d.grade})` : d.label,
+        detail: bests[d.id] ? `best ${describeRecord(bests[d.id])}` : "",
+        run: () => startRound(d.id),
+      })),
+      ...(saved > 0 ? [{ label: "Export saved scores", detail: `${saved} round${saved === 1 ? "" : "s"}, JSON`, run: exportAllScores }] : []),
+    ];
   }
   if (screenName === "paused") {
     return [
@@ -160,6 +225,8 @@ function menuFor(/** @type {Screen} */ screenName) {
   if (screenName === "over") {
     return [
       { label: "Play again", run: () => startRound(mode) },
+      { label: "Download JSON", detail: "the whole round", run: exportRound },
+      { label: "Copy JSON", run: () => void copyRound() },
       { label: "Menu", run: () => setScreen("title") },
     ];
   }
@@ -178,7 +245,10 @@ function renderMenu() {
         d.textContent = item.detail;
         b.appendChild(d);
       }
-      if (i === menuIndex) b.setAttribute("aria-current", "true");
+      if (i === menuIndex) {
+        b.setAttribute("aria-current", "true");
+        queueMicrotask(() => b.scrollIntoView({ block: "nearest" })); // keep the selection visible when the card scrolls
+      }
       b.addEventListener("click", () => {
         menuIndex = i;
         b.blur(); // so a later Enter or Space is ours alone, not also a click on this button
@@ -212,8 +282,40 @@ function renderOverlay() {
   const [title, text] = texts[screen];
   overlayTitle.textContent = title;
   overlayText.textContent = text;
+  const showCard = screen === "over" && lastResult !== null;
+  overlayCard.classList.toggle("wide", showCard);
+  renderScorecard(showCard ? lastResult : null);
   overlay.hidden = false;
   renderMenu();
+}
+
+/** Fill the scorecard grid from the last round, or empty it. @param {typeof lastResult} result */
+function renderScorecard(result) {
+  if (!result) {
+    scorecardEl.replaceChildren();
+    return;
+  }
+  scorecardEl.replaceChildren(
+    ...scorecardSections(result.card).map((section) => {
+      const box = document.createElement("section");
+      const h = document.createElement("h3");
+      h.textContent = section.title;
+      const dl = document.createElement("dl");
+      for (const [label, value] of section.items) {
+        const row = document.createElement("div");
+        const dt = document.createElement("dt");
+        dt.textContent = label;
+        const dd = document.createElement("dd");
+        dd.textContent = value;
+        row.appendChild(dt);
+        row.appendChild(dd);
+        dl.appendChild(row);
+      }
+      box.appendChild(h);
+      box.appendChild(dl);
+      return box;
+    }),
+  );
 }
 
 /** Title and text for the game-over card. @returns {[string, string]} */
@@ -226,6 +328,7 @@ function resultText() {
     `${r.rate} lines/sec` + (r.score > 0 ? `, grade ${r.grade}` : "") + (r.natural ? ", NATURAL!" : "."),
     lastResult?.newBest ? `New best for ${label}!` : bests[r.mode] ? `Best for ${label}: ${describeRecord(bests[r.mode])}` : "",
     lastResult?.saved ? "" : "(Could not save: this browser is blocking storage.)",
+    exportNote,
   ];
   return [r.ended === "ended" ? "Game ended" : "Game over", lines.filter(Boolean).join("\n")];
 }
@@ -255,6 +358,7 @@ function startRound(id) {
   game = newGame(mode);
   round = newRound(game, mode);
   lastResult = null;
+  exportNote = "";
   setScreen("playing");
 }
 
@@ -283,7 +387,11 @@ function finishRound(how) {
   const saved = saveScore(storage, record);
   bests = bestByMode(saved ? loadScores(storage) : [...Object.values(bests), record]);
   const newBest = game.score > 0 && (!before || bests[mode] === record);
-  lastResult = { record, newBest, saved };
+  const card = buildScorecard({
+    game, mode, garbagePerSecond: difficultyById(mode).garbagePerSecond, ended: how, startedAt: round.startedAt, inputLog: round.inputLog,
+  });
+  exportNote = "";
+  lastResult = { record, card, newBest, saved };
   setScreen("over");
 }
 

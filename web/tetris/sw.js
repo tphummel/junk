@@ -20,6 +20,7 @@ const PRECACHE = [
   '/tetris/src/ui/effects.js',
   '/tetris/src/ui/hud.js',
   '/tetris/src/ui/render.js',
+  '/tetris/src/ui/scorecard.js',
   '/tetris/src/ui/scores.js',
   '/tetris/manifest.webmanifest',
   '/tetris/icon.svg',

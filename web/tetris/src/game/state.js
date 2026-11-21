@@ -13,6 +13,7 @@ import {
   HARD_DROP_POINTS_PER_ROW,
   levelFor,
   linePoints,
+  linePointsBreakdown,
   LOCK_DELAY_TICKS,
   MAX_LOCK_RESETS,
   RULES_VERSION,
@@ -58,6 +59,13 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @property {number} nextSquareId id for the next square formed; ids start at 1
  * @property {number} goldSquares gold (single-color) squares formed so far
  * @property {number} silverSquares silver (mixed) squares formed so far
+ * @property {{ type: PieceType, tick: number }[]} dealt every piece dealt from the queue, in order, with the tick it entered play
+ * @property {{ type: PieceType, tick: number }[]} locks every piece locked, in order, with the tick it locked
+ * @property {number[]} clears how many times 0, 1, 2, 3 and 4 lines were cleared at once (index 0 is unused)
+ * @property {number} pointsLines points that came from the cleared lines themselves
+ * @property {number} pointsSquares points that came from squares the lines passed through
+ * @property {number} pointsTetris points from four-line clears
+ * @property {number} garbageRows garbage rows that have arrived
  * @property {number} spinsCW rotations that succeeded, clockwise
  * @property {number} spinsCCW rotations that succeeded, counter-clockwise
  * @property {number} movesLeft columns moved left (each successful step is one)
@@ -112,6 +120,13 @@ export function createGame(seed, options = {}) {
     nextSquareId: 1,
     goldSquares: 0,
     silverSquares: 0,
+    dealt: [],
+    locks: [],
+    clears: [0, 0, 0, 0, 0],
+    pointsLines: 0,
+    pointsSquares: 0,
+    pointsTetris: 0,
+    garbageRows: 0,
     spinsCW: 0,
     spinsCCW: 0,
     movesLeft: 0,
@@ -148,6 +163,7 @@ function refillQueue(game) {
 function takeNext(game) {
   const type = /** @type {PieceType} */ (game.queue.shift());
   refillQueue(game);
+  game.dealt.push({ type, tick: game.tick });
   return type;
 }
 
@@ -265,6 +281,7 @@ function applyGarbage(game) {
     }
     game.nextGarbageId -= COLS;
   }
+  game.garbageRows += n;
   game.events.push({ type: "garbage", rows: n });
 }
 
@@ -297,6 +314,7 @@ function lock(game) {
   const p = /** @type {Piece} */ (game.current);
   place(game.board, p.type, p.rot, p.x, p.y, p.id);
   game.piecesPlaced++;
+  game.locks.push({ type: p.type, tick: game.tick });
   game.canHold = true;
 
   // Lock-out: the whole piece is above the visible field.
@@ -307,6 +325,11 @@ function lock(game) {
   const cleared = clearLines(game.board);
   if (cleared > 0) {
     const points = linePoints(rows);
+    const split = linePointsBreakdown(rows);
+    game.pointsLines += split.lines;
+    game.pointsSquares += split.squares;
+    game.pointsTetris += split.tetris;
+    game.clears[cleared]++;
     game.events.push({ type: "clear", rows: clearedRows, rowSquares: rows, points });
     game.score += points;
     game.lines += cleared;

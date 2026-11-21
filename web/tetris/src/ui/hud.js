@@ -22,6 +22,7 @@ export function createHud(doc) {
   const natural = el("natural");
   const modeEl = el("mode");
   const counts = {
+    piecesPlaced: el("pieces"),
     spinsCCW: el("spins-ccw"),
     spinsCW: el("spins-cw"),
     movesLeft: el("moves-left"),

@@ -84,6 +84,15 @@
       vertical-align: middle;
     }
     .badge[hidden] { display: none; }
+    /* The scorecard: a grid of small groups of figures, under the result lines. */
+    .card.wide { max-width: min(92vw, 560px); max-height: calc(100dvh - 24px); overflow: auto; }
+    .scorecard { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px 16px; margin-top: 12px; text-align: left; }
+    .scorecard:empty { display: none; }
+    .scorecard h3 { margin: 0 0 4px; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
+    .scorecard dl { margin: 0; }
+    .scorecard dl > div { display: flex; justify-content: space-between; gap: 8px; font-size: 0.82rem; }
+    .scorecard dt { font-size: inherit; letter-spacing: 0; text-transform: none; color: var(--support); }
+    .scorecard dd { margin: 0; font-size: inherit; font-variant-numeric: tabular-nums; }
     .menu { display: grid; gap: 6px; margin-top: 12px; }
     .menu button {
       font: inherit;
@@ -157,8 +166,9 @@
         <dt>Grade</dt><dd class="grade"><span id="grade">-</span> <span id="natural" class="badge" hidden>Natural</span></dd>
       </dl>
       <section class="panel moves">
-        <h2>Moves</h2>
+        <h2>Counts</h2>
         <dl class="counts">
+          <div title="Pieces played (locked)"><dt>Pieces</dt><dd id="pieces">0</dd></div>
           <div title="Counter-clockwise spins"><dt>CCW</dt><dd id="spins-ccw">0</dd></div>
           <div title="Clockwise spins"><dt>CW</dt><dd id="spins-cw">0</dd></div>
           <div title="Columns moved left"><dt>Left</dt><dd id="moves-left">0</dd></div>
@@ -174,9 +184,10 @@
     <div class="field">
       <canvas id="board" aria-label="Tetris board"></canvas>
       <div id="overlay">
-        <div class="card">
+        <div class="card" id="overlay-card">
           <h1 id="overlay-title">Tetris</h1>
           <p id="overlay-text"></p>
+          <div id="scorecard" class="scorecard"></div>
           <div id="menu" class="menu" role="menu"></div>
         </div>
       </div>
