@@ -243,3 +243,67 @@ test("formatClock rounds up", () => {
   assert.equal(formatClock(120), "2:00");
   assert.equal(formatClock(-1), "0:00");
 });
+
+// ---------- Apple Health import ----------
+import { deflateRawSync } from "node:zlib";
+import { brushFromRecord, parseHealthDate, readHealthExport, scanBrushes } from "../web/toothup/health.js";
+
+const rec = (start, end, type = "HKCategoryTypeIdentifierToothbrushingEvent") =>
+  `<Record type="${type}" sourceName="Tom's Apple Watch" startDate="${start}" endDate="${end}" value="HKCategoryValueNotApplicable"><MetadataEntry key="HKTimeZone" value="America/New_York"/></Record>`;
+const xml = (...records) => `<?xml version="1.0"?><HealthData locale="en_US">${records.join("\n")}</HealthData>`;
+const R1 = rec("2024-03-05 07:31:02 -0500", "2024-03-05 07:33:12 -0500");
+const R2 = rec("2024-03-05 21:00:00 -0500", "2024-03-05 21:00:30 -0500");
+
+test("parseHealthDate: keeps the UTC offset where the brush happened", () => {
+  assert.deepEqual(parseHealthDate("2024-03-05 07:31:02 -0500"), { ms: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300 });
+  assert.deepEqual(parseHealthDate("2024-03-05 07:31:02 +0530"), { ms: Date.UTC(2024, 2, 5, 2, 1, 2), offset: 330 });
+  assert.equal(parseHealthDate("March 5"), null);
+});
+
+test("brushFromRecord: 60s or more is a full brush, shorter is a partial one, bad dates are rejected", () => {
+  assert.deepEqual(brushFromRecord(R1), { id: `s${Date.UTC(2024, 2, 5, 12, 31, 2)}`, type: "brush", start: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300, seconds: 130, steps: 9 });
+  assert.equal(brushFromRecord(R2).steps, 4);
+  assert.equal(brushFromRecord(rec("2024-03-05 07:31:02 -0500", "2024-03-05 07:30:00 -0500")), null);
+  assert.equal(normalizeEvent(brushFromRecord(R1))?.id, brushFromRecord(R1).id);
+});
+
+test("scanBrushes: ignores other record types and carries a split tag into the next chunk", () => {
+  const text = xml(rec("2024-03-05 08:00:00 -0500", "2024-03-05 08:01:00 -0500", "HKQuantityTypeIdentifierStepCount"), R1);
+  assert.equal(scanBrushes(text).events.length, 1);
+  const cut = text.indexOf("<Record", text.indexOf("<Record") + 1) + 20;
+  const a = scanBrushes(text.slice(0, cut));
+  assert.equal(a.events.length, 0);
+  assert.equal(scanBrushes(a.rest + text.slice(cut)).events.length, 1);
+});
+
+/** A one-file zip like Health's export.zip: apple_health_export/export.xml, deflated, with a data descriptor-free layout. */
+function makeZip(name, content) {
+  const data = deflateRawSync(Buffer.from(content));
+  const n = Buffer.from(name);
+  const local = Buffer.alloc(30);
+  local.writeUInt32LE(0x04034b50, 0); local.writeUInt16LE(8, 8); local.writeUInt32LE(data.length, 18);
+  local.writeUInt32LE(content.length, 22); local.writeUInt16LE(n.length, 26);
+  const central = Buffer.alloc(46);
+  central.writeUInt32LE(0x02014b50, 0); central.writeUInt16LE(8, 10); central.writeUInt32LE(data.length, 20);
+  central.writeUInt32LE(content.length, 24); central.writeUInt16LE(n.length, 28); central.writeUInt32LE(0, 42);
+  const dirOffset = local.length + n.length + data.length;
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(1, 8); end.writeUInt16LE(1, 10);
+  end.writeUInt32LE(central.length + n.length, 12); end.writeUInt32LE(dirOffset, 16);
+  return new Blob([local, n, data, central, n, end]);
+}
+
+test("readHealthExport: reads export.xml from a zip or directly, deduplicating repeats", async () => {
+  const text = xml(R1, R1, R2);
+  for (const file of [makeZip("apple_health_export/export.xml", text), new Blob([text])]) {
+    const { events } = await readHealthExport(file);
+    assert.deepEqual(events.map((e) => e.steps), [9, 4]);
+  }
+  const merged = mergeEvents(brushOnly(), (await readHealthExport(new Blob([xml(R1)]))).events);
+  assert.equal(merged.added, 0);
+  await assert.rejects(readHealthExport(makeZip("apple_health_export/export_cda.xml", text)), /No export.xml/);
+  await assert.rejects(readHealthExport(new Blob(["PK nope"])), /Not a zip/);
+});
+function brushOnly() {
+  return [brushFromRecord(R1)];
+}
