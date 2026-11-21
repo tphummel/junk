@@ -42,12 +42,6 @@ function playerByName(raw) {
   return p;
 }
 
-const ROW = 44; // wheel row height in px; keep in sync with .wheel in index.html
-const WHEEL_ITEMS = Array.from({ length: SCORE_MAX - SCORE_MIN + 1 }, (_, i) => {
-  const v = SCORE_MIN + i;
-  return `<div class="tick${v < 0 ? ' neg' : ''}" data-v="${v}">${v}</div>`;
-}).join('');
-
 const route = () => location.hash.match(/^#\/s\/(\w+)/)?.[1] ?? null;
 /** @returns {Session | undefined} */
 const currentSession = () => db.sessions.find((s) => s.id === route());
@@ -106,7 +100,7 @@ function sessionView(s) {
       </div>
       <p class="muted">Changing the bonus affects future games; saved games keep the bonus they were played with.</p>
     </details>
-    ${cur?.endedAt ? '' : rosterView(s)}
+    ${rosterView(s)}
     ${gamePanel(s, cur)}
     ${games.length ? reportsView(games) : '<p class="muted">Reports appear after the first saved game.</p>'}
     ${db.sessions.length > 1 ? `<section><h2>All-time</h2>${allTimeInner()}</section>` : ''}`;
@@ -140,43 +134,45 @@ function gamePanel(s, cur) {
       <button class="primary big" data-act="end">End game</button>
       <button class="link" data-act="cancel">cancel game</button></section>`;
   }
-  const bench = db.players.filter((p) => !s.present.includes(p.id));
-  const cards = s.present.map((id) => `
-    <div class="card${cur.pouncer === id ? ' pouncer' : ''}" data-card="${id}">
-      <div class="card-top"><span class="who">${esc(nameOf(id))}</span>
-        <button type="button" class="x" data-act="drop" data-id="${id}" aria-label="Drop ${esc(nameOf(id))}">&times;</button></div>
-      <div class="wheelwrap"><div class="wheel" data-wheel="${id}" role="spinbutton" aria-label="${esc(nameOf(id))} score">
-        <div class="spacer"></div>${WHEEL_ITEMS}<div class="spacer"></div></div><div class="band"></div></div>
-      <button type="button" class="pounce-btn" data-act="pounce" data-id="${id}" aria-pressed="${cur.pouncer === id}">&#9889; Pounced +${s.bonus}</button>
+  const rows = s.present.map((id) => `
+    <div class="entry">
+      <span class="who">${esc(nameOf(id))}</span>
+      <input data-score="${id}" type="number" inputmode="numeric" min="${SCORE_MIN}" max="${SCORE_MAX}" step="1" placeholder="0" aria-label="${esc(nameOf(id))} score">
+      <button type="button" class="sign" data-act="neg" data-id="${id}" title="Flip sign">&plusmn;</button>
+      <label class="pounce"><input type="radio" name="pouncer" value="${id}"> Pounced</label>
+      <button type="button" class="link" data-act="drop" data-id="${id}">out</button>
     </div>`).join('');
-  return `<section class="entry-view"><h2>Game ${s.games.length + 1} results <span class="muted">${formatDuration(cur.endedAt - cur.startedAt)}</span></h2>
-    <div class="chips bench-strip">
-      ${bench.map((p) => `<button class="chip" data-act="add" data-id="${p.id}">+ ${esc(p.name)}</button>`).join('')}
-      <form data-form="add-player" class="row inline-add"><input name="name" placeholder="New player" autocomplete="off" autocapitalize="words" enterkeyhint="done"><button>Add</button></form>
-    </div>
-    <div class="cards">${cards || '<p class="muted">Everyone dropped out. Add players above.</p>'}</div>
-    <div class="savebar">
-      <span class="error" id="errors"></span>
-      <button type="button" class="link" data-act="cancel">discard</button>
-      <button class="primary" id="save-game" data-act="save">Save game</button>
-    </div></section>`;
+  return `<section><h2>Game ${s.games.length + 1} results <span class="muted">${formatDuration(cur.endedAt - cur.startedAt)}</span></h2>
+    <form data-form="results">
+      ${rows}
+      <p class="muted">Scores ${SCORE_MIN} to ${SCORE_MAX}. The pouncer gets +${s.bonus}.</p>
+      <p class="error" id="errors"></p>
+      <button class="primary big" id="save-game">Save game</button>
+      <button type="button" class="link" data-act="cancel">discard game</button>
+    </form></section>`;
 }
 
-/** Put each wheel on its saved score (missing means 0). @param {Session} s */
+/** @param {Session} s */
 function restoreDraft(s) {
   const cur = s.current;
   if (!cur) return;
-  for (const el of app.querySelectorAll('[data-wheel]')) {
-    const w = /** @type {HTMLElement} */ (el);
-    w.scrollTop = (Number(cur.scores[w.dataset.wheel ?? ''] ?? 0) - SCORE_MIN) * ROW;
+  for (const el of app.querySelectorAll('[data-score]')) {
+    const input = /** @type {HTMLInputElement} */ (el);
+    input.value = cur.scores[input.dataset.score ?? ''] ?? '';
   }
+  const r = cur.pouncer && app.querySelector(`input[name=pouncer][value="${cur.pouncer}"]`);
+  if (r) /** @type {HTMLInputElement} */ (r).checked = true;
   updateSaveState(s);
 }
 
 /** @param {Session} s */
 function draftResults(s) {
   const cur = s.current;
-  return s.present.map((id) => ({ playerId: id, score: Number(cur?.scores[id] ?? 0), pounced: cur?.pouncer === id }));
+  return s.present.map((id) => ({
+    playerId: id,
+    score: cur?.scores[id] === undefined || cur.scores[id] === '' ? NaN : Number(cur.scores[id]),
+    pounced: cur?.pouncer === id,
+  }));
 }
 
 /** @param {Session} s */
@@ -184,7 +180,7 @@ function updateSaveState(s) {
   const errors = validateResults(draftResults(s));
   const el = document.getElementById('errors');
   const btn = /** @type {HTMLButtonElement | null} */ (document.getElementById('save-game'));
-  if (el) el.textContent = errors[0] ?? '';
+  if (el) el.textContent = errors.join(' ');
   if (btn) btn.disabled = errors.length > 0;
 }
 
@@ -286,7 +282,6 @@ app.addEventListener('click', (e) => {
   const id = /** @type {HTMLElement} */ (t).dataset.id ?? '';
   const s = currentSession();
   if (act === 'export') return exportData();
-  if (act === 'tick') return;
   if (act === 'del-session') {
     if (confirm('Delete this session and its games?')) db.sessions = db.sessions.filter((x) => x.id !== id);
   } else if (!s) {
@@ -306,12 +301,9 @@ app.addEventListener('click', (e) => {
   } else if (act === 'cancel') {
     if (!confirm('Throw this game away?')) return;
     s.current = null;
-  } else if (act === 'pounce' && s.current) {
-    s.current.pouncer = s.current.pouncer === id ? null : id;
-    save();
-    return refreshCards(s);
-  } else if (act === 'save') {
-    return saveGame(s);
+  } else if (act === 'neg' && s.current) {
+    const v = s.current.scores[id];
+    if (v) s.current.scores[id] = v.startsWith('-') ? v.slice(1) : `-${v}`;
   } else if (act === 'del-game') {
     if (!confirm('Delete this game?')) return;
     s.games = s.games.filter((g) => g.id !== id);
@@ -324,35 +316,18 @@ app.addEventListener('input', (e) => {
   const el = /** @type {HTMLInputElement} */ (e.target);
   const s = currentSession();
   if (!s) return;
-  if (el.dataset.field === 'venue') {
+  if (el.dataset.score && s.current) {
+    s.current.scores[el.dataset.score] = el.value;
+  } else if (el.name === 'pouncer' && s.current) {
+    s.current.pouncer = el.value;
+  } else if (el.dataset.field === 'venue') {
     s.venue = el.value;
   } else if (el.dataset.field === 'bonus') {
     const n = Number(el.value);
     if (Number.isInteger(n) && n >= 0) s.bonus = n;
   } else return;
   save();
-});
-
-// Wheels: the centered row is the score. Scroll events don't bubble, so listen in the capture phase.
-/** @type {ReturnType<typeof setTimeout> | undefined} */
-let saveTimer;
-app.addEventListener('scroll', (e) => {
-  const w = /** @type {HTMLElement} */ (e.target);
-  const id = w.dataset?.wheel;
-  const s = currentSession();
-  if (!id || !s?.current) return;
-  const v = Math.min(SCORE_MAX, Math.max(SCORE_MIN, Math.round(w.scrollTop / ROW) + SCORE_MIN));
-  if (s.current.scores[id] === String(v)) return;
-  s.current.scores[id] = String(v);
-  updateSaveState(s);
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 200);
-}, true);
-
-// Tapping a nearby number jumps the wheel to it.
-app.addEventListener('click', (e) => {
-  const t = /** @type {HTMLElement} */ (e.target).closest('.tick');
-  if (t) t.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  if (s.current?.endedAt) updateSaveState(s);
 });
 
 app.addEventListener('change', (e) => {
@@ -386,6 +361,13 @@ app.addEventListener('submit', (e) => {
   if (kind === 'add-player') {
     const p = playerByName(String(data.get('name') ?? ''));
     if (p && !s.present.includes(p.id)) s.present.push(p.id);
+  } else if (kind === 'results' && s.current?.endedAt) {
+    const results = draftResults(s);
+    if (validateResults(results).length) return;
+    s.games.push({
+      id: uid(), startedAt: s.current.startedAt, durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, results,
+    });
+    s.current = null;
   }
   save();
   render();
@@ -399,28 +381,6 @@ setInterval(() => {
   const t = document.getElementById('timer');
   if (s?.current && !s.current.endedAt && t) t.textContent = formatDuration(Date.now() - s.current.startedAt);
 }, 500);
-
-/** Re-mark which card pounced without rebuilding the wheels. @param {Session} s */
-function refreshCards(s) {
-  for (const el of app.querySelectorAll('[data-card]')) {
-    const on = /** @type {HTMLElement} */ (el).dataset.card === s.current?.pouncer;
-    el.classList.toggle('pouncer', on);
-    el.querySelector('.pounce-btn')?.setAttribute('aria-pressed', String(on));
-  }
-  updateSaveState(s);
-}
-
-/** @param {Session} s */
-function saveGame(s) {
-  const cur = s.current;
-  const results = draftResults(s);
-  if (!cur?.endedAt || validateResults(results).length) return;
-  s.games.push({ id: uid(), startedAt: cur.startedAt, durationMs: cur.endedAt - cur.startedAt, bonus: s.bonus, results });
-  s.current = null;
-  save();
-  render();
-  scrollTo({ top: 0 });
-}
 
 function exportData() {
   const a = document.createElement('a');

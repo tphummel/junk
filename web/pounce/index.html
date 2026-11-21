@@ -53,7 +53,11 @@
     .chip.in { background: var(--primary); color: var(--bg); }
     .chip b { margin-left: .3rem; }
     .timer { font-size: 4rem; font-variant-numeric: tabular-nums; text-align: center; margin: .5rem 0; }
+    .entry { display: grid; grid-template-columns: 1fr 5rem auto auto auto; gap: .4rem; align-items: center; padding: .4rem 0; border-bottom: 1px solid var(--support); }
+    .entry input[type=number] { width: 100%; font-size: 1.3rem; text-align: center; }
     .who { font-weight: 600; overflow-wrap: anywhere; }
+    .pounce { display: flex; align-items: center; gap: .3rem; white-space: nowrap; }
+    .pounce input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
     .list { list-style: none; padding: 0; }
     .list li { padding: .3rem 0; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
     table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: .5rem 0; }
@@ -63,28 +67,6 @@
     .key i { display: inline-block; width: .8rem; height: .8rem; border-radius: 50%; margin-right: .3rem; }
     .bars { display: flex; align-items: flex-end; gap: 3px; height: 70px; }
     .bar { flex: 1; background: var(--primary); border-radius: 2px 2px 0 0; min-width: 3px; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .6rem; margin: .6rem 0; }
-    .card { background: var(--bg); border: 3px solid transparent; border-radius: 12px; padding: .4rem; display: flex; flex-direction: column; gap: .4rem; }
-    .card.pouncer { border-color: var(--accent); }
-    .card-top { display: flex; justify-content: space-between; align-items: center; gap: .3rem; }
-    .card .who { font-size: 1.1rem; }
-    .x { width: 2.75rem; height: 2.75rem; padding: 0; font-size: 1.5rem; line-height: 1; border-color: var(--support); color: var(--support); flex: none; }
-    .wheel { height: 132px; overflow-y: scroll; scroll-snap-type: y mandatory; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; scrollbar-width: none; position: relative;
-      -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); }
-    .wheel::-webkit-scrollbar { display: none; }
-    .wheel .spacer { height: 44px; }
-    .tick { height: 44px; line-height: 44px; text-align: center; font-size: 1.7rem; font-variant-numeric: tabular-nums; scroll-snap-align: center; scroll-snap-stop: always; user-select: none; -webkit-user-select: none; }
-    .tick.neg { color: var(--support); }
-    .wheelwrap { position: relative; }
-    .band { position: absolute; left: 0; right: 0; top: 44px; height: 44px; border-block: 2px solid var(--primary); border-radius: 8px; pointer-events: none; }
-    .pounce-btn { width: 100%; min-height: 2.75rem; padding: .5rem .3rem; white-space: nowrap; }
-    .pounce-btn[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
-    .bench-strip .chip { min-height: 2.75rem; }
-    .inline-add { margin: 0; flex: 1; min-width: 12rem; }
-    .inline-add input { flex: 1; min-height: 2.75rem; font-size: 1rem; }
-    .savebar { position: sticky; bottom: 0; display: flex; align-items: center; gap: .6rem; padding: .6rem 0; background: var(--panel); }
-    .savebar .error { flex: 1; font-size: .85rem; min-height: 0; }
-    .savebar .primary { min-width: 10rem; font-size: 1.2rem; padding: .8rem 1rem; }
     details.settings { margin: .5rem 0; }
     summary { cursor: pointer; color: var(--support); }
   </style>
