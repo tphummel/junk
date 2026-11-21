@@ -416,8 +416,8 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
 
 // ---------- reminders (dentist, brush head) ----------
 const REMINDER_INFO = {
-  dentist: { label: "Dentist", title: "Dentist visit", icon: "🦷", done: "Visited", confirm: "Mark your dentist visit as done today?" },
-  head: { label: "Brush head", title: "Toothbrush head change", icon: "🪥", done: "Changed", confirm: "Mark your brush head as changed today?" },
+  dentist: { label: "Dentist", title: "Dentist visit", icon: "🏥", done: "Visited", confirm: "Mark your dentist visit as done today?" },
+  head: { label: "Brush head", title: "Toothbrush head change", icon: "🔄", done: "Changed", confirm: "Mark your brush head as changed today?" },
 };
 
 const plural = (n) => `${n} day${n === 1 ? "" : "s"}`;
