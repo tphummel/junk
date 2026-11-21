@@ -295,20 +295,17 @@ let view = viewOf(today());
 
 const ICON = { brush: "🪥", floss: "🧵", mouthwash: "💧" };
 
-/** ["🪥 1/2", "🧵 1/1", "💧 0/2", "+1 extra"] for one day's goals. */
-function goalsParts(g) {
+/** "🪥 1/2 · 🧵 1/1 · 💧 0/2 · +1 extra" for one day's goals. */
+function goalsText(g) {
   const parts = Object.keys(GOALS).map((type) => `${ICON[type]} ${g.done[type]}/${GOALS[type]}`);
   if (g.extras) parts.push(`+${g.extras} extra`);
-  return parts;
+  return parts.join(" · ");
 }
-
-const goalsText = (g) => goalsParts(g).join(" · ");
 
 const eventsOn = (day) => groupByDay(state.events, state.settings).get(day) || [];
 
 function renderToday() {
-  // One line per goal, stacked between the reminder buttons.
-  $("today").replaceChildren(...goalsParts(dayGoals(eventsOn(today()))).map((text) => Object.assign(document.createElement("div"), { textContent: text })));
+  $("today").textContent = goalsText(dayGoals(eventsOn(today())));
 }
 
 function renderStats() {
