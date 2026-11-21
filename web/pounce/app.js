@@ -8,7 +8,7 @@ const KEY = 'pounce:v1';
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
 
 /** @typedef {{ id: string, name: string }} Player */
-/** @typedef {{ startedAt: number, endedAt: number | null, scores: Record<string, string>, pouncer: string | null }} Current */
+/** @typedef {{ startedAt: number, endedAt: number | null, scores: Record<string, string>, pouncer: string | null, notes?: string }} Current */
 /** @typedef {{ id: string, venue: string, bonus: number, createdAt: number, present: string[], games: any[], current: Current | null }} Session */
 
 /** @type {{ players: Player[], sessions: Session[] }} */
@@ -146,6 +146,8 @@ function gamePanel(s, cur) {
     <form data-form="results">
       ${rows}
       <p class="muted">Scores ${SCORE_MIN} to ${SCORE_MAX}. The pouncer gets +${s.bonus}.</p>
+      <label class="notes">Game notes <span class="muted">(optional)</span>
+        <textarea data-notes rows="2" placeholder="Anything worth remembering about this game"></textarea></label>
       <p class="error" id="errors"></p>
       <button class="primary big" id="save-game">Save game</button>
       <button type="button" class="link" data-act="cancel">discard game</button>
@@ -160,6 +162,8 @@ function restoreDraft(s) {
     const input = /** @type {HTMLInputElement} */ (el);
     input.value = cur.scores[input.dataset.score ?? ''] ?? '';
   }
+  const notes = /** @type {HTMLTextAreaElement | null} */ (app.querySelector('[data-notes]'));
+  if (notes) notes.value = cur.notes ?? '';
   const r = cur.pouncer && app.querySelector(`input[name=pouncer][value="${cur.pouncer}"]`);
   if (r) /** @type {HTMLInputElement} */ (r).checked = true;
   updateSaveState(s);
@@ -196,6 +200,7 @@ function reportsView(games) {
       <p>${gameTotals(last).sort((a, b) => b.total - a.total).map((t) => `<span class="${gameWinners(last).includes(t.playerId) ? 'win' : ''}">${esc(nameOf(t.playerId))} ${t.total}${t.pounced ? ' ⚡' : ''}</span>`).join(' · ')}
       <span class="muted">(${formatDuration(last.durationMs)})</span>
       <button class="link" data-act="del-game" data-id="${last.id}">delete</button></p>
+      ${last.notes ? `<p class="note">${esc(last.notes)}</p>` : ''}
     </section>
     <section>
       <h2>Leaderboard</h2>
@@ -209,7 +214,8 @@ function reportsView(games) {
       </tbody></table>
     </section>
     ${paceView(games)}
-    ${h2hView(games)}`;
+    ${h2hView(games)}
+    ${notesView(games)}`;
 }
 
 /** Rank, name, average score (total / games played), wins. @param {ReturnType<typeof standings>} st */
@@ -221,6 +227,13 @@ function leaderboardTable(st) {
 
 /** @param {number | null} n */
 const fmt = (n) => (n === null ? '–' : n.toFixed(1));
+
+/** @param {any[]} games */
+function notesView(games) {
+  const noted = games.map((g, i) => ({ g, n: i + 1 })).filter((x) => x.g.notes);
+  if (!noted.length) return '';
+  return `<section><h2>Game notes</h2><ul class="list">${noted.map(({ g, n }) => `<li><b>Game ${n}</b> <span class="note">${esc(g.notes)}</span></li>`).join('')}</ul></section>`;
+}
 
 /** @param {any[]} games */
 function paceView(games) {
@@ -316,7 +329,9 @@ app.addEventListener('input', (e) => {
   const el = /** @type {HTMLInputElement} */ (e.target);
   const s = currentSession();
   if (!s) return;
-  if (el.dataset.score && s.current) {
+  if ('notes' in el.dataset && s.current) {
+    s.current.notes = el.value;
+  } else if (el.dataset.score && s.current) {
     s.current.scores[el.dataset.score] = el.value;
   } else if (el.name === 'pouncer' && s.current) {
     s.current.pouncer = el.value;
@@ -364,8 +379,10 @@ app.addEventListener('submit', (e) => {
   } else if (kind === 'results' && s.current?.endedAt) {
     const results = draftResults(s);
     if (validateResults(results).length) return;
+    const notes = (s.current.notes ?? '').trim();
     s.games.push({
       id: uid(), startedAt: s.current.startedAt, durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, results,
+      ...(notes ? { notes } : {}),
     });
     s.current = null;
   }
