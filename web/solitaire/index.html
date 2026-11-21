@@ -653,11 +653,13 @@ document.addEventListener('pointerup',e=>{if(drag&&e.pointerId===drag.id)endDrag
 document.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id)endDrag(e.clientX,e.clientY,true)});
 $('board').addEventListener('contextmenu',e=>e.preventDefault()); // no long-press menu on a card
 $('surrender').addEventListener('click',surrender);
-$('pause').addEventListener('click',()=>{
-  if(ended()||busy||S.s==null)return;
-  if(paused()){S.s+=Date.now()-S.p;delete S.p}else{S.p=Date.now();sel=null}
+// auto=true when the page itself paused the game (S.a), so only that kind is auto-resumed
+function setPause(on,auto){
+  if(ended()||busy||S.s==null||on===paused())return;
+  if(on){S.p=Date.now();sel=null;if(auto)S.a=1}else{S.s+=Date.now()-S.p;delete S.p;delete S.a}
   save();render();
-});
+}
+$('pause').addEventListener('click',()=>setPause(!paused(),false));
 function autoSolve(){
   if(ended()||busy)return;
   const r=solveGame(g,300000);
@@ -774,9 +776,13 @@ $('statsBtn').addEventListener('click',()=>{const p=$('statsPanel');if(p.hidden)
 recordResult(); // backfill a game that finished before history existed
 save();
 render();
+if(S.a&&document.visibilityState==='visible')setPause(false); // reloaded after an auto-pause
 // App left open past midnight: swap in the new day's puzzle on return unless a game is mid-play
 // (then the panel offers the swap).
 document.addEventListener('visibilitychange',()=>{
+  // hiding the page pauses the clock; coming back resumes it unless the player paused by hand
+  if(document.visibilityState==='hidden')setPause(true,true);
+  else if(S.a)setPause(false);
   if(document.visibilityState!=='visible'||busy||!isStale())return;
   if(!S.m.length||ended())newDay();else render();
 });
