@@ -21,8 +21,9 @@ Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../ad
    It writes `icon.svg`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png` into `web/<name>/`. Then add `manifest.webmanifest` and the `<head>` tags from the templates below. For a self-contained page also add `sw.js` and the registration snippet, and list every file the page needs in `PRECACHE`: one missing file stops the worker from installing.
 5. **Register it.** Add one `<li>` in `web/index.html` under the heading for the project's class (Tools, Games, Toys; add a section only if none fits), in alphabetical order. The user adds type emoji; leave them out unless asked:
    ```html
-   <li><a href="/<name>/">display name</a>: short description</li>
+   <li data-icon="icon.svg"><a href="/<name>/">display name</a>: short description</li>
    ```
+   `data-icon` is the icon file the index card shows (the `icon.svg` from step 4; omit it if the page has none). A page you use every day can also go in the `Featured` list at the top of `web/index.html`, in addition to its class.
    If the page has an API, put its link on the same line (`<a href="/api/<name>/...">api</a>`) instead of a separate entry.
 6. **If it needs an API**, use the [`new-api` skill](../new-api/SKILL.md) with the same `<name>`. Call it with a same-origin path (`fetch("/api/<name>/...")`). Logic both sides need goes in `web/<name>/<something>.js` as a plain ES module with JSDoc types; the API imports it.
 7. **Check locally:** do the one-time setup in the [README](../../README.md#site-and-api) if needed, then `npm run dev` and open `http://localhost:8787/<name>/`. Pages that import ES modules do not work from `file://`.
