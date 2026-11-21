@@ -2,11 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tom Hummel :: Borfin Shlump</title>
+  <meta name="description" content="Keep the Borfin unshlumped. It shlumps itself every morning at 6.">
+  <meta name="theme-color" content="#2D74D2">
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #2D74D2 cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #2D74D2;
+      --support: #5D789E;
+      --accent:  #D22D44;
+      --bg: #FFFFFF;
+      --text: #111111;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #397CD4;
+        --support: #627EA3;
+        --accent:  #D8495C;
+        --bg: #111111;
+        --text: #EEEEEE;
+      }
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    #error { color: var(--accent); white-space: pre-wrap; }
+  </style>
 </head>
 <body>
   <div id="app"></div>
-  <pre id="error" style="color: red;"></pre>
+  <pre id="error"></pre>
   <script type="module">
     import { compile } from 'https://cdn.jsdelivr.net/npm/svelte@3.59.2/compiler.mjs';
 
