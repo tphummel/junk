@@ -1,10 +1,11 @@
 // Offline support: cache the page's own files, never the requests the page sends.
 // Bump CACHE_NAME when a file is removed or renamed so the old entries are deleted on activate.
-const CACHE_NAME = 'math-game-v1';
+const CACHE_NAME = 'math-game-v2';
 const SCOPE_PATH = '/math-game/';
 
 const PRECACHE = [
   '/math-game/',
+  '/math-game/app.js',
   '/math-game/apple-touch-icon.png',
   '/math-game/icon-192.png',
   '/math-game/icon-512.png',

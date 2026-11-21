@@ -1,12 +1,12 @@
 {
   "name": "Math game",
   "short_name": "Math game",
-  "description": "Addition and multiplication practice with a scoreboard, configurable by query string.",
+  "description": "Addition and multiplication practice with settings, stats and history saved offline.",
   "start_url": "/math-game/",
   "scope": "/math-game/",
   "display": "standalone",
-  "background_color": "#fafafa",
-  "theme_color": "#fafafa",
+  "background_color": "#111111",
+  "theme_color": "#111111",
   "icons": [
     {
       "src": "icon-192.png",

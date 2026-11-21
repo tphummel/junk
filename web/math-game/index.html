@@ -1,188 +1,212 @@
 <!doctype html>
-<html class="no-js" lang="">
-
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>math game</title>
-  <meta name="description" content="">
-
-  <meta property="og:title" content="">
-  <meta property="og:type" content="">
-  <meta property="og:url" content="">
-  <meta property="og:image" content="">
-  <meta property="og:image:alt" content="">
-
-  <meta name="theme-color" content="#fafafa">
+  <meta name="description" content="Addition and multiplication practice with settings, stats and history saved in your browser.">
   <style>
-    td,
-    th {
-      border: 1px solid rgb(160 160 160);
-      padding: 8px 10px;
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #8BD22D cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #56831C;
+      --support: #677E4A;
+      --accent: #2D5BD2;
+      --bg: #FFFFFF;
+      --text: #111111;
+      --muted: #55595F;
+      --surface: #F3F5F0;
+      --border: #8A9180;
+      --bad: #B3261E;
     }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #8BD22D;
+        --support: #84A15F;
+        --accent: #5178DA;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --muted: #A9AEA3;
+        --surface: #1C1F19;
+        --border: #6B7262;
+        --bad: #FF8A80;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0 auto; max-width: 46rem; padding: 0 1rem 3rem; background: var(--bg); color: var(--text); font: 1rem/1.5 system-ui, sans-serif; }
+    h1 { font-size: 1.4rem; margin: 1rem 0 .5rem; color: var(--primary); }
+    h2 { font-size: 1.1rem; margin: 1.5rem 0 .5rem; color: var(--primary); }
+    a { color: var(--accent); }
+    nav { display: flex; gap: .25rem; border-bottom: 2px solid var(--support); margin-bottom: 1rem; flex-wrap: wrap; }
+    nav a { padding: .5rem .8rem; text-decoration: none; color: var(--text); border-radius: .4rem .4rem 0 0; }
+    nav a[aria-current="page"] { background: var(--primary); color: var(--bg); font-weight: 600; }
+    button, input, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: .4rem; padding: .45rem .7rem; min-height: 2.5rem; }
+    button { cursor: pointer; }
+    button.primary { background: var(--primary); color: var(--bg); border-color: var(--primary); font-weight: 600; }
+    button.danger { color: var(--bad); border-color: var(--bad); }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    input[type=number] { width: 6rem; }
+    .row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin: .5rem 0; }
+    .problem { font-size: 2.2rem; font-weight: 700; margin: .5rem 0; overflow-wrap: anywhere; }
+    #actual { width: 9rem; font-size: 1.4rem; }
+    #feedback { min-height: 3rem; padding: .5rem .75rem; border: 2px solid var(--border); border-radius: .4rem; background: var(--surface); }
+    #feedback.ok { border-color: var(--primary); }
+    #feedback.bad { border-color: var(--bad); }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: .5rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: .5rem; padding: .5rem .75rem; }
+    .card b { display: block; font-size: 1.4rem; color: var(--primary); }
+    .card span { color: var(--muted); font-size: .85rem; }
+    table { border-collapse: collapse; width: 100%; margin: .5rem 0; }
+    th, td { border: 1px solid var(--border); padding: .35rem .6rem; text-align: left; }
+    th { background: var(--surface); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .scroll { overflow-x: auto; }
+    .muted { color: var(--muted); }
+    fieldset { border: 1px solid var(--border); border-radius: .5rem; margin: 1rem 0; padding: .5rem 1rem 1rem; }
+    legend { padding: 0 .4rem; color: var(--primary); font-weight: 600; }
+    .field { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; flex-wrap: wrap; }
+    .field label { min-width: 7rem; }
+    .err { color: var(--bad); }
+    .bar { height: .9rem; background: var(--primary); border-radius: .2rem; min-width: 2px; }
+    .bartrack { background: var(--surface); border: 1px solid var(--border); border-radius: .2rem; width: 100%; min-width: 5rem; }
+    [hidden] { display: none !important; }
   </style>
-  <script>
-    const gameState = {
-      attempts: 0,
-      corrects: 0,
-      points: 0,
-      history: []
-    }
-
-    const OP_DEFAULTS = {
-      add: { min: 0, max: 500, quantity: 2 },
-      multiply: { min: 0, max: 12, quantity: 2 }
-    }
-
-    function getOperation () {
-      const urlParams = new URLSearchParams(window.location.search)
-      const op = urlParams.get('op')
-      return op === 'multiply' ? 'multiply' : 'add'
-    }
-
-    function createPrompt () {
-      const urlParams = new URLSearchParams(window.location.search)
-      const op = getOperation()
-      const defaults = OP_DEFAULTS[op]
-      const min = urlParams.get('min') ? parseInt(urlParams.get('min'), 10) : defaults.min
-      const max = urlParams.get('max') ? parseInt(urlParams.get('max'), 10) : defaults.max
-      const quantity = urlParams.get('quantity') || defaults.quantity
-
-      const numbers = []
-      let solution = op === 'multiply' ? 1 : 0
-      const range = (max - min + 1)
-      while (numbers.length < quantity) {
-        const randomByRange = Math.floor(Math.random() * range)
-        const randomInRange = randomByRange + min
-        numbers.push(randomInRange)
-        if (op === 'multiply') {
-          solution *= randomInRange
-        } else {
-          solution += randomInRange
-        }
-      }
-
-      return {
-        op,
-        numbers,
-        solution
-      }
-    }
-
-    function showMathProblem () {
-      const prompt = createPrompt()
-      const operator = prompt.op === 'multiply' ? ' × ' : ' + '
-      const displayPrompt = prompt.numbers.reduce((memo, number) => {
-        if (memo == '') {
-          memo = `${number}`
-        } else {
-          memo += `${operator}${number}`
-        }
-        return memo
-      }, '')
-
-      document.getElementById('prompt').innerText = displayPrompt
-      document.getElementById('expected').innerText = prompt.solution
-    }
-
-    function updateScoreboard () {
-      document.getElementById('attempts').innerText = gameState.history.length
-      document.getElementById('corrects').innerText = gameState.corrects
-      document.getElementById('points').innerText = gameState.points
-
-      const table = document.querySelector('table#history')
-      table.innerHTML = '<tr><th>#</th><th>Problem</th><th>Outcome</th></tr>'
-
-      for (let i = 0; i < gameState.history.length; i++) {
-        const row = table.insertRow()
-        row.insertCell().appendChild(document.createTextNode(i))
-        row.insertCell().appendChild(document.createTextNode(gameState.history[i].prompt))
-        row.insertCell().appendChild(document.createTextNode(gameState.history[i].isCorrect ? '✅' : '❌'))
-      }
-
-    }
-
-    function buttonClick () {
-      const attempt = {
-        prompt: document.getElementById('prompt').innerText,
-        actual: parseInt(document.getElementById('actual').value, 10),
-        expected: parseInt(document.getElementById('expected').innerText, 10)
-      }
-      
-      const feedback = document.getElementById('feedback')
-      if (attempt.expected === attempt.actual) {
-        feedback.style.backgroundColor = 'palegreen'
-        feedback.innerHTML = `<span">🎉🎉 Correct! ${attempt.prompt} = ${attempt.expected}</span>`
-        gameState.corrects++
-        gameState.points += attempt.expected
-        attempt.isCorrect = true
-      } else {
-        feedback.style.backgroundColor = 'lightcoral'
-        feedback.innerText = '❌ Incorrect, try again!'
-        attempt.isCorrect = false
-      }
-      gameState.history.push(attempt)
-
-      updateScoreboard()
-      if (attempt.isCorrect) {
-        showMathProblem()
-        document.getElementById('actual').value = ''
-      }
-    }
-
-    window.addEventListener('load', showMathProblem)
-  </script>
+  <meta name="theme-color" content="#111111">
   <link rel="icon" href="/math-game/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/math-game/apple-touch-icon.png">
   <link rel="manifest" href="/math-game/manifest.webmanifest">
 </head>
-
 <body>
-  <p>Hello! Welcome to the math game</p>
-  <p>
-    Mode:
-    <a href="?op=add">Addition</a>
-    |
-    <a href="?op=multiply">Multiplication</a>
-  </p>
-  <p>Problem: <span id="prompt"></span></p>
-  <div id="expected" hidden></div>
-  <p>
-    Solution: <input id="actual" type="number" />
-    <button onclick="buttonClick()">Enter Solution</button>
-  </p>
-  <p style="padding: 2px 5px; border: 1px solid black" id="feedback"></p>
-  <p>Scoreboard</p>
-  <table>
-    <tr>
-      <th>Attempts</th>
-      <td id="attempts">0</td>
-    </tr>
-    <tr>
-      <th>Correct</th>
-      <td id="corrects">0</td>
-    </tr>
-    <tr>
-      <th>Points</th>
-      <td id="points">0</td>
-    </tr>
-  </table>
-  <p>
-    <details>
-      <summary>Instructions</summary>
-      You can add querystring arguments to configure the game.
-      <ul>
-        <li>op=add or op=multiply (default: add)</li>
-        <li>min (default: 0)</li>
-        <li>max (default: 500 for addition, 12 for multiplication)</li>
-        <li>quantity (default: 2)</li>
-      </ul>
-      <p>addition example: <a href="/math-game/?op=add&min=50&max=750&quantity=5">/math-game?op=add&min=50&max=750&quantity=5</a></p>
-      <p>multiplication example: <a href="/math-game/?op=multiply&min=0&max=12&quantity=2">/math-game?op=multiply&min=0&max=12&quantity=2</a></p>
-    </details>
-  </p>
-  <p>History</p>
-  <table id="history"></table>
+  <h1>math game</h1>
+  <nav aria-label="Views">
+    <a href="#play">Play</a>
+    <a href="#stats">Stats</a>
+    <a href="#history">History</a>
+    <a href="#settings">Settings</a>
+  </nav>
+  <p id="storage-warning" class="err" role="alert" hidden>Browser storage is unavailable, so progress will not be saved. Export your data before closing.</p>
+
+  <main>
+    <section id="view-play" hidden>
+      <p class="muted" id="mode-label"></p>
+      <div class="problem" id="prompt" aria-live="polite"></div>
+      <form id="answer-form" class="row" autocomplete="off">
+        <label for="actual" class="muted">Answer</label>
+        <input id="actual" type="text" inputmode="numeric" pattern="-?[0-9]*" required>
+        <button class="primary" type="submit">Enter</button>
+        <button type="button" id="skip">Skip</button>
+      </form>
+      <p id="feedback" role="status"></p>
+      <h2>This session</h2>
+      <div class="cards" id="session-cards"></div>
+      <div class="row">
+        <button type="button" id="new-session">Start new session</button>
+      </div>
+    </section>
+
+    <section id="view-stats" hidden>
+      <div class="row">
+        <label for="stats-scope">Show</label>
+        <select id="stats-scope"></select>
+      </div>
+      <div class="cards" id="stats-cards"></div>
+      <h2>By operation</h2>
+      <div class="scroll"><table id="stats-ops"></table></div>
+      <h2>By day</h2>
+      <div class="scroll"><table id="stats-days"></table></div>
+      <h2>By session</h2>
+      <div class="scroll"><table id="stats-sessions"></table></div>
+      <h2>Most missed problems</h2>
+      <div class="scroll"><table id="stats-missed"></table></div>
+      <h2>Slowest problems</h2>
+      <div class="scroll"><table id="stats-slow"></table></div>
+    </section>
+
+    <section id="view-history" hidden>
+      <div class="row">
+        <label for="h-op">Operation</label>
+        <select id="h-op">
+          <option value="">All</option>
+          <option value="add">Addition</option>
+          <option value="multiply">Multiplication</option>
+        </select>
+        <label for="h-outcome">Outcome</label>
+        <select id="h-outcome">
+          <option value="">All</option>
+          <option value="correct">Correct</option>
+          <option value="wrong">Incorrect</option>
+        </select>
+      </div>
+      <p class="muted" id="h-count"></p>
+      <div class="scroll"><table id="h-table"></table></div>
+      <div class="row"><button type="button" id="h-more">Show more</button></div>
+    </section>
+
+    <section id="view-settings" hidden>
+      <form id="settings-form">
+        <fieldset>
+          <legend>Game</legend>
+          <div class="field">
+            <label for="s-op">Operation</label>
+            <select id="s-op">
+              <option value="add">Addition</option>
+              <option value="multiply">Multiplication</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="s-min">Smallest number</label>
+            <input id="s-min" type="number" step="1" required>
+          </div>
+          <div class="field">
+            <label for="s-max">Largest number</label>
+            <input id="s-max" type="number" step="1" required>
+          </div>
+          <div class="field">
+            <label for="s-quantity">Numbers per problem</label>
+            <input id="s-quantity" type="number" min="2" max="10" step="1" required>
+          </div>
+          <p class="muted" id="s-note">Each operation remembers its own range.</p>
+          <p class="err" id="s-error" role="alert"></p>
+          <div class="row">
+            <button class="primary" type="submit">Save settings</button>
+            <button type="button" id="s-defaults">Reset this operation to defaults</button>
+          </div>
+        </fieldset>
+      </form>
+
+      <fieldset>
+        <legend>Your data</legend>
+        <p id="data-summary" class="muted"></p>
+        <p id="persist-status" class="muted"></p>
+        <div class="row">
+          <button type="button" id="export-json">Export JSON</button>
+          <button type="button" id="export-csv">Export history CSV</button>
+        </div>
+        <div class="field">
+          <label for="import-file">Import JSON</label>
+          <input id="import-file" type="file" accept="application/json,.json">
+        </div>
+        <div class="field">
+          <label for="import-mode">Import mode</label>
+          <select id="import-mode">
+            <option value="merge">Merge with current data</option>
+            <option value="replace">Replace current data</option>
+          </select>
+        </div>
+        <p id="import-result" role="status"></p>
+        <div class="row"><button type="button" class="danger" id="clear-history">Delete all history</button></div>
+      </fieldset>
+
+      <details>
+        <summary>Link options</summary>
+        <p>A link can still preset the game: <code>?op=multiply&amp;min=2&amp;max=12&amp;quantity=2</code>. The values are saved to your settings when the link opens.</p>
+      </details>
+    </section>
+  </main>
+
+  <script src="/math-game/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       addEventListener('load', () => {
@@ -191,5 +215,4 @@
     }
   </script>
 </body>
-
 </html>
