@@ -43,15 +43,57 @@ export function dayKey(t) {
  * User settings, stored with the data and included in exports.
  * dayStartsAt: a day runs from this hour (local clock) to the same hour the next morning, so a routine at 12:30am
  * still belongs to the night before.
- * @typedef {{ dayStartsAt: number }} Settings
+ * reminders: things done every few months. `last` is the day it was last done (null if never recorded) and the
+ * next one is due everyMonths after it.
+ * @typedef {{ everyMonths: number, last: string | null }} Reminder
+ * @typedef {{ dayStartsAt: number, reminders: { dentist: Reminder, head: Reminder } }} Settings
  */
-export const DEFAULT_SETTINGS = { dayStartsAt: 4 };
+export const DEFAULT_SETTINGS = {
+  dayStartsAt: 4,
+  reminders: { dentist: { everyMonths: 6, last: null }, head: { everyMonths: 3, last: null } },
+};
 export const MAX_DAY_STARTS_AT = 6;
+export const MAX_REMINDER_MONTHS = 36;
+export const REMINDER_TYPES = /** @type {const} */ (["dentist", "head"]);
+
+/** @param {any} d */
+const isDay = (d) => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d) && dayKey(parseDay(d)) === d;
+
+/** @param {any} r @returns {Reminder | null} */
+function normalizeReminder(r) {
+  const ok = Number.isInteger(r?.everyMonths) && r.everyMonths >= 1 && r.everyMonths <= MAX_REMINDER_MONTHS && (r.last === null || isDay(r.last));
+  return ok ? { everyMonths: r.everyMonths, last: r.last } : null;
+}
 
 /** Validate settings from storage or an import; returns null if malformed. @param {any} s @returns {Settings | null} */
 export function normalizeSettings(s) {
   const h = s?.dayStartsAt;
-  return Number.isInteger(h) && h >= 0 && h <= MAX_DAY_STARTS_AT ? { dayStartsAt: h } : null;
+  const dentist = normalizeReminder(s?.reminders?.dentist);
+  const head = normalizeReminder(s?.reminders?.head);
+  if (!(Number.isInteger(h) && h >= 0 && h <= MAX_DAY_STARTS_AT) || !dentist || !head) return null;
+  return { dayStartsAt: h, reminders: { dentist, head } };
+}
+
+/** The day `n` calendar months after `day`, clamped to the end of a shorter month (Aug 31 + 6 months is Feb 28). */
+export function addMonths(day, n) {
+  const [y, m, d] = day.split("-").map(Number);
+  const daysInTarget = new Date(y, m - 1 + n + 1, 0).getDate();
+  return dayKey(new Date(y, m - 1 + n, Math.min(d, daysInTarget)));
+}
+
+/** Whole days from day `a` to day `b` (negative if b is earlier). */
+export function daysBetween(a, b) {
+  return Math.round((parseDay(b).getTime() - parseDay(a).getTime()) / 86400000);
+}
+
+/**
+ * When a reminder is next due and how many days are left (negative once overdue); null if no date is recorded.
+ * @param {Reminder} reminder @param {string} today
+ */
+export function reminderStatus(reminder, today) {
+  if (!reminder.last) return null;
+  const due = addMonths(reminder.last, reminder.everyMonths);
+  return { due, days: daysBetween(today, due) };
 }
 
 /** The day (YYYY-MM-DD) a moment belongs to, given the UTC offset in minutes where you were. @param {Settings} settings */
