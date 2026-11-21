@@ -1,6 +1,6 @@
-// HUD: hold box, next 3, score, level and lines. Reads the game, never changes it.
+// HUD: hold box, next 3, score (shown as "Lines"), level, raw lines, time, rate and grade. Reads the game, never changes it.
 
-import { formatTime, gameSeconds, gradePerf, lineRate } from "../game/stats.js";
+import { summarize } from "../game/stats.js";
 import { drawMini } from "./render.js";
 
 /** @typedef {import("../game/state.js").Game} Game */
@@ -26,11 +26,10 @@ export function createHud(doc) {
       score.textContent = String(game.score);
       level.textContent = String(game.level);
       lines.textContent = String(game.lines);
-      const seconds = gameSeconds(game.tick);
-      time.textContent = formatTime(game.tick);
-      rate.textContent = lineRate(seconds, game.lines).toFixed(2);
-      // No grade until a line is cleared: before that the rate is 0 and an "F" says nothing yet.
-      grade.textContent = game.lines > 0 ? gradePerf(seconds, game.lines) : "-";
+      const stats = summarize(game.tick, game.score);
+      time.textContent = stats.time;
+      rate.textContent = stats.rate;
+      grade.textContent = stats.grade;
       drawMini(hold, game.hold, theme, !game.canHold);
       next.forEach((canvas, i) => drawMini(canvas, game.queue[i] ?? null, theme));
     },

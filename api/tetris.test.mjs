@@ -11,7 +11,7 @@ import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, place, ROWS } fro
 import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
 import { FLOURISH_ENTRY_DELAY_TICKS, gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
 import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
-import { formatTime, gameSeconds, gradePerf, lineRate } from "../web/tetris/src/game/stats.js";
+import { formatTime, gameSeconds, gradePerf, lineRate, summarize } from "../web/tetris/src/game/stats.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
 import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
@@ -514,6 +514,25 @@ test("gradePerf: no time is rate 0 and an F, and a few spot checks", () => {
   assert.equal(gradePerf(100, 110), "1S");
   assert.equal(gradePerf(Number.NaN, 1), "F", "an unusable time counts as no time, like the original");
   assert.equal(gradePerf(100, Number.NaN), "NA");
+});
+
+test("summarize: time, score per second and grade, with a dash until something has scored", () => {
+  assert.deepEqual(summarize(0, 0), { time: "0:00.0", rate: "0.00", grade: "-" });
+  assert.deepEqual(summarize(600, 0), { time: "0:10.0", rate: "0.00", grade: "-" });
+  // 10 seconds and 85 points is 8.5 lines per second.
+  assert.deepEqual(summarize(600, 85), { time: "0:10.0", rate: "8.50", grade: "XS" });
+  // 100 seconds and 85 points is 0.85 per second: a B.
+  assert.deepEqual(summarize(6000, 85), { time: "1:40.0", rate: "0.85", grade: "B" });
+});
+
+test("the rate is judged on score, not on rows cleared", () => {
+  const game = createGame(3);
+  squareBoard(game, ["gold"]);
+  slam(game);
+  assert.equal(game.lines, 4, "four rows cleared");
+  assert.equal(game.score, 45, "worth 45 with the gold square");
+  for (let i = 0; i < 60 * 45; i++) step(game, []);
+  assert.equal(summarize(game.tick, game.score).rate, (45 / (game.tick / 60)).toFixed(2));
 });
 
 test("game time counts ticks: 60 per second, shown as m:ss.t", () => {

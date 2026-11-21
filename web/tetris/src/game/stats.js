@@ -1,5 +1,7 @@
-// Game time, lines per second and the letter grade for it. Time is counted in game ticks (60 per second), so it
-// does not run while paused, and a replay of the same inputs reports the same numbers.
+// Game time, the scoring rate and the letter grade for it. What the rating table calls "lines" is the game's score
+// (a cleared line is 1 point, plus the square bonuses), so the rate is score per second, shown as lines per second;
+// the number of rows actually cleared is "lines raw". Time is counted in game ticks (60 per second), so it does not
+// run while paused, and a replay of the same inputs reports the same numbers.
 
 import { TICKS_PER_SECOND } from "./rules.js";
 
@@ -19,19 +21,19 @@ const GRADES = [
   [1.85, "5S-"], [1.95, "5S"], [2, "5S+"],
 ];
 
-/** Lines cleared per second of game time; 0 before any time has passed. @param {number} seconds @param {number} lines */
-export function lineRate(seconds, lines) {
-  return seconds > 0 ? lines / seconds : 0;
+/** Score ("lines") per second of game time; 0 before any time has passed. @param {number} seconds @param {number} score */
+export function lineRate(seconds, score) {
+  return seconds > 0 ? score / seconds : 0;
 }
 
 /**
- * The letter grade for clearing `lines` lines in `seconds` seconds.
+ * The letter grade for scoring `score` in `seconds` seconds.
  * @param {number} seconds
- * @param {number} lines
+ * @param {number} score
  * @returns {string} "F" up to "5S+", then "XS"; "NA" if the rate is not a number
  */
-export function gradePerf(seconds, lines) {
-  const rate = lineRate(seconds, lines);
+export function gradePerf(seconds, score) {
+  const rate = lineRate(seconds, score);
   for (const [bound, grade] of GRADES) if (rate < bound) return grade;
   return rate >= 2 ? "XS" : "NA";
 }
@@ -47,4 +49,20 @@ export function formatTime(ticks) {
   const m = Math.floor(tenths / 600);
   const s = Math.floor((tenths % 600) / 10);
   return `${m}:${String(s).padStart(2, "0")}.${tenths % 10}`;
+}
+
+/**
+ * What the HUD and the game-over card show: game time, score per second, and the grade (a dash until something
+ * has scored, since a rate of 0 says nothing yet).
+ * @param {number} ticks game ticks so far
+ * @param {number} score
+ * @returns {{ time: string, rate: string, grade: string }}
+ */
+export function summarize(ticks, score) {
+  const seconds = gameSeconds(ticks);
+  return {
+    time: formatTime(ticks),
+    rate: lineRate(seconds, score).toFixed(2),
+    grade: score > 0 ? gradePerf(seconds, score) : "-",
+  };
 }
