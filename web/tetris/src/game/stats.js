@@ -56,7 +56,7 @@ export function formatTime(ticks) {
  * has scored, since a rate of 0 says nothing yet).
  * @param {number} ticks game ticks so far
  * @param {number} score
- * @returns {{ time: string, rate: string, grade: string }}
+ * @returns {{ time: string, rate: string, grade: string, natural: boolean }}
  */
 export function summarize(ticks, score) {
   const seconds = gameSeconds(ticks);
@@ -64,5 +64,26 @@ export function summarize(ticks, score) {
     time: formatTime(ticks),
     rate: lineRate(seconds, score).toFixed(2),
     grade: score > 0 ? gradePerf(seconds, score) : "-",
+    natural: isNatural(ticks, score),
   };
+}
+
+/**
+ * The time as a number made by running minutes and seconds together without the colon: 0:30 is 30, 1:12 is 112,
+ * 2:05 is 205. Whole seconds only.
+ * @param {number} ticks game ticks
+ */
+export function naturalNumber(ticks) {
+  const total = Math.floor(ticks / TICKS_PER_SECOND);
+  return Math.floor(total / 60) * 100 + (total % 60);
+}
+
+/**
+ * A "natural": the score ("lines") is greater than the time with its colon removed. 40 in 0:30, 70 in 0:59,
+ * 120 in 1:12 and 220 in 2:05 are naturals. Nothing is natural before something has scored.
+ * @param {number} ticks game ticks
+ * @param {number} score
+ */
+export function isNatural(ticks, score) {
+  return score > 0 && score > naturalNumber(ticks);
 }

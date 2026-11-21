@@ -35,6 +35,9 @@ export const METAL = {
   silver: { stops: ["#F4F6F9", "#B9C1CC", "#8E98A4", "#DDE2E8"], edge: "#3B4450", glyph: "\u25C6" },
 };
 
+/** Garbage blocks: a plain grey, 4.9:1 against the board stone and well over 4.5:1 against INK. */
+export const GARBAGE_COLOR = "#9AA3AE";
+
 /** Engraved letter and carved-outline color; a letter on every block keeps color from being the only cue. */
 export const INK = "#1A1208";
 
@@ -64,7 +67,7 @@ export function fitCanvas(canvas) {
 /**
  * One block: a bright face, a carved inset outline and an engraved letter, lit from the top left.
  * @param {CanvasRenderingContext2D} ctx
- * @param {PieceType} type
+ * @param {PieceType | "G"} type "G" is a garbage block: grey, hatched, and with no letter
  * @param {number} px left
  * @param {number} py top
  * @param {number} size cell size in pixels
@@ -73,7 +76,7 @@ export function fitCanvas(canvas) {
 function drawBlock(ctx, type, px, py, size, alpha = 1) {
   ctx.globalAlpha = alpha;
   const lw = Math.max(1, size * 0.07);
-  ctx.fillStyle = PIECE_COLORS[type];
+  ctx.fillStyle = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
   ctx.fillRect(px, py, size, size);
   // Bevel: light on the top and left edges, shade on the bottom and right.
   ctx.fillStyle = "rgba(255,255,255,0.45)";
@@ -87,6 +90,22 @@ function drawBlock(ctx, type, px, py, size, alpha = 1) {
   ctx.strokeStyle = INK;
   ctx.globalAlpha = alpha * 0.55;
   ctx.lineWidth = lw;
+  if (type === "G") {
+    // Hatching instead of a letter: rubble, not a piece.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
+    ctx.clip();
+    ctx.beginPath();
+    for (let k = -size; k < size; k += size * 0.22) {
+      ctx.moveTo(px + k, py + size);
+      ctx.lineTo(px + k + size, py);
+    }
+    ctx.stroke();
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    return;
+  }
   ctx.strokeRect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
   ctx.globalAlpha = alpha;
   ctx.fillStyle = INK;
@@ -140,6 +159,7 @@ const GLOW = {
   gold: ["#FFF2B0", "#E3A91B"],
   silver: ["#FFFFFF", "#9FB0C4"],
   plain: ["#FFFFFF", "#C9D3DF"],
+  danger: ["#FF8A8F", "#E5484D"],
 };
 
 /**
@@ -290,6 +310,12 @@ export function drawBoard(canvas, game, theme, fx, now = 0) {
       const row = p.y + dy - HIDDEN_ROWS;
       if (row >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, row * size, size);
     }
+  }
+  // Garbage owed: a red bar up the left edge, one cell per row about to arrive.
+  if (game.garbagePending > 0) {
+    const h = Math.min(game.garbagePending, VISIBLE_ROWS) * size;
+    ctx.fillStyle = "#E5484D";
+    ctx.fillRect(0, VISIBLE_ROWS * size - h, Math.max(3, size * 0.2), h);
   }
   if (fx) drawEffects(ctx, fx, now, size);
 }

@@ -96,8 +96,15 @@ export function mapPad(pad, deadzone = STICK_DEADZONE, bindings = {}) {
 
   if (button(BUTTON.LEFT) || x < 0) down.add("left");
   if (button(BUTTON.RIGHT) || x > 0) down.add("right");
-  if (button(BUTTON.DOWN) || y > 0) down.add("softDrop");
-  if (button(BUTTON.UP) || (bindings.hardDrop && bindingDown(pad, bindings.hardDrop))) down.add("hardDrop");
+  if (button(BUTTON.DOWN) || y > 0) {
+    down.add("softDrop");
+    down.add("down");
+  }
+  if (y < 0) down.add("up"); // the stick moves menu selection; it never drops a piece
+  if (button(BUTTON.UP) || (bindings.hardDrop && bindingDown(pad, bindings.hardDrop))) {
+    down.add("hardDrop");
+    down.add("up");
+  }
   if (button(BUTTON.A)) {
     down.add("rotateCW");
     down.add("confirm");

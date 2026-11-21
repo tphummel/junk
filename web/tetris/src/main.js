@@ -1,6 +1,7 @@
 // Boot, the fixed-timestep loop and the screen state machine (title, playing, paused, over).
 // The game advances only through step(), 60 times per game second, so rendering speed never changes play.
 
+import { DIFFICULTIES, difficultyById } from "./game/difficulty.js";
 import { TICKS_PER_SECOND } from "./game/rules.js";
 import { summarize } from "./game/stats.js";
 import { createGame, step } from "./game/state.js";
@@ -10,6 +11,7 @@ import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
 import { createEffects } from "./ui/effects.js";
 import { drawBoard, readTheme } from "./ui/render.js";
+import { bestByMode, browserStorage, loadScores, saveScore } from "./ui/scores.js";
 
 /** @typedef {import("./game/state.js").Game} Game */
 /** @typedef {import("./game/state.js").GameAction} GameAction */
@@ -19,6 +21,7 @@ import { drawBoard, readTheme } from "./ui/render.js";
  * @typedef {object} Round
  * @property {number} rulesVersion
  * @property {number} seed
+ * @property {string} mode difficulty id
  * @property {number} startedAt epoch ms
  * @property {number} ticks
  * @property {number} score
@@ -89,24 +92,30 @@ let theme = readTheme();
 
 /** @type {Screen} */
 let screen = "title";
+/** The difficulty of the round in play, or last chosen: the title menu starts on it. */
+let mode = "practice";
 /** @type {Game} */
-let game = newGame();
+let game = newGame(mode);
 /** @type {Round} */
-let round = newRound(game);
+let round = newRound(game, mode);
 /** @type {Round[]} */
 const rounds = [];
+const storage = browserStorage();
+let bests = bestByMode(loadScores(storage));
+/** @type {{ record: import("./ui/scores.js").ScoreRecord, newBest: boolean, saved: boolean } | null} */
+let lastResult = null;
 
-/** @returns {Game} */
-function newGame() {
+/** @param {string} mode difficulty id @returns {Game} */
+function newGame(mode) {
   // The seed is made here, outside game/, and recorded; the game itself never touches randomness.
   const seed = crypto.getRandomValues(new Uint32Array(1))[0];
-  return createGame(seed);
+  return createGame(seed, { garbagePerSecond: difficultyById(mode).garbagePerSecond });
 }
 
-/** @param {Game} g @returns {Round} */
-function newRound(g) {
+/** @param {Game} g @param {string} mode @returns {Round} */
+function newRound(g, mode) {
   return {
-    rulesVersion: g.rulesVersion, seed: g.seed, startedAt: Date.now(), ticks: 0,
+    rulesVersion: g.rulesVersion, seed: g.seed, mode, startedAt: Date.now(), ticks: 0,
     score: 0, lines: 0, level: g.level, piecesPlaced: 0, goldSquares: 0, silverSquares: 0, holdsUsed: 0,
     inputLog: [],
   };
@@ -114,6 +123,64 @@ function newRound(g) {
 
 /** @type {string | undefined} */
 let note;
+
+/** @typedef {{ label: string, detail?: string, run: () => void }} MenuItem */
+const menuEl = $("menu");
+let menuIndex = 0;
+/** @type {MenuItem[]} */
+let menuItems = [];
+
+/** @param {import("./ui/scores.js").ScoreRecord} r */
+function describeRecord(r) {
+  return `${r.score} \u00b7 ${r.grade}${r.natural ? " \u00b7 NATURAL" : ""}`;
+}
+
+/** Menu items for the screen being shown. @returns {MenuItem[]} */
+function menuFor(/** @type {Screen} */ screenName) {
+  if (screenName === "title") {
+    return DIFFICULTIES.map((d) => ({
+      label: d.grade ? `${d.label} (${d.grade})` : d.label,
+      detail: bests[d.id] ? `best ${describeRecord(bests[d.id])}` : "",
+      run: () => startRound(d.id),
+    }));
+  }
+  if (screenName === "paused") {
+    return [
+      { label: "Resume", run: () => setScreen("playing") },
+      { label: "End game", detail: "locks in your score", run: () => finishRound("ended") },
+    ];
+  }
+  if (screenName === "over") {
+    return [
+      { label: "Play again", run: () => startRound(mode) },
+      { label: "Menu", run: () => setScreen("title") },
+    ];
+  }
+  return [];
+}
+
+/** Draw the menu buttons, with the selected one marked. */
+function renderMenu() {
+  menuEl.replaceChildren(
+    ...menuItems.map((item, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = item.label;
+      if (item.detail) {
+        const d = document.createElement("span");
+        d.textContent = item.detail;
+        b.appendChild(d);
+      }
+      if (i === menuIndex) b.setAttribute("aria-current", "true");
+      b.addEventListener("click", () => {
+        menuIndex = i;
+        b.blur(); // so a later Enter or Space is ours alone, not also a click on this button
+        item.run();
+      });
+      return b;
+    }),
+  );
+}
 
 /** The overlay for the current screen. */
 function renderOverlay() {
@@ -126,24 +193,34 @@ function renderOverlay() {
   const texts = {
     title: [
       "Tetris",
-      (pad
-        ? "Press A or Enter to start.\nD-pad move, A/B rotate, shoulder hold, up hard drop, Start pause."
-        : "Press Enter to start, or press any button on your controller to connect it.") +
+      "Pick a difficulty. Up and down choose, A or Enter starts." +
+        (pad ? "\nD-pad move, A/B rotate, shoulder hold, up hard drop, Start pause." : "\nPress any button on your controller to connect it.") +
         "\nKeyboard: arrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause." +
-        "\nHard drop falls at once; slide or turn before it settles, or press again to lock.",
+        "\nHard drop falls at once; slide or turn before it settles, or press again to lock." +
+        "\nEasy, Medium and Hard push garbage rows up at the pace of a D, B or S rating.",
     ],
-    paused: ["Paused", note ?? "Press Esc or Start to resume, Backspace or B to quit."],
-    over: [
-      "Game over",
-      `Lines ${game.score} (${game.lines} raw), level ${game.level}.\n${summarize(game.tick, game.score).rate} lines/sec` +
-        (game.score > 0 ? `, grade ${summarize(game.tick, game.score).grade}` : "") +
-        ".\nPress A or Enter to play again.",
-    ],
+    paused: ["Paused", note ?? "Esc, Start or B resumes. End game locks in your score."],
+    over: resultText(),
   };
   const [title, text] = texts[screen];
   overlayTitle.textContent = title;
   overlayText.textContent = text;
   overlay.hidden = false;
+  renderMenu();
+}
+
+/** Title and text for the game-over card. @returns {[string, string]} */
+function resultText() {
+  const r = lastResult?.record;
+  if (!r) return ["Game over", ""];
+  const label = difficultyById(r.mode).label;
+  const lines = [
+    `Lines ${r.score} (${r.lines} raw), level ${r.level}.`,
+    `${r.rate} lines/sec` + (r.score > 0 ? `, grade ${r.grade}` : "") + (r.natural ? ", NATURAL!" : "."),
+    lastResult?.newBest ? `New best for ${label}!` : bests[r.mode] ? `Best for ${label}: ${describeRecord(bests[r.mode])}` : "",
+    lastResult?.saved ? "" : "(Could not save: this browser is blocking storage.)",
+  ];
+  return [r.ended === "ended" ? "Game ended" : "Game over", lines.filter(Boolean).join("\n")];
 }
 
 /** Controller line under the board. */
@@ -159,23 +236,58 @@ function setScreen(next, message) {
   note = message;
   keyboard.clear();
   repeater.reset();
+  menuItems = menuFor(next);
+  menuIndex = next === "title" ? Math.max(0, DIFFICULTIES.findIndex((d) => d.id === mode)) : 0;
   renderOverlay();
 }
 
-function startRound() {
+/** @param {string} id difficulty */
+function startRound(id) {
+  mode = id;
   effects.clear();
-  game = newGame();
-  round = newRound(game);
+  game = newGame(mode);
+  round = newRound(game, mode);
+  lastResult = null;
   setScreen("playing");
 }
 
-/** Handle menu-style presses (confirm, back, pause). @param {string} action */
+/**
+ * Lock in the round: build the record, save it, and show the result.
+ * @param {"topout" | "ended"} how the stack overflowed, or the player ended it from the pause menu
+ */
+function finishRound(how) {
+  const stats = summarize(game.tick, game.score);
+  Object.assign(round, {
+    ticks: game.tick, score: game.score, lines: game.lines, level: game.level, piecesPlaced: game.piecesPlaced,
+    goldSquares: game.goldSquares, silverSquares: game.silverSquares, holdsUsed: game.holdsUsed,
+  });
+  rounds.push(round);
+  /** @type {import("./ui/scores.js").ScoreRecord} */
+  const record = {
+    at: Date.now(), mode, ended: how, score: game.score, lines: game.lines, level: game.level, ticks: game.tick,
+    rate: stats.rate, grade: stats.grade, natural: stats.natural, piecesPlaced: game.piecesPlaced,
+    goldSquares: game.goldSquares, silverSquares: game.silverSquares, seed: game.seed, rulesVersion: game.rulesVersion,
+  };
+  const before = bests[mode];
+  const saved = saveScore(storage, record);
+  bests = bestByMode(saved ? loadScores(storage) : [...Object.values(bests), record]);
+  const newBest = game.score > 0 && (!before || bests[mode] === record);
+  lastResult = { record, newBest, saved };
+  setScreen("over");
+}
+
+/** Handle menu-style presses: move the selection, activate it, pause, back. @param {string} action */
 function onMenuAction(action) {
-  if (screen === "title" && (action === "confirm" || action === "hardDrop")) startRound();
-  else if (screen === "playing" && action === "pause") setScreen("paused");
-  else if (screen === "paused" && action === "pause") setScreen("playing");
-  else if (screen === "paused" && action === "back") setScreen("title");
-  else if (screen === "over" && action === "confirm") startRound();
+  if (screen === "playing") {
+    if (action === "pause") setScreen("paused");
+    return;
+  }
+  if (action === "up" || action === "down") {
+    menuIndex = (menuIndex + (action === "down" ? 1 : -1) + menuItems.length) % menuItems.length;
+    renderMenu();
+  } else if (action === "confirm") menuItems[menuIndex]?.run();
+  else if (screen === "paused" && (action === "pause" || action === "back")) setScreen("playing");
+  else if (screen === "over" && action === "back") setScreen("title");
 }
 
 /** Run one game tick from the keyboard state. */
@@ -198,12 +310,7 @@ function tick() {
   effects.add(game.events, performance.now());
   for (const action of actions) round.inputLog.push({ t: game.tick, action });
   if (game.over) {
-    Object.assign(round, {
-      ticks: game.tick, score: game.score, lines: game.lines, level: game.level, piecesPlaced: game.piecesPlaced,
-      goldSquares: game.goldSquares, silverSquares: game.silverSquares, holdsUsed: game.holdsUsed,
-    });
-    rounds.push(round);
-    setScreen("over");
+    finishRound("topout");
     return false;
   }
   return true;
@@ -271,7 +378,7 @@ function frame(now) {
 
   if (padPanel.open) padDebug.textContent = padReadout();
   drawBoard(boardCanvas, game, theme, effects, now);
-  hud.update(game, theme);
+  hud.update(game, theme, difficultyById(mode).label);
   requestAnimationFrame(frame);
 }
 

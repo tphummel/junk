@@ -2,11 +2,11 @@
 // Gamepads fire no repeat events, so repeat lives here and not in the devices.
 
 /** @typedef {import("../game/state.js").GameAction} GameAction */
-/** @typedef {GameAction | "pause" | "confirm" | "back"} Action */
+/** @typedef {GameAction | "pause" | "confirm" | "back" | "up" | "down"} Action */
 
-/** Every action a device can produce. The game itself only understands the GameAction subset. */
+/** Every action a device can produce. The game itself only understands the GameAction subset; up and down move the menu selection. */
 export const ACTIONS = /** @type {const} */ ([
-  "left", "right", "softDrop", "hardDrop", "rotateCW", "rotateCCW", "hold", "pause", "confirm", "back",
+  "left", "right", "softDrop", "hardDrop", "rotateCW", "rotateCCW", "hold", "pause", "confirm", "back", "up", "down",
 ]);
 
 /** Ticks a direction must be held before it starts repeating (about 167 ms). */

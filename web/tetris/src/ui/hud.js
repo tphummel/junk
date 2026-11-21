@@ -19,10 +19,12 @@ export function createHud(doc) {
   const time = el("time");
   const rate = el("lps");
   const grade = el("grade");
+  const natural = el("natural");
+  const modeEl = el("mode");
 
   return {
-    /** @param {Game} game @param {Theme} theme */
-    update(game, theme) {
+    /** @param {Game} game @param {Theme} theme @param {string} modeLabel the difficulty being played */
+    update(game, theme, modeLabel) {
       score.textContent = String(game.score);
       level.textContent = String(game.level);
       lines.textContent = String(game.lines);
@@ -30,6 +32,8 @@ export function createHud(doc) {
       time.textContent = stats.time;
       rate.textContent = stats.rate;
       grade.textContent = stats.grade;
+      natural.hidden = !stats.natural;
+      modeEl.textContent = modeLabel;
       drawMini(hold, game.hold, theme, !game.canHold);
       next.forEach((canvas, i) => drawMini(canvas, game.queue[i] ?? null, theme));
     },

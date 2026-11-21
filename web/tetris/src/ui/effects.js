@@ -4,7 +4,7 @@
 // are injectable so the tests are exact.
 
 /** @typedef {import("../game/state.js").GameEvent} GameEvent */
-/** @typedef {"gold" | "silver" | "plain"} Tone */
+/** @typedef {"gold" | "silver" | "plain" | "danger"} Tone */
 /**
  * @typedef {{ kind: "shine", tone: Tone, row: number, col: number, start: number, dur: number }
  *   | { kind: "ring", tone: Tone, row: number, col: number, start: number, dur: number }
@@ -16,6 +16,7 @@
 
 const SQUARE = 4;
 const COLS = 10;
+const ROWS = 22; // board rows including the 2 hidden ones
 
 /**
  * @param {{ rng?: () => number, reducedMotion?: () => boolean }} [options] `reducedMotion` is asked each time
@@ -52,6 +53,9 @@ export function createEffects(options = {}) {
             list.push({ kind: "shine", tone, row: ev.row, col: ev.col, start: now, dur: 800 });
             burst(tone, ev.col + SQUARE / 2, ev.row + SQUARE / 2, 22, now, 6);
           }
+        } else if (ev.type === "garbage") {
+          // Rows rising from the bottom: a red flash on the rows that just arrived.
+          for (let i = 0; i < ev.rows; i++) list.push({ kind: "flash", tone: "danger", row: ROWS - 1 - i, start: now, dur: 500 });
         } else {
           let best = /** @type {Tone} */ ("plain");
           ev.rows.forEach((row, i) => {

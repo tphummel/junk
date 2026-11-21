@@ -6,8 +6,9 @@ import { pieceCells } from "./pieces.js";
 /** @typedef {import("./pieces.js").Rotation} Rotation */
 /**
  * A filled cell. pieceId is what makes squares detectable; squareId and square are set (by squares.js) on the 16
- * cells of a gold or silver square and stay on whatever is left of it after line clears.
- * @typedef {{ type: PieceType, pieceId: number, squareId?: number, square?: "gold" | "silver" }} Cell
+ * cells of a gold or silver square and stay on whatever is left of it after line clears. Garbage cells have type
+ * "G" and a pieceId of their own each (negative), so they can never be part of a square.
+ * @typedef {{ type: PieceType | "G", pieceId: number, squareId?: number, square?: "gold" | "silver" }} Cell
  */
 /** @typedef {(Cell | null)[][]} Board rows from the top; row 0 is the first hidden row */
 
@@ -52,6 +53,21 @@ export function place(board, type, rot, x, y, pieceId) {
   for (const [dx, dy] of pieceCells(type, rot)) {
     board[y + dy][x + dx] = { type, pieceId };
   }
+}
+
+/**
+ * Push a garbage row up from the bottom: every row moves up one, and the new bottom row is filled except for one hole.
+ * @param {Board} board
+ * @param {number} hole column of the hole
+ * @param {number} firstId pieceId for the first garbage cell; the cells use firstId, firstId - 1, ...
+ * @returns {boolean} false if a block was pushed off the top (the stack overflowed); the board is then unchanged
+ */
+export function pushGarbageRow(board, hole, firstId) {
+  if (board[0].some((c) => c !== null)) return false;
+  board.shift();
+  let id = firstId;
+  board.push(Array.from({ length: COLS }, (_, c) => (c === hole ? null : { type: "G", pieceId: id-- })));
+  return true;
 }
 
 /**

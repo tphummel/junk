@@ -7,16 +7,19 @@ import { join, relative } from "node:path";
 import { test } from "node:test";
 import { contrastRatio } from "../web/golden-angle-palette/palette.js";
 import { createBag, makeRng } from "../web/tetris/src/game/bag.js";
-import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, place, ROWS } from "../web/tetris/src/game/board.js";
+import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, place, pushGarbageRow, ROWS } from "../web/tetris/src/game/board.js";
+import { DIFFICULTIES, difficultyById } from "../web/tetris/src/game/difficulty.js";
 import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
 import { FLOURISH_ENTRY_DELAY_TICKS, gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
 import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
-import { formatTime, gameSeconds, gradePerf, lineRate, summarize } from "../web/tetris/src/game/stats.js";
+import { formatTime, gameSeconds, gradePerf, isNatural, lineRate, naturalNumber, summarize } from "../web/tetris/src/game/stats.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
 import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
 import { createEffects } from "../web/tetris/src/ui/effects.js";
-import { INK, METAL, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
+import { bestByMode, loadScores, MAX_SCORES, saveScore, SCORES_KEY } from "../web/tetris/src/ui/scores.js";
+import { createKeyboard } from "../web/tetris/src/input/keyboard.js";
+import { GARBAGE_COLOR, INK, METAL, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
 
 const filled = (type = "T", pieceId = 99) => ({ type, pieceId });
 
@@ -517,12 +520,12 @@ test("gradePerf: no time is rate 0 and an F, and a few spot checks", () => {
 });
 
 test("summarize: time, score per second and grade, with a dash until something has scored", () => {
-  assert.deepEqual(summarize(0, 0), { time: "0:00.0", rate: "0.00", grade: "-" });
-  assert.deepEqual(summarize(600, 0), { time: "0:10.0", rate: "0.00", grade: "-" });
+  assert.deepEqual(summarize(0, 0), { time: "0:00.0", rate: "0.00", grade: "-", natural: false });
+  assert.deepEqual(summarize(600, 0), { time: "0:10.0", rate: "0.00", grade: "-", natural: false });
   // 10 seconds and 85 points is 8.5 lines per second.
-  assert.deepEqual(summarize(600, 85), { time: "0:10.0", rate: "8.50", grade: "XS" });
+  assert.deepEqual(summarize(600, 85), { time: "0:10.0", rate: "8.50", grade: "XS", natural: true });
   // 100 seconds and 85 points is 0.85 per second: a B.
-  assert.deepEqual(summarize(6000, 85), { time: "1:40.0", rate: "0.85", grade: "B" });
+  assert.deepEqual(summarize(6000, 85), { time: "1:40.0", rate: "0.85", grade: "B", natural: false });
 });
 
 test("the rate is judged on score, not on rows cleared", () => {
@@ -545,6 +548,232 @@ test("game time counts ticks: 60 per second, shown as m:ss.t", () => {
   const game = createGame(3);
   for (let i = 0; i < 90; i++) step(game, []);
   assert.equal(formatTime(game.tick), "0:01.5");
+});
+
+// --- natural ---------------------------------------------------------------------------------------
+
+const at = (m, sec) => (m * 60 + sec) * 60; // ticks for m:ss
+
+test("naturalNumber runs minutes and seconds together without the colon", () => {
+  assert.equal(naturalNumber(at(0, 30)), 30);
+  assert.equal(naturalNumber(at(0, 59)), 59);
+  assert.equal(naturalNumber(at(1, 12)), 112);
+  assert.equal(naturalNumber(at(2, 5)), 205);
+  assert.equal(naturalNumber(at(10, 0)), 1000);
+  assert.equal(naturalNumber(at(0, 59) + 59), 59, "whole seconds only: 0:59.9 is still 59");
+  assert.equal(naturalNumber(0), 0);
+});
+
+test("naturals: 40 in 0:30, 70 in 0:59, 120 in 1:12 and 220 in 2:05", () => {
+  assert.ok(isNatural(at(0, 30), 40));
+  assert.ok(isNatural(at(0, 59), 70));
+  assert.ok(isNatural(at(1, 12), 120));
+  assert.ok(isNatural(at(2, 5), 220));
+});
+
+test("not naturals: equal is not greater, a bit short, and nothing scored", () => {
+  assert.equal(isNatural(at(0, 30), 30), false, "equal");
+  assert.equal(isNatural(at(0, 30), 29), false);
+  assert.equal(isNatural(at(1, 12), 112), false, "equal");
+  assert.ok(isNatural(at(1, 12), 113));
+  assert.equal(isNatural(at(1, 0), 99), false, "1:00 is 100");
+  assert.ok(isNatural(at(1, 0), 101));
+  assert.equal(isNatural(at(2, 5), 205), false);
+  assert.equal(isNatural(0, 0), false, "no score");
+  assert.equal(isNatural(at(0, 30), 0), false);
+});
+
+// --- difficulty and garbage ------------------------------------------------------------------------
+
+test("difficulties: Practice has no garbage; Easy, Medium and Hard run at a D, B and S rate", () => {
+  assert.deepEqual(DIFFICULTIES.map((d) => d.id), ["practice", "easy", "medium", "hard"]);
+  assert.equal(difficultyById("practice").garbagePerSecond, 0);
+  assert.equal(gradePerf(1, difficultyById("easy").garbagePerSecond), "D");
+  assert.equal(gradePerf(1, difficultyById("medium").garbagePerSecond), "B");
+  assert.ok(gradePerf(1, difficultyById("hard").garbagePerSecond).endsWith("S"), "an S grade");
+  assert.equal(difficultyById("nonsense").id, "practice", "unknown falls back to Practice");
+});
+
+test("Practice never gets garbage", () => {
+  const game = createGame(4);
+  for (let i = 0; i < 2000; i++) step(game, []);
+  assert.equal(game.garbagePending, 0);
+  assert.equal(game.nextGarbageId, -1);
+});
+
+test("garbage is owed at the difficulty's rate, after the 5 second warm-up", () => {
+  const game = createGame(4, { garbagePerSecond: 0.65 });
+  for (let i = 0; i < 300; i++) step(game, []);
+  assert.equal(game.garbagePending, 0, "nothing in the warm-up");
+  for (let i = 0; i < 92; i++) step(game, []);
+  assert.equal(game.garbagePending, 0, "92 ticks is not yet 1/0.65 s");
+  step(game, []);
+  assert.equal(game.garbagePending, 1);
+  // Run on to tick 992: 692 ticks past the warm-up is 692 x 650 / 60000 = 7.5 rows, so 7 are owed in all, whether
+  // a lock has let some arrive already or they are all still waiting.
+  while (game.tick < 992) step(game, []);
+  assert.equal(game.over, false);
+  assert.equal(game.garbagePending + (-1 - game.nextGarbageId) / COLS, 7);
+});
+
+test("garbage rows arrive after a lock, pushing the stack up, each with one hole", () => {
+  const game = createGame(4, { garbagePerSecond: 0.65 });
+  game.board[ROWS - 1][0] = filled("T", 77);
+  game.garbagePending = 2;
+  slam(game);
+  assert.equal(game.garbagePending, 0);
+  assert.equal(game.board[ROWS - 3][0]?.pieceId, 77, "the stack moved up two rows");
+  for (const r of [ROWS - 1, ROWS - 2]) {
+    assert.equal(game.board[r].filter((c) => c === null).length, 1, `row ${r} has one hole`);
+    assert.ok(game.board[r].every((c) => c === null || c.type === "G"));
+  }
+  assert.deepEqual(game.events.find((e) => e.type === "garbage"), { type: "garbage", rows: 2 });
+  assert.ok(game.current, "then the next piece is in play");
+});
+
+test("at most 6 garbage rows arrive at once; the rest wait", () => {
+  const game = createGame(4, { garbagePerSecond: 1.1 });
+  game.garbagePending = 10;
+  slam(game);
+  assert.equal(game.garbagePending, 4);
+});
+
+test("a stack pushed off the top ends the game; garbage never makes a square", () => {
+  const game = createGame(4, { garbagePerSecond: 1.1 });
+  game.board[0][0] = filled();
+  game.garbagePending = 1;
+  slam(game);
+  assert.equal(game.over, true);
+
+  const board = createBoard();
+  for (let i = 0; i < 4; i++) assert.equal(pushGarbageRow(board, 9, -1 - i * COLS), true);
+  assert.deepEqual(markSquares(board, 1), [], "four rows of rubble are not a square");
+  const full = createBoard();
+  full[0][5] = filled();
+  assert.equal(pushGarbageRow(full, 0, -1), false, "blocked at the top");
+  assert.ok(full[0][5], "and the board is unchanged");
+});
+
+test("garbage and the pause for a flourish: garbage waits for the next piece, and arrives with it", () => {
+  const game = createGame(3, { garbagePerSecond: 0.85 });
+  squareBoard(game, ["gold"]);
+  game.garbagePending = 1;
+  slam(game);
+  assert.equal(game.current, null, "flourish pause");
+  assert.equal(game.garbagePending, 1, "still owed during the pause");
+  for (let i = 0; i < FLOURISH_ENTRY_DELAY_TICKS; i++) step(game, []);
+  assert.ok(game.current);
+  assert.equal(game.garbagePending, 0);
+  assert.equal(game.board[ROWS - 1].filter((c) => c?.type === "G").length, 9);
+});
+
+test("a round with garbage replays exactly from its seed and inputs", () => {
+  const seed = 31337;
+  const options = { garbagePerSecond: 1.1 };
+  const pick = makeRng(7);
+  const game = createGame(seed, options);
+  const inputLog = [];
+  while (!game.over && game.tick < 3000) {
+    const actions = [];
+    if (game.tick % 40 === 0) {
+      for (let i = pick() * 4 | 0; i > 0; i--) actions.push(pick() < 0.5 ? "left" : "right");
+      actions.push("hardDrop");
+    } else if (game.tick % 40 === 20) actions.push("hardDrop");
+    step(game, actions);
+    for (const action of actions) inputLog.push({ t: game.tick, action });
+  }
+  assert.ok(game.nextGarbageId < -1, "garbage actually arrived");
+  assert.equal(snapshot(replay(seed, inputLog, game.tick, options)), snapshot(game));
+  // Garbage must not change the piece sequence: the same seed with none gives the same first pieces.
+  const withGarbage = createGame(seed, options);
+  const without = createGame(seed);
+  assert.deepEqual(withGarbage.queue, without.queue);
+});
+
+test("garbage color reads on the board stone, and the hatching ink reads on it", () => {
+  for (const bg of ["#2A3440", "#323E4B", "#1B222B", "#232C36"]) {
+    assert.ok(contrastRatio(GARBAGE_COLOR.slice(1), bg.slice(1)) >= 3, `${GARBAGE_COLOR} on ${bg}`);
+  }
+  assert.ok(contrastRatio(GARBAGE_COLOR.slice(1), INK.slice(1)) >= 4.5);
+  assert.ok(!Object.values(PIECE_COLORS).includes(GARBAGE_COLOR), "distinct from every piece");
+});
+
+test("effects: arriving garbage flashes the new bottom rows red", () => {
+  const fx = createEffects({ rng: fixedRng });
+  fx.add([{ type: "garbage", rows: 2 }], 0);
+  const flashes = fx.active(0).filter((e) => e.kind === "flash");
+  assert.deepEqual(flashes.map((e) => [e.row, e.tone]), [[21, "danger"], [20, "danger"]]);
+});
+
+// --- saved scores ----------------------------------------------------------------------------------
+
+/** A minimal in-memory Storage. */
+function fakeStorage(initial = {}) {
+  const data = { ...initial };
+  return { data, getItem: (k) => (k in data ? data[k] : null), setItem: (k, v) => { data[k] = String(v); } };
+}
+const rec = (over = {}) => ({ at: 1, mode: "easy", ended: "ended", score: 10, lines: 8, level: 1, ticks: 600, rate: "1.00", grade: "1S-", natural: false, piecesPlaced: 20, goldSquares: 0, silverSquares: 0, seed: 1, rulesVersion: 4, ...over });
+
+test("scores: saved results persist, and bad storage reads as no scores", () => {
+  const storage = fakeStorage();
+  assert.deepEqual(loadScores(storage), []);
+  assert.equal(saveScore(storage, rec({ score: 5 })), true);
+  assert.equal(saveScore(storage, rec({ score: 9 })), true);
+  assert.deepEqual(loadScores(storage).map((r) => r.score), [5, 9]);
+
+  assert.deepEqual(loadScores(fakeStorage({ [SCORES_KEY]: "not json" })), []);
+  assert.deepEqual(loadScores(fakeStorage({ [SCORES_KEY]: '{"a":1}' })), [], "not an array");
+  assert.deepEqual(loadScores(fakeStorage({ [SCORES_KEY]: JSON.stringify([rec(), { junk: true }, null, 3]) })).length, 1, "bad entries are dropped");
+  assert.deepEqual(loadScores(null), []);
+  assert.deepEqual(loadScores({ getItem() { throw new Error("blocked"); } }), []);
+});
+
+test("scores: a full or blocked storage fails quietly, and only the newest results are kept", () => {
+  assert.equal(saveScore(null, rec()), false);
+  assert.equal(saveScore({ getItem: () => null, setItem() { throw new Error("quota"); } }, rec()), false);
+  const storage = fakeStorage();
+  for (let i = 0; i < MAX_SCORES + 5; i++) saveScore(storage, rec({ score: i, at: i }));
+  const all = loadScores(storage);
+  assert.equal(all.length, MAX_SCORES);
+  assert.equal(all[0].score, 5, "the oldest were dropped");
+});
+
+test("bestByMode: the highest score per difficulty, ties to the faster round", () => {
+  const best = bestByMode([
+    rec({ mode: "easy", score: 10, ticks: 900 }),
+    rec({ mode: "easy", score: 30, ticks: 1200 }),
+    rec({ mode: "easy", score: 30, ticks: 600 }),
+    rec({ mode: "hard", score: 5 }),
+    rec({ mode: "medium", score: 0 }),
+  ]);
+  assert.equal(best.easy.score, 30);
+  assert.equal(best.easy.ticks, 600);
+  assert.equal(best.hard.score, 5);
+  assert.equal(best.medium, undefined, "a round that scored nothing is not a best");
+});
+
+// --- keyboard --------------------------------------------------------------------------------------
+
+/** A key event as the keyboard module reads it (Node has no KeyboardEvent). */
+const key = (type, code, extra = {}) => Object.assign(new Event(type, { cancelable: true }), { code, repeat: false, ...extra });
+
+test("keyboard: arrows also move menu selection, and a very short tap still counts", () => {
+  const target = new EventTarget();
+  const kb = createKeyboard(target);
+  target.dispatchEvent(key("keydown", "ArrowUp"));
+  assert.deepEqual(kb.takePressed().sort(), ["rotateCW", "up"]);
+  target.dispatchEvent(key("keydown", "ArrowDown"));
+  assert.deepEqual(kb.takePressed(), ["down"]);
+  target.dispatchEvent(key("keyup", "ArrowDown"));
+  assert.ok(kb.held().has("softDrop"), "pressed and released within one tick: still seen once");
+  assert.equal(kb.held().has("softDrop"), false, "and gone the next tick");
+  target.dispatchEvent(key("keydown", "ArrowLeft"));
+  assert.ok(kb.held().has("left"));
+  assert.ok(kb.held().has("left"), "stays while held");
+  target.dispatchEvent(key("keyup", "ArrowLeft"));
+  assert.equal(kb.held().has("left"), false);
+  target.dispatchEvent(key("keydown", "ArrowRight", { repeat: true }));
+  assert.equal(kb.held().has("right"), false, "OS auto-repeat is ignored");
 });
 
 // --- determinism -----------------------------------------------------------------------------------
@@ -602,8 +831,8 @@ function fakePad({ down = [], axes = [0, 0], mapping = "standard", connected = t
 test("mapPad: d-pad, face buttons, shoulders and start", () => {
   assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.LEFT] }))], ["left"]);
   assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.RIGHT] }))], ["right"]);
-  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.DOWN] }))], ["softDrop"]);
-  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.UP] }))], ["hardDrop"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.DOWN] }))].sort(), ["down", "softDrop"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.UP] }))].sort(), ["hardDrop", "up"]);
   assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.A] }))].sort(), ["confirm", "rotateCW"]);
   assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.B] }))].sort(), ["back", "rotateCCW"]);
   assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.LB] }))], ["hold"]);
@@ -619,8 +848,8 @@ test("stick: dead zone ignores drift, a firm push moves, up never hard-drops", (
   assert.equal(axisDirection(0.6), 1);
   assert.equal(axisDirection(-0.9), -1);
   assert.deepEqual([...mapPad(fakePad({ axes: [-0.9, 0.1] }))], ["left"]);
-  assert.deepEqual([...mapPad(fakePad({ axes: [0.1, 0.9] }))], ["softDrop"]);
-  assert.equal(mapPad(fakePad({ axes: [0, -1] })).size, 0, "stick up does nothing");
+  assert.deepEqual([...mapPad(fakePad({ axes: [0.1, 0.9] }))].sort(), ["down", "softDrop"]);
+  assert.deepEqual([...mapPad(fakePad({ axes: [0, -1] }))], ["up"], "stick up moves menus but never hard-drops");
 });
 
 test("createGamepad: held directions are state, other buttons fire once per press", () => {
@@ -676,10 +905,10 @@ test("detectBinding finds the control that was pressed, ignoring what was alread
 test("a learned axis or button binds hard drop on top of d-pad up", () => {
   const hat = { hardDrop: { type: "axis", index: 9, value: -1 } };
   const axes = (v) => [0, 0, 0, 0, 0, 0, 0, 0, 0, v];
-  assert.deepEqual([...mapPad(fakePad({ axes: axes(-1) }), 0.2, hat)], ["hardDrop"]);
+  assert.deepEqual([...mapPad(fakePad({ axes: axes(-1) }), 0.2, hat)].sort(), ["hardDrop", "up"]);
   assert.equal(mapPad(fakePad({ axes: axes(1.29) }), 0.2, hat).size, 0, "neutral hat");
   assert.equal(mapPad(fakePad({ axes: axes(-0.43) }), 0.2, hat).size, 0, "another hat direction");
-  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.UP] }), 0.2, hat)], ["hardDrop"], "d-pad up still works");
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.UP] }), 0.2, hat)].sort(), ["hardDrop", "up"], "d-pad up still works");
   const btn = { hardDrop: { type: "button", index: 3 } };
   assert.ok(bindingDown(fakePad({ down: [3] }), btn.hardDrop));
   assert.equal(describeBinding(hat.hardDrop), "axis 9 at -1.00");
@@ -702,7 +931,7 @@ test("createGamepad.learn: captures the next control, fires no action for it, th
   pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] });
   gp.poll();
   pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, -1] });
-  assert.deepEqual(gp.poll().pressed, ["hardDrop"], "pressing it again hard-drops");
+  assert.deepEqual(gp.poll().pressed.sort(), ["hardDrop", "up"], "pressing it again hard-drops");
 });
 
 test("createGamepad.learn needs a pad, and can be cancelled", () => {

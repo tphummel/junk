@@ -3,16 +3,16 @@
 
 /** @typedef {import("./actions.js").Action} Action */
 
-/** @type {Record<string, Action>} KeyboardEvent.code to action */
+/** @type {Record<string, Action | Action[]>} KeyboardEvent.code to action(s); the arrows also move menu selection */
 const KEYMAP = {
   ArrowLeft: "left",
   KeyA: "left",
   ArrowRight: "right",
   KeyD: "right",
-  ArrowDown: "softDrop",
-  KeyS: "softDrop",
-  ArrowUp: "rotateCW",
-  KeyW: "rotateCW",
+  ArrowDown: ["softDrop", "down"],
+  KeyS: ["softDrop", "down"],
+  ArrowUp: ["rotateCW", "up"],
+  KeyW: ["rotateCW", "up"],
   KeyX: "rotateCW",
   KeyZ: "rotateCCW",
   Space: "hardDrop",
@@ -41,19 +41,21 @@ export function createKeyboard(target) {
   /** @param {Event} ev */
   const onKeyDown = (ev) => {
     const e = /** @type {KeyboardEvent} */ (ev);
-    const action = KEYMAP[e.code];
-    if (!action || e.ctrlKey || e.metaKey || e.altKey) return;
+    const mapped = KEYMAP[e.code];
+    if (!mapped || e.ctrlKey || e.metaKey || e.altKey) return;
     e.preventDefault();
     if (e.repeat) return; // auto-repeat is ours, not the OS's
-    if (HELD.has(action)) {
-      down.set(e.code, action);
-      tapped.add(action);
+    for (const action of Array.isArray(mapped) ? mapped : [mapped]) {
+      if (HELD.has(action)) {
+        down.set(`${e.code}:${action}`, action);
+        tapped.add(action);
+      } else pressed.push(action);
     }
-    else pressed.push(action);
   };
   /** @param {Event} ev */
   const onKeyUp = (ev) => {
-    down.delete(/** @type {KeyboardEvent} */ (ev).code);
+    const code = /** @type {KeyboardEvent} */ (ev).code;
+    for (const key of [...down.keys()]) if (key.startsWith(`${code}:`)) down.delete(key);
   };
   const onBlur = () => down.clear();
 

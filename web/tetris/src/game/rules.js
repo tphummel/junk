@@ -2,7 +2,7 @@
 // and integers, so the game behaves identically on every machine.
 
 /** Bump when any rule, constant or table below changes in a way that alters how a seed plays out. */
-export const RULES_VERSION = 3;
+export const RULES_VERSION = 4;
 
 export const TICKS_PER_SECOND = 60;
 
@@ -50,6 +50,17 @@ export function linePoints(rows) {
 }
 
 export const LINES_PER_LEVEL = 10;
+
+// Garbage (the difficulty levels). The game pushes grey rows up from the bottom at a steady rate, like an opponent
+// sending garbage: clear rows at least that fast and the stack holds, clear slower and it climbs. Rows are owed as
+// time passes and arrive between pieces (after a lock, or after a flourish pause), so they never shove a piece in
+// play. Each row has one hole; it often stays in the same column as the row before, so streaks can be cleared.
+/** Garbage starts this long into the round (5 s), so the first piece is not buried. */
+export const GARBAGE_WARMUP_TICKS = 300;
+/** Chance (out of 100) that a garbage row's hole stays in the column of the one before it. */
+export const GARBAGE_SAME_HOLE_PERCENT = 50;
+/** Most rows that arrive at once. */
+export const GARBAGE_MAX_PER_ENTRY = 6;
 
 /** @param {number} startLevel @param {number} totalLines */
 export function levelFor(startLevel, totalLines) {

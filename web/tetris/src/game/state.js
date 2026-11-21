@@ -1,11 +1,14 @@
 // Game state and the per-tick step function. The only way to advance a game is step(game, actions):
 // no clocks, no randomness beyond the seeded bag, no DOM, so seed + inputLog reproduces a round exactly.
 
-import { createBag } from "./bag.js";
-import { clearLines, collides, createBoard, fullRows, HIDDEN_ROWS, place } from "./board.js";
+import { createBag, makeRng } from "./bag.js";
+import { clearLines, collides, COLS, createBoard, fullRows, HIDDEN_ROWS, place, pushGarbageRow } from "./board.js";
 import { kicksFor, pieceCells, spawnX } from "./pieces.js";
 import {
   FLOURISH_ENTRY_DELAY_TICKS,
+  GARBAGE_MAX_PER_ENTRY,
+  GARBAGE_SAME_HOLE_PERCENT,
+  GARBAGE_WARMUP_TICKS,
   gravityTicks,
   HARD_DROP_POINTS_PER_ROW,
   levelFor,
@@ -15,6 +18,7 @@ import {
   RULES_VERSION,
   SOFT_DROP_POINTS_PER_ROW,
   SOFT_DROP_TICKS,
+  TICKS_PER_SECOND,
 } from "./rules.js";
 import { markSquares, squaresInRow } from "./squares.js";
 
@@ -31,7 +35,8 @@ import { markSquares, squaresInRow } from "./squares.js";
  * Things that happened during the last step, for the UI to celebrate. Plain data: the game never reads them back, so
  * they cannot affect play or replays. Rows and columns are board coordinates at the moment of the event.
  * @typedef {{ type: "square", id: number, kind: "gold" | "silver", row: number, col: number }
- *   | { type: "clear", rows: number[], rowSquares: { gold: number, silver: number }[], points: number }} GameEvent
+ *   | { type: "clear", rows: number[], rowSquares: { gold: number, silver: number }[], points: number }
+ *   | { type: "garbage", rows: number }} GameEvent
  */
 /**
  * @typedef {object} Game
@@ -56,6 +61,12 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @property {number} holdsUsed
  * @property {boolean} over
  * @property {GameEvent[]} events what happened in the last step; replaced at the start of every step
+ * @property {number} garbageMilli garbage rows per second times 1000 (0 for Practice); integers keep it exact
+ * @property {number} garbageAcc thousandths of a row accrued toward the next one
+ * @property {number} garbagePending rows owed: they arrive after the next lock
+ * @property {number} garbageHole column of the last garbage row's hole, or -1
+ * @property {number} nextGarbageId pieceId handed to the next garbage cell (counts down from -1)
+ * @property {() => number} garbageRng its own stream, so garbage never changes the piece sequence
  * @property {number} entryDelay ticks left before the next piece enters (current is null meanwhile); 0 when a piece is in play
  * @property {number} gravityCount ticks since the piece last fell
  * @property {number} lockTimer ticks the piece has rested on the stack
@@ -68,7 +79,8 @@ export const QUEUE_MIN = 4;
 
 /**
  * @param {number} seed
- * @param {{ startLevel?: number }} [options]
+ * @param {{ startLevel?: number, garbagePerSecond?: number }} [options] garbagePerSecond: rows per second of garbage,
+ *   0 or missing for none
  * @returns {Game}
  */
 export function createGame(seed, options = {}) {
@@ -96,6 +108,12 @@ export function createGame(seed, options = {}) {
     holdsUsed: 0,
     over: false,
     events: [],
+    garbageMilli: Math.round((options.garbagePerSecond ?? 0) * 1000),
+    garbageAcc: 0,
+    garbagePending: 0,
+    garbageHole: -1,
+    nextGarbageId: -1,
+    garbageRng: makeRng((seed ^ 0x9e3779b9) >>> 0),
     entryDelay: 0,
     gravityCount: 0,
     lockTimer: 0,
@@ -201,6 +219,43 @@ function doHold(game) {
   spawn(game, incoming);
 }
 
+/** Owe garbage as time passes (called every tick). @param {Game} game */
+function accrueGarbage(game) {
+  if (game.garbageMilli <= 0 || game.tick <= GARBAGE_WARMUP_TICKS) return;
+  game.garbageAcc += game.garbageMilli;
+  const row = TICKS_PER_SECOND * 1000;
+  while (game.garbageAcc >= row) {
+    game.garbageAcc -= row;
+    game.garbagePending++;
+  }
+}
+
+/** Push the rows owed up from the bottom. A block pushed off the top ends the game. @param {Game} game */
+function applyGarbage(game) {
+  const n = Math.min(game.garbagePending, GARBAGE_MAX_PER_ENTRY);
+  if (n === 0) return;
+  game.garbagePending -= n;
+  for (let i = 0; i < n; i++) {
+    const same = game.garbageHole >= 0 && game.garbageRng() * 100 < GARBAGE_SAME_HOLE_PERCENT;
+    const hole = same ? game.garbageHole : Math.floor(game.garbageRng() * COLS);
+    game.garbageHole = hole;
+    if (!pushGarbageRow(game.board, hole, game.nextGarbageId)) {
+      game.current = null;
+      game.over = true;
+      return;
+    }
+    game.nextGarbageId -= COLS;
+  }
+  game.events.push({ type: "garbage", rows: n });
+}
+
+/** Bring the next piece in, after any garbage that is owed. @param {Game} game */
+function enterNext(game) {
+  applyGarbage(game);
+  if (game.over) return;
+  spawn(game, takeNext(game));
+}
+
 /** Mark any new squares on the board and count them. @param {Game} game @returns {number} how many were formed */
 function formSquares(game) {
   const found = markSquares(game.board, game.nextSquareId);
@@ -251,7 +306,7 @@ function lock(game) {
     game.entryDelay = FLOURISH_ENTRY_DELAY_TICKS;
     return;
   }
-  spawn(game, takeNext(game));
+  enterNext(game);
 }
 
 /** Drop to the lowest legal row without locking. Returns rows dropped. @param {Game} game */
@@ -288,12 +343,13 @@ export function step(game, actions) {
   game.events = [];
   if (game.over) return;
   game.tick++;
+  accrueGarbage(game);
 
   // Between pieces (after a flourish) nothing is in play: input is ignored until the next piece enters.
   if (!game.current) {
     if (--game.entryDelay <= 0) {
       game.entryDelay = 0;
-      spawn(game, takeNext(game));
+      enterNext(game);
     }
     return;
   }
