@@ -15,6 +15,10 @@
   "include": [
     "api/**/*.ts",
     "web/golden-angle-palette/palette.js",
+    "web/tetris/src/game/*.js",
+    "web/tetris/src/input/*.js",
+    "web/tetris/src/ui/*.js",
+    "web/tetris/src/main.js",
     "worker-configuration.d.ts"
   ]
 }

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Tetris</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #2DD277 cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #1D874D;
+      --support: #4C8164;
+      --accent:  #A72DD2;
+      --bg: #FFFFFF;
+      --text: #111111;
+      /* The board is dark stone in both modes; block colors are tuned to it (see render.js). */
+      --board: #2A3440;
+      --grid: #323E4B;
+      --mini: clamp(52px, min(10vw, 15dvh), 96px);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #2DD277;
+        --support: #5FA17C;
+        --accent:  #B54DD9;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --board: #1B222B;
+        --grid: #232C36;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+    }
+    .game { display: flex; gap: 16px; align-items: flex-start; padding: 8px 12px 0; }
+    .side { width: var(--mini); display: flex; flex-direction: column; gap: 12px; }
+    .panel { display: flex; flex-direction: column; gap: 6px; }
+    h2, dt { margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); }
+    .mini {
+      width: var(--mini);
+      height: calc(var(--mini) * 0.75);
+      display: block;
+      border: 2px solid var(--support);
+      border-radius: 6px;
+      background: var(--board);
+    }
+    .field { position: relative; }
+    /* As tall as the window allows (room left for the controller line), 1:2 like the board. */
+    #board {
+      display: block;
+      height: min(calc(100dvh - 76px), calc((100vw - 2 * var(--mini) - 72px) * 2));
+      aspect-ratio: 1 / 2;
+      border: 3px solid var(--support);
+      border-radius: 6px;
+    }
+    dl { margin: 0; }
+    .grade { color: var(--primary); font-weight: 700; }
+    .counts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+    .counts dt { font-size: 0.6rem; letter-spacing: 0.06em; }
+    .counts dd { margin: 0; font-size: 1rem; }
+    /* Short screens (a phone held sideways) have no room for the counters. */
+    @media (max-height: 520px) { .moves { display: none; } }
+    .mode { font-size: clamp(0.85rem, 2.4dvh, 1.1rem); }
+    .badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--bg);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      vertical-align: middle;
+    }
+    .badge[hidden] { display: none; }
+    /* The scorecard: a grid of small groups of figures, under the result lines. */
+    .card.wide { max-width: min(92vw, 560px); max-height: calc(100dvh - 24px); overflow: auto; }
+    .scorecard { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px 16px; margin-top: 12px; text-align: left; }
+    .scorecard:empty { display: none; }
+    .scorecard h3 { margin: 0 0 4px; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
+    .scorecard dl { margin: 0; }
+    .scorecard dl > div { display: flex; justify-content: space-between; gap: 8px; font-size: 0.82rem; }
+    .scorecard dt { font-size: inherit; letter-spacing: 0; text-transform: none; color: var(--support); }
+    .scorecard dd { margin: 0; font-size: inherit; font-variant-numeric: tabular-nums; }
+    .menu { display: grid; gap: 6px; margin-top: 12px; }
+    .menu button {
+      font: inherit;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 12px;
+      border: 2px solid var(--support);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+    }
+    .menu button span { color: var(--support); font-size: 0.85em; }
+    .menu button[aria-current] { background: var(--primary); border-color: var(--primary); color: var(--bg); }
+    .menu button[aria-current] span { color: var(--bg); }
+    dd { margin: 0 0 clamp(2px, 1dvh, 8px); font-size: clamp(1rem, 3.2dvh, 1.35rem); font-variant-numeric: tabular-nums; }
+    #overlay {
+      position: absolute;
+      inset: 3px;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      background: color-mix(in srgb, var(--board) 72%, transparent);
+    }
+    #overlay[hidden] { display: none; }
+    /* Wider than the board when it has to be, so the instructions do not wrap into a tall, narrow strip. */
+    .card {
+      width: max-content;
+      max-width: min(92vw, 400px);
+      padding: 16px 18px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      background: var(--bg);
+      text-align: center;
+    }
+    #overlay-title { margin: 0 0 8px; font-size: clamp(1.2rem, 5dvh, 1.8rem); color: var(--primary); }
+    #overlay-text { margin: 0; white-space: pre-line; font-size: clamp(0.72rem, 2.4dvh, 0.95rem); }
+    /* Controller status; open it to see the raw pad state for comparing with a gamepad tester. */
+    .padbar { max-width: 92vw; padding: 6px 12px; font-size: 0.8rem; color: var(--support); }
+    .padbar summary { cursor: pointer; }
+    .padbar pre { margin: 6px 0 0; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text); }
+    .padtools { margin: 6px 0 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .padtools button {
+      font: inherit;
+      padding: 3px 10px;
+      border: 0;
+      border-radius: 4px;
+      background: var(--primary);
+      color: var(--bg);
+      cursor: pointer;
+    }
+  </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/tetris/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/tetris/apple-touch-icon.png">
+  <link rel="manifest" href="/tetris/manifest.webmanifest">
+</head>
+<body>
+  <main class="game">
+    <aside class="side">
+      <section class="panel">
+        <h2>Hold</h2>
+        <canvas id="hold" class="mini" aria-label="Held piece"></canvas>
+      </section>
+      <dl>
+        <dt>Mode</dt><dd id="mode" class="mode">Practice</dd>
+        <dt>Time</dt><dd id="time">0:00.0</dd>
+        <dt>Lines/sec</dt><dd id="lps">0.00</dd>
+        <dt>Grade</dt><dd class="grade"><span id="grade">-</span> <span id="natural" class="badge" hidden>Natural</span></dd>
+      </dl>
+      <section class="panel moves">
+        <h2>Counts</h2>
+        <dl class="counts">
+          <div title="Pieces played (locked)"><dt>Pieces</dt><dd id="pieces">0</dd></div>
+          <div title="Counter-clockwise spins"><dt>CCW</dt><dd id="spins-ccw">0</dd></div>
+          <div title="Clockwise spins"><dt>CW</dt><dd id="spins-cw">0</dd></div>
+          <div title="Columns moved left"><dt>Left</dt><dd id="moves-left">0</dd></div>
+          <div title="Columns moved right"><dt>Right</dt><dd id="moves-right">0</dd></div>
+          <div title="Rows soft-dropped"><dt>Soft</dt><dd id="soft-drops">0</dd></div>
+          <div title="Pieces hard-dropped"><dt>Hard</dt><dd id="hard-drops">0</dd></div>
+          <div title="Mono (gold) squares made"><dt>Mono</dt><dd id="mono-squares">0</dd></div>
+          <div title="Multi (silver) squares made"><dt>Multi</dt><dd id="multi-squares">0</dd></div>
+          <div title="Swaps with the held piece"><dt>Swaps</dt><dd id="swaps">0</dd></div>
+        </dl>
+      </section>
+    </aside>
+    <div class="field">
+      <canvas id="board" aria-label="Tetris board"></canvas>
+      <div id="overlay">
+        <div class="card" id="overlay-card">
+          <h1 id="overlay-title">Tetris</h1>
+          <p id="overlay-text"></p>
+          <div id="scorecard" class="scorecard"></div>
+          <div id="menu" class="menu" role="menu"></div>
+        </div>
+      </div>
+    </div>
+    <aside class="side">
+      <section class="panel">
+        <h2>Next</h2>
+        <canvas id="next0" class="mini" aria-label="Next piece"></canvas>
+        <canvas id="next1" class="mini" aria-label="Second next piece"></canvas>
+        <canvas id="next2" class="mini" aria-label="Third next piece"></canvas>
+      </section>
+      <dl>
+        <dt>Lines</dt><dd id="score">0</dd>
+        <dt>Level</dt><dd id="level">1</dd>
+        <dt>Lines raw</dt><dd id="lines">0</dd>
+      </dl>
+    </aside>
+  </main>
+  <div class="padbar">
+    <details id="pad-panel">
+      <summary id="pad-status">Controller: none (press any button to connect)</summary>
+      <pre id="pad-debug"></pre>
+      <p class="padtools">
+        <button id="pad-bind" type="button">Set hard drop control</button>
+        <button id="pad-reset" type="button">Reset</button>
+      </p>
+    </details>
+  </div>
+  <script type="module" src="/tetris/src/main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/tetris/sw.js', { scope: '/tetris/' }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
