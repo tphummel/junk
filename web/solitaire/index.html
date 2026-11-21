@@ -27,6 +27,8 @@ header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-conte
 header h1{font-size:18px;margin:0}
 .stats{display:flex;gap:14px;font-variant-numeric:tabular-nums}
 .stats b{font-weight:600}
+.live{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:13px;opacity:.9;font-variant-numeric:tabular-nums}
+.live b{font-weight:600}
 button{font:inherit;border:0;border-radius:6px;padding:6px 12px;background:#fff;color:var(--ink);cursor:pointer}
 button.danger{background:#ffcdd2}
 button.accent{background:#ffeeb3}
@@ -76,6 +78,7 @@ a{color:#fff}
     <span>Moves <b id="moves">0</b></span>
     <span>Time <b id="time">0:00</b></span>
   </div>
+  <div class="live" id="live" aria-label="Live game statistics"></div>
   <button id="auto" hidden>Auto-solve</button>
   <button id="surrender" class="danger">Surrender</button>
   <button id="random" hidden>Random puzzle</button>
@@ -435,11 +438,47 @@ function render(){
   const played=dailyPlayed();
   $('random').hidden=busy||!played;
   $('daily').hidden=busy||!isRandom()||played;
-  renderPanel();tick();
+  renderPanel();renderLive();tick();
+}
+// Live stats, all derived from the game state and move log (nothing extra is saved).
+function liveStats(){
+  const L=g.log,cnt=f=>L.filter(f).length,fc=foundCount(g);
+  const down=g.tab.reduce((a,p)=>a+p.filter(x=>!x.up).length,0);
+  return {fc,down,
+    stock:g.stock.length,waste:g.waste.length,
+    draws:cnt(x=>x.type==='draw'),recycles:cnt(x=>x.type==='recycle'),
+    toFound:cnt(x=>x.type==='move'&&x.to[0]==='f'),
+    fromFound:cnt(x=>x.type==='move'&&x.from[0]==='f'),
+    auto:cnt(x=>x.auto),
+    empty:g.tab.filter(p=>!p.length).length,
+    suits:g.found.map(f=>f.length)};
+}
+function renderLive(){
+  const t=liveStats();
+  const item=(l,v)=>`<span>${l} <b>${v}</b></span>`;
+  $('live').innerHTML=[
+    item('Foundation',`${t.fc}/52`),
+    item('Suits',t.suits.map((n,i)=>`${SUITS[i]}${n}`).join(' ')),
+    item('Face-down',t.down),
+    item('Empty cols',t.empty),
+    item('Stock',t.stock),item('Waste',t.waste),
+    item('Draws',t.draws),item('Recycles',t.recycles),
+    item('To foundation',t.toFound),
+    t.fromFound?item('Back from foundation',t.fromFound):'',
+    t.auto?item('Auto moves',t.auto):'',
+    '<span id="pace"></span>'
+  ].join('');
+  tick();
 }
 const fmtTime=ms=>{const s=Math.floor(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
 const elapsed=()=>S.e?S.e[0]:(S.s==null?0:Date.now()-S.s);
-function tick(){$('time').textContent=fmtTime(elapsed())}
+function tick(){
+  $('time').textContent=fmtTime(elapsed());
+  const pace=$('pace');if(!pace)return;
+  const ms=elapsed(),n=g.log.length;
+  const last=n&&!ended()?Date.now()-new Date(g.log[n-1].at).getTime():0;
+  pace.innerHTML=`Pace <b>${ms>=10000&&n?(n*60000/ms).toFixed(1):'–'}</b> moves/min`+(last>=10000?` · Idle <b>${fmtTime(last)}</b>`:'');
+}
 setInterval(()=>{if(!ended())tick()},1000);
 
 function renderPanel(){
