@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>controller lab</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #D22F2D cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #D22F2D;
+      --support: #A15F5F;
+      --accent:  #1D883E;
+      --bg: #FFFFFF;
+      --text: #111111;
+      /* Player slots: the seed's hue turned by the golden angle, one step per slot, each >= 3:1 on the background
+         (borders) with the text color that reads best on it (>= 4.5:1). */
+      --slot-1: #D22F2D; --slot-1-ink: #FFFFFF;
+      --slot-2: #25AA4D; --slot-2-ink: #111111;
+      --slot-3: #8F2DD2; --slot-3-ink: #FFFFFF;
+      --slot-4: #A59623; --slot-4-ink: #111111;
+      --slot-5: #29A2BD; --slot-5-ink: #111111;
+      --slot-6: #D22D84; --slot-6-ink: #FFFFFF;
+      --slot-7: #44A924; --slot-7-ink: #111111;
+      --slot-8: #362DD2; --slot-8-ink: #FFFFFF;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D84B49;
+        --support: #A86C6C;
+        --accent:  #2DD25F;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --slot-1: #D22F2D; --slot-1-ink: #FFFFFF;
+        --slot-2: #2DD25F; --slot-2-ink: #111111;
+        --slot-3: #8F2DD2; --slot-3-ink: #FFFFFF;
+        --slot-4: #D2BF2D; --slot-4-ink: #111111;
+        --slot-5: #2DB4D2; --slot-5-ink: #111111;
+        --slot-6: #D22D84; --slot-6-ink: #FFFFFF;
+        --slot-7: #54D22D; --slot-7-ink: #111111;
+        --slot-8: #524BD8; --slot-8-ink: #FFFFFF;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+    .wrap { max-width: 2200px; margin: 0 auto; padding: 16px; }
+    h1 { margin: 0 0 4px; font-size: 1.6rem; color: var(--primary); }
+    h2 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); }
+    .lede { margin: 0 0 8px; max-width: 70ch; }
+    .muted { color: var(--support); }
+    #status { margin: 0 0 16px; font-variant-numeric: tabular-nums; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+    @media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); } }
+    .pads { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+    #waiting { margin: 0 0 12px; }
+    #waiting p { margin: 0 0 4px; }
+    .empty { padding: 24px; border: 2px dashed var(--support); border-radius: 10px; }
+
+    .pad { --c: var(--slot-1); --ink: var(--slot-1-ink); border: 2px solid var(--c); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; align-content: start; }
+    .pad.gone { opacity: 0.55; border-style: dashed; }
+    .pad.flash { box-shadow: 0 0 0 4px var(--c); }
+    .pad header { display: flex; align-items: center; gap: 8px; }
+    .badge { flex: none; padding: 1px 9px; border-radius: 999px; background: var(--c); color: var(--ink); font-weight: 700; }
+    .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .state { font-size: 0.8rem; color: var(--support); }
+    .pad p { margin: 0; font-size: 0.82rem; }
+    .buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; }
+    .b {
+      --v: 0;
+      height: 30px; display: grid; place-items: center; font-size: 0.66rem; border: 1px solid var(--support); border-radius: 6px;
+      background: linear-gradient(to top, color-mix(in srgb, var(--c) 55%, transparent) calc(var(--v) * 100%), transparent 0);
+      overflow: hidden; white-space: nowrap;
+    }
+    .b.on { background: var(--c); color: var(--ink); border-color: var(--c); font-weight: 700; }
+    .axes { display: grid; gap: 4px; }
+    .axis { display: grid; grid-template-columns: 3.2em 1fr 3.4em; align-items: center; gap: 6px; font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+    .track { position: relative; height: 10px; border: 1px solid var(--support); border-radius: 5px; }
+    .track::before { content: ""; position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: var(--support); }
+    .track i { position: absolute; top: 0; bottom: 0; background: var(--c); border-radius: 4px; }
+    .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    button.tool {
+      font: inherit; font-size: 0.82rem; padding: 3px 10px; border: 0; border-radius: 4px;
+      background: var(--primary); color: var(--bg); cursor: pointer;
+    }
+    button.tool.quiet { background: transparent; color: var(--text); border: 1px solid var(--support); }
+
+    .logpanel { display: flex; flex-direction: column; min-height: 240px; }
+    @media (min-width: 1000px) { .logpanel { position: sticky; top: 12px; max-height: calc(100dvh - 24px); } }
+    .logbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    #log { list-style: none; margin: 0; padding: 0; overflow: auto; flex: 1; min-height: 160px; max-height: 70dvh; border: 1px solid var(--support); border-radius: 8px; font: 0.78rem ui-monospace, monospace; }
+    #log li { --c: var(--slot-1); --ink: var(--slot-1-ink); display: grid; grid-template-columns: 5.6em 2.6em 1fr; gap: 6px; padding: 2px 8px; border-bottom: 1px solid color-mix(in srgb, var(--support) 35%, transparent); }
+    #log li b { text-align: center; border-radius: 4px; background: var(--c); color: var(--ink); }
+    #log time { color: var(--support); font-variant-numeric: tabular-nums; }
+    #note { margin: 8px 0 0; min-height: 1.2em; font-size: 0.82rem; }
+  </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/controller-lab/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/controller-lab/apple-touch-icon.png">
+  <link rel="manifest" href="/controller-lab/manifest.webmanifest">
+</head>
+<body>
+  <div class="wrap">
+    <h1>controller lab</h1>
+    <p class="lede">Press a button on each controller to register it: the first to press is P1, the next P2, and so on. Every button and stick move is logged with the player and a time.</p>
+    <p id="status" class="muted" aria-live="polite">Looking for controllers...</p>
+    <div class="layout">
+      <section aria-labelledby="pads-h">
+        <h2 id="pads-h">Controllers</h2>
+        <div id="waiting"></div>
+        <div id="pads" class="pads"></div>
+      </section>
+      <section class="logpanel" aria-labelledby="log-h">
+        <h2 id="log-h">Log</h2>
+        <div class="logbar">
+          <button class="tool" id="pause" type="button">Pause log</button>
+          <button class="tool quiet" id="clear" type="button">Clear</button>
+          <button class="tool" id="download" type="button">Download JSON</button>
+          <button class="tool quiet" id="copy" type="button">Copy JSON</button>
+        </div>
+        <ol id="log" aria-label="Controller input log"></ol>
+        <p id="note" class="muted" aria-live="polite"></p>
+      </section>
+    </div>
+  </div>
+  <script type="module" src="/controller-lab/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/controller-lab/sw.js', { scope: '/controller-lab/' }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
