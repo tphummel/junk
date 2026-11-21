@@ -63,9 +63,12 @@
     button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
 
-    #view-brush { display: flex; flex-direction: column; min-height: calc(100dvh - 8.5rem); }
-    #mouth-wrap { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
-    #mouth { width: 100%; max-height: calc(100dvh - 16rem); }
+    /* The view fills the screen down to the tab bar (body padding: 1rem on top, 5.5rem below for the bar). */
+    #view-brush { display: flex; flex-direction: column; min-height: calc(100dvh - 6.5rem - env(safe-area-inset-bottom)); }
+    /* The mouth sits at the bottom of its area, so spare height goes above it, where the corner buttons are. */
+    #mouth-wrap { position: relative; flex: 1; display: flex; align-items: flex-end; justify-content: center; min-height: 0; }
+    #mouth-stage { position: relative; width: 100%; }
+    #mouth { display: block; width: 100%; max-height: calc(100dvh - 16rem); }
     #mouth g { fill: var(--text); transition: fill .2s; }
     #mouth.live g { fill: var(--support); }
     #mouth.live g.done, #mouth.finished g { fill: var(--primary); }
@@ -120,6 +123,7 @@
     #today { text-align: right; font-size: .85rem; line-height: 1.4; }
     .legend { font-size: .8rem; color: var(--support); margin: .5rem 0 1rem; }
     #day-list { padding-left: 1.25rem; }
+    #toast:empty { display: none; }
     #toast { min-height: 1.5rem; margin-top: 1rem; color: var(--accent); font-weight: 600; }
     .box { border: 1px solid var(--support); border-radius: .5rem; padding: .75rem 1rem; margin-bottom: 1rem; }
   </style>
@@ -140,6 +144,7 @@
           <button class="secondary r-done"></button>
           <div class="r-count"></div>
         </div>
+        <div id="mouth-stage">
         <svg id="mouth" viewBox="-12 -12 224 294" role="img" aria-label="Upper and lower teeth with outer and inner surface guides. Left and right are your own left and right."></svg>
         <div id="center">
           <div id="clock" role="timer" aria-live="off">0:30</div>
@@ -149,6 +154,7 @@
             <button id="skip" class="secondary" hidden>Skip</button>
             <button id="stop" class="secondary" hidden>Finish</button>
           </div>
+        </div>
         </div>
       </div>
       <div class="bar">
