@@ -105,12 +105,12 @@
     .day.today { border-width: 2px; border-color: var(--accent); }
     .day.sel { outline: 3px solid var(--text); outline-offset: 1px; }
     .day .mark { position: absolute; right: 3px; bottom: 0; font-size: .65rem; }
-    .reminder { position: absolute; top: 0; width: 5.5rem; text-align: center; font-size: .75rem; line-height: 1.25; }
+    .reminder { position: absolute; top: 0; width: 6.25rem; text-align: center; font-size: .75rem; line-height: 1.25; }
     .reminder.left { left: 0; }
     .reminder.right { right: 0; }
-    .r-count { font-weight: 700; font-size: .9rem; color: var(--primary); }
+    .r-done { display: flex; flex-direction: column; align-items: center; width: 100%; padding: .25rem .25rem; min-height: 2.75rem; margin-top: .15rem; font-size: .7rem; line-height: 1.2; }
+    .r-count { font-weight: 700; font-size: .9rem; }
     .reminder.overdue .r-count { color: var(--accent); }
-    .r-done { padding: .2rem .5rem; min-height: 2.25rem; margin-top: .15rem; font-size: .75rem; }
     .reminder-setting { margin-bottom: 1rem; }
     .reminder-setting h3 { margin: 0 0 .25rem; font-size: 1rem; color: var(--primary); }
     .reminder-setting .row { margin-bottom: .25rem; }
@@ -132,13 +132,11 @@
       <div id="mouth-wrap">
         <div class="reminder left" data-reminder="head" hidden>
           <div class="r-label"></div>
-          <div class="r-count"></div>
-          <button class="secondary r-done"></button>
+          <button class="secondary r-done"><span class="r-count"></span><span class="r-action"></span></button>
         </div>
         <div class="reminder right" data-reminder="dentist" hidden>
           <div class="r-label"></div>
-          <div class="r-count"></div>
-          <button class="secondary r-done"></button>
+          <button class="secondary r-done"><span class="r-count"></span><span class="r-action"></span></button>
         </div>
         <svg id="mouth" viewBox="-12 -12 224 294" role="img" aria-label="Upper and lower teeth with outer and inner surface guides. Left and right are your own left and right."></svg>
         <div id="center">
