@@ -63,9 +63,12 @@
     button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
 
-    #view-brush { display: flex; flex-direction: column; min-height: calc(100dvh - 8.5rem); }
-    #mouth-wrap { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
-    #mouth { width: 100%; max-height: calc(100dvh - 16rem); }
+    /* The view fills the screen down to the tab bar (body padding: 1rem on top, 5.5rem below for the bar). */
+    #view-brush { display: flex; flex-direction: column; min-height: calc(100dvh - 6.5rem - env(safe-area-inset-bottom)); }
+    /* The mouth sits at the bottom of its area, so spare height goes above it, where the corner buttons are. */
+    #mouth-wrap { position: relative; flex: 1; display: flex; align-items: flex-end; justify-content: center; min-height: 0; }
+    #mouth-stage { position: relative; width: 100%; }
+    #mouth { display: block; width: 100%; max-height: calc(100dvh - 16rem); }
     #mouth g { fill: var(--text); transition: fill .2s; }
     #mouth.live g { fill: var(--support); }
     #mouth.live g.done, #mouth.finished g { fill: var(--primary); }
@@ -80,14 +83,15 @@
     #quad-name { font-size: 1.1rem; }
     #progress { font-size: .85rem; }
     .bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .75rem; padding-top: .5rem; }
-    .bar .left { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+    .bar .left { display: flex; flex-direction: column; gap: .5rem; justify-self: start; }
     #total { text-align: right; font-size: 2rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--primary); }
     #go { width: 6rem; height: 6rem; padding: 0; border-radius: 50%; background: none; border: 0; position: relative; }
     #go svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
     #go .track { stroke: var(--support); opacity: .35; }
     #go .arc { stroke: var(--primary); transition: stroke-dashoffset .25s linear; }
     #go .glyph { position: relative; font-size: 1.75rem; color: var(--text); }
-    .bar .left button[aria-pressed] { padding: .4rem .6rem; font-size: .9rem; }
+    .bar .left button[aria-pressed] { display: flex; align-items: center; justify-content: center; gap: .4rem; padding: .4rem .9rem; font-size: 1rem; line-height: 1.2; }
+    .b-icon { font-size: 1.3rem; }
     .bar .left button[aria-pressed="false"] { background: none; color: var(--primary); }
     #reset { padding: .5rem; width: 2.75rem; font-size: 1.4rem; line-height: 1; }
     #tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1rem; }
@@ -105,9 +109,22 @@
     .day.today { border-width: 2px; border-color: var(--accent); }
     .day.sel { outline: 3px solid var(--text); outline-offset: 1px; }
     .day .mark { position: absolute; right: 3px; bottom: 0; font-size: .65rem; }
-    #today { text-align: center; font-size: .85rem; padding-top: .5rem; }
+    /* Countdown cards sit in the empty top corners beside the upper arch. */
+    .reminder { position: absolute; top: 0; width: 6.25rem; display: flex; flex-direction: column; align-items: center; gap: .2rem; text-align: center; font-size: .8rem; line-height: 1.25; }
+    .reminder.left { left: 0; }
+    .reminder.right { right: 0; }
+    .r-done { padding: .3rem 1rem; font-size: 1.6rem; line-height: 1.2; }
+    .r-count { font-weight: 700; }
+    .reminder.overdue .r-count { color: var(--accent); }
+    .reminder-setting { margin-bottom: 1rem; }
+    .reminder-setting h3 { margin: 0 0 .25rem; font-size: 1rem; color: var(--primary); }
+    .reminder-setting .row { margin-bottom: .25rem; }
+    input[type="number"], input[type="date"] { font: inherit; padding: .4rem .5rem; border-radius: .5rem; border: 2px solid var(--primary); background: var(--bg); color: var(--text); }
+    .bar .right { display: flex; flex-direction: column; align-items: flex-end; gap: .25rem; }
+    #today { text-align: right; font-size: .85rem; line-height: 1.4; }
     .legend { font-size: .8rem; color: var(--support); margin: .5rem 0 1rem; }
     #day-list { padding-left: 1.25rem; }
+    #toast:empty { display: none; }
     #toast { min-height: 1.5rem; margin-top: 1rem; color: var(--accent); font-weight: 600; }
     .box { border: 1px solid var(--support); border-radius: .5rem; padding: .75rem 1rem; margin-bottom: 1rem; }
   </style>
@@ -120,6 +137,15 @@
     <main>
     <section id="view-brush">
       <div id="mouth-wrap">
+        <div class="reminder left" data-reminder="head" hidden>
+          <button class="secondary r-done"></button>
+          <div class="r-count"></div>
+        </div>
+        <div class="reminder right" data-reminder="dentist" hidden>
+          <button class="secondary r-done"></button>
+          <div class="r-count"></div>
+        </div>
+        <div id="mouth-stage">
         <svg id="mouth" viewBox="-12 -12 224 294" role="img" aria-label="Upper and lower teeth with outer and inner surface guides. Left and right are your own left and right."></svg>
         <div id="center">
           <div id="clock" role="timer" aria-live="off">0:30</div>
@@ -128,15 +154,15 @@
           <div class="row" style="justify-content:center; margin-top:.25rem">
             <button id="skip" class="secondary" hidden>Skip</button>
             <button id="stop" class="secondary" hidden>Finish</button>
+            <button id="reset" class="secondary" aria-label="Reset" hidden>↻</button>
           </div>
         </div>
+        </div>
       </div>
-      <div id="today" class="muted" aria-label="Today's routine"></div>
       <div class="bar">
         <div class="left">
-          <button id="floss" aria-pressed="false">Floss</button>
-          <button id="mouthwash" aria-pressed="false">Rinse</button>
-          <button id="reset" class="secondary" aria-label="Reset" hidden>↻</button>
+          <button id="floss" aria-pressed="false"></button>
+          <button id="mouthwash" aria-pressed="false"></button>
         </div>
         <button id="go" aria-label="Start">
           <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -145,7 +171,10 @@
           </svg>
           <span class="glyph">▶</span>
         </button>
-        <div id="total" aria-label="Total time left">2:00</div>
+        <div class="right">
+          <div id="today" class="muted" aria-label="Today's routine"></div>
+          <div id="total" aria-label="Total time left">2:00</div>
+        </div>
       </div>
     </section>
 
@@ -186,6 +215,11 @@
           <select id="day-starts-at"></select>
         </div>
         <p class="muted">Anything before this hour counts toward the day before, such as a brush at 12:30am. Changing it regroups your history.</p>
+      </div>
+      <div class="box">
+        <h2>Reminders</h2>
+        <p class="muted">Set when you last did each one to show a countdown in a corner of the main screen, with a button to reset it to today.</p>
+        <div id="reminder-settings"></div>
       </div>
       <div class="box">
         <h2>Your data</h2>

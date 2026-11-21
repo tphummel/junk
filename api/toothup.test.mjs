@@ -3,8 +3,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, buildExport, currentStreak, dayGoals, eventDay, formatClock, groupByDay,
-  longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings, parseImport, rangeStats,
+  DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, addMonths, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
+  formatClock, groupByDay, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
+  parseImport, rangeStats, reminderStatus,
 } from "../web/toothup/logic.js";
 
 const at = (key, h = 8) => {
@@ -156,12 +157,17 @@ test("monthGrid pads to whole Sunday-first weeks", () => {
   assert.equal(monthGrid(2026, 11)[0].indexOf("2026-12-01"), 2); // Dec 2026 starts on a Tuesday
 });
 
+const custom = {
+  dayStartsAt: 2,
+  reminders: { dentist: { everyMonths: 4, last: "2026-09-01" }, head: { everyMonths: 2, last: null } },
+};
+
 test("export then import round-trips events; merge dedupes by id", () => {
   const list = [brush("2026-11-19"), ev("floss", "2026-11-20"), ev("mouthwash", "2026-11-20", 21)];
-  const { events, skipped, settings } = parseImport(JSON.stringify(buildExport(list, { dayStartsAt: 2 })));
+  const { events, skipped, settings } = parseImport(JSON.stringify(buildExport(list, custom)));
   assert.deepEqual(events, list);
   assert.equal(skipped, 0);
-  assert.deepEqual(settings, { dayStartsAt: 2 }); // settings travel with the data
+  assert.deepEqual(settings, custom); // settings, reminders included, travel with the data
   const merged = mergeEvents(list, [...events, brush("2026-11-21")]);
   assert.equal(merged.added, 1);
   assert.equal(merged.events.length, 4);
@@ -176,15 +182,47 @@ test("parseImport skips bad events and rejects other files", () => {
   assert.throws(() => parseImport(file({ app: "other" })), /toothup export/);
   assert.throws(() => parseImport(file({ settings: undefined })), /Invalid settings/);
   assert.throws(() => parseImport(file({ settings: { dayStartsAt: 9 } })), /Invalid settings/);
+  assert.throws(() => parseImport(file({ settings: { dayStartsAt: 4 } })), /Invalid settings/); // reminders missing
   assert.throws(() => parseImport(file({ events: undefined })), /No events/);
 });
 
-test("normalizeSettings accepts whole hours 0-6 and rejects everything else", () => {
-  assert.deepEqual(normalizeSettings({ dayStartsAt: 0 }), { dayStartsAt: 0 });
-  assert.deepEqual(normalizeSettings({ dayStartsAt: 6, extra: 1 }), { dayStartsAt: 6 });
-  for (const bad of [null, {}, { dayStartsAt: 7 }, { dayStartsAt: -1 }, { dayStartsAt: 4.5 }, { dayStartsAt: "4" }]) {
-    assert.equal(normalizeSettings(bad), null);
-  }
+test("normalizeSettings accepts valid settings and rejects everything else", () => {
+  assert.deepEqual(normalizeSettings(S), S);
+  assert.deepEqual(normalizeSettings({ ...S, dayStartsAt: 0, extra: 1 }), { ...S, dayStartsAt: 0 });
+  assert.deepEqual(normalizeSettings(custom), custom);
+  const withHead = (head) => ({ ...S, reminders: { ...S.reminders, head } });
+  for (const bad of [
+    null, {}, { dayStartsAt: 4 }, { ...S, dayStartsAt: 7 }, { ...S, dayStartsAt: -1 }, { ...S, dayStartsAt: 4.5 }, { ...S, dayStartsAt: "4" },
+    { ...S, reminders: undefined }, { ...S, reminders: { dentist: S.reminders.dentist } },
+    withHead({ everyMonths: 0, last: null }), withHead({ everyMonths: 37, last: null }), withHead({ everyMonths: 1.5, last: null }),
+    withHead({ everyMonths: 3 }), withHead({ everyMonths: 3, last: "2026-02-30" }), withHead({ everyMonths: 3, last: "11/21/2026" }),
+  ]) assert.equal(normalizeSettings(bad), null);
+});
+
+test("addMonths clamps to the end of shorter months and crosses years", () => {
+  assert.equal(addMonths("2026-11-21", 3), "2027-02-21");
+  assert.equal(addMonths("2026-11-21", 6), "2027-05-21");
+  assert.equal(addMonths("2026-08-31", 6), "2027-02-28");
+  assert.equal(addMonths("2027-08-31", 6), "2028-02-29"); // leap year
+  assert.equal(addMonths("2026-01-31", 1), "2026-02-28");
+  assert.equal(addMonths("2026-12-15", 12), "2027-12-15");
+});
+
+test("daysBetween counts whole days, including across a DST change", () => {
+  assert.equal(daysBetween("2026-11-21", "2026-11-21"), 0);
+  assert.equal(daysBetween("2026-11-21", "2026-11-22"), 1);
+  assert.equal(daysBetween("2026-11-21", "2026-11-20"), -1);
+  assert.equal(daysBetween("2026-11-01", "2026-11-02"), 1); // US clocks change on Nov 1, 2026
+  assert.equal(daysBetween("2026-03-01", "2027-03-01"), 365);
+});
+
+test("reminderStatus counts down to the due date, goes negative when overdue, and is null with no date", () => {
+  const dentist = { everyMonths: 6, last: "2026-05-21" };
+  assert.deepEqual(reminderStatus(dentist, "2026-11-20"), { due: "2026-11-21", days: 1 });
+  assert.deepEqual(reminderStatus(dentist, "2026-11-21"), { due: "2026-11-21", days: 0 });
+  assert.deepEqual(reminderStatus(dentist, "2026-11-26"), { due: "2026-11-21", days: -5 });
+  assert.deepEqual(reminderStatus({ everyMonths: 3, last: "2026-11-21" }, "2026-11-21"), { due: "2027-02-21", days: 92 });
+  assert.equal(reminderStatus({ everyMonths: 3, last: null }, "2026-11-21"), null);
 });
 
 test("dayStartsAt moves the cutoff: at 0 the day is midnight to midnight, at 6 a 5am routine still belongs to the night before", () => {
