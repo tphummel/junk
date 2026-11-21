@@ -27,6 +27,12 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @typedef {"left" | "right" | "softDrop" | "hardDrop" | "rotateCW" | "rotateCCW" | "hold"} GameAction
  */
 /**
+ * Things that happened during the last step, for the UI to celebrate. Plain data: the game never reads them back, so
+ * they cannot affect play or replays. Rows and columns are board coordinates at the moment of the event.
+ * @typedef {{ type: "square", id: number, kind: "gold" | "silver", row: number, col: number }
+ *   | { type: "clear", rows: number[], rowSquares: { gold: number, silver: number }[], points: number }} GameEvent
+ */
+/**
  * @typedef {object} Game
  * @property {number} rulesVersion
  * @property {number} seed
@@ -48,6 +54,7 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @property {number} silverSquares silver (mixed) squares formed so far
  * @property {number} holdsUsed
  * @property {boolean} over
+ * @property {GameEvent[]} events what happened in the last step; replaced at the start of every step
  * @property {number} gravityCount ticks since the piece last fell
  * @property {number} lockTimer ticks the piece has rested on the stack
  * @property {number} lockResets how many times a move or rotation restarted the lock timer
@@ -86,6 +93,7 @@ export function createGame(seed, options = {}) {
     silverSquares: 0,
     holdsUsed: 0,
     over: false,
+    events: [],
     gravityCount: 0,
     lockTimer: 0,
     lockResets: 0,
@@ -194,6 +202,7 @@ function doHold(game) {
 function formSquares(game) {
   for (const sq of markSquares(game.board, game.nextSquareId)) {
     game.nextSquareId = sq.id + 1;
+    game.events.push({ type: "square", id: sq.id, kind: sq.kind, row: sq.row, col: sq.col });
     if (sq.kind === "gold") game.goldSquares++;
     else game.silverSquares++;
   }
@@ -214,10 +223,13 @@ function lock(game) {
   // Lock-out: the whole piece is above the visible field.
   const lockedOut = pieceCells(p.type, p.rot).every(([, dy]) => p.y + dy < HIDDEN_ROWS);
   formSquares(game);
-  const rows = fullRows(game.board).map((r) => squaresInRow(game.board[r]));
+  const clearedRows = fullRows(game.board);
+  const rows = clearedRows.map((r) => squaresInRow(game.board[r]));
   const cleared = clearLines(game.board);
   if (cleared > 0) {
-    game.score += linePoints(rows);
+    const points = linePoints(rows);
+    game.events.push({ type: "clear", rows: clearedRows, rowSquares: rows, points });
+    game.score += points;
     game.lines += cleared;
     game.level = levelFor(game.startLevel, game.lines);
     formSquares(game);
@@ -261,6 +273,7 @@ export function landingY(game) {
  * @param {readonly GameAction[]} actions
  */
 export function step(game, actions) {
+  game.events = [];
   if (game.over) return;
   game.tick++;
 

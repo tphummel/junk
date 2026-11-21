@@ -14,6 +14,7 @@ import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
 import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
+import { createEffects } from "../web/tetris/src/ui/effects.js";
 import { INK, METAL, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
 
 const filled = (type = "T", pieceId = 99) => ({ type, pieceId });
@@ -351,6 +352,67 @@ test("metal colors: the engraved glyph reads on every stop, and the slab stands 
       for (const bg of ["#2A3440", "#1B222B"]) assert.ok(contrastRatio(c.slice(1), bg.slice(1)) >= 3, `${c} on ${bg}`);
     }
   }
+});
+
+// --- events and flourish ---------------------------------------------------------------------------
+
+test("the game reports a square forming, and a clear with its points and the squares each row touched", () => {
+  const game = createGame(3);
+  squareBoard(game, ["gold"]);
+  step(game, ["hardDrop"]);
+  const clear = game.events.find((e) => e.type === "clear");
+  assert.deepEqual(clear.rows, [18, 19, 20, 21]);
+  assert.equal(clear.points, 45);
+  assert.deepEqual(clear.rowSquares, Array.from({ length: 4 }, () => ({ gold: 1, silver: 0 })));
+
+  const formed = createGame(3);
+  for (let i = 0; i < 3; i++) place(formed.board, "I", 0, 0, 18 + i - 1, i + 1);
+  formed.current = { type: "I", rot: 0, x: 0, y: 20, id: 600 };
+  step(formed, ["hardDrop"]);
+  assert.deepEqual(formed.events, [{ type: "square", id: 1, kind: "gold", row: 18, col: 0 }]);
+  step(formed, []);
+  assert.deepEqual(formed.events, [], "events last one step");
+});
+
+/** A fixed "random" source for exact effect counts. */
+const fixedRng = () => 0.5;
+
+test("effects: a new square gets a ring, a shine and sparks, which expire", () => {
+  const fx = createEffects({ rng: fixedRng });
+  fx.add([{ type: "square", id: 1, kind: "gold", row: 18, col: 0 }], 1000);
+  const kinds = fx.active(1000).map((e) => e.kind);
+  assert.equal(kinds.filter((k) => k === "ring").length, 1);
+  assert.equal(kinds.filter((k) => k === "shine").length, 1);
+  assert.ok(kinds.filter((k) => k === "spark").length >= 10);
+  assert.ok(fx.active(1400).length > 0, "still animating");
+  assert.equal(fx.active(1000 + 2000).length, 0, "all expired");
+});
+
+test("effects: a clear through a square flashes the rows and floats the points; a plain clear only flashes", () => {
+  const fx = createEffects({ rng: fixedRng });
+  fx.add([{ type: "clear", rows: [20, 21], rowSquares: [{ gold: 1, silver: 0 }, { gold: 1, silver: 0 }], points: 22 }], 0);
+  const list = fx.active(0);
+  assert.equal(list.filter((e) => e.kind === "flash").length, 2);
+  const popup = list.find((e) => e.kind === "popup");
+  assert.equal(popup.text, "+22");
+  assert.equal(popup.tone, "gold");
+
+  const plain = createEffects({ rng: fixedRng });
+  plain.add([{ type: "clear", rows: [21], rowSquares: [{ gold: 0, silver: 0 }], points: 1 }], 0);
+  const kinds = plain.active(0).map((e) => e.kind);
+  assert.deepEqual(kinds, ["flash"], "no sparks or popup for a plain line");
+});
+
+test("effects: reduced motion keeps the glow and the points but drops sparks and shine", () => {
+  const fx = createEffects({ rng: fixedRng, reducedMotion: () => true });
+  fx.add([
+    { type: "square", id: 1, kind: "silver", row: 18, col: 0 },
+    { type: "clear", rows: [21], rowSquares: [{ gold: 0, silver: 1 }], points: 6 },
+  ], 0);
+  const kinds = new Set(fx.active(0).map((e) => e.kind));
+  assert.ok(kinds.has("ring") && kinds.has("flash") && kinds.has("popup"));
+  assert.ok(!kinds.has("spark") && !kinds.has("shine"));
+  assert.equal(fx.calm, true);
 });
 
 // --- determinism -----------------------------------------------------------------------------------

@@ -1,11 +1,13 @@
 // Canvas drawing for the board, ghost piece and the small hold/next previews.
 
 import { COLS, HIDDEN_ROWS, VISIBLE_ROWS } from "../game/board.js";
+import { SQUARE_SIZE as SQUARE_PX } from "../game/squares.js";
 import { pieceCells } from "../game/pieces.js";
 import { landingY } from "../game/state.js";
 
 /** @typedef {import("../game/pieces.js").PieceType} PieceType */
 /** @typedef {import("../game/state.js").Game} Game */
+/** @typedef {ReturnType<typeof import("./effects.js").createEffects>} Effects */
 /** @typedef {{ board: string, grid: string, text: string }} Theme */
 
 /**
@@ -133,13 +135,92 @@ function drawSquareCell(ctx, board, r, c, box, size) {
   if (!same(r, c - 1)) ctx.fillRect(px + t, py + t, 1, size - 2 * t);
 }
 
+/** Light and glow colors per effect tone: [bright, deep]. */
+const GLOW = {
+  gold: ["#FFF2B0", "#E3A91B"],
+  silver: ["#FFFFFF", "#9FB0C4"],
+  plain: ["#FFFFFF", "#C9D3DF"],
+};
+
 /**
- * Draw the visible board, the ghost and the current piece.
+ * Draw squares' and line clears' flourish over the board.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Effects} fx
+ * @param {number} now
+ * @param {number} size cell size in pixels
+ */
+function drawEffects(ctx, fx, now, size) {
+  const calm = fx.calm;
+  const W = COLS * size;
+  for (const e of fx.active(now)) {
+    const p = Math.min(1, (now - e.start) / e.dur);
+    const [bright, deep] = GLOW[e.tone];
+    ctx.save();
+    if (e.kind === "flash") {
+      ctx.globalAlpha = (1 - p) * (1 - p) * (e.tone === "plain" ? 0.55 : 0.85);
+      ctx.fillStyle = bright;
+      ctx.fillRect(0, (e.row - HIDDEN_ROWS) * size, W, size);
+    } else if (e.kind === "ring") {
+      const grow = calm ? 0 : p * size * 0.9;
+      ctx.globalAlpha = (1 - p) * 0.9;
+      ctx.strokeStyle = bright;
+      ctx.shadowColor = deep;
+      ctx.shadowBlur = size * 0.6;
+      ctx.lineWidth = Math.max(2, size * 0.14);
+      ctx.strokeRect(e.col * size - grow, (e.row - HIDDEN_ROWS) * size - grow, SQUARE_PX * size + 2 * grow, SQUARE_PX * size + 2 * grow);
+    } else if (e.kind === "shine") {
+      // A diagonal band of light sweeping across the new square.
+      const x0 = e.col * size;
+      const y0 = (e.row - HIDDEN_ROWS) * size;
+      const span = SQUARE_PX * size;
+      ctx.beginPath();
+      ctx.rect(x0, y0, span, span);
+      ctx.clip();
+      const pos = (p * 1.6 - 0.3) * span * 2;
+      const g = ctx.createLinearGradient(x0 + pos - span * 0.3, y0, x0 + pos + span * 0.3, y0 + span * 0.6);
+      g.addColorStop(0, "rgba(255,255,255,0)");
+      g.addColorStop(0.5, "rgba(255,255,255,0.85)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x0, y0, span, span);
+    } else if (e.kind === "spark") {
+      const t = (now - e.start) / 1000;
+      const x = (e.x + e.vx * t) * size;
+      const y = (e.y - HIDDEN_ROWS + e.vy * t + 4 * t * t) * size; // a little gravity
+      const r = size * 0.16 * (1 - p * 0.6);
+      ctx.globalAlpha = 1 - p;
+      ctx.fillStyle = p < 0.4 ? bright : deep;
+      ctx.translate(x, y);
+      ctx.rotate(t * 6);
+      ctx.fillRect(-r, -r, 2 * r, 2 * r);
+    } else if (e.kind === "popup") {
+      const rise = calm ? 0 : p * 2.2;
+      ctx.globalAlpha = p < 0.7 ? 1 : 1 - (p - 0.7) / 0.3;
+      ctx.font = `bold ${Math.floor(size * 1.05)}px system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const x = W / 2;
+      const y = (e.row + 0.5 - HIDDEN_ROWS - rise) * size;
+      ctx.lineJoin = "round";
+      ctx.lineWidth = Math.max(3, size * 0.2);
+      ctx.strokeStyle = INK;
+      ctx.strokeText(e.text, x, y);
+      ctx.fillStyle = bright;
+      ctx.fillText(e.text, x, y);
+    }
+    ctx.restore();
+  }
+}
+
+/**
+ * Draw the visible board, the ghost, the current piece and any flourish.
  * @param {HTMLCanvasElement} canvas
  * @param {Game} game
  * @param {Theme} theme
+ * @param {Effects} [fx]
+ * @param {number} [now] performance.now() for the effects
  */
-export function drawBoard(canvas, game, theme) {
+export function drawBoard(canvas, game, theme, fx, now = 0) {
   const ctx = fitCanvas(canvas);
   const size = Math.min(canvas.width / COLS, canvas.height / VISIBLE_ROWS);
   const stone = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -210,6 +291,7 @@ export function drawBoard(canvas, game, theme) {
       if (row >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, row * size, size);
     }
   }
+  if (fx) drawEffects(ctx, fx, now, size);
 }
 
 /**

@@ -15,6 +15,7 @@ const PRECACHE = [
   '/tetris/src/input/actions.js',
   '/tetris/src/input/gamepad.js',
   '/tetris/src/input/keyboard.js',
+  '/tetris/src/ui/effects.js',
   '/tetris/src/ui/hud.js',
   '/tetris/src/ui/render.js',
   '/tetris/manifest.webmanifest',

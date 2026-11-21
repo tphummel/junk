@@ -7,6 +7,7 @@ import { createRepeater } from "./input/actions.js";
 import { createGamepad, describeBinding, describePad } from "./input/gamepad.js";
 import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
+import { createEffects } from "./ui/effects.js";
 import { drawBoard, readTheme } from "./ui/render.js";
 
 /** @typedef {import("./game/state.js").Game} Game */
@@ -81,6 +82,8 @@ const gamepad = createGamepad(window, {
 });
 const repeater = createRepeater();
 const hud = createHud(document);
+const motion = matchMedia("(prefers-reduced-motion: reduce)");
+const effects = createEffects({ reducedMotion: () => motion.matches });
 let theme = readTheme();
 
 /** @type {Screen} */
@@ -153,6 +156,7 @@ function setScreen(next, message) {
 }
 
 function startRound() {
+  effects.clear();
   game = newGame();
   round = newRound(game);
   setScreen("playing");
@@ -184,6 +188,7 @@ function tick() {
   if (held.has("softDrop")) actions.push("softDrop");
 
   step(game, actions);
+  effects.add(game.events, performance.now());
   for (const action of actions) round.inputLog.push({ t: game.tick, action });
   if (game.over) {
     Object.assign(round, {
@@ -258,7 +263,7 @@ function frame(now) {
   }
 
   if (padPanel.open) padDebug.textContent = padReadout();
-  drawBoard(boardCanvas, game, theme);
+  drawBoard(boardCanvas, game, theme, effects, now);
   hud.update(game, theme);
   requestAnimationFrame(frame);
 }
