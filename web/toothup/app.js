@@ -294,8 +294,9 @@ const viewOf = (day) => {
 let view = viewOf(today());
 
 const ICON = { brush: "🪥", floss: "🧵", mouthwash: "🌊" };
-// The floss and mouthwash buttons use the same emojis as the goals.
-for (const type of ["floss", "mouthwash"]) $(type).textContent = ICON[type];
+// The floss and mouthwash buttons show the same emojis as the goals, with the word underneath.
+const BUTTON_LABEL = { floss: "Floss", mouthwash: "Rinse" };
+for (const type of ["floss", "mouthwash"]) $(type).innerHTML = `<span class="b-icon">${ICON[type]}</span><span>${BUTTON_LABEL[type]}</span>`;
 
 /** ["🪥 1/2", "🧵 1/1", "🌊 0/2", "+1 extra"] for one day's goals. */
 function goalsParts(g) {
