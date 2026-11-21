@@ -2,6 +2,7 @@ import {
   DEFAULT_SETTINGS, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
   makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
 } from "./logic.js";
+import { readHealthExport } from "./health.js";
 
 const STORE = "toothup:v2";
 const $ = (id) => document.getElementById(id);
@@ -535,6 +536,27 @@ $("import").onchange = async (e) => {
     toast(`Imported ${merged.added} new, ${events.length - merged.added} already present${skipped ? `, ${skipped} skipped` : ""}.`);
   } catch (err) {
     toast(`Import failed: ${err.message}`);
+  }
+};
+
+$("health-btn").onclick = () => $("health").click();
+$("health").onchange = async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  $("health-btn").disabled = true;
+  try {
+    const { events, skipped } = await readHealthExport(file, (f, n) => toast(`Reading Apple Health export: ${Math.round(f * 100)}%, ${n} brushes found`));
+    if (!events.length) throw new Error("no toothbrushing records found (they need an Apple Watch or a smart toothbrush)");
+    const merged = mergeEvents(state.events, events);
+    state.events = merged.events;
+    save();
+    renderData();
+    toast(`Imported ${merged.added} new brush${merged.added === 1 ? "" : "es"} from Apple Health, ${events.length - merged.added} already present${skipped ? `, ${skipped} skipped` : ""}.`);
+  } catch (err) {
+    toast(`Import failed: ${err.message}`);
+  } finally {
+    $("health-btn").disabled = false;
   }
 };
 

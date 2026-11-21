@@ -1,11 +1,12 @@
 // Offline support: cache the page's own files, never the requests the page sends.
 // Bump CACHE_NAME when a file is removed or renamed so the old entries are deleted on activate.
-const CACHE_NAME = 'toothup-v1';
+const CACHE_NAME = 'toothup-v2';
 const SCOPE_PATH = '/toothup/';
 
 const PRECACHE = [
   '/toothup/',
   '/toothup/app.js',
+  '/toothup/health.js',
   '/toothup/logic.js',
   '/toothup/apple-touch-icon.png',
   '/toothup/icon-192.png',
