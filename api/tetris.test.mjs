@@ -9,7 +9,7 @@ import { contrastRatio } from "../web/golden-angle-palette/palette.js";
 import { createBag, makeRng } from "../web/tetris/src/game/bag.js";
 import { clearLines, collides, COLS, createBoard, HIDDEN_ROWS, place, ROWS } from "../web/tetris/src/game/board.js";
 import { PIECE_TYPES, pieceCells } from "../web/tetris/src/game/pieces.js";
-import { gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
+import { FLOURISH_ENTRY_DELAY_TICKS, gravityTicks, linePoints, LOCK_DELAY_TICKS } from "../web/tetris/src/game/rules.js";
 import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
@@ -18,6 +18,13 @@ import { createEffects } from "../web/tetris/src/ui/effects.js";
 import { INK, METAL, PIECE_COLORS } from "../web/tetris/src/ui/render.js";
 
 const filled = (type = "T", pieceId = 99) => ({ type, pieceId });
+
+/** Hard drop and lock the current piece in one go: press once to fall, and again to lock if it has not locked yet. */
+function slam(game) {
+  const placed = game.piecesPlaced;
+  step(game, ["hardDrop"]);
+  if (!game.over && game.piecesPlaced === placed) step(game, ["hardDrop"]);
+}
 
 /** Put the current piece on the floor so it is resting. */
 function ground(game) {
@@ -105,13 +112,38 @@ test("gravity drops one row per gravityTicks(level) ticks", () => {
   assert.equal(game.current.y, y0 + 1);
 });
 
-test("hard drop locks and spawns the next piece, and scores nothing", () => {
+test("hard drop falls at once but does not lock; a second press locks it", () => {
   const game = createGame(3);
+  const landing = landingY(game);
   const nextType = game.queue[0];
   step(game, ["hardDrop"]);
-  assert.equal(game.score, 0);
-  assert.equal(game.piecesPlaced, 1);
+  assert.equal(game.current.y, landing, "dropped to the bottom in one step");
+  assert.equal(game.piecesPlaced, 0, "not locked yet");
+  assert.equal(game.score, 0, "drops score nothing");
+  step(game, ["hardDrop"]);
+  assert.equal(game.piecesPlaced, 1, "pressing again locks it");
   assert.equal(game.current.type, nextType);
+});
+
+test("after a hard drop the piece can slide and turn before it settles", () => {
+  const game = createGame(3);
+  step(game, ["hardDrop"]);
+  const x = game.current.x;
+  for (let i = 0; i < 10; i++) step(game, []);
+  step(game, ["left"]);
+  assert.equal(game.current.x, x - 1, "slid left after dropping");
+  assert.equal(game.piecesPlaced, 0);
+  step(game, ["rotateCW"]);
+  assert.equal(game.current.rot, 1, "and turned");
+});
+
+test("a hard-dropped piece that is left alone locks after the lock delay", () => {
+  const game = createGame(3);
+  step(game, ["hardDrop"]);
+  for (let i = 0; i < LOCK_DELAY_TICKS - 2; i++) step(game, []);
+  assert.equal(game.piecesPlaced, 0);
+  for (let i = 0; i < 3; i++) step(game, []);
+  assert.equal(game.piecesPlaced, 1);
 });
 
 test("soft drop moves the piece down faster and scores nothing", () => {
@@ -141,7 +173,7 @@ test("hold: once per piece, resets on lock, first hold pulls from the queue", ()
   assert.equal(game.current.type, type, "second hold is ignored");
   assert.equal(game.holdsUsed, 1);
 
-  step(game, ["hardDrop"]);
+  slam(game);
   assert.equal(game.canHold, true);
   step(game, ["hold"]);
   assert.equal(game.current.type, first, "swapped back to the held piece");
@@ -170,7 +202,7 @@ test("clearing a plain line scores 1 and counts the line", () => {
   const game = createGame(3);
   game.board[ROWS - 1] = Array.from({ length: COLS }, (_, c) => (c < 6 ? filled() : null));
   game.current = { type: "I", rot: 0, x: 6, y: ROWS - 2, id: 77 };
-  step(game, ["hardDrop"]);
+  slam(game);
   assert.equal(game.lines, 1);
   assert.equal(game.score, 1);
   assert.ok(game.board[ROWS - 1].every((c) => c === null));
@@ -181,7 +213,7 @@ test("level goes up every 10 lines", () => {
   game.lines = 9;
   game.board[ROWS - 1] = Array.from({ length: COLS }, (_, c) => (c < 6 ? filled() : null));
   game.current = { type: "I", rot: 0, x: 6, y: ROWS - 2, id: 77 };
-  step(game, ["hardDrop"]);
+  slam(game);
   assert.equal(game.score, 1, "no level multiplier");
   assert.equal(game.level, 2);
 });
@@ -200,7 +232,7 @@ test("a blocked spawn ends the game", () => {
 test("locking entirely above the visible field ends the game", () => {
   const game = createGame(3);
   for (let r = HIDDEN_ROWS; r < ROWS; r++) game.board[r] = Array.from({ length: COLS }, (_, c) => (c === COLS - 1 ? null : filled()));
-  step(game, ["hardDrop"]);
+  slam(game);
   assert.equal(game.over, true);
 });
 
@@ -309,7 +341,7 @@ test("clearing 4 lines through one gold square scores 45, one silver 25, two gol
   for (const [kinds, points] of [[["gold"], 45], [["silver"], 25], [["gold", "gold"], 85], [["gold", "silver"], 65]]) {
     const game = createGame(3);
     squareBoard(game, kinds);
-    step(game, ["hardDrop"]);
+    slam(game);
     assert.equal(game.lines, 4, kinds.join());
     assert.equal(game.score, points, kinds.join());
   }
@@ -319,7 +351,7 @@ test("a locked piece that completes a square forms it and counts it", () => {
   const game = createGame(3);
   for (let i = 0; i < 3; i++) place(game.board, "I", 0, 0, 18 + i - 1, i + 1);
   game.current = { type: "I", rot: 0, x: 0, y: 20, id: 600 };
-  step(game, ["hardDrop"]);
+  slam(game);
   assert.equal(game.goldSquares, 1);
   assert.equal(game.silverSquares, 0);
   assert.equal(game.board[21][0].square, "gold");
@@ -328,7 +360,7 @@ test("a locked piece that completes a square forms it and counts it", () => {
 test("a partly cleared square keeps its bonus for the rows that are left", () => {
   const game = createGame(3);
   squareBoard(game, ["gold"], [21]); // only the bottom row can fill
-  step(game, ["hardDrop"]);
+  slam(game);
   assert.equal(game.lines, 1);
   assert.equal(game.score, 11, "1 line through a gold square");
   // Three rows of the square remain, still marked, now at rows 19-21.
@@ -339,7 +371,7 @@ test("a partly cleared square keeps its bonus for the rows that are left", () =>
   // bonus for the square's remaining rows applies again.
   for (let c = 4; c < 9; c++) game.board[21][c] = { type: "T", pieceId: 2000 + c };
   game.current = { type: "O", rot: 0, x: 4, y: 0, id: 901 };
-  step(game, ["hardDrop"]);
+  slam(game);
   assert.equal(game.lines, 2);
   assert.equal(game.score, 22);
   assert.equal(game.board[21][0].square, "gold", "two rows of the square are left");
@@ -359,7 +391,7 @@ test("metal colors: the engraved glyph reads on every stop, and the slab stands 
 test("the game reports a square forming, and a clear with its points and the squares each row touched", () => {
   const game = createGame(3);
   squareBoard(game, ["gold"]);
-  step(game, ["hardDrop"]);
+  slam(game);
   const clear = game.events.find((e) => e.type === "clear");
   assert.deepEqual(clear.rows, [18, 19, 20, 21]);
   assert.equal(clear.points, 45);
@@ -368,7 +400,7 @@ test("the game reports a square forming, and a clear with its points and the squ
   const formed = createGame(3);
   for (let i = 0; i < 3; i++) place(formed.board, "I", 0, 0, 18 + i - 1, i + 1);
   formed.current = { type: "I", rot: 0, x: 0, y: 20, id: 600 };
-  step(formed, ["hardDrop"]);
+  slam(formed);
   assert.deepEqual(formed.events, [{ type: "square", id: 1, kind: "gold", row: 18, col: 0 }]);
   step(formed, []);
   assert.deepEqual(formed.events, [], "events last one step");
@@ -413,6 +445,42 @@ test("effects: reduced motion keeps the glow and the points but drops sparks and
   assert.ok(kinds.has("ring") && kinds.has("flash") && kinds.has("popup"));
   assert.ok(!kinds.has("spark") && !kinds.has("shine"));
   assert.equal(fx.calm, true);
+});
+
+// --- pause for the flourish ------------------------------------------------------------------------
+
+test("a new square holds the next piece back for the flourish, ignoring input meanwhile", () => {
+  const game = createGame(3);
+  for (let i = 0; i < 3; i++) place(game.board, "I", 0, 0, 18 + i - 1, i + 1);
+  game.current = { type: "I", rot: 0, x: 0, y: 20, id: 600 };
+  const nextType = game.queue[0];
+  slam(game);
+  assert.equal(game.goldSquares, 1);
+  assert.equal(game.current, null, "nothing in play");
+  assert.equal(game.entryDelay, FLOURISH_ENTRY_DELAY_TICKS);
+  assert.equal(game.queue[0], nextType, "the next piece is still waiting");
+  for (let i = 0; i < FLOURISH_ENTRY_DELAY_TICKS - 1; i++) step(game, ["left", "hardDrop", "hold"]);
+  assert.equal(game.current, null, "input did nothing and the piece has not entered");
+  assert.equal(game.holdsUsed, 0);
+  step(game, []);
+  assert.equal(game.current.type, nextType, "then it enters");
+  assert.equal(game.entryDelay, 0);
+});
+
+test("a clear through a square pauses; a plain clear does not", () => {
+  const game = createGame(3);
+  squareBoard(game, ["silver"]);
+  slam(game);
+  assert.equal(game.current, null);
+  assert.equal(game.entryDelay, FLOURISH_ENTRY_DELAY_TICKS);
+
+  const plain = createGame(3);
+  plain.board[ROWS - 1] = Array.from({ length: COLS }, (_, c) => (c < 6 ? filled() : null));
+  plain.current = { type: "I", rot: 0, x: 6, y: ROWS - 2, id: 77 };
+  slam(plain);
+  assert.equal(plain.lines, 1);
+  assert.ok(plain.current, "the next piece is in play at once");
+  assert.equal(plain.entryDelay, 0);
 });
 
 // --- determinism -----------------------------------------------------------------------------------
@@ -599,37 +667,6 @@ test("piece colors: distinct, 3:1 on the board stone in both modes, and the engr
     }
     assert.ok(contrastRatio(c.slice(1), INK.slice(1)) >= 4.5, `${INK} on ${c}`);
   }
-});
-
-test("stages: cream text on wood and the button ink on cream reach 4.5:1 in every stage and mode", () => {
-  const html = readFileSync(new URL("../web/tetris/index.html", import.meta.url), "utf8");
-  const css = html.slice(html.indexOf("<style>"), html.indexOf("</style>"));
-  // Split into the light rules and the rules inside the dark-mode media blocks.
-  const parts = css.split("@media (prefers-color-scheme: dark) {");
-  const light = parts[0];
-  const dark = parts.slice(1).join("\n");
-  /** Collect the vars a mode sets for a stage, on top of the default (savanna) vars of the same mode. */
-  const vars = (text, selector) => {
-    const out = {};
-    const re = new RegExp(`${selector.replace(/[[\]"]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "g");
-    for (const m of text.matchAll(re)) for (const d of m[1].matchAll(/--([\w-]+):\s*(#[0-9A-Fa-f]{6})/g)) out[d[1]] = d[2];
-    return out;
-  };
-  const stages = ["savanna", "pagoda", "temple"];
-  for (const [mode, text] of [["light", light], ["dark", dark]]) {
-    const base = vars(text, ":root");
-    for (const stage of stages) {
-      const v = { ...base, ...(stage === "savanna" ? {} : vars(text, `:root[data-stage="${stage}"]`)) };
-      for (const k of ["wood", "wood-dark", "cream"]) assert.ok(v[k], `${stage} ${mode} sets --${k}`);
-      assert.ok(contrastRatio(v.cream.slice(1), v.wood.slice(1)) >= 4.5, `${stage} ${mode}: cream on wood`);
-      assert.ok(contrastRatio(v["wood-dark"].slice(1), v.cream.slice(1)) >= 4.5, `${stage} ${mode}: button ink on cream`);
-      assert.equal(v.board, base.board, `${stage} ${mode}: same board stone, so block contrast holds`);
-    }
-  }
-});
-
-test("the controller's Select button changes the stage", () => {
-  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.BACK] }))], ["stage"]);
 });
 
 test("service worker PRECACHE lists exactly the page's files, and they all exist", () => {

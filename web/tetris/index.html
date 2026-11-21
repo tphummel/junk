@@ -15,29 +15,10 @@
       --accent:  #A72DD2;
       --bg: #FFFFFF;
       --text: #111111;
-      /* Hand-chosen neutrals for the scene: a savanna by day, dusk in dark mode. */
-      --sky-top: #7EC0EE;
-      --sky-bottom: #F3D9A4;
-      --mountain: #A9876B;
-      --sand: #D9B77E;
-      --sand-dark: #B8935A;
-      --brick: #B9714B;
-      --brick-dark: #8E5233;
-      --brick-light: #CC8A62;
-      --wood: #5B3A21;
-      --wood-dark: #2A1A0E;
-      --cream: #F7E9CF;
+      /* The board is dark stone in both modes; block colors are tuned to it (see render.js). */
       --board: #2A3440;
       --grid: #323E4B;
-      --mini: clamp(64px, 14vw, 110px);
-      /* Per-stage decoration: tower surface, torch glow at the top of each tower, and the horizon silhouette. */
-      --courses: repeating-linear-gradient(0deg, transparent 0 26px, rgba(0, 0, 0, 0.2) 26px 28px);
-      --torch: rgba(0, 0, 0, 0);
-      --skyline: polygon(0 100%, 38% 18%, 44% 12%, 52% 12%, 58% 20%, 100% 100%);
-      --sky-left: 50%;
-      --sky-shift: -30%;
-      --sky-w: min(90vw, 900px);
-      --sky-h: 26vh;
+      --mini: clamp(52px, min(10vw, 15dvh), 96px);
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -46,262 +27,80 @@
         --accent:  #B54DD9;
         --bg: #111111;
         --text: #EEEEEE;
-        --sky-top: #141B3D;
-        --sky-bottom: #8A4B3F;
-        --mountain: #3B2A33;
-        --sand: #6B5636;
-        --sand-dark: #4A3B25;
-        --brick: #764530;
-        --brick-dark: #4F2D1D;
-        --brick-light: #8A553C;
-        --wood: #3A2414;
-        --wood-dark: #170E07;
-        --cream: #F0E0C4;
         --board: #1B222B;
         --grid: #232C36;
       }
     }
-    /*
-      Stages. Each one re-skins the scene with hand-chosen neutrals, in a day and a night version that follow
-      light and dark mode. The board's stone (--board, --grid) is the same on every stage so block colors keep
-      their contrast. Cream on wood is at least 4.5:1 in every stage and mode (a test checks this).
-    */
-    /* Pagoda: red lacquer pillars, lantern glow, a castle on the horizon. */
-    :root[data-stage="pagoda"] {
-      --sky-top: #E9A38F;
-      --sky-bottom: #F7D9A8;
-      --mountain: #8D7C8F;
-      --sand: #7C8B8E;
-      --sand-dark: #5E6B70;
-      --brick: #B3202A;
-      --brick-dark: #7A1219;
-      --brick-light: #D1414B;
-      --wood: #2B1A14;
-      --wood-dark: #140B08;
-      --cream: #F3E2B3;
-      --courses: linear-gradient(90deg, transparent 0 44%, rgba(255, 255, 255, 0.16) 44% 52%, transparent 52%);
-      --torch: rgba(255, 194, 77, 0.55);
-      /* Beside the right tower, where it shows. */
-      --sky-left: calc(50% + 250px);
-      --sky-shift: 0%;
-      --sky-w: min(32vw, 320px);
-      --sky-h: 32vh;
-      --skyline: polygon(0 100%, 0 82%, 28% 72%, 37% 64%, 41% 64%, 41% 54%, 45% 46%, 50% 14%, 55% 46%, 59% 54%, 59% 64%, 63% 64%, 72% 72%, 100% 82%, 100% 100%);
-    }
-    /* Temple: carved stone towers, torchlight, a stepped pyramid. */
-    :root[data-stage="temple"] {
-      --sky-top: #8CB8A0;
-      --sky-bottom: #D6D7A8;
-      --mountain: #6F7A63;
-      --sand: #8A7552;
-      --sand-dark: #6B5A3F;
-      --brick: #8D8A72;
-      --brick-dark: #5F5C4A;
-      --brick-light: #A9A58A;
-      --wood: #3B2A1A;
-      --wood-dark: #1E1409;
-      --cream: #F1E6C8;
-      --torch: rgba(255, 154, 46, 0.5);
-      /* Beside the left tower. */
-      --sky-left: calc(50% - 250px);
-      --sky-shift: -100%;
-      --sky-w: min(32vw, 320px);
-      --sky-h: 24vh;
-      --skyline: polygon(0 100%, 18% 100%, 18% 80%, 28% 80%, 28% 60%, 38% 60%, 38% 40%, 44% 40%, 44% 24%, 56% 24%, 56% 40%, 62% 40%, 62% 60%, 72% 60%, 72% 80%, 82% 80%, 82% 100%, 100% 100%);
-    }
-    @media (prefers-color-scheme: dark) {
-      :root[data-stage="pagoda"] {
-        --sky-top: #1B1030;
-        --sky-bottom: #5A2A4A;
-        --mountain: #2B1F3A;
-        --sand: #2F3B44;
-        --sand-dark: #1D262D;
-        --brick: #8C1A22;
-        --brick-dark: #5B0F15;
-        --brick-light: #A8313A;
-        --wood: #1A0F0B;
-        --wood-dark: #0B0605;
-        --cream: #F0DDA8;
-        --torch: rgba(255, 170, 60, 0.5);
-      }
-      :root[data-stage="temple"] {
-        --sky-top: #0E1220;
-        --sky-bottom: #2B2535;
-        --mountain: #1B1A22;
-        --sand: #3A2F22;
-        --sand-dark: #241C13;
-        --brick: #5C5A4A;
-        --brick-dark: #3A382D;
-        --brick-light: #75725E;
-        --wood: #24180D;
-        --wood-dark: #0E0905;
-        --cream: #EEDDB8;
-        --torch: rgba(255, 140, 40, 0.6);
-      }
-    }
     * { box-sizing: border-box; }
-    body { margin: 0; color: var(--text); font-family: system-ui, sans-serif; background: var(--sand); }
-    .scene {
-      position: relative;
-      min-height: 100vh;
+    body {
+      margin: 0;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      background: linear-gradient(to bottom, var(--sky-top) 0, var(--sky-bottom) 64%, var(--sand) 64%, var(--sand-dark) 100%);
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
     }
-    /* The horizon: a volcano by default, a pagoda or a stepped temple on the other stages. */
-    .scene::before {
-      content: "";
-      position: absolute;
-      left: var(--sky-left);
-      bottom: 36%;
-      width: var(--sky-w);
-      height: var(--sky-h);
-      transform: translateX(var(--sky-shift));
-      background: var(--mountain);
-      clip-path: var(--skyline);
-      opacity: 0.8;
-    }
-    .frame {
-      position: relative;
-      display: flex;
-      gap: 10px;
-      align-items: stretch;
-      padding: 22px 12px 14px;
-    }
-    /* Wooden lintel across the top, resting on both towers. */
-    .beam {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 18px;
-      border-radius: 9px;
-      background:
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0 2px, transparent 2px 11px),
-        linear-gradient(to bottom, var(--wood), var(--wood-dark));
-      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
-    }
-    /* A mound of sand under the whole frame. */
-    .frame::after {
-      content: "";
-      position: absolute;
-      left: -4%;
-      right: -4%;
-      bottom: -10px;
-      height: 26px;
-      border-radius: 50%;
-      background: var(--sand-dark);
-      z-index: -1;
-    }
-    .tower {
-      position: relative;
-      width: calc(var(--mini) + 28px);
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      border-radius: 10px 10px 4px 4px;
-      border-top: 6px solid var(--brick-light);
-      background:
-        radial-gradient(ellipse 100% 120px at 50% 0, var(--torch), transparent),
-        var(--courses),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 20%, transparent 80%, rgba(255, 255, 255, 0.12)),
-        var(--brick);
-      box-shadow: inset 0 0 0 2px var(--brick-dark);
-    }
-    /* Wooden pole stubs sticking out of the outer side of each tower. */
-    .tower::before {
-      content: "";
-      position: absolute;
-      top: 20px;
-      bottom: 12px;
-      width: 12px;
-      background: repeating-linear-gradient(0deg, var(--wood) 0 7px, transparent 7px 38px);
-    }
-    .tower.left::before { left: -10px; border-radius: 3px 0 0 3px; }
-    .tower.right::before { right: -10px; border-radius: 0 3px 3px 0; }
-    .plaque {
-      margin: 0;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: var(--wood);
-      color: var(--cream);
-      font-size: 0.75rem;
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
+    .game { display: flex; gap: 16px; align-items: flex-start; padding: 8px 12px 0; }
+    .side { width: var(--mini); display: flex; flex-direction: column; gap: 12px; }
+    .panel { display: flex; flex-direction: column; gap: 6px; }
+    h2, dt { margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); }
     .mini {
       width: var(--mini);
       height: calc(var(--mini) * 0.75);
       display: block;
-      border: 4px solid var(--wood);
+      border: 2px solid var(--support);
       border-radius: 6px;
       background: var(--board);
-      box-shadow: inset 0 0 8px #000;
     }
     .field { position: relative; }
+    /* As tall as the window allows (room left for the controller line), 1:2 like the board. */
     #board {
       display: block;
-      height: min(76vh, calc((100vw - 2 * var(--mini) - 150px) * 2));
+      height: min(calc(100dvh - 76px), calc((100vw - 2 * var(--mini) - 72px) * 2));
       aspect-ratio: 1 / 2;
-      border: 6px solid var(--wood);
-      border-radius: 4px;
-      box-shadow: inset 0 0 12px #000, 0 0 0 2px var(--wood-dark);
-    }
-    /* Wooden plank with the score, like the lines sign in the original. */
-    .sign {
-      margin: auto 0 0;
-      padding: 8px 10px;
-      border: 3px solid var(--wood-dark);
+      border: 3px solid var(--support);
       border-radius: 6px;
-      color: var(--cream);
-      background:
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0 2px, transparent 2px 9px),
-        var(--wood);
     }
-    dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; }
-    dd { margin: 0 0 6px; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
-    dd:last-child { margin-bottom: 0; }
+    dl { margin: 0; }
+    dd { margin: 0 0 clamp(2px, 1dvh, 8px); font-size: clamp(1rem, 3.2dvh, 1.35rem); font-variant-numeric: tabular-nums; }
+    #overlay {
+      position: absolute;
+      inset: 3px;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      background: color-mix(in srgb, var(--board) 72%, transparent);
+    }
+    #overlay[hidden] { display: none; }
+    /* Wider than the board when it has to be, so the instructions do not wrap into a tall, narrow strip. */
+    .card {
+      width: max-content;
+      max-width: min(92vw, 400px);
+      padding: 16px 18px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      background: var(--bg);
+      text-align: center;
+    }
+    #overlay-title { margin: 0 0 8px; font-size: clamp(1.2rem, 5dvh, 1.8rem); color: var(--primary); }
+    #overlay-text { margin: 0; white-space: pre-line; font-size: clamp(0.72rem, 2.4dvh, 0.95rem); }
     /* Controller status; open it to see the raw pad state for comparing with a gamepad tester. */
-    .padbar {
-      position: relative;
-      margin-top: 22px;
-      max-width: 92vw;
-      padding: 4px 12px;
-      border-radius: 6px;
-      background: var(--wood);
-      color: var(--cream);
-      font-size: 0.8rem;
-    }
+    .padbar { max-width: 92vw; padding: 6px 12px; font-size: 0.8rem; color: var(--support); }
     .padbar summary { cursor: pointer; }
+    .padbar pre { margin: 6px 0 0; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text); }
     .padtools { margin: 6px 0 2px; display: flex; gap: 8px; flex-wrap: wrap; }
     .padtools button {
       font: inherit;
       padding: 3px 10px;
-      border: 2px solid var(--wood-dark);
+      border: 0;
       border-radius: 4px;
-      background: var(--cream);
-      color: var(--wood-dark);
+      background: var(--primary);
+      color: var(--bg);
       cursor: pointer;
     }
-    .padbar pre { margin: 6px 0 0; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
-    #overlay {
-      position: absolute;
-      inset: 6px;
-      display: grid;
-      place-content: center;
-      gap: 8px;
-      padding: 16px;
-      text-align: center;
-      background: color-mix(in srgb, var(--bg) 90%, transparent);
-    }
-    #overlay[hidden] { display: none; }
-    #overlay-title { margin: 0; font-size: 1.8rem; color: var(--primary); }
-    #overlay-text { margin: 0; white-space: pre-line; font-size: 0.95rem; }
   </style>
   <meta name="theme-color" content="#111111">
   <link rel="icon" href="/tetris/icon.svg" type="image/svg+xml">
@@ -309,44 +108,46 @@
   <link rel="manifest" href="/tetris/manifest.webmanifest">
 </head>
 <body>
-  <main class="scene">
-    <div class="frame">
-      <div class="beam" aria-hidden="true"></div>
-      <aside class="tower left">
-        <h2 class="plaque">Hold</h2>
+  <main class="game">
+    <aside class="side">
+      <section class="panel">
+        <h2>Hold</h2>
         <canvas id="hold" class="mini" aria-label="Held piece"></canvas>
-      </aside>
-      <div class="field">
-        <canvas id="board" aria-label="Tetris board"></canvas>
-        <div id="overlay">
+      </section>
+    </aside>
+    <div class="field">
+      <canvas id="board" aria-label="Tetris board"></canvas>
+      <div id="overlay">
+        <div class="card">
           <h1 id="overlay-title">Tetris</h1>
           <p id="overlay-text"></p>
         </div>
       </div>
-      <aside class="tower right">
-        <h2 class="plaque">Next</h2>
+    </div>
+    <aside class="side">
+      <section class="panel">
+        <h2>Next</h2>
         <canvas id="next0" class="mini" aria-label="Next piece"></canvas>
         <canvas id="next1" class="mini" aria-label="Second next piece"></canvas>
         <canvas id="next2" class="mini" aria-label="Third next piece"></canvas>
-        <dl class="sign">
-          <dt>Score</dt><dd id="score">0</dd>
-          <dt>Level</dt><dd id="level">1</dd>
-          <dt>Lines</dt><dd id="lines">0</dd>
-        </dl>
-      </aside>
-    </div>
-    <div class="padbar">
-      <p class="padtools"><button id="stage-btn" type="button">Stage: Savanna</button></p>
-      <details id="pad-panel">
-        <summary id="pad-status">Controller: none (press any button to connect)</summary>
-        <pre id="pad-debug"></pre>
-        <p class="padtools">
-          <button id="pad-bind" type="button">Set hard drop control</button>
-          <button id="pad-reset" type="button">Reset</button>
-        </p>
-      </details>
-    </div>
+      </section>
+      <dl>
+        <dt>Score</dt><dd id="score">0</dd>
+        <dt>Level</dt><dd id="level">1</dd>
+        <dt>Lines</dt><dd id="lines">0</dd>
+      </dl>
+    </aside>
   </main>
+  <div class="padbar">
+    <details id="pad-panel">
+      <summary id="pad-status">Controller: none (press any button to connect)</summary>
+      <pre id="pad-debug"></pre>
+      <p class="padtools">
+        <button id="pad-bind" type="button">Set hard drop control</button>
+        <button id="pad-reset" type="button">Reset</button>
+      </p>
+    </details>
+  </div>
   <script type="module" src="/tetris/src/main.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

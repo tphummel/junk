@@ -23,7 +23,6 @@ const KEYMAP = {
   KeyP: "pause",
   Enter: "confirm",
   Backspace: "back",
-  KeyT: "stage",
 };
 
 const HELD = new Set(["left", "right", "softDrop"]);

@@ -2,7 +2,7 @@
 // and integers, so the game behaves identically on every machine.
 
 /** Bump when any rule, constant or table below changes in a way that alters how a seed plays out. */
-export const RULES_VERSION = 2;
+export const RULES_VERSION = 3;
 
 export const TICKS_PER_SECOND = 60;
 
@@ -10,6 +10,11 @@ export const TICKS_PER_SECOND = 60;
 export const LOCK_DELAY_TICKS = 30;
 /** Successful moves or rotations that may restart the lock timer while a piece rests on the stack. */
 export const MAX_LOCK_RESETS = 15;
+/**
+ * After a lock that makes a square, or clears a line through one, the next piece waits this long (ticks, 0.75 s)
+ * so the flourish can play. Plain locks and plain line clears bring the next piece in at once.
+ */
+export const FLOURISH_ENTRY_DELAY_TICKS = 45;
 /** While soft drop is held, a piece falls at least this often (ticks per row). */
 export const SOFT_DROP_TICKS = 2;
 

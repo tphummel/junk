@@ -5,6 +5,7 @@ import { createBag } from "./bag.js";
 import { clearLines, collides, createBoard, fullRows, HIDDEN_ROWS, place } from "./board.js";
 import { kicksFor, pieceCells, spawnX } from "./pieces.js";
 import {
+  FLOURISH_ENTRY_DELAY_TICKS,
   gravityTicks,
   HARD_DROP_POINTS_PER_ROW,
   levelFor,
@@ -55,6 +56,7 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @property {number} holdsUsed
  * @property {boolean} over
  * @property {GameEvent[]} events what happened in the last step; replaced at the start of every step
+ * @property {number} entryDelay ticks left before the next piece enters (current is null meanwhile); 0 when a piece is in play
  * @property {number} gravityCount ticks since the piece last fell
  * @property {number} lockTimer ticks the piece has rested on the stack
  * @property {number} lockResets how many times a move or rotation restarted the lock timer
@@ -94,6 +96,7 @@ export function createGame(seed, options = {}) {
     holdsUsed: 0,
     over: false,
     events: [],
+    entryDelay: 0,
     gravityCount: 0,
     lockTimer: 0,
     lockResets: 0,
@@ -198,14 +201,16 @@ function doHold(game) {
   spawn(game, incoming);
 }
 
-/** Mark any new squares on the board and count them. @param {Game} game */
+/** Mark any new squares on the board and count them. @param {Game} game @returns {number} how many were formed */
 function formSquares(game) {
-  for (const sq of markSquares(game.board, game.nextSquareId)) {
+  const found = markSquares(game.board, game.nextSquareId);
+  for (const sq of found) {
     game.nextSquareId = sq.id + 1;
     game.events.push({ type: "square", id: sq.id, kind: sq.kind, row: sq.row, col: sq.col });
     if (sq.kind === "gold") game.goldSquares++;
     else game.silverSquares++;
   }
+  return found.length;
 }
 
 /**
@@ -222,7 +227,7 @@ function lock(game) {
 
   // Lock-out: the whole piece is above the visible field.
   const lockedOut = pieceCells(p.type, p.rot).every(([, dy]) => p.y + dy < HIDDEN_ROWS);
-  formSquares(game);
+  let flourish = formSquares(game) > 0;
   const clearedRows = fullRows(game.board);
   const rows = clearedRows.map((r) => squaresInRow(game.board[r]));
   const cleared = clearLines(game.board);
@@ -232,11 +237,18 @@ function lock(game) {
     game.score += points;
     game.lines += cleared;
     game.level = levelFor(game.startLevel, game.lines);
-    formSquares(game);
+    if (rows.some((r) => r.gold + r.silver > 0)) flourish = true;
+    if (formSquares(game) > 0) flourish = true;
   }
   if (lockedOut && cleared === 0) {
     game.current = null;
     game.over = true;
+    return;
+  }
+  if (flourish) {
+    // Hold the next piece back while the flourish plays; step() spawns it when the delay runs out.
+    game.current = null;
+    game.entryDelay = FLOURISH_ENTRY_DELAY_TICKS;
     return;
   }
   spawn(game, takeNext(game));
@@ -277,7 +289,16 @@ export function step(game, actions) {
   if (game.over) return;
   game.tick++;
 
-  let hardDropped = false;
+  // Between pieces (after a flourish) nothing is in play: input is ignored until the next piece enters.
+  if (!game.current) {
+    if (--game.entryDelay <= 0) {
+      game.entryDelay = 0;
+      spawn(game, takeNext(game));
+    }
+    return;
+  }
+
+  let lockNow = false;
   let soft = false;
   for (const action of actions) {
     if (game.over || !game.current) break;
@@ -288,15 +309,28 @@ export function step(game, actions) {
       case "rotateCW": tryRotate(game, 1); break;
       case "rotateCCW": tryRotate(game, -1); break;
       case "softDrop": soft = true; break;
-      case "hardDrop": hardDropped = true; break;
+      case "hardDrop":
+        if (grounded(game)) {
+          // Already resting: a second press locks it now.
+          lockNow = true;
+        } else {
+          // Fall to the bottom at once, but do not lock: the piece can still slide and turn until the lock delay
+          // runs out, which starts afresh here.
+          const p = /** @type {Piece} */ (game.current);
+          game.score += dropToBottom(game) * HARD_DROP_POINTS_PER_ROW;
+          game.lowestY = p.y;
+          game.lockTimer = 0;
+          game.lockResets = 0;
+          game.gravityCount = 0;
+        }
+        break;
       default: break;
     }
-    if (hardDropped) break;
+    if (lockNow) break;
   }
   if (game.over || !game.current) return;
 
-  if (hardDropped) {
-    game.score += dropToBottom(game) * HARD_DROP_POINTS_PER_ROW;
+  if (lockNow) {
     lock(game);
     return;
   }
