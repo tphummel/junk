@@ -90,7 +90,7 @@
     #go .track { stroke: var(--support); opacity: .35; }
     #go .arc { stroke: var(--primary); transition: stroke-dashoffset .25s linear; }
     #go .glyph { position: relative; font-size: 1.75rem; color: var(--text); }
-    .bar .left button[aria-pressed] { padding: .4rem .6rem; font-size: .9rem; }
+    .bar .left button[aria-pressed] { padding: .3rem 1rem; font-size: 1.6rem; line-height: 1.2; }
     .bar .left button[aria-pressed="false"] { background: none; color: var(--primary); }
     #reset { padding: .5rem; width: 2.75rem; font-size: 1.4rem; line-height: 1; }
     #tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1rem; }
@@ -159,8 +159,8 @@
       </div>
       <div class="bar">
         <div class="left">
-          <button id="floss" aria-pressed="false">Floss</button>
-          <button id="mouthwash" aria-pressed="false">Rinse</button>
+          <button id="floss" aria-label="Floss" aria-pressed="false"></button>
+          <button id="mouthwash" aria-label="Mouthwash" aria-pressed="false"></button>
           <button id="reset" class="secondary" aria-label="Reset" hidden>↻</button>
         </div>
         <button id="go" aria-label="Start">

@@ -294,6 +294,8 @@ const viewOf = (day) => {
 let view = viewOf(today());
 
 const ICON = { brush: "🪥", floss: "🧵", mouthwash: "🌊" };
+// The floss and mouthwash buttons use the same emojis as the goals.
+for (const type of ["floss", "mouthwash"]) $(type).textContent = ICON[type];
 
 /** ["🪥 1/2", "🧵 1/1", "🌊 0/2", "+1 extra"] for one day's goals. */
 function goalsParts(g) {
