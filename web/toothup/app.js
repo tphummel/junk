@@ -436,7 +436,9 @@ function renderReminders() {
     card.hidden = !status;
     if (!status) continue;
     card.classList.toggle("overdue", status.days < 0);
-    card.querySelector(".r-count").textContent = countdownText(status.days);
+    const count = countdownText(status.days);
+    card.querySelector(".r-count").textContent = count;
+    card.querySelector(".r-done").setAttribute("aria-label", `${REMINDER_INFO[type].label}: ${count}. Mark as ${REMINDER_INFO[type].done.toLowerCase()} today`);
     card.title = `Due ${parseDay(status.due).toLocaleDateString(undefined, { dateStyle: "medium" })}`;
   }
 }
@@ -445,9 +447,8 @@ for (const type of REMINDER_TYPES) {
   const info = REMINDER_INFO[type];
   const card = document.querySelector(`.reminder[data-reminder="${type}"]`);
   card.querySelector(".r-label").textContent = `${info.icon} ${info.label}`;
-  const done = card.querySelector(".r-done");
-  done.textContent = info.done;
-  done.onclick = () => confirm(info.confirm) && setReminder(type, { last: today() });
+  card.querySelector(".r-action").textContent = info.done;
+  card.querySelector(".r-done").onclick = () => confirm(info.confirm) && setReminder(type, { last: today() });
 }
 
 // ---------- settings ----------
