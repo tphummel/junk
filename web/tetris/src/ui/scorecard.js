@@ -17,7 +17,7 @@ export const SCORECARD_FORMAT = 1;
  * @property {string} app
  * @property {number} format
  * @property {string} mode difficulty id
- * @property {"topout" | "ended"} ended
+ * @property {"topout" | "ended" | "timeup"} ended
  * @property {string} startedAt ISO time
  * @property {number} seed with the inputLog and rulesVersion, enough to replay the round exactly
  * @property {number} rulesVersion
@@ -38,7 +38,7 @@ export const SCORECARD_FORMAT = 1;
  * @param {Game} args.game the finished (or ended) game
  * @param {string} args.mode difficulty id
  * @param {number} args.garbagePerSecond the difficulty's garbage rate
- * @param {"topout" | "ended"} args.ended
+ * @param {"topout" | "ended" | "timeup"} args.ended
  * @param {number} args.startedAt epoch ms
  * @param {readonly { t: number, action: GameAction }[]} args.inputLog
  * @returns {Scorecard}

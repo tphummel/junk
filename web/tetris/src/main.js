@@ -89,7 +89,7 @@ let lastResult = null;
 function newGame(mode) {
   // The seed is made here, outside game/, and recorded; the game itself never touches randomness.
   const seed = crypto.getRandomValues(new Uint32Array(1))[0];
-  return createGame(seed, { garbagePerSecond: difficultyById(mode).garbagePerSecond });
+  return createGame(seed, { garbagePerSecond: difficultyById(mode).garbagePerSecond, timeLimitSeconds: difficultyById(mode).timeLimitSeconds });
 }
 
 /** @param {Game} g @param {string} mode @returns {Round} */
@@ -245,6 +245,7 @@ function renderOverlay() {
         (pad ? "\nD-pad move, A/B rotate, shoulder hold, up hard drop, Start pause." : "\nPress any button on your controller to connect it.") +
         "\nKeyboard: arrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause." +
         "\nHard drop falls at once; slide or turn before it settles, or press again to lock." +
+        "\nPractice 2:00 ends when the piece in play at 2:00 is set." +
         "\nEasy, Medium and Hard push garbage rows up at the pace of a D, B or S rating.",
     ],
     paused: ["Paused", note ?? "Esc, Start or B resumes. End game locks in your score."],
@@ -301,7 +302,7 @@ function resultText() {
     lastResult?.saved ? "" : "(Could not save: this browser is blocking storage.)",
     exportNote,
   ];
-  return [r.ended === "ended" ? "Game ended" : "Game over", lines.filter(Boolean).join("\n")];
+  return [r.ended === "ended" ? "Game ended" : r.ended === "timeup" ? "Time!" : "Game over", lines.filter(Boolean).join("\n")];
 }
 
 /** Controller line under the board. */
@@ -335,7 +336,7 @@ function startRound(id) {
 
 /**
  * Lock in the round: build the record, save it, and show the result.
- * @param {"topout" | "ended"} how the stack overflowed, or the player ended it from the pause menu
+ * @param {"topout" | "ended" | "timeup"} how the stack overflowed, the player ended it from the pause menu, or the time limit ran out
  */
 function finishRound(how) {
   const stats = summarize(game.tick, game.score);
@@ -400,7 +401,7 @@ function tick() {
   effects.add(game.events, performance.now());
   for (const action of actions) round.inputLog.push({ t: game.tick, action });
   if (game.over) {
-    finishRound("topout");
+    finishRound(game.timeUp ? "timeup" : "topout");
     return false;
   }
   return true;
@@ -449,7 +450,7 @@ function frame(now) {
 
   if (padPanel.open) padDebug.textContent = padReadout();
   drawBoard(boardCanvas, game, theme, effects, now);
-  hud.update(game, theme, difficultyById(mode).label);
+  hud.update(game, theme, game.timeLimitTicks > 0 && game.tick >= game.timeLimitTicks ? `${difficultyById(mode).label}: last piece` : difficultyById(mode).label);
   requestAnimationFrame(frame);
 }
 
