@@ -124,6 +124,10 @@
     #today { text-align: right; font-size: .85rem; line-height: 1.4; }
     .legend { font-size: .8rem; color: var(--support); margin: .5rem 0 1rem; }
     #day-list { padding-left: 1.25rem; }
+    #backup-toast { position: fixed; left: 1rem; right: 1rem; bottom: 4.5rem; z-index: 10; display: flex; gap: .5rem; align-items: center; max-width: 32rem; margin: 0 auto; padding: .5rem .75rem; border-radius: .5rem; background: var(--primary); color: var(--bg); }
+    #backup-toast[hidden] { display: none; }
+    #backup-toast-go { flex: 1; text-align: left; font-weight: 600; background: none; color: inherit; border: 0; padding: .25rem; cursor: pointer; font: inherit; }
+    #backup-toast-dismiss { background: none; color: inherit; border: 0; font-size: 1.25rem; cursor: pointer; }
     #toast:empty { display: none; }
     #toast { min-height: 1.5rem; margin-top: 1rem; color: var(--accent); font-weight: 600; }
     .box { border: 1px solid var(--support); border-radius: .5rem; padding: .75rem 1rem; margin-bottom: 1rem; }
@@ -224,6 +228,7 @@
       <div class="box">
         <h2>Your data</h2>
         <p id="count" class="muted"></p>
+        <p id="last-backup" class="muted"></p>
         <p>Everything stays on this device. Export a JSON backup with your settings, or import one: events merge in (matching entries are not duplicated) and the imported settings replace the current ones.</p>
         <div class="row">
           <button id="export">Export JSON</button>
@@ -248,6 +253,10 @@
     </section>
   </main>
   <div id="toast" role="status"></div>
+  <div id="backup-toast" role="status" hidden>
+    <button id="backup-toast-go">Monthly reminder: back up your data offsite. Tap to export now.</button>
+    <button id="backup-toast-dismiss" aria-label="Dismiss until next visit">×</button>
+  </div>
   <nav aria-label="Sections">
     <button id="tab-brush" aria-selected="true"><span class="ic" aria-hidden="true">🪥</span>Routine</button>
     <button id="tab-calendar" aria-selected="false"><span class="ic" aria-hidden="true">📅</span>Calendar</button>
