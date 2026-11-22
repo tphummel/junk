@@ -14,6 +14,13 @@
   },
   "include": [
     "api/**/*.ts",
+    "web/controller-lab/app.js",
+    "web/controller-lab/deviceinfo.js",
+    "web/controller-lab/haptics.js",
+    "web/controller-lab/names.js",
+    "web/controller-lab/notes.js",
+    "web/controller-lab/registry.js",
+    "web/controller-lab/transcript.js",
     "web/golden-angle-palette/palette.js",
     "web/tetris/src/game/*.js",
     "web/tetris/src/input/*.js",

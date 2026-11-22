@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>controller lab</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #D22F2D cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #D22F2D;
+      --support: #A15F5F;
+      --accent:  #1D883E;
+      --bg: #FFFFFF;
+      --text: #111111;
+      /* Player slots: the seed's hue turned by the golden angle, one step per slot, each >= 3:1 on the background
+         (borders) with the text color that reads best on it (>= 4.5:1). */
+      --slot-1: #D22F2D; --slot-1-ink: #FFFFFF;
+      --slot-2: #25AA4D; --slot-2-ink: #111111;
+      --slot-3: #8F2DD2; --slot-3-ink: #FFFFFF;
+      --slot-4: #A59623; --slot-4-ink: #111111;
+      --slot-5: #29A2BD; --slot-5-ink: #111111;
+      --slot-6: #D22D84; --slot-6-ink: #FFFFFF;
+      --slot-7: #44A924; --slot-7-ink: #111111;
+      --slot-8: #362DD2; --slot-8-ink: #FFFFFF;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D84B49;
+        --support: #A86C6C;
+        --accent:  #2DD25F;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --slot-1: #D22F2D; --slot-1-ink: #FFFFFF;
+        --slot-2: #2DD25F; --slot-2-ink: #111111;
+        --slot-3: #8F2DD2; --slot-3-ink: #FFFFFF;
+        --slot-4: #D2BF2D; --slot-4-ink: #111111;
+        --slot-5: #2DB4D2; --slot-5-ink: #111111;
+        --slot-6: #D22D84; --slot-6-ink: #FFFFFF;
+        --slot-7: #54D22D; --slot-7-ink: #111111;
+        --slot-8: #524BD8; --slot-8-ink: #FFFFFF;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+    .wrap { max-width: 2200px; margin: 0 auto; padding: 16px; }
+    h1 { margin: 0 0 4px; font-size: 1.6rem; color: var(--primary); }
+    h2 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); }
+    .lede { margin: 0 0 8px; max-width: 70ch; }
+    .muted { color: var(--support); }
+    #status { margin: 0 0 16px; font-variant-numeric: tabular-nums; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+    @media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(420px, 46%); } }
+    .pads { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 10px; }
+    #waiting { margin: 0 0 12px; }
+    #waiting p { margin: 0 0 4px; overflow-wrap: anywhere; }
+    .empty { padding: 24px; border: 2px dashed var(--support); border-radius: 10px; }
+
+    /* One card per controller. Every child may shrink (minmax(0, 1fr)) so a long name or a pad with many axes can
+       never make the card wider than its column; text wraps or is cut with an ellipsis instead. */
+    .pad {
+      --c: var(--slot-1); --ink: var(--slot-1-ink);
+      min-width: 0; border: 2px solid var(--c); border-radius: 10px; padding: 8px 10px;
+      display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-content: start; overflow: hidden;
+    }
+    .pad > * { min-width: 0; }
+    .pad.gone { opacity: 0.55; border-style: dashed; }
+    .pad.flash { box-shadow: 0 0 0 4px var(--c); }
+    .pad header { display: flex; align-items: center; gap: 8px; }
+    .badge { flex: none; padding: 1px 9px; border-radius: 999px; background: var(--c); color: var(--ink); font-weight: 700; }
+    .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .state { flex: none; font-size: 0.72rem; color: var(--support); }
+    .pad p { margin: 0; font-size: 0.76rem; overflow-wrap: anywhere; }
+    .pad .last { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 3px; }
+    .b {
+      --v: 0;
+      height: 24px; display: grid; place-items: center; font-size: 0.62rem; border: 1px solid var(--support); border-radius: 5px;
+      background: linear-gradient(to top, color-mix(in srgb, var(--c) 55%, transparent) calc(var(--v) * 100%), transparent 0);
+      overflow: hidden; white-space: nowrap; min-width: 0;
+    }
+    .b.on { background: var(--c); color: var(--ink); border-color: var(--c); font-weight: 700; }
+    /* Axes in two columns where there is room. Only the first four, and any that have moved, are shown. */
+    .axes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 2px 10px; }
+    .axis { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) 2.8em; align-items: center; gap: 4px; font-size: 0.66rem; font-variant-numeric: tabular-nums; }
+    .axis[hidden] { display: none; }
+    .axis > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .track { position: relative; height: 8px; border: 1px solid var(--support); border-radius: 4px; }
+    .track::before { content: ""; position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: var(--support); }
+    .track i { position: absolute; top: 0; bottom: 0; background: var(--c); border-radius: 3px; }
+    .tools { display: flex; gap: 6px; flex-wrap: wrap; }
+    button.tool {
+      font: inherit; font-size: 0.78rem; padding: 2px 9px; border: 0; border-radius: 4px;
+      background: var(--primary); color: var(--bg); cursor: pointer;
+    }
+    button.tool.quiet { background: transparent; color: var(--text); border: 1px solid var(--support); }
+    .pad .tool { padding: 1px 8px; font-size: 0.74rem; }
+    .perfbox summary { cursor: pointer; font-size: 0.72rem; color: var(--support); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .perf { font-size: 0.72rem; line-height: 1.4; font-variant-numeric: tabular-nums; margin-top: 3px; }
+    .perf span { display: block; overflow-wrap: anywhere; }
+
+    .logpanel { display: flex; flex-direction: column; min-height: 320px; }
+    @media (min-width: 1000px) { .logpanel { position: sticky; top: 12px; height: calc(100dvh - 24px); } }
+    .tabs, .views { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    /* A display value in a rule beats the hidden attribute, so anything that is shown and hidden needs this. */
+    .views[hidden] { display: none; }
+    .tab {
+      --c: var(--primary); --ink: var(--bg);
+      font: inherit; font-size: 0.85rem; padding: 2px 11px; border: 2px solid var(--c); border-radius: 999px;
+      background: transparent; color: var(--text); cursor: pointer;
+    }
+    .tab[aria-selected="true"] { background: var(--c); color: var(--ink); font-weight: 700; }
+    .views .tab { --c: var(--support); --ink: var(--bg); font-size: 0.78rem; padding: 1px 10px; }
+    .views .tab[aria-selected="true"] { --c: var(--primary); }
+    .logbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; font-size: 0.82rem; }
+    .logbar label { display: inline-flex; align-items: center; gap: 4px; }
+    .logbar select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 4px; }
+    .thead { margin: 0; padding: 3px 8px; font: 0.7rem ui-monospace, monospace; color: var(--support); border: 1px solid var(--support); border-bottom: 0; border-radius: 8px 8px 0 0; white-space: pre; }
+    #transcript {
+      margin: 0; padding: 6px 8px; flex: 1; min-height: 200px; overflow: auto; white-space: pre; tab-size: 4;
+      font: 0.74rem/1.5 ui-monospace, monospace; border: 1px solid var(--support); border-radius: 0 0 8px 8px;
+    }
+    #transcript.stats { border-radius: 8px; }
+    .haptics { flex: 1; min-height: 200px; overflow: auto; border: 1px solid var(--support); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; }
+    .haptics[hidden] { display: none; }
+    .haptics p { margin: 0 0 8px; overflow-wrap: anywhere; }
+    .hap-grid { display: grid; gap: 4px; margin-bottom: 8px; }
+    .hap-grid label { display: grid; grid-template-columns: 8.5em minmax(0, 1fr) 4.5em; align-items: center; gap: 8px; }
+    .hap-grid label:first-child { grid-template-columns: 8.5em max-content; }
+    .hap-grid input[type="range"] { width: 100%; min-width: 0; accent-color: var(--primary); }
+    .hap-grid output { font-variant-numeric: tabular-nums; }
+    .hap-grid label.off { opacity: 0.45; }
+    .hap-grid select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 4px; }
+    .hap-h { margin: 10px 0 4px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
+    .hap-results { margin: 0; padding: 0; list-style: none; font: 0.76rem/1.5 ui-monospace, monospace; }
+    .hap-results li { padding: 1px 0; overflow-wrap: anywhere; }
+    /* Notes and tips, at the very bottom of the page. */
+    .notes { margin: 28px 0 8px; padding-top: 16px; border-top: 2px solid var(--support); }
+    .notes h2 { margin-bottom: 4px; }
+    .notes .legend { margin: 0 0 12px; font-size: 0.82rem; }
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px; margin-bottom: 16px; }
+    .notes article { border: 1px solid var(--support); border-radius: 10px; padding: 8px 12px; min-width: 0; }
+    .notes h3 { margin: 0 0 6px; font-size: 0.95rem; color: var(--primary); }
+    .notes ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 0.85rem; }
+    .notes li { overflow-wrap: anywhere; }
+    .chip { display: inline-block; margin-right: 6px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--support); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; vertical-align: 1px; }
+    .chip.ok { background: var(--primary); border-color: var(--primary); color: var(--bg); font-weight: 700; }
+    .chip.unk { border-style: dashed; }
+    .notes label { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+    .notes textarea { width: 100%; min-height: 8em; resize: vertical; font: 0.85rem/1.5 ui-monospace, monospace; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 8px; padding: 8px; }
+    #notes-saved { margin: 4px 0 0; font-size: 0.78rem; min-height: 1.1em; }
+    #note { margin: 8px 0 0; min-height: 1.2em; font-size: 0.82rem; }
+    .fast { margin: 0 0 12px; font-size: 0.85rem; }
+    .env { margin: 0 0 12px; font-size: 0.85rem; max-width: 100ch; }
+    .env summary { cursor: pointer; }
+    .env dl { margin: 6px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; }
+    .env dt { color: var(--primary); }
+    .env dd { margin: 0; }
+    .env .na { margin-top: 8px; display: block; }
+    .env .na dd { margin: 0 0 8px; }
+    .env .na dt { color: var(--text); font-weight: 700; }
+    .devinfo { font-size: 0.74rem; line-height: 1.35; }
+    .devinfo span { display: block; overflow-wrap: anywhere; }
+    .devinfo .na { color: var(--support); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/controller-lab/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/controller-lab/apple-touch-icon.png">
+  <link rel="manifest" href="/controller-lab/manifest.webmanifest">
+</head>
+<body>
+  <div class="wrap">
+    <h1>controller lab</h1>
+    <p class="lede">Press a button on each controller to register it: the first to press is P1, the next P2, and so on. Every button and stick move is logged with the player and a time.</p>
+    <p id="status" class="muted" aria-live="polite">Looking for controllers...</p>
+    <details class="env" id="env"><summary id="env-summary">This browser</summary><div id="env-body"></div></details>
+    <p class="fast"><label><input type="checkbox" id="fast" checked> Poll faster than the screen refreshes (up to about 250 Hz where the browser allows it), so controllers that report more than 60 times a second can be measured</label></p>
+    <div class="layout">
+      <section aria-labelledby="pads-h">
+        <h2 id="pads-h">Controllers</h2>
+        <div id="waiting"></div>
+        <div id="pads" class="pads"></div>
+      </section>
+      <section class="logpanel" aria-labelledby="log-h">
+        <h2 id="log-h">Transcript</h2>
+        <div class="tabs" id="tabs" role="tablist" aria-label="Whose transcript"></div>
+        <div class="views" id="views" role="tablist" aria-label="What to show" hidden>
+          <button class="tab" id="view-transcript" role="tab" type="button">Transcript</button>
+          <button class="tab" id="view-stats" role="tab" type="button">Stats</button>
+          <button class="tab" id="view-haptics" role="tab" type="button">Haptics</button>
+          <button class="tool quiet" id="reset-stats" type="button" hidden>Reset stats</button>
+        </div>
+        <div class="logbar">
+          <button class="tool" id="pause" type="button">Pause log</button>
+          <button class="tool quiet" id="clear" type="button">Clear</button>
+          <label><input type="checkbox" id="follow" checked> Follow</label>
+          <label>Show <select id="limit"><option value="500">last 500</option><option value="3000" selected>last 3000</option><option value="0">all</option></select></label>
+        </div>
+        <div class="logbar">
+          <button class="tool" id="download-txt" type="button">Download text</button>
+          <button class="tool" id="download-json" type="button">Download JSON</button>
+          <button class="tool quiet" id="copy" type="button">Copy text</button>
+        </div>
+        <div class="haptics" id="haptics" hidden>
+          <p id="hap-status" class="muted"></p>
+          <div class="hap-grid">
+            <label>Effect <select id="hap-effect"><option value="dual-rumble">dual-rumble</option><option value="trigger-rumble">trigger-rumble</option></select></label>
+            <label>Strong motor <input id="hap-strong" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-strong-o">1.00</output></label>
+            <label>Weak motor <input id="hap-weak" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-weak-o">1.00</output></label>
+            <label>Left trigger <input id="hap-left" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-left-o">1.00</output></label>
+            <label>Right trigger <input id="hap-right" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-right-o">1.00</output></label>
+            <label>Duration <input id="hap-duration" type="range" min="50" max="3000" step="50" value="400"><output id="hap-duration-o">400 ms</output></label>
+            <label>Start delay <input id="hap-delay" type="range" min="0" max="1000" step="50" value="0"><output id="hap-delay-o">0 ms</output></label>
+          </div>
+          <div class="logbar">
+            <button class="tool" id="hap-play" type="button">Play</button>
+            <button class="tool quiet" id="hap-stop" type="button">Stop</button>
+            <button class="tool quiet" id="hap-identify" type="button" title="A short buzz, and this controller's card flashes">Identify</button>
+          </div>
+          <h3 class="hap-h">Presets</h3>
+          <div class="logbar" id="hap-presets"></div>
+          <h3 class="hap-h">Results</h3>
+          <ol id="hap-results" class="hap-results" aria-live="polite"></ol>
+        </div>
+        <div class="thead" id="thead">     time        gap  event</div>
+        <pre id="transcript" tabindex="0" aria-label="Controller input transcript"></pre>
+        <p id="note" class="muted" aria-live="polite"></p>
+      </section>
+    </div>
+    <section class="notes" id="notes" aria-labelledby="notes-h">
+      <h2 id="notes-h">Notes and tips</h2>
+      <p class="legend muted"><span class="chip ok">Confirmed</span> tried on a real iPad with this lab &nbsp; <span class="chip">Reported</span> from a manual or article, not tried here &nbsp; <span class="chip unk">Unknown</span> no good information found &nbsp; <span class="chip">Lab</span> how this page behaves</p>
+      <div class="notes-grid">
+        <article>
+          <h3>Joy-Con (Switch 1)</h3>
+          <ul>
+            <li><span class="chip ok">Confirmed</span>Two paired Joy-Cons merge into one controller, and you can split them again: hold <strong>Capture</strong> (left) and <strong>Home</strong> (right) for about 3 seconds. Do it again to merge.</li>
+            <li><span class="chip">Reported</span>Pair each one separately: hold the small sync button on its rail until the lights sweep, then pick "Joy-Con (L)" or "(R)" under Settings, Bluetooth. Needs iPadOS 16 or later.</li>
+            <li><span class="chip">Lab</span>When Joy-Cons merge or split, controllers disappear and new ones appear. Press a button to register the new one, and use Forget on the grey cards that are left.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>8BitDo SN30 (original, not Pro)</h3>
+          <ul>
+            <li><span class="chip ok">Confirmed</span>Pair it with the iPad using <strong>Start + X</strong>, then choose it under Settings, Bluetooth.</li>
+            <li><span class="chip">Reported</span>This is the Bluetooth SN30. The SNES/SFC 2.4G edition has no Bluetooth (it uses a USB receiver) and will not pair with an iPad.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>8BitDo SN30 Pro</h3>
+          <ul>
+            <li><span class="chip">Reported</span>Hold <strong>B + Start</strong> to turn it on, then hold the pair button for 3 seconds until the lights rotate left to right, then pair "8BitDo SN30 Pro" in Bluetooth. 8BitDo's manual says this is needed the first time only.</li>
+            <li><span class="chip">Reported</span>8BitDo's Apple page mentions D-Input mode for some models. If a pad shows numbered buttons, try the other mode and compare the mapping line in Stats.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>Switch 2 Joy-Con and Pro Controller</h3>
+          <ul>
+            <li><span class="chip unk">Unknown</span>I found no confirmation that these pair with an iPad, and one forum post says a Switch 2 Pro Controller did not work on an iPad Pro.</li>
+            <li><span class="chip">Reported</span>To try: take it off the console and switch the console off, hold its SYNC button until the lights flash, then look under Settings, Bluetooth. If it pairs but the lab never sees it, check Settings, General, Game Controllers: if it is not listed there, Safari cannot see it either.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>Pairing in general</h3>
+          <ul>
+            <li><span class="chip">Reported</span>A controller paired to another device may reconnect there when switched on. Turn Bluetooth off on that device, and hold the controller's pairing button to override the old pairing.</li>
+            <li><span class="chip">Reported</span>If a pairing misbehaves, tap the (i) next to it in Settings, Bluetooth, choose Forget This Device, and pair again.</li>
+            <li><span class="chip">Lab</span>A controller appears here only after you press one of its buttons on this page, and the first to press is P1.</li>
+            <li><span class="chip">Lab</span>Pair two identical controllers one at a time and label them (the iPad lists both under the same name). If both drop and return, the lab may swap their slots: Forget both and register them again in order.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>About this page</h3>
+          <ul>
+            <li><span class="chip">Lab</span>Battery level, signal strength, connection protocol and motion sensors are not available to a web page on an iPad. See "This browser" near the top for why.</li>
+            <li><span class="chip">Lab</span>An open tab keeps the version of the page it loaded. After a new version is deployed, reload to get it.</li>
+            <li><span class="chip">Lab</span>Safari's timestamps for controllers are not on the page's clock, so the report rate here is measured from the page's own polls and can be no finer than they are.</li>
+          </ul>
+        </article>
+      </div>
+      <label for="my-notes">Your notes <span class="muted">(saved on this device only)</span></label>
+      <textarea id="my-notes" placeholder="What you learn while testing: which pad paired how, what the lab showed, anything odd..."></textarea>
+      <p id="notes-saved" class="muted" aria-live="polite"></p>
+    </section>
+  </div>
+  <script type="module" src="/controller-lab/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/controller-lab/sw.js', { scope: '/controller-lab/' }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
