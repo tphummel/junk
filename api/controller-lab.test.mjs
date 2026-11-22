@@ -715,3 +715,24 @@ test("the export carries the browser and the list of what it could not report", 
   const without = JSON.parse(exportJson(reg.toExport({ startedAt: "S", exportedAt: "E", now: 50 })));
   assert.equal(without.environment, undefined, "left out when none was given");
 });
+
+test("the card CSS keeps a long name or many axes from stretching the card", () => {
+  const dir = new URL("../web/controller-lab/", import.meta.url).pathname;
+  const css = readFileSync(join(dir, "index.html"), "utf8");
+  const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const rule = (sel) => css.match(new RegExp(`${escape(sel)}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+  // A grid column with no limit grows to its widest child's minimum width, which is how a long name once pushed a card 500px wide.
+  assert.match(rule(".pad"), /grid-template-columns:\s*minmax\(0,\s*1fr\)/, "the card has one column that can shrink");
+  assert.match(rule(".pad"), /min-width:\s*0/);
+  assert.match(rule(".pad > *"), /min-width:\s*0/, "and so can everything in it");
+  assert.match(rule(".name"), /text-overflow:\s*ellipsis/);
+  assert.match(rule(".name"), /white-space:\s*nowrap/);
+  assert.match(rule(".pads"), /minmax\(min\(100%,\s*\d+px\),\s*1fr\)/, "cards never ask for more width than their container");
+  assert.match(rule(".axis[hidden]"), /display:\s*none/, "idle extra axes are hidden");
+});
+
+test("only the first four axes show at first; the page reveals the others once they move", () => {
+  const app = readFileSync(new URL("../web/controller-lab/app.js", import.meta.url), "utf8");
+  assert.match(app, /row\.hidden = i >= 4/);
+  assert.match(app, /i >= 4 && card\.axisRows\[i\]\.hidden/);
+});

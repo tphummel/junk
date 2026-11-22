@@ -53,41 +53,53 @@
     #status { margin: 0 0 16px; font-variant-numeric: tabular-nums; }
     .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
     @media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(420px, 46%); } }
-    .pads { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+    .pads { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 10px; }
     #waiting { margin: 0 0 12px; }
-    #waiting p { margin: 0 0 4px; }
+    #waiting p { margin: 0 0 4px; overflow-wrap: anywhere; }
     .empty { padding: 24px; border: 2px dashed var(--support); border-radius: 10px; }
 
-    .pad { --c: var(--slot-1); --ink: var(--slot-1-ink); border: 2px solid var(--c); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; align-content: start; }
+    /* One card per controller. Every child may shrink (minmax(0, 1fr)) so a long name or a pad with many axes can
+       never make the card wider than its column; text wraps or is cut with an ellipsis instead. */
+    .pad {
+      --c: var(--slot-1); --ink: var(--slot-1-ink);
+      min-width: 0; border: 2px solid var(--c); border-radius: 10px; padding: 8px 10px;
+      display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-content: start; overflow: hidden;
+    }
+    .pad > * { min-width: 0; }
     .pad.gone { opacity: 0.55; border-style: dashed; }
     .pad.flash { box-shadow: 0 0 0 4px var(--c); }
     .pad header { display: flex; align-items: center; gap: 8px; }
     .badge { flex: none; padding: 1px 9px; border-radius: 999px; background: var(--c); color: var(--ink); font-weight: 700; }
     .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .state { font-size: 0.8rem; color: var(--support); }
-    .pad p { margin: 0; font-size: 0.82rem; }
-    .buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; }
+    .state { flex: none; font-size: 0.72rem; color: var(--support); }
+    .pad p { margin: 0; font-size: 0.76rem; overflow-wrap: anywhere; }
+    .pad .last { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 3px; }
     .b {
       --v: 0;
-      height: 30px; display: grid; place-items: center; font-size: 0.66rem; border: 1px solid var(--support); border-radius: 6px;
+      height: 24px; display: grid; place-items: center; font-size: 0.62rem; border: 1px solid var(--support); border-radius: 5px;
       background: linear-gradient(to top, color-mix(in srgb, var(--c) 55%, transparent) calc(var(--v) * 100%), transparent 0);
-      overflow: hidden; white-space: nowrap;
+      overflow: hidden; white-space: nowrap; min-width: 0;
     }
     .b.on { background: var(--c); color: var(--ink); border-color: var(--c); font-weight: 700; }
-    .axes { display: grid; gap: 4px; }
-    .axis { display: grid; grid-template-columns: 3.2em 1fr 3.4em; align-items: center; gap: 6px; font-size: 0.72rem; font-variant-numeric: tabular-nums; }
-    .track { position: relative; height: 10px; border: 1px solid var(--support); border-radius: 5px; }
+    /* Axes in two columns where there is room. Only the first four, and any that have moved, are shown. */
+    .axes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 2px 10px; }
+    .axis { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) 2.8em; align-items: center; gap: 4px; font-size: 0.66rem; font-variant-numeric: tabular-nums; }
+    .axis[hidden] { display: none; }
+    .axis > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .track { position: relative; height: 8px; border: 1px solid var(--support); border-radius: 4px; }
     .track::before { content: ""; position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: var(--support); }
-    .track i { position: absolute; top: 0; bottom: 0; background: var(--c); border-radius: 4px; }
-    .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .track i { position: absolute; top: 0; bottom: 0; background: var(--c); border-radius: 3px; }
+    .tools { display: flex; gap: 6px; flex-wrap: wrap; }
     button.tool {
-      font: inherit; font-size: 0.82rem; padding: 3px 10px; border: 0; border-radius: 4px;
+      font: inherit; font-size: 0.78rem; padding: 2px 9px; border: 0; border-radius: 4px;
       background: var(--primary); color: var(--bg); cursor: pointer;
     }
     button.tool.quiet { background: transparent; color: var(--text); border: 1px solid var(--support); }
-
-    .perf { font-size: 0.76rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
-    .perf span { display: block; }
+    .pad .tool { padding: 1px 8px; font-size: 0.74rem; }
+    .perfbox summary { cursor: pointer; font-size: 0.72rem; color: var(--support); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .perf { font-size: 0.72rem; line-height: 1.4; font-variant-numeric: tabular-nums; margin-top: 3px; }
+    .perf span { display: block; overflow-wrap: anywhere; }
 
     .logpanel { display: flex; flex-direction: column; min-height: 320px; }
     @media (min-width: 1000px) { .logpanel { position: sticky; top: 12px; height: calc(100dvh - 24px); } }
@@ -119,9 +131,9 @@
     .env .na { margin-top: 8px; display: block; }
     .env .na dd { margin: 0 0 8px; }
     .env .na dt { color: var(--text); font-weight: 700; }
-    .devinfo { font-size: 0.78rem; line-height: 1.4; }
-    .devinfo span { display: block; }
-    .devinfo .na { color: var(--support); }
+    .devinfo { font-size: 0.74rem; line-height: 1.35; }
+    .devinfo span { display: block; overflow-wrap: anywhere; }
+    .devinfo .na { color: var(--support); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   </style>
   <meta name="theme-color" content="#111111">
   <link rel="icon" href="/controller-lab/icon.svg" type="image/svg+xml">

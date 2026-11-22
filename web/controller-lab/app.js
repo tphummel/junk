@@ -45,7 +45,7 @@ function note(text) {
 
 // --- cards -----------------------------------------------------------------------------------------
 
-/** @typedef {{ root: HTMLElement, buttons: HTMLElement[], axisBars: HTMLElement[], axisText: HTMLElement[], meta: HTMLElement, devinfo: HTMLElement, state: HTMLElement, last: HTMLElement, perf: HTMLElement, built: string }} Card */
+/** @typedef {{ root: HTMLElement, buttons: HTMLElement[], axisRows: HTMLElement[], axisBars: HTMLElement[], axisText: HTMLElement[], meta: HTMLElement, devinfo: HTMLElement, state: HTMLElement, last: HTMLElement, perf: HTMLElement, perfSummary: HTMLElement, built: string }} Card */
 /** @type {Map<number, Card>} */
 const cards = new Map();
 
@@ -61,9 +61,9 @@ function buildCard(s) {
     <div class="buttons"></div>
     <div class="axes"></div>
     <p class="last"></p>
-    <div class="perf muted"></div>
+    <details class="perfbox"><summary class="perfsum">Performance</summary><div class="perf muted"></div></details>
     <div class="tools">
-      <button class="tool" type="button" data-act="transcript">Transcript</button>
+      <button class="tool" type="button" data-act="transcript" title="Show this controller's transcript">Log</button>
       <button class="tool quiet" type="button" data-act="stats">Stats</button>
       <button class="tool quiet" type="button" data-act="identify">Identify</button>
       <button class="tool quiet" type="button" data-act="forget">Forget</button>
@@ -80,14 +80,18 @@ function buildCard(s) {
     q(".buttons").appendChild(b);
     return b;
   });
+  const axisRows = [];
   const axisBars = [];
   const axisText = [];
   for (let i = 0; i < s.nAxes; i++) {
     const row = document.createElement("div");
     row.className = "axis";
+    row.hidden = i >= 4; // the first four always show; the rest appear once they move
+    axisRows.push(row);
     row.innerHTML = `<span></span><span class="track"><i></i></span><span></span>`;
     const [label, , value] = /** @type {HTMLElement[]} */ (Array.from(row.children));
-    label.textContent = s.mapping === "standard" && i < 4 ? ["LX", "LY", "RX", "RY"][i] : `axis ${i}`;
+    label.textContent = s.mapping === "standard" && i < 4 ? ["LX", "LY", "RX", "RY"][i] : `a${i}`;
+    label.title = s.mapping === "standard" && i < 4 ? ["Left stick, horizontal", "Left stick, vertical", "Right stick, horizontal", "Right stick, vertical"][i] : `axis ${i}`;
     axisBars.push(/** @type {HTMLElement} */ (row.querySelector("i")));
     axisText.push(value);
     q(".axes").appendChild(row);
@@ -99,7 +103,7 @@ function buildCard(s) {
     else if (act === "transcript") show(s.slot, "transcript");
     else if (act === "stats") show(s.slot, "stats");
   });
-  return { root, buttons, axisBars, axisText, meta: q(".meta"), devinfo: q(".devinfo"), state: q(".state"), last: q(".last"), perf: q(".perf"), built: `${s.nButtons}x${s.nAxes}:${s.mapping}` };
+  return { root, buttons, axisRows, axisBars, axisText, meta: q(".meta"), devinfo: q(".devinfo"), state: q(".state"), last: q(".last"), perf: q(".perf"), perfSummary: q(".perfsum"), built: `${s.nButtons}x${s.nAxes}:${s.mapping}` };
 }
 
 /** Rumble the controller (where the browser supports it) and flash its card, to see which one is which. @param {number} slot */
@@ -163,6 +167,7 @@ function syncCards() {
     s.axes.forEach((v, i) => {
       const bar = card.axisBars[i];
       if (!bar) return;
+      if (i >= 4 && card.axisRows[i].hidden && (Math.abs(v) > 0.05 || (s.axisStats[i]?.events ?? 0) > 0)) card.axisRows[i].hidden = false;
       bar.style.left = `${50 + Math.min(0, v) * 50}%`;
       bar.style.width = `${Math.abs(v) * 50}%`;
       card.axisText[i].textContent = v.toFixed(2);
@@ -218,16 +223,19 @@ function refreshText(hz) {
     const summary = registry.summary(s.slot, now);
     if (!card || !summary) continue;
     card.state.textContent = s.connected ? "connected" : "disconnected";
-    card.meta.textContent = `${s.index === null ? "no index" : `index ${s.index}`} · ${s.mapping || "no"} mapping · ${s.nButtons} buttons · ${s.nAxes} axes`;
+    card.meta.textContent = `${s.index === null ? "no index" : `index ${s.index}`} · ${s.mapping || "non-standard"} · ${s.nButtons} buttons · ${s.nAxes} axes`;
     const id = summary.device.identity;
-    const maker = id.vendorName ?? (id.vendorId ? `vendor ${id.vendorId}` : null);
-    const product = id.productName ?? (id.productId ? `product ${id.productId}` : null);
+    // Short on purpose: the full identity, ids and the rest are in Stats. A known product needs no ids beside it.
+    const who = id.productName
+      ? `${id.vendorName ? `${id.vendorName} ` : ""}${id.productName}`
+      : [id.vendorName ?? (id.vendorId ? `vendor ${id.vendorId}` : null), id.vendorId && id.productId ? `${id.vendorId}:${id.productId}` : null].filter(Boolean).join(" · ") || "maker and product not given";
     const lines = [
-      [maker, product].filter(Boolean).join(" · ") + (id.vendorId && id.productId ? ` (${id.vendorId}:${id.productId})` : "") || "Maker and product: not given by this browser",
+      who,
       s.connected
-        ? `Connected ${clock(summary.connection.uptimeMs)}${summary.connection.disconnects ? ` · dropped ${summary.connection.disconnects}×` : ""}${summary.device.vibration ? ` · vibration: ${summary.device.vibration.type}` : ""}`
-        : `Disconnected · was connected ${clock(summary.connection.totalConnectedMs)} in all`,
+        ? `Connected ${clock(summary.connection.uptimeMs)}${summary.connection.disconnects ? ` · dropped ${summary.connection.disconnects}×` : ""}${summary.device.vibration ? " · rumble" : ""}`
+        : `Disconnected · connected ${clock(summary.connection.totalConnectedMs)} in all`,
     ];
+    card.devinfo.title = `${id.raw}\nBattery, signal strength and connection protocol are not available in this browser; see Stats for why.`;
     card.devinfo.replaceChildren(
       ...lines.map((text) => {
         const span = document.createElement("span");
@@ -237,11 +245,12 @@ function refreshText(hz) {
       (() => {
         const span = document.createElement("span");
         span.className = "na";
-        span.textContent = "Battery, signal and protocol: not available in this browser (see Stats)";
+        span.textContent = "Battery · signal · protocol: n/a here (see Stats)";
         return span;
       })(),
     );
     card.last.textContent = s.last ? `Last: ${s.last.what} at ${(s.last.t / 1000).toFixed(3)}s` : "No input yet";
+    card.perfSummary.textContent = `Performance · ${summary.report.samples ? `${summary.report.approxHz} Hz reports` : "move a stick to measure"} · ${summary.inputs.perSecondNow}/s`;
     card.perf.replaceChildren(
       ...perfLines(summary).map((line) => {
         const span = document.createElement("span");
