@@ -52,7 +52,7 @@
     .muted { color: var(--support); }
     #status { margin: 0 0 16px; font-variant-numeric: tabular-nums; }
     .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
-    @media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); } }
+    @media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(420px, 46%); } }
     .pads { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
     #waiting { margin: 0 0 12px; }
     #waiting p { margin: 0 0 4px; }
@@ -86,14 +86,31 @@
     }
     button.tool.quiet { background: transparent; color: var(--text); border: 1px solid var(--support); }
 
-    .logpanel { display: flex; flex-direction: column; min-height: 240px; }
-    @media (min-width: 1000px) { .logpanel { position: sticky; top: 12px; max-height: calc(100dvh - 24px); } }
-    .logbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-    #log { list-style: none; margin: 0; padding: 0; overflow: auto; flex: 1; min-height: 160px; max-height: 70dvh; border: 1px solid var(--support); border-radius: 8px; font: 0.78rem ui-monospace, monospace; }
-    #log li { --c: var(--slot-1); --ink: var(--slot-1-ink); display: grid; grid-template-columns: 5.6em 2.6em 1fr; gap: 6px; padding: 2px 8px; border-bottom: 1px solid color-mix(in srgb, var(--support) 35%, transparent); }
-    #log li b { text-align: center; border-radius: 4px; background: var(--c); color: var(--ink); }
-    #log time { color: var(--support); font-variant-numeric: tabular-nums; }
+    .perf { font-size: 0.76rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
+    .perf span { display: block; }
+
+    .logpanel { display: flex; flex-direction: column; min-height: 320px; }
+    @media (min-width: 1000px) { .logpanel { position: sticky; top: 12px; height: calc(100dvh - 24px); } }
+    .tabs, .views { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .tab {
+      --c: var(--primary); --ink: var(--bg);
+      font: inherit; font-size: 0.85rem; padding: 2px 11px; border: 2px solid var(--c); border-radius: 999px;
+      background: transparent; color: var(--text); cursor: pointer;
+    }
+    .tab[aria-selected="true"] { background: var(--c); color: var(--ink); font-weight: 700; }
+    .views .tab { --c: var(--support); --ink: var(--bg); font-size: 0.78rem; padding: 1px 10px; }
+    .views .tab[aria-selected="true"] { --c: var(--primary); }
+    .logbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; font-size: 0.82rem; }
+    .logbar label { display: inline-flex; align-items: center; gap: 4px; }
+    .logbar select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 4px; }
+    .thead { margin: 0; padding: 3px 8px; font: 0.7rem ui-monospace, monospace; color: var(--support); border: 1px solid var(--support); border-bottom: 0; border-radius: 8px 8px 0 0; white-space: pre; }
+    #transcript {
+      margin: 0; padding: 6px 8px; flex: 1; min-height: 200px; overflow: auto; white-space: pre; tab-size: 4;
+      font: 0.74rem/1.5 ui-monospace, monospace; border: 1px solid var(--support); border-radius: 0 0 8px 8px;
+    }
+    #transcript.stats { border-radius: 8px; }
     #note { margin: 8px 0 0; min-height: 1.2em; font-size: 0.82rem; }
+    .fast { margin: 0 0 12px; font-size: 0.85rem; }
   </style>
   <meta name="theme-color" content="#111111">
   <link rel="icon" href="/controller-lab/icon.svg" type="image/svg+xml">
@@ -105,6 +122,7 @@
     <h1>controller lab</h1>
     <p class="lede">Press a button on each controller to register it: the first to press is P1, the next P2, and so on. Every button and stick move is logged with the player and a time.</p>
     <p id="status" class="muted" aria-live="polite">Looking for controllers...</p>
+    <p class="fast"><label><input type="checkbox" id="fast" checked> Poll faster than the screen refreshes (about 250 Hz), so controllers that report more than 60 times a second can be measured</label></p>
     <div class="layout">
       <section aria-labelledby="pads-h">
         <h2 id="pads-h">Controllers</h2>
@@ -112,14 +130,26 @@
         <div id="pads" class="pads"></div>
       </section>
       <section class="logpanel" aria-labelledby="log-h">
-        <h2 id="log-h">Log</h2>
+        <h2 id="log-h">Transcript</h2>
+        <div class="tabs" id="tabs" role="tablist" aria-label="Whose transcript"></div>
+        <div class="views" id="views" role="tablist" aria-label="What to show" hidden>
+          <button class="tab" id="view-transcript" role="tab" type="button">Transcript</button>
+          <button class="tab" id="view-stats" role="tab" type="button">Stats</button>
+          <button class="tool quiet" id="reset-stats" type="button" hidden>Reset stats</button>
+        </div>
         <div class="logbar">
           <button class="tool" id="pause" type="button">Pause log</button>
           <button class="tool quiet" id="clear" type="button">Clear</button>
-          <button class="tool" id="download" type="button">Download JSON</button>
-          <button class="tool quiet" id="copy" type="button">Copy JSON</button>
+          <label><input type="checkbox" id="follow" checked> Follow</label>
+          <label>Show <select id="limit"><option value="500">last 500</option><option value="3000" selected>last 3000</option><option value="0">all</option></select></label>
         </div>
-        <ol id="log" aria-label="Controller input log"></ol>
+        <div class="logbar">
+          <button class="tool" id="download-txt" type="button">Download text</button>
+          <button class="tool" id="download-json" type="button">Download JSON</button>
+          <button class="tool quiet" id="copy" type="button">Copy text</button>
+        </div>
+        <div class="thead" id="thead">     time        gap  event</div>
+        <pre id="transcript" tabindex="0" aria-label="Controller input transcript"></pre>
         <p id="note" class="muted" aria-live="polite"></p>
       </section>
     </div>

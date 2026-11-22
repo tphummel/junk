@@ -5,12 +5,13 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { test } from "node:test";
 import { axisName, buttonName } from "../web/controller-lab/names.js";
-import { createRegistry, exportJson } from "../web/controller-lab/registry.js";
+import { createRegistry, exportJson, summarize } from "../web/controller-lab/registry.js";
+import { controllerReport, duration, formatEvent, seconds, summaryText, transcriptText } from "../web/controller-lab/transcript.js";
 
 /** A fake pad. `down` lists pressed button indexes (value 1); `axes` its axis values. */
-function pad(index, { down = [], axes = [0, 0, 0, 0], id = `Pad ${index} (STANDARD GAMEPAD)`, mapping = "standard", connected = true, buttons = 17, values = {} } = {}) {
+function pad(index, { down = [], axes = [0, 0, 0, 0], id = `Pad ${index} (STANDARD GAMEPAD)`, mapping = "standard", connected = true, buttons = 17, values = {}, timestamp } = {}) {
   return {
-    index, id, mapping, connected, axes,
+    index, id, mapping, connected, axes, timestamp,
     buttons: Array.from({ length: buttons }, (_, i) => ({ pressed: down.includes(i), value: values[i] ?? (down.includes(i) ? 1 : 0) })),
   };
 }
@@ -186,21 +187,27 @@ test("the log keeps the newest entries and counts the ones it dropped", () => {
   assert.ok(reg.events.at(-1).t > reg.events[0].t);
 });
 
-test("the export parses back to the registered pads and the log", () => {
+test("the export parses back to the registered pads, their transcripts and the combined log", () => {
   const reg = createRegistry();
   tick(reg, [pad(0), pad(1)], 0);
   tick(reg, [pad(0, { down: [0] }), pad(1, { down: [1] })], 16);
   tick(reg, [pad(0), pad(1, { down: [1], axes: [0.9, 0, 0, 0] })], 32);
-  const text = exportJson(reg.toExport({ startedAt: "2026-11-21T00:00:00.000Z", exportedAt: "2026-11-21T00:01:00.000Z" }));
+  const text = exportJson(reg.toExport({ startedAt: "2026-11-21T00:00:00.000Z", exportedAt: "2026-11-21T00:01:00.000Z", now: 100 }));
   const back = JSON.parse(text);
   assert.equal(back.app, "controller-lab");
-  assert.equal(back.format, 1);
+  assert.equal(back.format, 2);
   assert.deepEqual(back.pads.map((p) => p.slot), [1, 2]);
-  assert.equal(back.pads[0].presses, 1);
-  assert.equal(back.pads[1].axisEvents, 1);
+  assert.equal(back.pads[0].inputs.presses, 1);
+  assert.equal(back.pads[1].inputs.axisEvents, 1);
   assert.equal(back.events.length, reg.events.length);
+  assert.equal(back.pads[0].transcript.length + back.pads[1].transcript.length, reg.events.length, "every entry is in exactly one transcript");
   assert.ok(text.includes('{"t":'), "log entries one per line");
   assert.ok(back.events.every((e) => typeof e.slot === "number" && typeof e.t === "number"));
+  // One player's export has just that player.
+  const one = JSON.parse(exportJson(reg.toExport({ startedAt: "a", exportedAt: "b", now: 100 }, 2)));
+  assert.deepEqual(one.pads.map((p) => p.slot), [2]);
+  assert.equal(one.events, undefined, "no combined log in a single-player export");
+  assert.ok(one.pads[0].transcript.every((e) => e.slot === 2));
 });
 
 test("non-standard pads are logged by number", () => {
@@ -250,4 +257,295 @@ test("the page lists every module it loads, and its slot colors read on the back
   }
   for (const m of ["app.js", "names.js", "registry.js"]) assert.ok(existsSync(join(dir, m)), m);
   assert.match(html, /src="\/controller-lab\/app\.js"/);
+});
+
+// --- detail: transcripts, statistics and performance -----------------------------------------------
+
+test("button entries carry a press count, the time since the last press, and how long it was held", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 100); // registers and presses A at 100
+  tick(reg, [pad(0)], 350); // released after 250 ms
+  const second = tick(reg, [pad(0, { down: [0] })], 600); // pressed again 500 ms after the first press
+  tick(reg, [pad(0)], 640);
+  const log = reg.slots[0].log.filter((e) => e.type === "button");
+  assert.deepEqual(log.map((e) => [e.state, e.count, e.sinceLast, e.heldMs]), [
+    ["down", 1, null, undefined],
+    ["up", undefined, undefined, 250],
+    ["down", 2, 500, undefined],
+    ["up", undefined, undefined, 40],
+  ]);
+  assert.equal(second[0].count, 2);
+});
+
+test("each controller's transcript holds only its own entries, with the gap since its own previous entry", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0), pad(1)], 0);
+  tick(reg, [pad(0, { down: [0] }), pad(1, { down: [0] })], 100);
+  tick(reg, [pad(0, { down: [0] }), pad(1)], 250); // only P2 acts
+  tick(reg, [pad(0), pad(1)], 400); // only P1 acts
+  const [p1, p2] = reg.slots;
+  assert.ok(p1.log.every((e) => e.slot === 1) && p2.log.every((e) => e.slot === 2));
+  const gaps = (s) => s.log.map((e) => e.gap);
+  assert.deepEqual(gaps(p1), [null, 0, 300], "register, press, then release 300 ms after the press");
+  assert.deepEqual(gaps(p2), [null, 0, 150], "P2's gap ignores P1's activity in between");
+  assert.equal(reg.events.length, p1.log.length + p2.log.length);
+});
+
+test("axis entries say how far the stick moved", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 16);
+  tick(reg, [pad(0, { down: [0], axes: [0.6, 0, 0, 0] })], 32);
+  tick(reg, [pad(0, { down: [0], axes: [0.1, 0, 0, 0] })], 48);
+  const axes = reg.slots[0].log.filter((e) => e.type === "axis");
+  assert.deepEqual(axes.map((e) => [e.value, e.change]), [[0.6, 0.6], [0.1, -0.5]]);
+});
+
+test("button statistics: presses, hold times and the fastest repeat", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  // A held 100, 300 and 200 ms, pressed at 100, 500 and 800 (gaps 400 and 300).
+  tick(reg, [pad(0, { down: [0] })], 100);
+  tick(reg, [pad(0)], 200);
+  tick(reg, [pad(0, { down: [0] })], 500);
+  tick(reg, [pad(0)], 800);
+  tick(reg, [pad(0, { down: [0] })], 800 + 0.0); // same instant as the release: next frame
+  tick(reg, [pad(0, { down: [0] })], 801);
+  tick(reg, [pad(0)], 1000);
+  const a = summarize(reg.slots[0], 1000).buttons.find((b) => b.name === "A");
+  assert.equal(a.presses, 3);
+  assert.equal(a.releases, 3);
+  assert.equal(a.holdMinMs, 100);
+  assert.equal(a.holdMaxMs, 300);
+  assert.equal(a.holdAvgMs, Math.round(((100 + 300 + 200) / 3) * 10) / 10);
+  assert.ok(a.fastestRepeatMs <= 301);
+});
+
+test("axis statistics: the range seen, and drift and noise while the stick rests", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  // The stick rests slightly off center and wobbles a little (a reading every 16 ms), then is pushed left.
+  [0.03, 0.05, 0.04, 0.03, 0.05, 0.04, 0.03, 0.05, 0.04, 0.03, -0.8].forEach((v, i) => tick(reg, [pad(0, { down: [0], axes: [v, 0, 0, 0] })], 16 + i * 16));
+  const lx = summarize(reg.slots[0], 300).axes.find((a) => a.name === "LX");
+  assert.equal(lx.min, -0.8);
+  assert.equal(lx.max, 0.05);
+  assert.equal(lx.restSamples, 5, "counted once the stick had been steady for 80 ms: the 6th to 10th readings");
+  assert.equal(lx.restAvg, 0.038, "average of 0.04, 0.03, 0.05, 0.04 and 0.03");
+  assert.equal(lx.restNoise, 0.02, "peak to peak at rest");
+  assert.equal(lx.events, 1);
+});
+
+test("a stick moving slowly through the middle is not counted as resting", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  // 0 to 0.2 in steps of 0.02 every 10 ms: always inside the rest zone, but never steady.
+  for (let i = 0; i <= 10; i++) tick(reg, [pad(0, { down: [0], axes: [i * 0.02, 0, 0, 0] })], 10 + i * 10);
+  const lx = summarize(reg.slots[0], 200).axes.find((a) => a.name === "LX");
+  assert.equal(lx.restSamples, 0);
+  assert.equal(lx.restAvg, null);
+  assert.equal(lx.restNoise, null);
+});
+
+test("polling faster than the device reports does not make a moving stick look steady", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  // The device reports every 8 ms and we poll every 4 ms, so every value is seen twice.
+  for (let i = 0; i < 40; i++) tick(reg, [pad(0, { down: [0], axes: [Math.floor(i / 2) * 0.01, 0, 0, 0] })], 4 + i * 4);
+  const lx = summarize(reg.slots[0], 300).axes.find((a) => a.name === "LX");
+  assert.equal(lx.restSamples, 0, "0.01 every 8 ms is still moving");
+});
+
+test("a stick resting well off center is measured as drift", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  for (let i = 0; i < 8; i++) tick(reg, [pad(0, { down: [0], axes: [0.12, -0.1, 0, 0] })], 16 + i * 16);
+  const s = summarize(reg.slots[0], 200);
+  assert.equal(s.axes.find((a) => a.name === "LX").restAvg, 0.12);
+  assert.equal(s.axes.find((a) => a.name === "LY").restAvg, -0.1);
+  assert.equal(s.axes.find((a) => a.name === "LX").restNoise, 0);
+  assert.equal(s.axes.find((a) => a.name === "LX").restSamples, 3, "the 6th to 8th readings");
+});
+
+test("resetting statistics zeroes the measurements but keeps the transcript and the slot", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0, { timestamp: 1 })], 0);
+  tick(reg, [pad(0, { down: [0], timestamp: 10 })], 10);
+  tick(reg, [pad(0, { timestamp: 120 })], 120);
+  assert.equal(summarize(reg.slots[0], 130).inputs.total, 2);
+  assert.equal(reg.resetStats(1), true);
+  const s = summarize(reg.slots[0], 130);
+  assert.equal(s.inputs.total, 0);
+  assert.equal(s.polls, 0);
+  assert.deepEqual(s.buttons, []);
+  assert.equal(reg.slots[0].log.length, 3, "register, press and release are still in the transcript");
+  assert.equal(reg.slots[0].slot, 1);
+  assert.equal(reg.resetStats(9), false);
+  // And it measures afresh from here.
+  tick(reg, [pad(0, { down: [0], timestamp: 200 })], 200);
+  assert.equal(summarize(reg.slots[0], 210).buttons[0].presses, 1);
+});
+
+test("performance: a device reporting every 8 ms is measured as 125 Hz when the page polls fast enough", () => {
+  const reg = createRegistry();
+  const at = (now, down = []) => pad(0, { down, timestamp: Math.floor((now - 3) / 8) * 8 + 3 }); // reports at 3, 11, 19...
+  tick(reg, [at(2)], 0);
+  for (let now = 4; now <= 400; now += 4) tick(reg, [at(now, now > 8 ? [0] : [])], now);
+  const s = summarize(reg.slots[0], 400);
+  assert.equal(s.deviceTimestamps, true);
+  assert.equal(s.report.avgMs, 8);
+  assert.equal(s.report.approxHz, 125);
+  assert.equal(s.report.p95Ms, 8);
+  assert.equal(s.report.jitterMs, 0);
+  assert.equal(s.poll.avgMs, 4);
+  assert.equal(s.poll.approxHz, 250);
+  assert.equal(s.age.avgMs, 1, "each report was seen 1 ms after the device made it");
+});
+
+test("performance: polling slower than the device hides its real rate, and the summary says how fast we polled", () => {
+  const reg = createRegistry();
+  const at = (now) => pad(0, { down: [0], timestamp: Math.floor((now - 3) / 8) * 8 + 3 });
+  tick(reg, [pad(0, { timestamp: 3 })], 0);
+  for (let now = 16; now <= 400; now += 16) tick(reg, [at(now)], now);
+  const s = summarize(reg.slots[0], 400);
+  assert.ok(s.report.avgMs >= 16, "reports are only seen as often as we poll");
+  assert.equal(s.poll.avgMs, 16);
+});
+
+test("performance: pauses and button presses are not counted as the device's report rate", () => {
+  const reg = createRegistry();
+  const at = (ts) => pad(0, { down: [0], timestamp: ts });
+  tick(reg, [pad(0, { timestamp: 1 })], 0);
+  tick(reg, [at(10)], 10);
+  tick(reg, [at(18)], 18);
+  tick(reg, [at(26)], 26);
+  tick(reg, [at(1026)], 1026); // a second of nothing, then movement
+  tick(reg, [at(1034)], 1034);
+  const s = summarize(reg.slots[0], 1100);
+  assert.equal(s.report.samples, 3, "10 to 18, 18 to 26 and 1026 to 1034; the 1000 ms pause is left out");
+  tick(reg, [at(1134)], 1134); // a press 100 ms later: too far apart to be a stream of readings
+  assert.equal(summarize(reg.slots[0], 1200).report.samples, 3, "100 ms between changes is not streaming");
+  assert.equal(s.report.maxMs, 8);
+  assert.equal(summarize(reg.slots[0], 1200).stateChanges, 5, "but each change after the pause is still a state change");
+});
+
+test("performance: a browser with no device timestamps is reported as such, not as zero", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 16);
+  tick(reg, [pad(0)], 32);
+  const s = summarize(reg.slots[0], 40);
+  assert.equal(s.deviceTimestamps, false);
+  assert.equal(s.age, null);
+  assert.equal(s.report.samples, 0);
+  assert.equal(s.report.approxHz, null);
+  assert.match(summaryText(s), /no device timestamps/);
+  assert.equal(reg.slots[0].log.find((e) => e.type === "button").ts, undefined, "entries carry no timestamp either");
+});
+
+test("performance: inputs per second now and at the peak, and idle time", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  // Five inputs inside one second, then quiet.
+  for (let i = 0; i < 5; i++) {
+    tick(reg, [pad(0, { down: Array.from({ length: i + 1 }, (_, k) => k) })], 100 + i * 100); // each frame adds one more button
+  }
+  const busy = summarize(reg.slots[0], 700);
+  assert.equal(busy.inputs.perSecondNow, 5);
+  assert.equal(busy.inputs.perSecondPeak, 5);
+  assert.equal(busy.inputs.idleMs, 200);
+  const later = summarize(reg.slots[0], 3000);
+  assert.equal(later.inputs.perSecondNow, 0);
+  assert.equal(later.inputs.perSecondPeak, 5, "the peak is remembered");
+  assert.equal(later.inputs.idleMs, 2500);
+});
+
+test("input entries carry the device timestamp and how old it was when seen", () => {
+  const reg = createRegistry({ origin: 1000 });
+  reg.update([pad(0, { timestamp: 1000 })], 1000, 1);
+  reg.update([pad(0, { down: [0], timestamp: 1040 })], 1046, 2);
+  const e = reg.slots[0].log.find((x) => x.type === "button");
+  assert.equal(e.t, 46, "time is counted from the origin");
+  assert.equal(e.ts, 40, "so is the device's timestamp");
+  assert.equal(e.age, 6, "seen 6 ms after the device reported it");
+});
+
+test("forgetting drops a controller's transcript and statistics; clearing the log keeps statistics", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0), pad(1)], 0);
+  tick(reg, [pad(0, { down: [0] }), pad(1, { down: [0] })], 16);
+  reg.clearLog();
+  assert.equal(reg.slots[0].log.length, 0);
+  assert.equal(reg.slots[0].stats.presses, 1, "the counts survive clearing the log");
+  assert.equal(summarize(reg.slots[0], 40).buttons[0].presses, 1);
+  reg.forget(1);
+  assert.deepEqual(reg.slots.map((s) => s.slot), [2]);
+  assert.equal(reg.summary(1, 40), null);
+  assert.equal(reg.summary(2, 40).slot, 2);
+});
+
+test("each transcript is limited on its own, and says how many entries it lost", () => {
+  const reg = createRegistry({ maxSlotEvents: 4 });
+  tick(reg, [pad(0), pad(1)], 0);
+  tick(reg, [pad(0, { down: [0] }), pad(1, { down: [0] })], 10);
+  for (let i = 0; i < 6; i++) tick(reg, [pad(0, { down: [i % 2 ? 0 : 1] }), pad(1, { down: [0] })], 20 + i * 10);
+  assert.equal(reg.slots[0].log.length, 4);
+  assert.ok(reg.slots[0].logDropped > 0);
+  assert.equal(reg.slots[1].log.length, 2, "the quiet controller keeps everything");
+  assert.equal(reg.slots[1].logDropped, 0);
+});
+
+// --- text ------------------------------------------------------------------------------------------
+
+test("transcript lines read clearly: time, gap, control, and what happened", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0, { timestamp: 5 })], 0);
+  tick(reg, [pad(0, { down: [0], timestamp: 100 })], 102);
+  tick(reg, [pad(0, { timestamp: 300 })], 305);
+  tick(reg, [pad(0, { axes: [0.9, 0, 0, 0], timestamp: 400 })], 402);
+  const [reg1, down, up, axis] = reg.slots[0].log;
+  assert.match(formatEvent(reg1), /REGISTERED +Pad 0 \(STANDARD GAMEPAD\) +\(index 0, standard mapping, 17 buttons, 4 axes\)/);
+  assert.match(formatEvent(down), /^ +0\.102s +\+0\.000s +A +down +#1 +first press +\[device 0\.100s, seen 2\.0 ms later\]$/);
+  assert.match(formatEvent(up), /A +up +held 203 ms/);
+  assert.match(formatEvent(axis), /LX +0\.90 +\(change \+0\.90\)/);
+  assert.match(formatEvent(down, { player: true }), /P1 +A/);
+  assert.doesNotMatch(formatEvent(down), /P1/);
+  assert.equal(transcriptText(reg.slots[0].log).split("\n").length, 4);
+  assert.equal(seconds(12345.6), "12.346s");
+});
+
+test("durations are shown in ms under a second and seconds above", () => {
+  assert.equal(duration(null), "-");
+  assert.equal(duration(250), "250 ms");
+  assert.equal(duration(8.25), "8.3 ms");
+  assert.equal(duration(1500), "1.50 s");
+});
+
+test("the controller report holds the statistics and the whole transcript, ready to save", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0, { timestamp: 1 })], 0);
+  tick(reg, [pad(0, { down: [0], timestamp: 20 })], 20);
+  tick(reg, [pad(0, { timestamp: 120 })], 120);
+  const report = controllerReport(summarize(reg.slots[0], 150), reg.slots[0].log, { startedAt: "S", exportedAt: "E" });
+  assert.match(report, /transcript for P1/);
+  assert.match(report, /session started S, exported E/);
+  assert.match(report, /PERFORMANCE/);
+  assert.match(report, /BUTTONS\n +A +1 presses/);
+  assert.match(report, /STICKS AND AXES/);
+  assert.match(report, /TRANSCRIPT {2}\(3 entries\)/);
+  assert.match(report, /held 100 ms/);
+});
+
+test("a controller used only for button presses is not given a report rate", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0, { timestamp: 1 })], 0);
+  for (let i = 0; i < 6; i++) {
+    tick(reg, [pad(0, { down: [0], timestamp: 100 + i * 300 })], 100 + i * 300);
+    tick(reg, [pad(0, { timestamp: 200 + i * 300 })], 200 + i * 300);
+  }
+  const s = summarize(reg.slots[0], 2000);
+  assert.equal(s.report.samples, 0);
+  assert.equal(s.report.approxHz, null);
+  assert.ok(s.stateChanges >= 10, "the presses are still state changes");
+  assert.match(summaryText(s), /not measured yet: move a stick or trigger/);
 });
