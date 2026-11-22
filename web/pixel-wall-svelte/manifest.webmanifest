@@ -1,0 +1,14 @@
+{
+  "name": "Pixel Wall",
+  "short_name": "Pixel Wall",
+  "description": "A 16x16 wall of shared counters. Click a pixel to bump it and change its color.",
+  "start_url": "/pixel-wall-svelte/",
+  "scope": "/pixel-wall-svelte/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
