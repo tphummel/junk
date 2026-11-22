@@ -1,0 +1,14 @@
+{
+  "name": "celebration style sheet",
+  "short_name": "celebration",
+  "description": "A red, white and gold style sheet inspired by the Sierra Nevada Celebration can, with a storybook.",
+  "start_url": "/styles/celebration/",
+  "scope": "/styles/celebration/",
+  "display": "standalone",
+  "background_color": "#1A0907",
+  "theme_color": "#1A0907",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

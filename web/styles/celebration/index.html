@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>celebration style sheet</title>
+  <link rel="stylesheet" href="celebration.css">
+  <style>
+    /* storybook chrome only; the components below come from celebration.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { display: grid; gap: 0.9rem; justify-items: center; text-align: center; padding-block: clamp(2rem, 6vw, 3.5rem); }
+    .hero .cel-copy { margin: 0; }
+    .sb nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb nav a { display: block; padding: 0.35rem 0.6rem; border-left: 2px solid var(--cel-rule); color: var(--cel-fg); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--cel-track-label); }
+    .sb nav a:hover { color: var(--cel-red-ink); border-color: var(--cel-red-ink); }
+    .theme { display: flex; gap: 0.4rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .theme button { font: inherit; font-size: 0.75rem; }
+    .theme button[aria-pressed="true"] { background: var(--cel-red); color: var(--cel-on-red); border-color: var(--cel-red-deep); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .top .theme { margin: 0; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); background: var(--cel-bg); border: 1px dashed var(--cel-rule); border-radius: var(--cel-radius); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--cel-track-label); color: var(--cel-fg-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--cel-surface); border: 1px solid var(--cel-rule); border-radius: var(--cel-radius); font: 0.8rem/1.5 var(--cel-font-mono); color: var(--cel-fg); tab-size: 2; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; }
+    .sw { border: 1px solid var(--cel-rule); border-radius: var(--cel-radius); overflow: hidden; background: var(--cel-surface); }
+    .sw i { display: block; height: 3.5rem; border-bottom: 1px solid var(--cel-rule); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--cel-fg-muted); }
+    .spec-type { display: grid; gap: 1rem; }
+    footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--cel-fg-muted); }
+  </style>
+  <meta name="theme-color" content="#1A0907">
+  <link rel="icon" href="/styles/celebration/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/celebration/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/celebration/manifest.webmanifest">
+</head>
+<body class="cel">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="cel-label"><a href="/">junk</a> / style sheets / celebration</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="cel-panel hero">
+      <span class="cel-script">Limited Edition</span>
+      <h1 class="cel-title cel-title--xl">Celebration</h1>
+      <span class="cel-banner">Style sheet</span>
+      <p class="cel-copy cel-copy--center">A red field, white and gold type, and hairline grids around spaced-out caps, inspired by the Sierra Nevada Celebration can. Plain CSS, no fonts or scripts to load, light and dark.</p>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#banner">Banner</a></li>
+      <li><a href="#panel">Panel</a></li>
+      <li><a href="#grid">Grid</a></li>
+      <li><a href="#table">Table</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge, divider</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="cel"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>cel-</code> and every custom property <code>--cel-</code>. Plain element selectors only apply under <code>.cel</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/celebration/celebration.css"&gt;
+&lt;body class="cel"&gt;
+  &lt;div class="cel-panel"&gt;
+    &lt;h1 class="cel-title cel-title--lg"&gt;Hello&lt;/h1&gt;
+  &lt;/div&gt;
+&lt;/body&gt;</pre>
+      <p>Components read context variables (<code>--cel-fg</code>, <code>--cel-line</code>, <code>--cel-accent</code>, <code>--cel-heading</code>, <code>--cel-field</code>), so the same markup works on the page and inside a <code>.cel-panel</code>, where the panel flips them to white and gold on red. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>; the switch above does that for this page.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values below are read from the live sheet, so they follow the theme switch. Ratios are WCAG contrast against the stated background; text needs 4.5, lines and controls 3.</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type</h2>
+      <p>Display type is a heavy slab serif in caps (Clarendon, Rockwell, Roboto Slab or Georgia, whichever the device has). Labels and values are small caps with wide tracking, which is what gives the grids their feel. The script flourish is italic.</p>
+      <div class="demo spec-type">
+        <h1 class="cel-title cel-title--lg">Fresh Hop IPA</h1>
+        <span class="cel-script">Finest Quality</span>
+        <span class="cel-label">Alcohol by volume</span>
+        <span class="cel-value">12 fluid ounces</span>
+        <p class="cel-copy">We first brewed Celebration in the winter of 1981. Each year we use only the freshest hops of the harvest to create this complex and robust ale.</p>
+      </div>
+    </section>
+
+    <section id="banner">
+      <h2>Banner</h2>
+      <p>The gold ribbon. It sizes to its text, so wrap it in a centered block for a header.</p>
+      <div class="demo">
+        <div class="row">
+          <span class="cel-banner">Sierra Nevada</span>
+          <span class="cel-banner">Cheers</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel">
+      <h2>Panel</h2>
+      <p>The red field with a hairline gold keyline and a faint sheen. <code>cel-panel--flat</code> drops the sheen. <code>cel-card</code> is the quiet version for content on the page background.</p>
+      <div class="demo stack">
+        <div class="cel-panel cel-panel--center">
+          <span class="cel-script">Limited</span>
+          <h3 class="cel-title cel-title--md">Panel</h3>
+          <p class="cel-copy cel-copy--center">White on red, gold for accents and rules.</p>
+        </div>
+        <div class="cel-panel cel-panel--flat">
+          <h3 class="cel-title cel-title--md">Flat panel</h3>
+          <p class="cel-copy">No sheen, for large areas or print.</p>
+        </div>
+        <div class="cel-card">
+          <h3 class="cel-title cel-title--md">Card</h3>
+          <p class="cel-copy">Surface color and a rule, for content that should stay quiet.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="grid">
+      <h2>Grid</h2>
+      <p>Ruled cells with spaced caps, the can's <em>12 fluid ounces | ale | alc. 6.8% by vol.</em> strip. Cells share their lines however they wrap. Use <code>cel-cell--wide</code> to span a full row, <code>cel-grid--2</code>, <code>--3</code> or <code>--4</code> for fixed columns (two on a phone), or no modifier to fit as many as the width allows.</p>
+      <div class="demo stack">
+        <div class="cel-panel cel-panel--flat">
+          <div class="cel-grid">
+            <div class="cel-cell"><span class="cel-value">12 fluid ounces</span></div>
+            <div class="cel-cell"><span class="cel-value">Ale</span></div>
+            <div class="cel-cell"><span class="cel-value">Alc. 6.8% by vol.</span></div>
+            <div class="cel-cell cel-cell--wide"><span class="cel-value">Sierra Nevada Brewing Co., Chico, CA &amp; Mills River, NC</span></div>
+          </div>
+        </div>
+        <div class="cel-grid cel-grid--4">
+          <div class="cel-cell cel-cell--tall"><span class="cel-label">Score</span><span class="cel-value cel-value--xl">128</span></div>
+          <div class="cel-cell cel-cell--tall"><span class="cel-label">Streak</span><span class="cel-value cel-value--xl">7</span></div>
+          <div class="cel-cell cel-cell--tall"><span class="cel-label">Best</span><span class="cel-value cel-value--xl">212</span></div>
+          <div class="cel-cell cel-cell--tall"><span class="cel-label">Games</span><span class="cel-value cel-value--xl">31</span></div>
+          <div class="cel-cell cel-cell--wide"><span class="cel-label">Last played</span><span class="cel-value cel-value--plain">Sat, Nov 21</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="table">
+      <h2>Table</h2>
+      <p>The same rules in a real table. Wrap it in <code>cel-table-wrap</code> if it can overflow a phone. Numbers right-align with <code>cel-num</code>.</p>
+      <div class="demo">
+        <div class="cel-table-wrap">
+          <table class="cel-table">
+            <caption>Standings</caption>
+            <thead><tr><th scope="col">Team</th><th scope="col" class="cel-num">W</th><th scope="col" class="cel-num">L</th><th scope="col" class="cel-num">Pct</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Red</th><td class="cel-num">12</td><td class="cel-num">4</td><td class="cel-num">.750</td></tr>
+              <tr><th scope="row">Gold</th><td class="cel-num">9</td><td class="cel-num">7</td><td class="cel-num">.563</td></tr>
+              <tr><th scope="row">White</th><td class="cel-num">3</td><td class="cel-num">13</td><td class="cel-num">.188</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are gold with a hard red-black edge; <code>cel-button--red</code> and <code>cel-button--ghost</code> step down in weight. Inputs are 44px tall with the same hairline.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="cel-button" type="button">Pour one</button>
+          <button class="cel-button cel-button--red" type="button">Cheers</button>
+          <button class="cel-button cel-button--ghost" type="button">Cancel</button>
+          <button class="cel-button" type="button" disabled>Disabled</button>
+        </div>
+        <div class="cel-grid cel-grid--2" style="--cel-cell-pad: 1rem">
+          <div class="cel-cell cel-cell--left">
+            <div class="cel-field">
+              <label class="cel-label" for="sb-name">Name</label>
+              <input class="cel-input" id="sb-name" placeholder="Your name" autocomplete="off">
+            </div>
+          </div>
+          <div class="cel-cell cel-cell--left">
+            <div class="cel-field">
+              <label class="cel-label" for="sb-size">Size</label>
+              <select class="cel-select" id="sb-size"><option>12 oz can</option><option>22 oz bomber</option><option>Draft</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge, divider</h2>
+      <p>Badges are small caps in a pill. The divider is two hairlines, like the can's ruled edges.</p>
+      <div class="demo">
+        <div class="row"><span class="cel-badge">Purest ingredients</span><span class="cel-badge cel-badge--solid">New</span></div>
+        <hr class="cel-divider">
+        <div class="cel-panel cel-panel--flat"><div class="row"><span class="cel-badge">Finest quality</span><span class="cel-badge cel-badge--solid">Limited</span></div><hr class="cel-divider"><span class="cel-label">Family owned, operated and argued over</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/celebration/celebration.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009.</footer>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/\s+style="--cel-cell-pad: 1rem"/g, '').replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('cel-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('cel-theme') : localStorage.setItem('cel-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'cel-button cel-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Palette swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const tokens = [
+    ['--cel-bg', 'page'], ['--cel-surface', 'cards, inputs'], ['--cel-text', 'text', '--cel-bg'], ['--cel-muted', 'muted text', '--cel-bg'],
+    ['--cel-red', 'the can: fills', '--cel-on-red', 'white on it'], ['--cel-red-deep', 'shadows, edges'], ['--cel-red-ink', 'red text, lines', '--cel-bg'],
+    ['--cel-on-red', 'text on red', '--cel-red'], ['--cel-on-red-muted', 'muted on red', '--cel-red'],
+    ['--cel-gold', 'gold on red', '--cel-red', 'on red'], ['--cel-on-gold', 'text on gold', '--cel-gold'], ['--cel-rule', 'grid lines', '--cel-bg'],
+  ];
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    const out = document.getElementById('swatches'); out.replaceChildren();
+    for (const [name, use, vs, note] of tokens) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = `var(${name})`;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      if (vs && /^#[0-9A-F]{6}$/.test(hex)) {
+        const r = ratio(hex, val(vs));
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 ${note || 'vs ' + vs.replace('--cel-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/celebration/sw.js', { scope: '/styles/celebration/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

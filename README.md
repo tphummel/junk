@@ -7,7 +7,7 @@ A place for things without a home: unfinished, out of date, broken things. Inspi
 | Path | What |
 | --- | --- |
 | `<project>/` | One experiment or tool per folder, each with its own `README.md`. Some have a workflow in `.github/workflows/`. |
-| `web/` | Static webpages, served at `https://junk.tomhummel.com/<name>/`. |
+| `web/` | Static webpages, served at `https://junk.tomhummel.com/<name>/`. Style sheets other pages can link live in `web/styles/<name>/` ([ADR 0009](adr/0009-style-sheets.md)). |
 | `api/` | The Worker behind `https://junk.tomhummel.com/api/<name>/`. |
 | `adr/` | [Architecture decision records](https://adr.github.io/): short documents that record one decision, its context and consequences. |
 | `skill/` | [Agent skills](https://agentskills.io/): instructions an AI agent loads for a specific task. `.claude/skills` links here so Claude Code loads them automatically. |
