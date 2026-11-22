@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { classifyResult, clamp01, describeHaptics, effectParams, EFFECT_TYPES, MAX_DELAY_MS, MAX_DURATION_MS, playSteps, PRESETS, stopHaptics } from "../web/controller-lab/haptics.js";
 import { approxBits, clock, describeEnvironment, parsePadId, unavailable } from "../web/controller-lab/deviceinfo.js";
 import { axisName, buttonName } from "../web/controller-lab/names.js";
+import { loadNotes, MAX_NOTES_LENGTH, NOTES_KEY, saveNotes } from "../web/controller-lab/notes.js";
 import { createRegistry, exportJson, summarize } from "../web/controller-lab/registry.js";
 import { controllerReport, duration, formatEvent, seconds, summaryText, transcriptText } from "../web/controller-lab/transcript.js";
 
@@ -1010,4 +1011,97 @@ test("stopping is written in the transcript but is not counted as a test of the 
   const stop = reg.slots[0].log.at(-1);
   assert.equal(stop.effect, "reset");
   assert.match(formatEvent(stop), /HAPTIC\s+\[Stop\] reset/);
+});
+
+// --- notes and tips --------------------------------------------------------------------------------
+
+/** A minimal in-memory Storage. */
+function fakeStorage(initial = {}) {
+  const data = { ...initial };
+  return { data, getItem: (k) => (k in data ? data[k] : null), setItem: (k, v) => { data[k] = String(v); } };
+}
+
+test("your notes are saved and loaded, and missing, blocked or full storage fails quietly", () => {
+  const storage = fakeStorage();
+  assert.equal(loadNotes(storage), "");
+  assert.equal(saveNotes(storage, "SN30 pairs with Start + X"), true);
+  assert.equal(loadNotes(storage), "SN30 pairs with Start + X");
+  assert.equal(storage.data[NOTES_KEY], "SN30 pairs with Start + X");
+  assert.equal(loadNotes(null), "");
+  assert.equal(saveNotes(null, "x"), false);
+  assert.equal(loadNotes({ getItem() { throw new Error("blocked"); } }), "");
+  assert.equal(saveNotes({ setItem() { throw new Error("quota"); } }, "x"), false);
+  assert.equal(loadNotes({ getItem: () => 42 }), "", "something that is not text reads as no notes");
+});
+
+test("notes are cut at a sensible length, on the way in and on the way out", () => {
+  const storage = fakeStorage();
+  saveNotes(storage, "a".repeat(MAX_NOTES_LENGTH + 500));
+  assert.equal(storage.data[NOTES_KEY].length, MAX_NOTES_LENGTH);
+  assert.equal(loadNotes({ getItem: () => "b".repeat(MAX_NOTES_LENGTH * 2) }).length, MAX_NOTES_LENGTH);
+});
+
+/** The page's notes section, as HTML text. */
+function notesHtml() {
+  const html = readFileSync(new URL("../web/controller-lab/index.html", import.meta.url), "utf8");
+  const start = html.indexOf('<section class="notes"');
+  return { html, section: html.slice(start, html.indexOf("</section>", start)) };
+}
+
+test("the notes and tips are the last thing on the page, after the controllers and the transcript", () => {
+  const { html } = notesHtml();
+  const at = html.indexOf('id="notes"');
+  assert.ok(at > html.indexOf('id="pads"'), "after the controller cards");
+  assert.ok(at > html.indexOf('id="transcript"'), "after the transcript");
+  assert.ok(at < html.indexOf('<script type="module"'), "before the scripts, so nothing visible follows it");
+  const after = html.slice(html.indexOf("</section>", at), html.indexOf('<script type="module"'));
+  assert.doesNotMatch(after, /<(section|article|p|div|h[1-6])\b/, "no content after it except closing tags");
+  assert.match(html.slice(at), /<textarea id="my-notes"/, "with a place for your own notes");
+});
+
+test("every tip says how far to trust it", () => {
+  const { section } = notesHtml();
+  const tips = [...section.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+  assert.ok(tips.length >= 12, "there are tips");
+  for (const t of tips) {
+    assert.match(t, /^<span class="chip( ok| unk)?">(Confirmed|Reported|Unknown|Lab)<\/span>/, `a tip with no status: ${t.slice(0, 60)}`);
+  }
+  // The chip's class and its word agree.
+  for (const t of tips) {
+    if (/class="chip ok"/.test(t)) assert.match(t, />Confirmed</);
+    if (/>Confirmed</.test(t)) assert.match(t, /class="chip ok"/);
+    if (/class="chip unk"/.test(t)) assert.match(t, />Unknown</);
+  }
+});
+
+test("what has been confirmed on a real iPad is recorded as confirmed", () => {
+  const { section } = notesHtml();
+  const confirmed = [...section.matchAll(/<li><span class="chip ok">Confirmed<\/span>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+  assert.ok(confirmed.some((t) => /Capture/.test(t) && /Home/.test(t) && /3 seconds/.test(t) && /merge/i.test(t)), "the Joy-Con split and merge gesture");
+  assert.ok(confirmed.some((t) => /Start \+ X/.test(t) && /8BitDo|SN30/i.test(t) || /Start \+ X/.test(t)), "the SN30 pairs with Start + X");
+  // And the SN30's tip sits under the original SN30's heading, not the Pro's.
+  const sn30 = section.slice(section.indexOf("8BitDo SN30 (original, not Pro)"), section.indexOf("8BitDo SN30 Pro"));
+  assert.match(sn30, /Start \+ X/);
+  const joycon = section.slice(section.indexOf("Joy-Con (Switch 1)"), section.indexOf("8BitDo SN30 (original"));
+  assert.match(joycon, /Capture[\s\S]*Home/);
+});
+
+test("the Confirmed chip reads in both modes (page background on the primary color)", async () => {
+  const { html } = notesHtml();
+  const { contrastRatio } = await import("../web/golden-angle-palette/palette.js");
+  const css = html.slice(html.indexOf("<style>"), html.indexOf("</style>"));
+  const [light, dark] = css.split("@media (prefers-color-scheme: dark) {");
+  assert.match(css, /\.chip\.ok \{[^}]*background: var\(--primary\)[^}]*color: var\(--bg\)/, "the chip uses the primary color with the page background as its text");
+  for (const [mode, text] of [["light", light], ["dark", dark]]) {
+    const primary = text.match(/--primary: (#[0-9A-Fa-f]{6})/)[1];
+    const bg = text.match(/--bg: (#[0-9A-Fa-f]{6})/)[1];
+    assert.ok(contrastRatio(primary.slice(1), bg.slice(1)) >= 4.5, `${mode}: ${bg} on ${primary}`);
+  }
+});
+
+test("the notes module is cached for offline use and in the typecheck", () => {
+  const sw = readFileSync(new URL("../web/controller-lab/sw.js", import.meta.url), "utf8");
+  assert.match(sw, /'\/controller-lab\/notes\.js'/);
+  const ts = readFileSync(new URL("../tsconfig.json", import.meta.url), "utf8");
+  assert.match(ts, /web\/controller-lab\/notes\.js/);
 });

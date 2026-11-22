@@ -9,6 +9,7 @@ const PRECACHE = [
   '/controller-lab/deviceinfo.js',
   '/controller-lab/haptics.js',
   '/controller-lab/names.js',
+  '/controller-lab/notes.js',
   '/controller-lab/registry.js',
   '/controller-lab/transcript.js',
   '/controller-lab/manifest.webmanifest',

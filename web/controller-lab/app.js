@@ -5,6 +5,7 @@
 import { clock, describeEnvironment, unavailable } from "./deviceinfo.js";
 import { describeHaptics, playSteps, PRESETS, stopHaptics } from "./haptics.js";
 import { buttonName } from "./names.js";
+import { browserStorage, loadNotes, saveNotes } from "./notes.js";
 import { createRegistry, exportJson, summarize } from "./registry.js";
 import { controllerReport, duration, summaryText, transcriptText } from "./transcript.js";
 
@@ -578,6 +579,22 @@ $("copy").addEventListener("click", async () => {
   } catch {
     note("Could not copy: use Download text instead.");
   }
+});
+
+// --- your notes ------------------------------------------------------------------------------------
+
+const notesBox = /** @type {{ value: string }} */ (/** @type {unknown} */ (document.getElementById("my-notes")));
+const notesStorage = browserStorage();
+notesBox.value = loadNotes(notesStorage);
+/** @type {ReturnType<typeof setTimeout> | undefined} */
+let notesTimer;
+document.getElementById("my-notes")?.addEventListener("input", () => {
+  clearTimeout(notesTimer);
+  $("notes-saved").textContent = "Saving...";
+  // Wait for a pause in typing, then save.
+  notesTimer = setTimeout(() => {
+    $("notes-saved").textContent = saveNotes(notesStorage, notesBox.value) ? "Saved on this device." : "Not saved: this browser is blocking storage. Copy your notes somewhere safe.";
+  }, 400);
 });
 
 // --- the loops -------------------------------------------------------------------------------------

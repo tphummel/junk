@@ -18,6 +18,7 @@
     "web/controller-lab/deviceinfo.js",
     "web/controller-lab/haptics.js",
     "web/controller-lab/names.js",
+    "web/controller-lab/notes.js",
     "web/controller-lab/registry.js",
     "web/controller-lab/transcript.js",
     "web/golden-angle-palette/palette.js",

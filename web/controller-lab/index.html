@@ -134,6 +134,21 @@
     .hap-h { margin: 10px 0 4px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
     .hap-results { margin: 0; padding: 0; list-style: none; font: 0.76rem/1.5 ui-monospace, monospace; }
     .hap-results li { padding: 1px 0; overflow-wrap: anywhere; }
+    /* Notes and tips, at the very bottom of the page. */
+    .notes { margin: 28px 0 8px; padding-top: 16px; border-top: 2px solid var(--support); }
+    .notes h2 { margin-bottom: 4px; }
+    .notes .legend { margin: 0 0 12px; font-size: 0.82rem; }
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px; margin-bottom: 16px; }
+    .notes article { border: 1px solid var(--support); border-radius: 10px; padding: 8px 12px; min-width: 0; }
+    .notes h3 { margin: 0 0 6px; font-size: 0.95rem; color: var(--primary); }
+    .notes ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 0.85rem; }
+    .notes li { overflow-wrap: anywhere; }
+    .chip { display: inline-block; margin-right: 6px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--support); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; vertical-align: 1px; }
+    .chip.ok { background: var(--primary); border-color: var(--primary); color: var(--bg); font-weight: 700; }
+    .chip.unk { border-style: dashed; }
+    .notes label { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+    .notes textarea { width: 100%; min-height: 8em; resize: vertical; font: 0.85rem/1.5 ui-monospace, monospace; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 8px; padding: 8px; }
+    #notes-saved { margin: 4px 0 0; font-size: 0.78rem; min-height: 1.1em; }
     #note { margin: 8px 0 0; min-height: 1.2em; font-size: 0.82rem; }
     .fast { margin: 0 0 12px; font-size: 0.85rem; }
     .env { margin: 0 0 12px; font-size: 0.85rem; max-width: 100ch; }
@@ -212,6 +227,61 @@
         <p id="note" class="muted" aria-live="polite"></p>
       </section>
     </div>
+    <section class="notes" id="notes" aria-labelledby="notes-h">
+      <h2 id="notes-h">Notes and tips</h2>
+      <p class="legend muted"><span class="chip ok">Confirmed</span> tried on a real iPad with this lab &nbsp; <span class="chip">Reported</span> from a manual or article, not tried here &nbsp; <span class="chip unk">Unknown</span> no good information found &nbsp; <span class="chip">Lab</span> how this page behaves</p>
+      <div class="notes-grid">
+        <article>
+          <h3>Joy-Con (Switch 1)</h3>
+          <ul>
+            <li><span class="chip ok">Confirmed</span>Two paired Joy-Cons merge into one controller, and you can split them again: hold <strong>Capture</strong> (left) and <strong>Home</strong> (right) for about 3 seconds. Do it again to merge.</li>
+            <li><span class="chip">Reported</span>Pair each one separately: hold the small sync button on its rail until the lights sweep, then pick "Joy-Con (L)" or "(R)" under Settings, Bluetooth. Needs iPadOS 16 or later.</li>
+            <li><span class="chip">Lab</span>When Joy-Cons merge or split, controllers disappear and new ones appear. Press a button to register the new one, and use Forget on the grey cards that are left.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>8BitDo SN30 (original, not Pro)</h3>
+          <ul>
+            <li><span class="chip ok">Confirmed</span>Pair it with the iPad using <strong>Start + X</strong>, then choose it under Settings, Bluetooth.</li>
+            <li><span class="chip">Reported</span>This is the Bluetooth SN30. The SNES/SFC 2.4G edition has no Bluetooth (it uses a USB receiver) and will not pair with an iPad.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>8BitDo SN30 Pro</h3>
+          <ul>
+            <li><span class="chip">Reported</span>Hold <strong>B + Start</strong> to turn it on, then hold the pair button for 3 seconds until the lights rotate left to right, then pair "8BitDo SN30 Pro" in Bluetooth. 8BitDo's manual says this is needed the first time only.</li>
+            <li><span class="chip">Reported</span>8BitDo's Apple page mentions D-Input mode for some models. If a pad shows numbered buttons, try the other mode and compare the mapping line in Stats.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>Switch 2 Joy-Con and Pro Controller</h3>
+          <ul>
+            <li><span class="chip unk">Unknown</span>I found no confirmation that these pair with an iPad, and one forum post says a Switch 2 Pro Controller did not work on an iPad Pro.</li>
+            <li><span class="chip">Reported</span>To try: take it off the console and switch the console off, hold its SYNC button until the lights flash, then look under Settings, Bluetooth. If it pairs but the lab never sees it, check Settings, General, Game Controllers: if it is not listed there, Safari cannot see it either.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>Pairing in general</h3>
+          <ul>
+            <li><span class="chip">Reported</span>A controller paired to another device may reconnect there when switched on. Turn Bluetooth off on that device, and hold the controller's pairing button to override the old pairing.</li>
+            <li><span class="chip">Reported</span>If a pairing misbehaves, tap the (i) next to it in Settings, Bluetooth, choose Forget This Device, and pair again.</li>
+            <li><span class="chip">Lab</span>A controller appears here only after you press one of its buttons on this page, and the first to press is P1.</li>
+            <li><span class="chip">Lab</span>Pair two identical controllers one at a time and label them (the iPad lists both under the same name). If both drop and return, the lab may swap their slots: Forget both and register them again in order.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>About this page</h3>
+          <ul>
+            <li><span class="chip">Lab</span>Battery level, signal strength, connection protocol and motion sensors are not available to a web page on an iPad. See "This browser" near the top for why.</li>
+            <li><span class="chip">Lab</span>An open tab keeps the version of the page it loaded. After a new version is deployed, reload to get it.</li>
+            <li><span class="chip">Lab</span>Safari's timestamps for controllers are not on the page's clock, so the report rate here is measured from the page's own polls and can be no finer than they are.</li>
+          </ul>
+        </article>
+      </div>
+      <label for="my-notes">Your notes <span class="muted">(saved on this device only)</span></label>
+      <textarea id="my-notes" placeholder="What you learn while testing: which pad paired how, what the lab showed, anything odd..."></textarea>
+      <p id="notes-saved" class="muted" aria-live="polite"></p>
+    </section>
   </div>
   <script type="module" src="/controller-lab/app.js"></script>
   <script>
