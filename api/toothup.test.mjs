@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, addMonths, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
+  DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
   formatClock, groupByDay, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
   parseImport, rangeStats, reminderStatus,
 } from "../web/toothup/logic.js";
@@ -337,4 +337,12 @@ test("parseNomie: merges idempotently and rejects other files", () => {
   assert.equal(mergeEvents(events, parseNomie(nomie("#floss_teeth", "#mouthwash")).events).added, 0);
   assert.throws(() => parseNomie("{}"), /Not a Nomie export/);
   assert.throws(() => parseNomie("nope"), /Not valid JSON/);
+});
+
+test("backupDue is true once a month has passed since the last backup", () => {
+  assert.equal(backupDue("2026-10-22", "2026-11-21", true), false);
+  assert.equal(backupDue("2026-10-22", "2026-11-22", true), true);
+  assert.equal(backupDue("2026-01-31", "2026-02-28", true), true); // clamped to the end of the shorter month
+  assert.equal(backupDue(null, "2026-11-22", true), true); // data but never backed up
+  assert.equal(backupDue(null, "2026-11-22", false), false); // nothing to back up
 });
