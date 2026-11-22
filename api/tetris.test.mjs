@@ -797,6 +797,17 @@ test("scorecardJson also writes lists of saved scores; filenames carry the mode 
   assert.equal(scorecardFilename({ mode: "hard", startedAt: "2026-11-21T14:30:05.000Z" }), "tetris-hard-20261121-143005.json");
 });
 
+test("the scorecard's moves group names the soft-drop count clearly", () => {
+  const { game, inputLog } = playRound(5);
+  const card = buildScorecard({ game, mode: "practice", garbagePerSecond: 0, ended: "ended", startedAt: 0, inputLog });
+  const moves = scorecardSections(card).find((s) => s.title === "Moves");
+  const labels = moves.items.map(([label]) => label);
+  assert.ok(labels.includes("Soft-drop rows"), "rows fallen while soft drop was held");
+  assert.ok(!labels.includes("Soft rows"), "not the terse old label");
+  assert.equal(moves.items.find(([label]) => label === "Soft-drop rows")[1], String(game.softDrops));
+  assert.equal(new Set(labels).size, labels.length, "no label is used twice");
+});
+
 test("scorecardSections: every group is present, garbage only when there was garbage", () => {
   const { game, inputLog } = playRound(5);
   const practice = buildScorecard({ game, mode: "practice", garbagePerSecond: 0, ended: "ended", startedAt: 0, inputLog });

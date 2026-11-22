@@ -128,7 +128,7 @@ export function scorecardSections(card) {
         ["Spin CW", n(card.moves.spinsCW)],
         ["Left", n(card.moves.left)],
         ["Right", n(card.moves.right)],
-        ["Soft rows", n(card.moves.softDropRows)],
+        ["Soft-drop rows", n(card.moves.softDropRows)],
         ["Hard drops", n(card.moves.hardDrops)],
         ["Swaps", n(card.moves.swaps)],
       ],
