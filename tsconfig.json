@@ -14,6 +14,7 @@
   },
   "include": [
     "api/**/*.ts",
+    "web/blackjack/engine/*.js",
     "web/golden-angle-palette/palette.js",
     "web/tetris/src/game/*.js",
     "web/tetris/src/input/*.js",
