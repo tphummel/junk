@@ -1105,3 +1105,27 @@ test("the notes module is cached for offline use and in the typecheck", () => {
   const ts = readFileSync(new URL("../tsconfig.json", import.meta.url), "utf8");
   assert.match(ts, /web\/controller-lab\/notes\.js/);
 });
+
+// --- hiding things ---------------------------------------------------------------------------------
+
+test("anything the page hides with the hidden attribute still hides when its CSS sets a display value", () => {
+  const dir = new URL("../web/controller-lab/", import.meta.url).pathname;
+  const html = readFileSync(join(dir, "index.html"), "utf8");
+  const css = html.slice(html.indexOf("<style>"), html.indexOf("</style>"));
+  // A rule such as ".views { display: flex }" overrides the hidden attribute, so the element stays visible: the
+  // bug that left the Transcript, Stats and Haptics buttons showing on the All tab.
+  const withDisplay = (cls) => new RegExp(`(^|[\\s,}])\\.${cls}\\s*(,[^{]*)?\\{[^}]*\\bdisplay:`, "m").test(css);
+  const hiddenOverride = (cls) => new RegExp(`\\.${cls}\\[hidden\\]\\s*\\{[^}]*display:\\s*none`).test(css);
+  // Elements in the page source that start hidden, and ones the page script shows and hides.
+  const fromHtml = [...html.matchAll(/<[a-z0-9]+ [^>]*class="([^"]*)"[^>]*\bhidden\b[^>]*>/g)].flatMap((m) => m[1].split(/\s+/));
+  const fromScript = ["axis", "haptics", "views"];
+  const classes = [...new Set([...fromHtml, ...fromScript])];
+  assert.ok(classes.includes("views") && classes.includes("haptics"), "the classes the page hides are checked");
+  for (const cls of classes) {
+    if (withDisplay(cls)) assert.ok(hiddenOverride(cls), `.${cls} sets display, so it needs a .${cls}[hidden] { display: none } rule`);
+  }
+  // And the page does hide the row of views on the All tab.
+  const app = readFileSync(join(dir, "app.js"), "utf8");
+  assert.match(app, /viewsEl\.hidden = tab === 0/);
+  assert.match(css, /\.views\[hidden\]\s*\{\s*display:\s*none/);
+});

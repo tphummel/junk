@@ -104,6 +104,8 @@
     .logpanel { display: flex; flex-direction: column; min-height: 320px; }
     @media (min-width: 1000px) { .logpanel { position: sticky; top: 12px; height: calc(100dvh - 24px); } }
     .tabs, .views { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    /* A display value in a rule beats the hidden attribute, so anything that is shown and hidden needs this. */
+    .views[hidden] { display: none; }
     .tab {
       --c: var(--primary); --ink: var(--bg);
       font: inherit; font-size: 0.85rem; padding: 2px 11px; border: 2px solid var(--c); border-radius: 999px;
