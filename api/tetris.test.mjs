@@ -842,8 +842,51 @@ test("not naturals: equal is not greater, a bit short, and nothing scored", () =
 
 // --- difficulty and garbage ------------------------------------------------------------------------
 
+test("time limit: the piece in play at 2:00 is the last one", () => {
+  const game = createGame(5, { timeLimitSeconds: 120 });
+  assert.equal(game.timeLimitTicks, 7200);
+  game.tick = 7000;
+  slam(game);
+  assert.equal(game.over, false, "pieces set before 2:00 do not end it");
+  game.tick = 7199;
+  const placed = game.piecesPlaced;
+  for (let i = 0; i < 3; i++) step(game, []); // the piece in play at 2:00 is still falling
+  assert.equal(game.over, false, "the clock running out does not end it while a piece is falling");
+  assert.ok(game.tick >= 7200);
+  slam(game);
+  assert.equal(game.over, true);
+  assert.equal(game.timeUp, true);
+  assert.equal(game.piecesPlaced, placed + 1, "the last piece was set and counted");
+});
+
+test("time limit: none by default, and a top-out is not time up", () => {
+  const game = createGame(5);
+  game.tick = 100000;
+  slam(game);
+  assert.equal(game.over, false);
+  assert.equal(game.timeUp, false);
+});
+
+test("time limit: a replay with the same limit ends the same way", () => {
+  const log = [];
+  const game = createGame(9, { timeLimitSeconds: 1 });
+  for (let t = 1; t <= 600 && !game.over; t++) {
+    const actions = t % 20 === 0 ? ["hardDrop"] : [];
+    step(game, actions);
+    for (const action of actions) log.push({ t: game.tick, action });
+  }
+  assert.equal(game.timeUp, true);
+  const again = replay(9, log, game.tick, { timeLimitSeconds: 1 });
+  assert.equal(again.timeUp, true);
+  assert.equal(again.score, game.score);
+  assert.equal(again.piecesPlaced, game.piecesPlaced);
+});
+
 test("difficulties: Practice has no garbage; Easy, Medium and Hard run at a D, B and S rate", () => {
-  assert.deepEqual(DIFFICULTIES.map((d) => d.id), ["practice", "easy", "medium", "hard"]);
+  assert.deepEqual(DIFFICULTIES.map((d) => d.id), ["practice", "timed", "easy", "medium", "hard"]);
+  assert.equal(difficultyById("timed").garbagePerSecond, 0);
+  assert.equal(difficultyById("timed").timeLimitSeconds, 120);
+  assert.equal(difficultyById("practice").timeLimitSeconds, undefined);
   assert.equal(difficultyById("practice").garbagePerSecond, 0);
   assert.equal(gradePerf(1, difficultyById("easy").garbagePerSecond), "D");
   assert.equal(gradePerf(1, difficultyById("medium").garbagePerSecond), "B");
