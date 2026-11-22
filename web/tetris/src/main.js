@@ -10,7 +10,8 @@ import { createGamepad, describeBinding, describePad } from "./input/gamepad.js"
 import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
 import { createEffects } from "./ui/effects.js";
-import { drawBoard, readTheme } from "./ui/render.js";
+import { LETTERS_KEY, loadFlag, saveFlag } from "./ui/prefs.js";
+import { drawBoard, readTheme, setPieceLetters } from "./ui/render.js";
 import { buildScorecard, scorecardFilename, scorecardJson, scorecardSections } from "./ui/scorecard.js";
 import { bestByMode, browserStorage, loadScores, saveScore } from "./ui/scores.js";
 
@@ -110,6 +111,9 @@ let round = newRound(game, mode);
 /** @type {Round[]} */
 const rounds = [];
 const storage = browserStorage();
+/** Whether blocks carry their piece letter: off by default, kept on this device. */
+let pieceLetters = loadFlag(storage, LETTERS_KEY, false);
+setPieceLetters(pieceLetters);
 let bests = bestByMode(loadScores(storage));
 /** @type {{ record: import("./ui/scores.js").ScoreRecord, card: import("./ui/scorecard.js").Scorecard, newBest: boolean, saved: boolean } | null} */
 let lastResult = null;
@@ -220,6 +224,7 @@ function menuFor(/** @type {Screen} */ screenName) {
     return [
       { label: "Resume", run: () => setScreen("playing") },
       { label: "End game", detail: "locks in your score", run: () => finishRound("ended") },
+      { label: `Piece letters: ${pieceLetters ? "on" : "off"}`, detail: "to tell colors apart", run: toggleLetters },
     ];
   }
   if (screenName === "over") {
@@ -231,6 +236,15 @@ function menuFor(/** @type {Screen} */ screenName) {
     ];
   }
   return [];
+}
+
+/** Turn the letter on each block on or off, remember it, and redraw the pause menu to say which. */
+function toggleLetters() {
+  pieceLetters = !pieceLetters;
+  setPieceLetters(pieceLetters);
+  saveFlag(storage, LETTERS_KEY, pieceLetters);
+  menuItems = menuFor("paused");
+  renderMenu();
 }
 
 /** Draw the menu buttons, with the selected one marked. */

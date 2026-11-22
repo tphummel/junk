@@ -16,7 +16,9 @@ import { formatTime, gameSeconds, gradePerf, isNatural, lineRate, naturalNumber,
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
 import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
+import { edgesInPiece, edgesOnBoard, shade } from "../web/tetris/src/ui/colors.js";
 import { createEffects } from "../web/tetris/src/ui/effects.js";
+import { LETTERS_KEY, loadFlag, saveFlag } from "../web/tetris/src/ui/prefs.js";
 import { buildScorecard, SCORECARD_FORMAT, scorecardFilename, scorecardJson, scorecardSections } from "../web/tetris/src/ui/scorecard.js";
 import { bestByMode, loadScores, MAX_SCORES, saveScore, SCORES_KEY } from "../web/tetris/src/ui/scores.js";
 import { createKeyboard } from "../web/tetris/src/input/keyboard.js";
@@ -1234,4 +1236,94 @@ test("service worker PRECACHE lists exactly the page's files, and they all exist
     .map((p) => (p === "index.html" ? "/tetris/" : `/tetris/${p}`));
   const expected = onDisk;
   assert.deepEqual([...listed].sort(), [...expected].sort());
+});
+
+// --- piece look ------------------------------------------------------------------------------------
+
+test("shade moves a color toward white or black and keeps it a valid hex color", () => {
+  assert.equal(shade("#336699", 0), "#336699");
+  assert.equal(shade("#336699", 1), "#FFFFFF");
+  assert.equal(shade("#336699", -1), "#000000");
+  assert.equal(shade("#000000", 0.5), "#808080");
+  assert.equal(shade("#FFFFFF", -0.5), "#808080");
+  assert.equal(shade("#336699", 5), "#FFFFFF", "beyond 1 is still white");
+  const lighter = shade("#20CDEF", 0.4);
+  assert.match(lighter, /^#[0-9A-F]{6}$/);
+  assert.ok(contrastRatio(lighter.slice(1), "000000") > contrastRatio("20CDEF", "000000"), "lighter is lighter");
+  assert.ok(contrastRatio(shade("#20CDEF", -0.3).slice(1), "000000") < contrastRatio("20CDEF", "000000"), "darker is darker");
+});
+
+test("a piece is outlined on the sides that face outside it, never between its own blocks", () => {
+  for (const type of PIECE_TYPES) {
+    for (const rot of [0, 1, 2, 3]) {
+      const cells = pieceCells(type, rot);
+      let outlined = 0;
+      let seams = 0;
+      cells.forEach((_, i) => {
+        const e = edgesInPiece(cells, i);
+        outlined += Object.values(e).filter(Boolean).length;
+        seams += Object.values(e).filter((v) => !v).length;
+      });
+      // Four blocks have 16 sides; each shared side is two of them, and all four blocks join up in a chain of 3 shared sides
+      // (or 4 for the square), so the seams are always twice the shared sides.
+      const shared = seams / 2;
+      assert.ok(Number.isInteger(shared), `${type} ${rot}: seams pair up`);
+      assert.equal(shared, type === "O" ? 4 : 3, `${type} ${rot}: shared sides`);
+      assert.equal(outlined + seams, 16);
+    }
+  }
+  const single = edgesInPiece([[3, 3]], 0);
+  assert.deepEqual(single, { top: true, right: true, bottom: true, left: true });
+  const pair = [[0, 0], [1, 0]];
+  assert.deepEqual(edgesInPiece(pair, 0), { top: true, right: false, bottom: true, left: true });
+  assert.deepEqual(edgesInPiece(pair, 1), { top: true, right: true, bottom: true, left: false });
+});
+
+test("settled blocks are outlined around their whole piece, and blocks of different pieces get their own outline", () => {
+  const board = createBoard();
+  place(board, "O", 0, 0, 20, 1); // a square piece at rows 20-21, columns 0-1
+  place(board, "I", 0, 2, 20, 2); // an I beside it: row 21, columns 2-5
+  assert.deepEqual(edgesOnBoard(board, 20, 0), { top: true, right: false, bottom: false, left: true }, "top-left of the O");
+  assert.deepEqual(edgesOnBoard(board, 21, 1), { top: false, right: true, bottom: true, left: false }, "bottom-right of the O: its right faces the I, a different piece");
+  assert.deepEqual(edgesOnBoard(board, 21, 3), { top: true, right: false, bottom: true, left: false }, "the middle of the I");
+  assert.deepEqual(edgesOnBoard(board, 21, 5), { top: true, right: true, bottom: true, left: false }, "the end of the I, at the wall");
+  // Pieces of the same type but different ids are still different pieces.
+  const two = createBoard();
+  place(two, "O", 0, 0, 20, 1);
+  place(two, "O", 0, 2, 20, 2);
+  assert.equal(edgesOnBoard(two, 20, 1).right, true);
+  assert.equal(edgesOnBoard(two, 20, 2).left, true);
+  // The top row of the board has nothing above it.
+  const edge = createBoard();
+  place(edge, "O", 0, 4, 0, 3);
+  assert.equal(edgesOnBoard(edge, 0, 4).top, true);
+  // Garbage cells each have their own id, so each is outlined on its own.
+  const rubble = createBoard();
+  for (let i = 0; i < 3; i++) rubble[21][i] = { type: "G", pieceId: -1 - i };
+  assert.deepEqual(edgesOnBoard(rubble, 21, 1), { top: true, right: true, bottom: true, left: true });
+});
+
+test("the new piece colors are distinct, bright, and still readable against the board and the optional letters", () => {
+  const colors = Object.values(PIECE_COLORS);
+  assert.equal(new Set(colors).size, 7);
+  for (const c of colors) {
+    // Bright: the enamel look needs colors that stand well clear of the dark stone.
+    assert.ok(contrastRatio(c.slice(1), "1B222B") >= 3, `${c} on the dark board`);
+    assert.ok(contrastRatio(c.slice(1), INK.slice(1)) >= 4.5, `${c} under a letter`);
+  }
+});
+
+test("the piece-letters preference is remembered, and failing storage just means it is not", () => {
+  const storage = fakeStorage();
+  assert.equal(loadFlag(storage, LETTERS_KEY), false, "off until chosen");
+  assert.equal(saveFlag(storage, LETTERS_KEY, true), true);
+  assert.equal(loadFlag(storage, LETTERS_KEY), true);
+  assert.equal(saveFlag(storage, LETTERS_KEY, false), true);
+  assert.equal(loadFlag(storage, LETTERS_KEY), false);
+  assert.equal(loadFlag(null, LETTERS_KEY), false);
+  assert.equal(loadFlag(null, LETTERS_KEY, true), true, "the fallback when there is no storage");
+  assert.equal(saveFlag(null, LETTERS_KEY, true), false);
+  assert.equal(saveFlag({ setItem() { throw new Error("quota"); } }, LETTERS_KEY, true), false);
+  assert.equal(loadFlag({ getItem() { throw new Error("blocked"); } }, LETTERS_KEY, true), true);
+  assert.equal(loadFlag({ getItem: () => "banana" }, LETTERS_KEY, true), true, "an unreadable value falls back");
 });

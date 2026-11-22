@@ -4,6 +4,7 @@ import { COLS, HIDDEN_ROWS, VISIBLE_ROWS } from "../game/board.js";
 import { SQUARE_SIZE as SQUARE_PX } from "../game/squares.js";
 import { pieceCells } from "../game/pieces.js";
 import { landingY } from "../game/state.js";
+import { edgesInPiece, edgesOnBoard, shade } from "./colors.js";
 
 /** @typedef {import("../game/pieces.js").PieceType} PieceType */
 /** @typedef {import("../game/state.js").Game} Game */
@@ -11,18 +12,18 @@ import { landingY } from "../game/state.js";
 /** @typedef {{ board: string, grid: string, text: string }} Theme */
 
 /**
- * Hand-chosen block colors, bright like carved stone inlays. Each is at least 4:1 against both board
- * backgrounds (#2A3440 light, #1B222B dark) and 6:1 against the engraved letter color INK.
+ * Block colors: bright, saturated enamel like the original game. Each is at least 3:1 against both board backgrounds
+ * (#2A3440 light, #1B222B dark) and 4.5:1 against the optional letter color INK.
  * @type {Record<PieceType, string>}
  */
 export const PIECE_COLORS = {
-  I: "#18A1C3",
-  O: "#AC9315",
-  T: "#EA55DE",
-  S: "#15AA21",
-  Z: "#EC6974",
-  J: "#6093EB",
-  L: "#E1781C",
+  I: "#20CDEF",
+  O: "#F6C61A",
+  T: "#D65AF0",
+  S: "#36C650",
+  Z: "#F0504A",
+  J: "#5C8DFF",
+  L: "#FA8F22",
 };
 
 /**
@@ -38,7 +39,7 @@ export const METAL = {
 /** Garbage blocks: a plain grey, 4.9:1 against the board stone and well over 4.5:1 against INK. */
 export const GARBAGE_COLOR = "#9AA3AE";
 
-/** Engraved letter and carved-outline color; a letter on every block keeps color from being the only cue. */
+/** The optional letter on each block (see setPieceLetters), and the garbage hatching. */
 export const INK = "#1A1208";
 
 /** Read the page's current colors from its CSS variables, so the canvas follows light and dark mode. @returns {Theme} */
@@ -64,38 +65,86 @@ export function fitCanvas(canvas) {
   return /** @type {CanvasRenderingContext2D} */ (canvas.getContext("2d"));
 }
 
+/** Whether blocks carry their piece letter. Off by default; it is there for telling colors apart. */
+let pieceLetters = false;
+
+/** Turn the letter on each block on or off. @param {boolean} on */
+export function setPieceLetters(on) {
+  pieceLetters = on;
+}
+
 /**
- * One block: a bright face, a carved inset outline and an engraved letter, lit from the top left.
+ * One block, in the original game's glossy enamel: a bright face that is lighter at the top left and deeper at the bottom
+ * right with a soft shine, faint seams to its neighbors in the same piece, and a light outline along each side that faces
+ * something else, so a whole piece reads as one outlined shape. A letter is added only if pieceLetters is on.
  * @param {CanvasRenderingContext2D} ctx
- * @param {PieceType | "G"} type "G" is a garbage block: grey, hatched, and with no letter
+ * @param {PieceType | "G"} type "G" is a garbage block: grey and hatched, never lettered
  * @param {number} px left
  * @param {number} py top
  * @param {number} size cell size in pixels
  * @param {number} [alpha]
+ * @param {import("./colors.js").Edges} [edges] the sides to outline; all of them if left out
+ * @param {boolean} [ghost] draw as a landing marker: a faint tint and a clear outline, no gloss
  */
-function drawBlock(ctx, type, px, py, size, alpha = 1) {
+function drawBlock(ctx, type, px, py, size, alpha = 1, edges = { top: true, right: true, bottom: true, left: true }, ghost = false) {
+  const base = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
+  if (ghost) {
+    // A faded copy of the piece turns muddy on dark stone, so the landing spot is a light tint with the piece's outline.
+    ctx.save();
+    ctx.globalAlpha = 0.16;
+    ctx.fillStyle = base;
+    ctx.fillRect(px, py, size, size);
+    ctx.globalAlpha = 0.85;
+    const w = Math.max(1.5, size * 0.07);
+    ctx.fillStyle = shade(base, 0.25);
+    if (edges.top) ctx.fillRect(px, py, size, w);
+    if (edges.bottom) ctx.fillRect(px, py + size - w, size, w);
+    if (edges.left) ctx.fillRect(px, py, w, size);
+    if (edges.right) ctx.fillRect(px + size - w, py, w, size);
+    ctx.restore();
+    return;
+  }
+  ctx.save();
   ctx.globalAlpha = alpha;
-  const lw = Math.max(1, size * 0.07);
-  ctx.fillStyle = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
+  const face = ctx.createLinearGradient(px, py, px + size, py + size);
+  face.addColorStop(0, shade(base, 0.38));
+  face.addColorStop(0.5, base);
+  face.addColorStop(1, shade(base, -0.3));
+  ctx.fillStyle = face;
   ctx.fillRect(px, py, size, size);
-  // Bevel: light on the top and left edges, shade on the bottom and right.
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
-  ctx.fillRect(px, py, size, lw);
-  ctx.fillRect(px, py, lw, size);
-  ctx.fillStyle = "rgba(0,0,0,0.4)";
-  ctx.fillRect(px, py + size - lw, size, lw);
-  ctx.fillRect(px + size - lw, py, lw, size);
-  // Carved outline inset from the edge.
-  const inset = size * 0.2;
-  ctx.strokeStyle = INK;
-  ctx.globalAlpha = alpha * 0.55;
-  ctx.lineWidth = lw;
+
+  // A soft shine across the top left.
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.beginPath();
+  ctx.moveTo(px, py);
+  ctx.lineTo(px + size * 0.85, py);
+  ctx.lineTo(px, py + size * 0.85);
+  ctx.closePath();
+  ctx.fill();
+
+  // Faint seams where this block joins another of the same piece (drawn on the right and bottom only, so none is doubled).
+  const lw = Math.max(1.5, size * 0.07);
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  if (!edges.right) ctx.fillRect(px + size - 0.5, py, 1, size);
+  if (!edges.bottom) ctx.fillRect(px, py + size - 0.5, size, 1);
+
+  // The piece's outline, along the sides that face something else.
+  ctx.fillStyle = shade(base, 0.62);
+  if (edges.top) ctx.fillRect(px, py, size, lw);
+  if (edges.bottom) ctx.fillRect(px, py + size - lw, size, lw);
+  if (edges.left) ctx.fillRect(px, py, lw, size);
+  if (edges.right) ctx.fillRect(px + size - lw, py, lw, size);
+
   if (type === "G") {
-    // Hatching instead of a letter: rubble, not a piece.
+    // Hatching: rubble, not a piece.
     ctx.save();
     ctx.beginPath();
+    const inset = size * 0.2;
     ctx.rect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
     ctx.clip();
+    ctx.strokeStyle = INK;
+    ctx.globalAlpha = alpha * 0.5;
+    ctx.lineWidth = lw * 0.8;
     ctx.beginPath();
     for (let k = -size; k < size; k += size * 0.22) {
       ctx.moveTo(px + k, py + size);
@@ -103,17 +152,15 @@ function drawBlock(ctx, type, px, py, size, alpha = 1) {
     }
     ctx.stroke();
     ctx.restore();
-    ctx.globalAlpha = 1;
-    return;
+  } else if (pieceLetters) {
+    ctx.fillStyle = INK;
+    ctx.globalAlpha = alpha * 0.85;
+    ctx.font = `bold ${Math.floor(size * 0.42)}px system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(type, px + size / 2, py + size / 2 + size * 0.03);
   }
-  ctx.strokeRect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = INK;
-  ctx.font = `bold ${Math.floor(size * 0.4)}px system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(type, px + size / 2, py + size / 2 + size * 0.03);
-  ctx.globalAlpha = 1;
+  ctx.restore();
 }
 
 /**
@@ -282,7 +329,7 @@ export function drawBoard(canvas, game, theme, fx, now = 0) {
       if (!cell) return;
       const box = cell.squareId ? squares.get(cell.squareId) : undefined;
       if (box) drawSquareCell(ctx, game.board, r, c, box, size);
-      else drawBlock(ctx, cell.type, c * size, (r - HIDDEN_ROWS) * size, size);
+      else drawBlock(ctx, cell.type, c * size, (r - HIDDEN_ROWS) * size, size, 1, edgesOnBoard(game.board, r, c));
     });
   }
   // A star on gold and a diamond on silver, so the kind never rests on color alone.
@@ -302,14 +349,15 @@ export function drawBoard(canvas, game, theme, fx, now = 0) {
   const p = game.current;
   if (p) {
     const ghostY = /** @type {number} */ (landingY(game));
-    for (const [dx, dy] of pieceCells(p.type, p.rot)) {
+    const cells = pieceCells(p.type, p.rot);
+    cells.forEach(([dx, dy], i) => {
       const ghostRow = ghostY + dy - HIDDEN_ROWS;
-      if (ghostRow >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, ghostRow * size, size, 0.25);
-    }
-    for (const [dx, dy] of pieceCells(p.type, p.rot)) {
+      if (ghostRow >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, ghostRow * size, size, 1, edgesInPiece(cells, i), true);
+    });
+    cells.forEach(([dx, dy], i) => {
       const row = p.y + dy - HIDDEN_ROWS;
-      if (row >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, row * size, size);
-    }
+      if (row >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, row * size, size, 1, edgesInPiece(cells, i));
+    });
   }
   // Garbage owed: a red bar up the left edge, one cell per row about to arrive.
   if (game.garbagePending > 0) {
@@ -340,5 +388,5 @@ export function drawMini(canvas, type, theme, dim = false) {
   const h = Math.max(...ys) - Math.min(...ys) + 1;
   const ox = (canvas.width - w * size) / 2 - Math.min(...xs) * size;
   const oy = (canvas.height - h * size) / 2 - Math.min(...ys) * size;
-  for (const [dx, dy] of cells) drawBlock(ctx, type, ox + dx * size, oy + dy * size, size, dim ? 0.4 : 1);
+  cells.forEach(([dx, dy], i) => drawBlock(ctx, type, ox + dx * size, oy + dy * size, size, dim ? 0.4 : 1, edgesInPiece(cells, i)));
 }
