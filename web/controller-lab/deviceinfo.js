@@ -156,6 +156,7 @@ export function unavailable(env) {
   return [
     { field: "Connection protocol (Bluetooth, USB, wireless dongle)", short: "Protocol", why: `${base}. The controller was paired or plugged in by the operating system, which does not report how to the page.` },
     { field: "Signal strength", short: "Signal strength", why: `${base}. Signal strength belongs to the Bluetooth link, which only the operating system sees.` },
+    { field: "Motion sensors (gyroscope and accelerometer)", short: "Motion", why: `The Gamepad API has no motion fields, so a page cannot read a controller's gyroscope or accelerometer. ${env.webHid ? `${env.browser} has WebHID, which can read some controllers' raw motion reports, but this lab does not use it` : `${env.browser} on ${env.os} has no WebHID to read the raw reports another way`}. Native apps can read motion (on Apple devices through the GameController framework).` },
     { field: "Battery level and charging state", short: "Battery", why: `${base}. Only a native app can read it (on Apple devices through the GameController framework).` },
   ];
 }

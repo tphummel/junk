@@ -11,6 +11,7 @@
 // performance record: how often the device reports, how stale a report is when we see it, and how often we poll.
 
 import { approxBits, parsePadId, unavailable } from "./deviceinfo.js";
+import { classifyResult } from "./haptics.js";
 import { axisName, buttonName } from "./names.js";
 
 /**
@@ -19,7 +20,7 @@ import { axisName, buttonName } from "./names.js";
  *   timestamp?: number,
  *   hand?: string,
  *   displayId?: number,
- *   vibrationActuator?: { type?: string, playEffect?: unknown } | null,
+ *   vibrationActuator?: { type?: string, playEffect?: unknown, reset?: unknown, effects?: ArrayLike<string> } | null,
  *   hapticActuators?: ArrayLike<unknown>,
  *   touches?: ArrayLike<unknown>,
  *   pose?: unknown,
@@ -82,7 +83,8 @@ import { axisName, buttonName } from "./names.js";
  * @property {number | null} connectedSince when the current connected stretch began, or null while disconnected
  * @property {string} hand
  * @property {number | null} displayId
- * @property {{ type: string, playEffect: boolean } | null} vibration the vibration actuator, if the browser shows one
+ * @property {{ type: string, playEffect: boolean, reset: boolean, effects: string[] | null } | null} vibration the vibration actuator, if the browser shows one
+ * @property {{ tests: number, complete: number, preempted: number, failed: number, last: { effect: string, result: string, text: string } | null }} haptics the vibration tests run from the page
  * @property {number} hapticActuators the older haptics list (Firefox)
  * @property {number} touchesMax most touch points seen at once (a touchpad)
  * @property {boolean} pose whether a pose (motion tracking) was ever present
@@ -128,6 +130,7 @@ import { axisName, buttonName } from "./names.js";
  *   | { type: "button", index: number, name: string, state: "down", value: number, count: number, sinceLast: number | null, ts?: number, age?: number }
  *   | { type: "button", index: number, name: string, state: "up", value: number, heldMs: number | null, ts?: number, age?: number }
  *   | { type: "axis", index: number, name: string, value: number, change: number, ts?: number, age?: number }
+ *   | { type: "haptic", effect: string, strong: number, weak: number, left: number, right: number, startDelay: number, duration: number, result: string, tookMs: number, label: string }
  * )} LogEvent
  */
 
@@ -170,7 +173,8 @@ const makeAxisStats = (v) => ({ min: Infinity, max: -Infinity, last: v, events: 
 /** @param {PadLike} p @param {number} t @returns {Info} */
 const makeInfo = (p, t) => ({
   identity: parsePadId(p.id), connects: 1, disconnects: 0, connectedMs: 0, connectedSince: t, hand: "", displayId: null,
-  vibration: null, hapticActuators: 0, touchesMax: 0, pose: false, touchable: new Set(), analog: new Set(),
+  vibration: null, haptics: { tests: 0, complete: 0, preempted: 0, failed: 0, last: null },
+  hapticActuators: 0, touchesMax: 0, pose: false, touchable: new Set(), analog: new Set(),
   axisLast: [], axisSmallest: [], axisSteps: [],
 });
 
@@ -180,7 +184,7 @@ function observeDevice(s, p) {
   if (p.hand) i.hand = p.hand;
   if (typeof p.displayId === "number" && p.displayId) i.displayId = p.displayId;
   const va = p.vibrationActuator;
-  if (va) i.vibration = { type: va.type ?? "unknown", playEffect: typeof va.playEffect === "function" };
+  if (va) i.vibration = { type: va.type ?? "unknown", playEffect: typeof va.playEffect === "function", reset: typeof va.reset === "function", effects: va.effects ? Array.from(va.effects) : null };
   if (p.hapticActuators && p.hapticActuators.length) i.hapticActuators = p.hapticActuators.length;
   if (p.touches && p.touches.length > i.touchesMax) i.touchesMax = p.touches.length;
   if (p.pose) i.pose = true;
@@ -270,6 +274,7 @@ export function summarize(s, now) {
       hand: i.hand || null,
       displayId: i.displayId,
       vibration: i.vibration,
+      haptics: { ...i.haptics },
       hapticActuators: i.hapticActuators,
       touchesMax: i.touchesMax,
       pose: i.pose,
@@ -585,6 +590,37 @@ export function createRegistry(options = {}) {
     forget(slot) {
       const i = slots.findIndex((s) => s.slot === slot);
       if (i >= 0) slots.splice(i, 1);
+    },
+
+    /**
+     * Record a vibration test run from the page in a controller's transcript. It is something the page did to the
+     * controller, not something the controller did, so it does not count as an input or change the idle time.
+     * @param {number} slot
+     * @param {number} now registry clock reading, ms
+     * @param {number} frame
+     * @param {Omit<import("./haptics.js").StepResult, "effect"> & { effect: string, label?: string }} r
+     * @returns {boolean} whether it was recorded (false for an unknown controller)
+     */
+    logHaptic(slot, now, frame, r) {
+      const s = slots.find((x) => x.slot === slot);
+      if (!s) return false;
+      const t = round(now - origin, 1);
+      // Stopping (a reset) is written in the transcript but is not a test of the motors, so it is not counted.
+      if (r.effect !== "reset") {
+        const kind = classifyResult(r.result);
+        s.info.haptics[kind]++;
+        s.info.haptics.tests++;
+        const text = `${r.effect} ${r.effect === "trigger-rumble" ? `L ${(r.left ?? 0).toFixed(2)} R ${(r.right ?? 0).toFixed(2)}` : `strong ${(r.strong ?? 0).toFixed(2)} weak ${(r.weak ?? 0).toFixed(2)}`} for ${r.duration} ms: ${r.result}`;
+        s.info.haptics.last = { effect: r.effect, result: r.result, text };
+      }
+      /** @type {LogEvent} */
+      const ev = {
+        t, frame, slot, gap: s.lastEventAt === null ? null : round(t - s.lastEventAt, 1), type: "haptic", effect: r.effect,
+        strong: r.strong ?? 0, weak: r.weak ?? 0, left: r.left ?? 0, right: r.right ?? 0, startDelay: r.startDelay ?? 0,
+        duration: r.duration, result: r.result, tookMs: r.tookMs, label: r.label ?? "",
+      };
+      record(s, ev);
+      return true;
     },
 
     /**

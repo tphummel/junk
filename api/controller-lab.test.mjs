@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { test } from "node:test";
+import { classifyResult, clamp01, describeHaptics, effectParams, EFFECT_TYPES, MAX_DELAY_MS, MAX_DURATION_MS, playSteps, PRESETS, stopHaptics } from "../web/controller-lab/haptics.js";
 import { approxBits, clock, describeEnvironment, parsePadId, unavailable } from "../web/controller-lab/deviceinfo.js";
 import { axisName, buttonName } from "../web/controller-lab/names.js";
 import { createRegistry, exportJson, summarize } from "../web/controller-lab/registry.js";
@@ -588,12 +589,19 @@ test("the environment is read from the user agent, with an iPad that calls itsel
 test("what a browser cannot report is stated, with a reason that fits that browser", () => {
   const ipad = describeEnvironment({ userAgent: "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 Version/17.4 Mobile/15E148 Safari/604.1", maxTouchPoints: 5 });
   const na = unavailable(ipad);
-  assert.deepEqual(na.map((n) => n.short), ["Protocol", "Signal strength", "Battery"]);
-  assert.ok(na.every((n) => /Safari's engine/.test(n.why) && /neither Web Bluetooth nor WebHID/.test(n.why)), "the iPad reason");
+  assert.deepEqual(na.map((n) => n.short), ["Protocol", "Signal strength", "Motion", "Battery"]);
+  const radio = na.filter((n) => n.short !== "Motion");
+  assert.ok(radio.every((n) => /Safari's engine/.test(n.why) && /neither Web Bluetooth nor WebHID/.test(n.why)), "the iPad reason");
+  const motion = na.find((n) => n.short === "Motion");
+  assert.match(motion.why, /no motion fields/);
+  assert.match(motion.why, /no WebHID/, "an iPad has no WebHID to read raw reports");
+  assert.match(motion.why, /GameController framework/);
   const chrome = describeEnvironment({ userAgent: "Mozilla/5.0 (Windows NT 10.0) Chrome/124.0.0.0 Safari/537.36", bluetooth: {} });
-  assert.ok(unavailable(chrome).every((n) => /has Web Bluetooth/.test(n.why) && /does not use it/.test(n.why)), "a browser that could, but this lab does not");
+  assert.ok(unavailable(chrome).filter((n) => n.short !== "Motion").every((n) => /has Web Bluetooth/.test(n.why) && /does not use it/.test(n.why)), "a browser that could, but this lab does not");
+  const chromeHid = describeEnvironment({ userAgent: "Mozilla/5.0 (Windows NT 10.0) Chrome/124.0.0.0 Safari/537.36", hid: {} });
+  assert.match(unavailable(chromeHid).find((n) => n.short === "Motion").why, /has WebHID.*does not use it/, "WebHID could read motion, but the lab does not use it");
   const firefox = describeEnvironment({ userAgent: "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" });
-  assert.ok(unavailable(firefox).every((n) => /no Web Bluetooth or WebHID/.test(n.why)));
+  assert.ok(unavailable(firefox).filter((n) => n.short !== "Motion").every((n) => /no Web Bluetooth or WebHID/.test(n.why)));
 });
 
 test("clock and approxBits", () => {
@@ -616,7 +624,7 @@ test("the registry notes the device's identity, haptics, touch points, pose and 
   const d = summarize(reg.slots[0], 20).device;
   assert.equal(d.identity.productName, "Switch Pro Controller");
   assert.equal(d.hand, "right");
-  assert.deepEqual(d.vibration, { type: "dual-rumble", playEffect: true });
+  assert.deepEqual(d.vibration, { type: "dual-rumble", playEffect: true, reset: false, effects: null });
   assert.equal(d.touchesMax, 2);
   assert.equal(d.pose, true);
   assert.equal(summarize(reg.slots[0], 20).controls.buttons, 17);
@@ -692,7 +700,8 @@ test("the summary text lists the device, the connection, and what cannot be read
   assert.match(text, /Id as reported\s+Pro Controller \(STANDARD GAMEPAD Vendor: 057e Product: 2009\)/);
   assert.match(text, /Mapping\s+standard/);
   assert.match(text, /Analog buttons\s+LT/);
-  assert.match(text, /Vibration\s+dual-rumble, can be played from a page/);
+  assert.match(text, /Actuator\s+dual-rumble; playEffect yes; reset no; effects not listed by this browser/);
+  assert.match(text, /Tests run\s+none yet/);
   assert.match(text, /connected for 0:02 this time/);
   assert.match(text, /Protocol\s+NOT AVAILABLE: iPadOS gives web pages only the Gamepad API/);
   assert.match(text, /Signal strength\s+NOT AVAILABLE/);
@@ -708,7 +717,7 @@ test("the export carries the browser and the list of what it could not report", 
   const env = describeEnvironment({ userAgent: "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" });
   const data = JSON.parse(exportJson(reg.toExport({ startedAt: "S", exportedAt: "E", now: 50, environment: env })));
   assert.equal(data.environment.browser, "Firefox 125");
-  assert.equal(data.notAvailableInThisBrowser.length, 3);
+  assert.equal(data.notAvailableInThisBrowser.length, 4);
   assert.ok(data.pads[0].device.identity.raw);
   assert.equal(data.pads[0].connection.connects, 1);
   assert.equal(data.pads[0].controls.axes, 4);
@@ -811,4 +820,194 @@ test("polls that see nothing change are not counted as reports", () => {
   const s = summarize(reg.slots[0], 500);
   assert.equal(s.report.avgMs, 8, "changes arrive every 8 ms");
   assert.equal(s.report.approxHz, 125);
+});
+
+// --- haptics ---------------------------------------------------------------------------------------
+
+/** A fake vibration actuator that records what it was asked to play. `results` is what each call resolves with. */
+function fakeActuator({ results = [], throws = null, withReset = true, effects } = {}) {
+  const calls = [];
+  const a = {
+    type: "dual-rumble",
+    calls,
+    async playEffect(type, params) {
+      calls.push({ type, params });
+      if (throws) throw throws;
+      return results.shift() ?? "complete";
+    },
+  };
+  if (withReset) a.reset = async () => { calls.push({ reset: true }); return "complete"; };
+  if (effects) a.effects = effects;
+  return a;
+}
+
+test("effect parameters are in the spec's shape, with out-of-range numbers brought into range", () => {
+  assert.deepEqual(effectParams({ effect: "dual-rumble", duration: 300, strong: 0.8, weak: 0.4 }), { startDelay: 0, duration: 300, strongMagnitude: 0.8, weakMagnitude: 0.4 });
+  assert.deepEqual(effectParams({ effect: "dual-rumble", duration: 99999, strong: 7, weak: -2, startDelay: 5000 }), { startDelay: MAX_DELAY_MS, duration: MAX_DURATION_MS, strongMagnitude: 1, weakMagnitude: 0 });
+  assert.deepEqual(effectParams({ effect: "dual-rumble", duration: Number.NaN, strong: Number.NaN }), { startDelay: 0, duration: 0, strongMagnitude: 0, weakMagnitude: 0 }, "unusable numbers become zero");
+  const trig = effectParams({ effect: "trigger-rumble", duration: 400, left: 1, right: 0.25 });
+  assert.deepEqual([trig.leftTrigger, trig.rightTrigger, trig.strongMagnitude], [1, 0.25, 0]);
+  assert.equal(effectParams({ effect: "dual-rumble", duration: 1, left: 1 }).leftTrigger, undefined, "dual-rumble carries no trigger fields");
+  assert.equal(clamp01(0.5), 0.5);
+  assert.deepEqual(EFFECT_TYPES.slice(), ["dual-rumble", "trigger-rumble"]);
+});
+
+test("the presets are valid and each does what its name says", () => {
+  assert.deepEqual(PRESETS.map((p) => p.id), ["tap", "strong", "weak", "pulses", "ramp", "triggers"]);
+  for (const p of PRESETS) {
+    assert.ok(p.steps.length >= 1, p.id);
+    for (const st of p.steps) {
+      const params = effectParams(st);
+      assert.ok(params.duration > 0 && params.duration <= MAX_DURATION_MS, `${p.id} duration`);
+      assert.ok(EFFECT_TYPES.includes(st.effect), `${p.id} effect`);
+    }
+  }
+  const by = (id) => PRESETS.find((p) => p.id === id);
+  assert.deepEqual([by("strong").steps[0].strong, by("strong").steps[0].weak], [1, 0], "only the strong motor");
+  assert.deepEqual([by("weak").steps[0].strong, by("weak").steps[0].weak], [0, 1], "only the weak motor");
+  assert.equal(by("pulses").steps.length, 3);
+  assert.ok(by("pulses").steps.every((st) => st.gapAfter > 0));
+  const ramp = by("ramp").steps.map((st) => st.strong);
+  assert.deepEqual(ramp, [...ramp].sort((a, b) => a - b), "the ramp only goes up");
+  assert.equal(ramp.at(-1), 1);
+  assert.deepEqual(by("triggers").steps.map((st) => [st.left, st.right]), [[1, 0], [0, 1]]);
+});
+
+test("steps play in order, one after another, with the gaps between them", async () => {
+  const actuator = fakeActuator();
+  const sleeps = [];
+  let now = 0;
+  const seen = [];
+  const results = await playSteps(actuator, PRESETS.find((p) => p.id === "pulses").steps, {
+    sleep: async (ms) => { sleeps.push(ms); now += ms; },
+    clock: () => (now += 10),
+    onResult: (r) => seen.push(r.result),
+  });
+  assert.equal(actuator.calls.length, 3);
+  assert.ok(actuator.calls.every((c) => c.type === "dual-rumble" && c.params.strongMagnitude === 1));
+  assert.deepEqual(results.map((r) => r.result), ["complete", "complete", "complete"]);
+  assert.deepEqual(seen, ["complete", "complete", "complete"], "each result is reported as it arrives");
+  assert.deepEqual(sleeps, [150, 150, 150], "a gap after each pulse");
+  assert.ok(results.every((r) => r.tookMs === 10), "each took what the clock said");
+});
+
+test("a newer effect replacing the old one is reported, not hidden", async () => {
+  const actuator = fakeActuator({ results: ["preempted", "complete"] });
+  const r = await playSteps(actuator, [{ effect: "dual-rumble", duration: 100, strong: 1 }, { effect: "dual-rumble", duration: 100, strong: 1 }]);
+  assert.deepEqual(r.map((x) => x.result), ["preempted", "complete"]);
+  assert.deepEqual(["complete", "preempted", "invalid-parameter", "not-ready", "unsupported", "error: NotSupportedError"].map(classifyResult), ["complete", "preempted", "failed", "failed", "failed", "failed"]);
+});
+
+test("an actuator that throws, or no actuator, gives a result instead of breaking the run", async () => {
+  const err = Object.assign(new Error("not allowed"), { name: "NotAllowedError" });
+  const r = await playSteps(fakeActuator({ throws: err }), [{ effect: "dual-rumble", duration: 50, strong: 1 }]);
+  assert.equal(r[0].result, "error: NotAllowedError (not allowed)");
+  assert.equal((await playSteps(null, [{ effect: "dual-rumble", duration: 50, strong: 1 }]))[0].result, "unsupported");
+  assert.equal((await playSteps({}, [{ effect: "dual-rumble", duration: 50, strong: 1 }]))[0].result, "unsupported", "an actuator with no playEffect");
+});
+
+test("stopping calls reset, and says so when it cannot", async () => {
+  const a = fakeActuator();
+  assert.equal(await stopHaptics(a), "complete");
+  assert.deepEqual(a.calls, [{ reset: true }]);
+  assert.equal(await stopHaptics(fakeActuator({ withReset: false })), "unsupported");
+  assert.equal(await stopHaptics(null), "unsupported");
+  assert.equal(await stopHaptics({ reset: async () => { throw Object.assign(new Error("x"), { name: "InvalidStateError" }); } }), "error: InvalidStateError");
+});
+
+test("what the browser offers is described in plain terms", () => {
+  const none = describeHaptics(null);
+  assert.deepEqual([none.present, none.canPlay, none.effects], [false, false, null]);
+  assert.match(none.summary, /No vibration actuator is exposed/);
+  assert.match(describeHaptics(null, 2).summary, /older hapticActuators list \(2\)/);
+  const some = describeHaptics(fakeActuator({ effects: ["dual-rumble", "trigger-rumble"] }));
+  assert.deepEqual([some.present, some.type, some.canPlay, some.canReset, some.effects], [true, "dual-rumble", true, true, ["dual-rumble", "trigger-rumble"]]);
+  assert.match(some.summary, /effects listed: dual-rumble, trigger-rumble/);
+  assert.match(describeHaptics(fakeActuator()).summary, /effects not listed by this browser/);
+  assert.match(describeHaptics(fakeActuator({ withReset: false })).summary, /reset no/);
+});
+
+test("a vibration test is recorded in the controller's transcript, as something done to it and not an input", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 100);
+  tick(reg, [pad(0)], 150);
+  const before = summarize(reg.slots[0], 400).inputs;
+  assert.equal(reg.logHaptic(1, 400, 9, { effect: "dual-rumble", strong: 1, weak: 0.5, duration: 300, startDelay: 0, result: "complete", tookMs: 305.2, label: "Tap" }), true);
+  const ev = reg.slots[0].log.at(-1);
+  assert.deepEqual([ev.type, ev.effect, ev.strong, ev.weak, ev.duration, ev.result, ev.tookMs, ev.label, ev.t], ["haptic", "dual-rumble", 1, 0.5, 300, "complete", 305.2, "Tap", 400]);
+  assert.equal(ev.gap, 250, "since the controller's last input");
+  assert.equal(reg.events.at(-1), ev, "also in the combined log");
+  const after = summarize(reg.slots[0], 400);
+  assert.deepEqual(after.inputs, before, "not counted as an input");
+  assert.equal(after.inputs.idleMs, 250, "and idle time is not reset by it");
+  assert.equal(reg.logHaptic(7, 400, 9, { effect: "dual-rumble", duration: 1, result: "complete", tookMs: 1 }), false, "an unknown controller");
+});
+
+test("haptic tests are counted by how they went, and the last one is remembered", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 10);
+  const log = (result, extra = {}) => reg.logHaptic(1, 20, 1, { effect: "dual-rumble", strong: 1, weak: 1, duration: 100, result, tookMs: 100, ...extra });
+  log("complete"); log("complete"); log("preempted"); log("error: NotSupportedError"); log("unsupported");
+  log("complete", { effect: "trigger-rumble", left: 1, right: 0.5, duration: 400 });
+  const h = summarize(reg.slots[0], 30).device.haptics;
+  assert.deepEqual([h.tests, h.complete, h.preempted, h.failed], [6, 3, 1, 2]);
+  assert.equal(h.last.text, "trigger-rumble L 1.00 R 0.50 for 400 ms: complete");
+  // Clearing the log keeps the counts (they are statistics), like the input counts do.
+  reg.clearLog();
+  assert.equal(summarize(reg.slots[0], 40).device.haptics.tests, 6);
+});
+
+test("pausing the log stops haptic tests being recorded in the transcript but they are still counted", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 10);
+  reg.recording = false;
+  const n = reg.slots[0].log.length;
+  reg.logHaptic(1, 20, 1, { effect: "dual-rumble", strong: 1, weak: 1, duration: 100, result: "complete", tookMs: 100 });
+  assert.equal(reg.slots[0].log.length, n);
+  assert.equal(summarize(reg.slots[0], 30).device.haptics.tests, 1);
+});
+
+test("transcript lines and the text report show haptic tests", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 10);
+  reg.logHaptic(1, 500, 5, { effect: "dual-rumble", strong: 1, weak: 0.25, duration: 300, startDelay: 100, result: "complete", tookMs: 412.5, label: "Strong motor" });
+  reg.logHaptic(1, 900, 6, { effect: "trigger-rumble", left: 1, right: 0, duration: 400, result: "preempted", tookMs: 50 });
+  const [, , one, two] = reg.slots[0].log;
+  assert.match(formatEvent(one), /HAPTIC\s+\[Strong motor\] dual-rumble\s+strong 1\.00 weak 0\.25\s+for 300 ms, after 100 ms\s+->\s+complete\s+\(took 412\.5 ms\)/);
+  assert.match(formatEvent(two), /HAPTIC\s+trigger-rumble\s+triggers L 1\.00 R 0\.00\s+for 400 ms\s+->\s+preempted/);
+  const text = summaryText(summarize(reg.slots[0], 1000));
+  assert.match(text, /HAPTICS/);
+  assert.match(text, /Actuator\s+none exposed by this browser/);
+  assert.match(text, /Tests run\s+2: 1 played to the end, 1 replaced by a newer effect, 0 failed/);
+  assert.match(text, /Last test\s+trigger-rumble L 1\.00 R 0\.00 for 400 ms: preempted/);
+});
+
+test("the export carries the haptic counts, and Motion is among what cannot be read", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 10);
+  reg.logHaptic(1, 20, 1, { effect: "dual-rumble", strong: 1, weak: 1, duration: 100, result: "complete", tookMs: 100 });
+  const env = describeEnvironment({ userAgent: "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 Version/17.4 Mobile/15E148 Safari/604.1", maxTouchPoints: 5 });
+  const data = JSON.parse(exportJson(reg.toExport({ startedAt: "S", exportedAt: "E", now: 50, environment: env })));
+  assert.equal(data.pads[0].device.haptics.tests, 1);
+  assert.ok(data.pads[0].transcript.some((e) => e.type === "haptic" && e.result === "complete"));
+  assert.ok(data.notAvailableInThisBrowser.some((n) => /Motion sensors/.test(n.field)));
+});
+
+test("stopping is written in the transcript but is not counted as a test of the motors", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 10);
+  reg.logHaptic(1, 20, 1, { effect: "dual-rumble", strong: 1, weak: 1, duration: 100, result: "complete", tookMs: 100 });
+  reg.logHaptic(1, 30, 2, { effect: "reset", strong: 0, weak: 0, duration: 0, result: "complete", tookMs: 0, label: "Stop" });
+  const h = summarize(reg.slots[0], 40).device.haptics;
+  assert.equal(h.tests, 1, "only the real test counts");
+  assert.equal(h.last.effect, "dual-rumble", "and it is still the last test");
+  const stop = reg.slots[0].log.at(-1);
+  assert.equal(stop.effect, "reset");
+  assert.match(formatEvent(stop), /HAPTIC\s+\[Stop\] reset/);
 });

@@ -3,6 +3,7 @@
 // measuring, live in registry.js; the text is made in transcript.js. This file only reads pads and touches the DOM.
 
 import { clock, describeEnvironment, unavailable } from "./deviceinfo.js";
+import { describeHaptics, playSteps, PRESETS, stopHaptics } from "./haptics.js";
 import { buttonName } from "./names.js";
 import { createRegistry, exportJson, summarize } from "./registry.js";
 import { controllerReport, duration, summaryText, transcriptText } from "./transcript.js";
@@ -65,7 +66,7 @@ function buildCard(s) {
     <div class="tools">
       <button class="tool" type="button" data-act="transcript" title="Show this controller's transcript">Log</button>
       <button class="tool quiet" type="button" data-act="stats">Stats</button>
-      <button class="tool quiet" type="button" data-act="identify">Identify</button>
+      <button class="tool quiet" type="button" data-act="haptics" title="Test this controller's vibration">Haptics</button>
       <button class="tool quiet" type="button" data-act="forget">Forget</button>
     </div>`;
   const q = (/** @type {string} */ sel) => /** @type {HTMLElement} */ (root.querySelector(sel));
@@ -98,7 +99,7 @@ function buildCard(s) {
   }
   root.addEventListener("click", (e) => {
     const act = /** @type {HTMLElement} */ (e.target).dataset?.act;
-    if (act === "identify") identify(s.slot);
+    if (act === "haptics") show(s.slot, "haptics");
     else if (act === "forget") forget(s.slot);
     else if (act === "transcript") show(s.slot, "transcript");
     else if (act === "stats") show(s.slot, "stats");
@@ -106,21 +107,43 @@ function buildCard(s) {
   return { root, buttons, axisRows, axisBars, axisText, meta: q(".meta"), devinfo: q(".devinfo"), state: q(".state"), last: q(".last"), perf: q(".perf"), perfSummary: q(".perfsum"), built: `${s.nButtons}x${s.nAxes}:${s.mapping}` };
 }
 
-/** Rumble the controller (where the browser supports it) and flash its card, to see which one is which. @param {number} slot */
-function identify(slot) {
+/** The vibration actuator the browser exposes for a registered controller right now, or null. @param {Slot} s */
+function liveActuator(s) {
+  const pad = s.index === null ? null : readPads()[s.index];
+  return /** @type {any} */ (pad)?.vibrationActuator ?? null;
+}
+
+/** What each controller's haptics panel has shown, newest first. @type {Map<number, string[]>} */
+const hapticLines = new Map();
+
+/**
+ * Play steps on a controller, record each result in its transcript and in the panel's results.
+ * @param {number} slot
+ * @param {import("./haptics.js").Step[]} steps
+ * @param {string} label what the user pressed, for the log
+ */
+async function runHaptics(slot, steps, label) {
   const s = registry.slots.find((x) => x.slot === slot);
+  if (!s) return;
+  await playSteps(liveActuator(s), steps, {
+    onResult: (r) => {
+      registry.logHaptic(slot, performance.now(), frame, { ...r, label });
+      const line = `${(((performance.now() - t0) / 1000)).toFixed(3)}s  [${label}] ${r.effect === "trigger-rumble" ? `triggers L ${(r.left ?? 0).toFixed(2)} R ${(r.right ?? 0).toFixed(2)}` : `strong ${(r.strong ?? 0).toFixed(2)} weak ${(r.weak ?? 0).toFixed(2)}`}, ${r.duration} ms -> ${r.result}`;
+      hapticLines.set(slot, [line, ...(hapticLines.get(slot) ?? [])].slice(0, 40));
+      renderHaptics();
+      renderMain(true);
+    },
+  });
+}
+
+/** Flash a card and give the controller a short buzz, to see which one is which. @param {number} slot */
+function identify(slot) {
   const card = cards.get(slot);
-  if (!s || !card) return;
+  if (!card) return;
   card.root.classList.add("flash");
   setTimeout(() => card.root.classList.remove("flash"), 700);
-  const pad = s.index === null ? null : readPads()[s.index];
-  /** @type {any} */
-  const actuator = pad && /** @type {any} */ (pad).vibrationActuator;
-  if (actuator?.playEffect) {
-    actuator.playEffect("dual-rumble", { startDelay: 0, duration: 400, weakMagnitude: 1, strongMagnitude: 1 }).catch(() => {});
-  } else {
-    note(`P${slot}: this browser cannot rumble the controller; its card flashed instead.`);
-  }
+  const tap = /** @type {import("./haptics.js").Step[]} */ (PRESETS.find((p) => p.id === "tap")?.steps ?? []);
+  void runHaptics(slot, tap, "Identify");
 }
 
 /** @param {number} slot */
@@ -264,6 +287,11 @@ function refreshText(hz) {
   }
 }
 
+/** Keep the haptics panel's capability text fresh while it is showing. */
+function refreshHaptics() {
+  if (!$("haptics").hidden) renderHaptics();
+}
+
 // --- what this browser can tell us ----------------------------------------------------------------
 
 /** The "This browser" panel: what we are running in, which APIs exist, and what no page can learn here, and why. */
@@ -305,12 +333,12 @@ function renderEnvironment() {
 
 /** Which transcript is showing: 0 is everyone, otherwise a player number. */
 let tab = 0;
-/** @type {"transcript" | "stats"} */
+/** @type {"transcript" | "stats" | "haptics"} */
 let view = "transcript";
 let lastRenderKey = "";
 let lastRenderAt = 0;
 
-/** @param {number} slot @param {"transcript" | "stats"} v */
+/** @param {number} slot @param {"transcript" | "stats" | "haptics"} v */
 function show(slot, v) {
   tab = slot;
   view = v;
@@ -344,6 +372,7 @@ function renderTabs() {
   $("reset-stats").hidden = view !== "stats" || tab === 0;
   $("view-transcript").setAttribute("aria-selected", String(view === "transcript" || tab === 0));
   $("view-stats").setAttribute("aria-selected", String(view === "stats" && tab !== 0));
+  $("view-haptics").setAttribute("aria-selected", String(view === "haptics" && tab !== 0));
 }
 $("reset-stats").addEventListener("click", () => {
   if (tab && registry.resetStats(tab)) {
@@ -353,6 +382,7 @@ $("reset-stats").addEventListener("click", () => {
 });
 $("view-transcript").addEventListener("click", () => show(tab, "transcript"));
 $("view-stats").addEventListener("click", () => show(tab, "stats"));
+$("view-haptics").addEventListener("click", () => show(tab, "haptics"));
 
 /** How many transcript lines to show, 0 for all. */
 const limit = () => Number(/** @type {{ value: string }} */ (/** @type {unknown} */ (document.getElementById("limit"))).value);
@@ -378,6 +408,14 @@ function mainText(now) {
 function renderMain(force = false) {
   const now = performance.now();
   const s = currentSlot();
+  const haptics = Boolean(s) && view === "haptics";
+  $("haptics").hidden = !haptics;
+  transcriptEl.hidden = haptics;
+  if (haptics) {
+    $("thead").hidden = true;
+    renderHaptics();
+    return;
+  }
   const count = s ? s.log.length : registry.events.length;
   const key = `${tab}|${view}|${limit()}|${count}|${registry.dropped}|${s ? s.logDropped : 0}`;
   const stats = tab !== 0 && view === "stats";
@@ -391,6 +429,92 @@ function renderMain(force = false) {
   $("thead").hidden = stats;
   $("thead").textContent = s ? "     time        gap  event" : "     time        gap  player  event";
   if (!stats && follow() && (atEnd || force)) transcriptEl.scrollTop = transcriptEl.scrollHeight;
+}
+
+// --- the haptics panel -----------------------------------------------------------------------------
+
+const input = (/** @type {string} */ id) => /** @type {{ value: string, disabled: boolean }} */ (/** @type {unknown} */ (document.getElementById(id)));
+
+/** Update what the haptics panel says: the browser's capabilities for this controller, the results, which sliders apply. */
+function renderHaptics() {
+  const s = currentSlot();
+  if (!s) return;
+  const actuator = liveActuator(s);
+  const legacy = /** @type {any} */ (s.index === null ? null : readPads()[s.index])?.hapticActuators?.length ?? 0;
+  const d = describeHaptics(actuator, legacy);
+  $("hap-status").textContent = `P${s.slot}: ${d.summary}${s.connected ? "" : " (disconnected right now)"}`;
+  const triggers = input("hap-effect").value === "trigger-rumble";
+  for (const id of ["hap-left", "hap-right"]) {
+    input(id).disabled = !triggers;
+    document.getElementById(id)?.closest("label")?.classList.toggle("off", !triggers);
+  }
+  for (const id of ["hap-strong", "hap-weak"]) document.getElementById(id)?.closest("label")?.classList.toggle("off", false);
+  const lines = hapticLines.get(s.slot) ?? [];
+  const list = $("hap-results");
+  list.replaceChildren(
+    ...(lines.length
+      ? lines.map((line) => {
+          const li = document.createElement("li");
+          li.textContent = line;
+          return li;
+        })
+      : [Object.assign(document.createElement("li"), { textContent: "Nothing played yet. Press Play, or choose a preset." })]),
+  );
+}
+
+/** The sliders as a step to play. @returns {import("./haptics.js").Step} */
+function stepFromControls() {
+  const effect = input("hap-effect").value === "trigger-rumble" ? "trigger-rumble" : "dual-rumble";
+  return {
+    effect,
+    strong: Number(input("hap-strong").value),
+    weak: Number(input("hap-weak").value),
+    left: Number(input("hap-left").value),
+    right: Number(input("hap-right").value),
+    duration: Number(input("hap-duration").value),
+    startDelay: Number(input("hap-delay").value),
+  };
+}
+
+/** Keep each slider's number beside it in step with the slider. */
+for (const [id, fmt] of /** @type {[string, (v: string) => string][]} */ ([
+  ["hap-strong", (v) => Number(v).toFixed(2)], ["hap-weak", (v) => Number(v).toFixed(2)],
+  ["hap-left", (v) => Number(v).toFixed(2)], ["hap-right", (v) => Number(v).toFixed(2)],
+  ["hap-duration", (v) => `${v} ms`], ["hap-delay", (v) => `${v} ms`],
+])) {
+  document.getElementById(id)?.addEventListener("input", () => {
+    $(`${id}-o`).textContent = fmt(input(id).value);
+  });
+}
+document.getElementById("hap-effect")?.addEventListener("change", renderHaptics);
+
+$("hap-play").addEventListener("click", () => {
+  const s = currentSlot();
+  if (s) void runHaptics(s.slot, [stepFromControls()], "Custom");
+});
+$("hap-stop").addEventListener("click", async () => {
+  const s = currentSlot();
+  if (!s) return;
+  const result = await stopHaptics(liveActuator(s));
+  registry.logHaptic(s.slot, performance.now(), frame, { effect: "reset", duration: 0, strong: 0, weak: 0, result, tookMs: 0, label: "Stop" });
+  hapticLines.set(s.slot, [`${((performance.now() - t0) / 1000).toFixed(3)}s  [Stop] reset -> ${result}`, ...(hapticLines.get(s.slot) ?? [])].slice(0, 40));
+  renderHaptics();
+});
+$("hap-identify").addEventListener("click", () => {
+  const s = currentSlot();
+  if (s) identify(s.slot);
+});
+for (const preset of PRESETS) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "tool quiet";
+  b.textContent = preset.label;
+  b.title = preset.hint;
+  b.addEventListener("click", () => {
+    const s = currentSlot();
+    if (s) void runHaptics(s.slot, preset.steps, preset.label);
+  });
+  $("hap-presets").appendChild(b);
 }
 
 // --- log toolbar and exports -----------------------------------------------------------------------
@@ -487,6 +611,7 @@ function loop() {
   }
   if (now - lastTextAt > 250) {
     refreshText(hz);
+    refreshHaptics();
     lastTextAt = now;
   }
   requestAnimationFrame(loop);

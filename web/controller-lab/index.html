@@ -121,6 +121,19 @@
       font: 0.74rem/1.5 ui-monospace, monospace; border: 1px solid var(--support); border-radius: 0 0 8px 8px;
     }
     #transcript.stats { border-radius: 8px; }
+    .haptics { flex: 1; min-height: 200px; overflow: auto; border: 1px solid var(--support); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; }
+    .haptics[hidden] { display: none; }
+    .haptics p { margin: 0 0 8px; overflow-wrap: anywhere; }
+    .hap-grid { display: grid; gap: 4px; margin-bottom: 8px; }
+    .hap-grid label { display: grid; grid-template-columns: 8.5em minmax(0, 1fr) 4.5em; align-items: center; gap: 8px; }
+    .hap-grid label:first-child { grid-template-columns: 8.5em max-content; }
+    .hap-grid input[type="range"] { width: 100%; min-width: 0; accent-color: var(--primary); }
+    .hap-grid output { font-variant-numeric: tabular-nums; }
+    .hap-grid label.off { opacity: 0.45; }
+    .hap-grid select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 4px; }
+    .hap-h { margin: 10px 0 4px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); }
+    .hap-results { margin: 0; padding: 0; list-style: none; font: 0.76rem/1.5 ui-monospace, monospace; }
+    .hap-results li { padding: 1px 0; overflow-wrap: anywhere; }
     #note { margin: 8px 0 0; min-height: 1.2em; font-size: 0.82rem; }
     .fast { margin: 0 0 12px; font-size: 0.85rem; }
     .env { margin: 0 0 12px; font-size: 0.85rem; max-width: 100ch; }
@@ -159,6 +172,7 @@
         <div class="views" id="views" role="tablist" aria-label="What to show" hidden>
           <button class="tab" id="view-transcript" role="tab" type="button">Transcript</button>
           <button class="tab" id="view-stats" role="tab" type="button">Stats</button>
+          <button class="tab" id="view-haptics" role="tab" type="button">Haptics</button>
           <button class="tool quiet" id="reset-stats" type="button" hidden>Reset stats</button>
         </div>
         <div class="logbar">
@@ -171,6 +185,27 @@
           <button class="tool" id="download-txt" type="button">Download text</button>
           <button class="tool" id="download-json" type="button">Download JSON</button>
           <button class="tool quiet" id="copy" type="button">Copy text</button>
+        </div>
+        <div class="haptics" id="haptics" hidden>
+          <p id="hap-status" class="muted"></p>
+          <div class="hap-grid">
+            <label>Effect <select id="hap-effect"><option value="dual-rumble">dual-rumble</option><option value="trigger-rumble">trigger-rumble</option></select></label>
+            <label>Strong motor <input id="hap-strong" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-strong-o">1.00</output></label>
+            <label>Weak motor <input id="hap-weak" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-weak-o">1.00</output></label>
+            <label>Left trigger <input id="hap-left" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-left-o">1.00</output></label>
+            <label>Right trigger <input id="hap-right" type="range" min="0" max="1" step="0.05" value="1"><output id="hap-right-o">1.00</output></label>
+            <label>Duration <input id="hap-duration" type="range" min="50" max="3000" step="50" value="400"><output id="hap-duration-o">400 ms</output></label>
+            <label>Start delay <input id="hap-delay" type="range" min="0" max="1000" step="50" value="0"><output id="hap-delay-o">0 ms</output></label>
+          </div>
+          <div class="logbar">
+            <button class="tool" id="hap-play" type="button">Play</button>
+            <button class="tool quiet" id="hap-stop" type="button">Stop</button>
+            <button class="tool quiet" id="hap-identify" type="button" title="A short buzz, and this controller's card flashes">Identify</button>
+          </div>
+          <h3 class="hap-h">Presets</h3>
+          <div class="logbar" id="hap-presets"></div>
+          <h3 class="hap-h">Results</h3>
+          <ol id="hap-results" class="hap-results" aria-live="polite"></ol>
         </div>
         <div class="thead" id="thead">     time        gap  event</div>
         <pre id="transcript" tabindex="0" aria-label="Controller input transcript"></pre>

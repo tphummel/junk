@@ -36,6 +36,11 @@ export function formatEvent(e, options = {}) {
       return `${head}DISCONNECTED`;
     case "reconnect":
       return `${head}RECONNECTED  (index ${e.index})`;
+    case "haptic": {
+      const motors = e.effect === "trigger-rumble" ? `triggers L ${e.left.toFixed(2)} R ${e.right.toFixed(2)}` : `strong ${e.strong.toFixed(2)} weak ${e.weak.toFixed(2)}`;
+      const delay = e.startDelay ? `, after ${duration(e.startDelay)}` : "";
+      return `${head}HAPTIC    ${e.label ? `[${e.label}] ` : ""}${e.effect}  ${motors}  for ${duration(e.duration)}${delay}  ->  ${e.result}  (took ${duration(e.tookMs)})`;
+    }
     case "button": {
       const analog = e.value > 0 && e.value < 1 ? `  value ${e.value.toFixed(2)}` : "";
       if (e.state === "down") {
@@ -86,7 +91,6 @@ export function summaryText(s, env) {
     out.push("  Stick resolution (smallest step seen so far; it can only shrink with more movement)");
     for (const a of s.device.axisResolution) out.push(`      ${a.name.padEnd(8)} ${a.smallestStep}  ${a.approxBits === null ? "too few small steps to tell the bit depth: move it slowly" : `about ${a.approxBits}-bit`}  (${a.steps} steps measured)`);
   } else out.push("  Stick resolution not measured yet: move a stick slowly");
-  out.push(`  Vibration        ${s.device.vibration ? `${s.device.vibration.type}${s.device.vibration.playEffect ? ", can be played from a page" : ""}` : s.device.hapticActuators ? `${s.device.hapticActuators} haptic actuator(s) (older API)` : "none shown by this browser"}`);
   out.push(`  Extras           hand: ${s.device.hand ?? "none"}, touchpad touch points seen: ${s.device.touchesMax}, motion pose: ${s.device.pose ? "yes" : "no"}${s.device.displayId ? `, display ${s.device.displayId}` : ""}`);
   out.push("");
   out.push("CONNECTION");
@@ -95,6 +99,17 @@ export function summaryText(s, env) {
   out.push(`  History          connected ${c.connects} time${c.connects === 1 ? "" : "s"}, dropped ${c.disconnects} time${c.disconnects === 1 ? "" : "s"}; ${clock(c.totalConnectedMs)} connected out of ${clock(c.sinceRegistrationMs)} since it registered`);
   const notes = env ? unavailable(env) : unavailable({ browser: "this browser", os: "this device", webKitOnly: false, gamepadApi: true, secureContext: true, webBluetooth: false, webHid: false, userAgent: "" });
   for (const n of notes) out.push(`  ${n.short.padEnd(16)} NOT AVAILABLE: ${n.why}`);
+  out.push("");
+  out.push("HAPTICS");
+  const v = s.device.vibration;
+  const h = s.device.haptics;
+  out.push(v
+    ? `  Actuator         ${v.type}; playEffect ${v.playEffect ? "yes" : "no"}; reset ${v.reset ? "yes" : "no"}; effects ${v.effects ? `listed: ${v.effects.join(", ") || "none"}` : "not listed by this browser"}`
+    : `  Actuator         ${s.device.hapticActuators ? `only the older hapticActuators list (${s.device.hapticActuators}), which the lab does not drive` : "none exposed by this browser (the controller may still have motors that a page cannot drive)"}`);
+  out.push(h.tests
+    ? `  Tests run        ${h.tests}: ${h.complete} played to the end, ${h.preempted} replaced by a newer effect, ${h.failed} failed`
+    : "  Tests run        none yet: open the Haptics view to try the motors");
+  if (h.last) out.push(`  Last test        ${h.last.text}`);
   out.push("");
   out.push("PERFORMANCE");
   const viaPolls = s.report.basis === "our polls";
