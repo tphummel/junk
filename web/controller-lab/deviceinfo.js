@@ -46,7 +46,8 @@ const PRODUCTS = /** @type {Record<string, string>} */ ({
  * @property {string | null} productId
  * @property {string | null} vendorName the maker, if we know that vendor id
  * @property {string | null} productName the product, if we know that vendor and product pair
- * @property {"chromium" | "firefox" | "unknown"} format which browser style of id this was
+ * @property {string | null} profile Apple's GameController profile named at the end of an iPad or iPhone id ("Extended Gamepad" is the full layout with two sticks and triggers; "Gamepad" is the basic one: d-pad, four buttons, shoulders)
+ * @property {"chromium" | "firefox" | "webkit" | "unknown"} format which browser style of id this was
  */
 
 /**
@@ -58,7 +59,7 @@ const PRODUCTS = /** @type {Record<string, string>} */ ({
 export function parsePadId(id) {
   const raw = String(id ?? "");
   /** @type {PadIdentity} */
-  const out = { raw, name: raw.trim() || "controller", vendorId: null, productId: null, vendorName: null, productName: null, format: "unknown" };
+  const out = { raw, name: raw.trim() || "controller", vendorId: null, productId: null, vendorName: null, productName: null, profile: null, format: "unknown" };
   const chromium = raw.match(/^(.*?)\s*\(([^()]*)\)\s*$/);
   const details = chromium?.[2] ?? "";
   const vendor = details.match(/Vendor:\s*([0-9a-f]{1,4})/i)?.[1];
@@ -75,6 +76,14 @@ export function parsePadId(id) {
       out.vendorId = ff[1].toLowerCase().padStart(4, "0");
       out.productId = ff[2].toLowerCase().padStart(4, "0");
       out.name = ff[3].trim();
+    } else {
+      // iPadOS and iOS name a controller "<name> <profile>", such as "8BitDo SN30 gamepad Extended Gamepad".
+      const wk = raw.match(/^(.*?)\s+(Extended Gamepad|Micro Gamepad|Directional Gamepad|Gamepad)$/i);
+      if (wk && wk[1].trim()) {
+        out.format = "webkit";
+        out.name = wk[1].trim();
+        out.profile = wk[2].replace(/gamepad/i, "Gamepad").replace(/^extended/i, "Extended").replace(/^micro/i, "Micro").replace(/^directional/i, "Directional");
+      }
     }
   }
   if (out.vendorId) out.vendorName = VENDORS[out.vendorId] ?? null;

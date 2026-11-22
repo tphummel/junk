@@ -178,10 +178,13 @@ function syncCards() {
 
 /** A card's performance lines, in words. @param {ReturnType<typeof summarize>} s */
 function perfLines(s) {
+  const how = s.report.basis === "our polls" ? " (from our polls)" : "";
   const rep = s.report.samples
-    ? `Reports about ${s.report.approxHz} Hz while a stick or trigger moves (avg ${s.report.avgMs} ms, 95th ${s.report.p95Ms}, max ${s.report.maxMs}${s.report.jitterMs === null ? "" : `; jitter ${s.report.jitterMs} ms`})`
-    : s.deviceTimestamps ? "Reports: move a stick or trigger to measure its rate" : "Reports: this browser gives no device timestamps";
-  const seen = s.age ? `Seen ${s.age.avgMs} ms after the device made it (worst ${s.age.maxMs})` : "Seen after: no device timestamps";
+    ? `Reports about ${s.report.approxHz} Hz while a stick or trigger moves${how} (avg ${s.report.avgMs} ms, 95th ${s.report.p95Ms}, max ${s.report.maxMs}${s.report.jitterMs === null ? "" : `; jitter ${s.report.jitterMs} ms`})`
+    : "Reports: move a stick or trigger to measure its rate";
+  const seen = s.timestampsUnusable
+    ? "Seen after: not available (this browser's device clock is off)"
+    : s.age ? `Seen ${s.age.avgMs} ms after the device made it (worst ${s.age.maxMs})` : "Seen after: no device timestamps";
   return [
     rep,
     `${seen} · page polls about ${s.poll.approxHz ?? "-"} Hz`,
@@ -228,7 +231,7 @@ function refreshText(hz) {
     // Short on purpose: the full identity, ids and the rest are in Stats. A known product needs no ids beside it.
     const who = id.productName
       ? `${id.vendorName ? `${id.vendorName} ` : ""}${id.productName}`
-      : [id.vendorName ?? (id.vendorId ? `vendor ${id.vendorId}` : null), id.vendorId && id.productId ? `${id.vendorId}:${id.productId}` : null].filter(Boolean).join(" · ") || "maker and product not given";
+      : [id.vendorName ?? (id.vendorId ? `vendor ${id.vendorId}` : null), id.vendorId && id.productId ? `${id.vendorId}:${id.productId}` : null].filter(Boolean).join(" · ") || (id.profile ? `Apple ${id.profile} profile` : "maker and product not given");
     const lines = [
       who,
       s.connected

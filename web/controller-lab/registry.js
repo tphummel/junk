@@ -65,6 +65,11 @@ import { axisName, buttonName } from "./names.js";
  * @property {Stats} age how old a device report was when we first saw it, ms
  * @property {number[]} recentInputs times of inputs in the last second
  * @property {number} peakRate most inputs seen in any one second
+ * @property {number} tsSane device timestamps whose age was plausible (recent, not in the future)
+ * @property {number} tsInsane device timestamps whose age was not: the browser's timestamps are on another clock
+ * @property {Stats} observed time between our own polls that saw a change, while a stick or trigger is streaming; fine only to our poll rate
+ * @property {number | null} lastChangeAt
+ * @property {{ b: number[], a: number[] } | null} prevRaw the raw state at the previous poll, to see whether anything changed
  */
 
 /**
@@ -143,6 +148,11 @@ const REST_MIN_SPAN_MS = 80;
  * sends a new reading every few milliseconds); it is button presses or a pause. Only shorter gaps measure the report rate.
  */
 const IDLE_GAP_MS = 50;
+/**
+ * A device timestamp whose age (page clock minus timestamp) is outside the range -2 ms to this many ms is not on the page's
+ * clock (iPad Safari's are not), so nothing derived from the timestamps can be trusted.
+ */
+const AGE_SANE_MS = 1000;
 /** Axis bit depth is only estimated once this many steps have been measured: a few coarse moves would overstate the step. */
 const MIN_STEPS_FOR_BITS = 8;
 /** How many recent values a Stats keeps for percentiles. */
@@ -230,7 +240,12 @@ const r = (x, places) => (x === null || !Number.isFinite(x) ? null : round(x, pl
  */
 export function summarize(s, now) {
   const p = s.perf;
-  const reportMean = mean(p.report);
+  // Are the browser's timestamps on the page's clock? If most are far off, they say nothing true and are ignored.
+  const timestampsUnusable = p.timestamps && p.tsInsane >= 3 && p.tsInsane > p.tsSane;
+  const useTs = p.timestamps && !timestampsUnusable;
+  // The report rate comes from the device's timestamps when they can be trusted, and from our own polls when not.
+  const reportStats = useTs ? p.report : p.observed;
+  const reportMean = mean(reportStats);
   const pollMean = mean(p.poll);
   const ageMean = mean(p.age);
   const i = s.info;
@@ -266,18 +281,20 @@ export function summarize(s, now) {
     },
     polls: p.polls,
     stateChanges: p.stateChanges,
-    deviceTimestamps: p.timestamps,
+    deviceTimestamps: useTs,
+    timestampsUnusable,
     report: {
-      samples: p.report.n,
-      avgMs: r(reportMean, 2), minMs: r(p.report.n ? p.report.min : null, 2), p50Ms: r(percentile(p.report, 50), 2),
-      p95Ms: r(percentile(p.report, 95), 2), maxMs: r(p.report.n ? p.report.max : null, 2), jitterMs: r(stdev(p.report), 2),
+      basis: useTs ? "device timestamps" : "our polls",
+      samples: reportStats.n,
+      avgMs: r(reportMean, 2), minMs: r(reportStats.n ? reportStats.min : null, 2), p50Ms: r(percentile(reportStats, 50), 2),
+      p95Ms: r(percentile(reportStats, 95), 2), maxMs: r(reportStats.n ? reportStats.max : null, 2), jitterMs: r(stdev(reportStats), 2),
       approxHz: r(reportMean ? 1000 / reportMean : null, 1),
     },
     poll: {
       samples: p.poll.n, avgMs: r(pollMean, 2), minMs: r(p.poll.n ? p.poll.min : null, 2), maxMs: r(p.poll.n ? p.poll.max : null, 2),
       approxHz: r(pollMean ? 1000 / pollMean : null, 1),
     },
-    age: p.age.n
+    age: useTs && p.age.n
       ? { samples: p.age.n, avgMs: r(ageMean, 2), minMs: r(p.age.min, 2), p95Ms: r(percentile(p.age, 95), 2), maxMs: r(p.age.max, 2) }
       : null,
     inputs: {
@@ -326,6 +343,7 @@ export function createRegistry(options = {}) {
   const makePerf = () => ({
     polls: 0, stateChanges: 0, timestamps: false, lastTs: NaN, lastPollAt: null,
     report: makeStats(), poll: makeStats(), age: makeStats(), recentInputs: [], peakRate: 0,
+    tsSane: 0, tsInsane: 0, observed: makeStats(), lastChangeAt: null, prevRaw: null,
   });
 
   /** Is this entry kept? Records into the all-controllers log and the controller's own transcript. @param {Slot | null} s @param {LogEvent} ev */
@@ -446,21 +464,41 @@ export function createRegistry(options = {}) {
         if (perf.lastPollAt !== null) addStat(perf.poll, now - perf.lastPollAt);
         perf.lastPollAt = now;
         const ts = p.timestamp;
-        /** Device timestamp and age of this report, if the browser gives them. @type {{ ts?: number, age?: number }} */
+        /** Device timestamp and age of this report, only when the age is plausible. @type {{ ts?: number, age?: number }} */
         let stamp = {};
         if (typeof ts === "number" && Number.isFinite(ts) && ts > 0) {
           perf.timestamps = true;
+          const age = now - ts;
+          const sane = age >= -2 && age <= AGE_SANE_MS;
           if (ts !== perf.lastTs) {
+            if (sane) perf.tsSane++;
+            else perf.tsInsane++;
             if (Number.isFinite(perf.lastTs)) {
               perf.stateChanges++;
               const gap = ts - perf.lastTs;
               if (gap > 0 && gap <= IDLE_GAP_MS) addStat(perf.report, gap);
             }
             perf.lastTs = ts;
-            addStat(perf.age, Math.max(0, now - ts));
+            addStat(perf.age, Math.max(0, age));
           }
-          stamp = { ts: round(ts - origin, 1), age: round(Math.max(0, now - ts), 1) };
+          if (sane) stamp = { ts: round(ts - origin, 1), age: round(Math.max(0, age), 1) };
         }
+
+        // The same measurement on our own clock, which needs no trust in the browser's timestamps: how long between
+        // polls that saw something change.
+        const raw = { b: Array.from(p.buttons, (b) => (b.pressed ? 10 + b.value : b.value)), a: Array.from(p.axes) };
+        const prev = perf.prevRaw;
+        if (prev) {
+          const changed = raw.b.length !== prev.b.length || raw.b.some((v, i) => v !== prev.b[i]) || raw.a.some((v, i) => Math.abs(v - (prev.a[i] ?? v)) > 1e-6);
+          if (changed) {
+            if (perf.lastChangeAt !== null) {
+              const gap = now - perf.lastChangeAt;
+              if (gap > 0 && gap <= IDLE_GAP_MS) addStat(perf.observed, gap);
+            }
+            perf.lastChangeAt = now;
+          }
+        }
+        perf.prevRaw = raw;
 
         s.buttons = Array.from(p.buttons, (b) => ({ pressed: b.pressed, value: round(b.value, 2) }));
         s.axes = Array.from(p.axes, (v) => round(v, 2));

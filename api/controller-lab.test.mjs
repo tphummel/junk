@@ -736,3 +736,79 @@ test("only the first four axes show at first; the page reveals the others once t
   assert.match(app, /row\.hidden = i >= 4/);
   assert.match(app, /i >= 4 && card\.axisRows\[i\]\.hidden/);
 });
+
+// --- iPad Safari: names, and timestamps that are not on the page's clock ---------------------------
+
+test("iPad and iPhone ids, which end in Apple's GameController profile, are taken apart", () => {
+  const sn30 = parsePadId("8BitDo SN30 gamepad Extended Gamepad");
+  assert.deepEqual([sn30.name, sn30.profile, sn30.format, sn30.vendorId], ["8BitDo SN30 gamepad", "Extended Gamepad", "webkit", null]);
+  const joycon = parsePadId("Joy-Con (L) Gamepad");
+  assert.deepEqual([joycon.name, joycon.profile, joycon.format], ["Joy-Con (L)", "Gamepad", "webkit"]);
+  assert.equal(parsePadId("8Bitdo SN30 GamePad Extended Gamepad").profile, "Extended Gamepad", "case from the browser is tidied");
+  assert.equal(parsePadId("Xbox Wireless Controller Micro Gamepad").profile, "Micro Gamepad");
+  const other = parsePadId("Totally Unknown Thing");
+  assert.deepEqual([other.profile, other.format], [null, "unknown"], "an id without a profile is left alone");
+  assert.equal(parsePadId("Gamepad").profile, null, "a bare word is a name, not a name and a profile");
+  assert.equal(parsePadId("Pro Controller (STANDARD GAMEPAD Vendor: 057e Product: 2009)").profile, null);
+});
+
+/** A pad whose timestamps are on another clock from the page's and run at another rate, as iPad Safari's do. */
+const offClock = (down, axes, ts) => pad(0, { down, axes, timestamp: ts, id: "8BitDo SN30 gamepad Extended Gamepad" });
+
+test("timestamps from another clock are ignored: no age, and the report rate comes from our own polls", () => {
+  const reg = createRegistry();
+  reg.update([offClock([], [0, 0, 0, 0], 100)], 1_000_000, 1);
+  reg.update([offClock([0], [0, 0, 0, 0], 100.4)], 1_000_004, 2);
+  for (let i = 0; i < 200; i++) reg.update([offClock([0], [Math.sin(i / 10), 0, 0, 0], 100.8 + i * 0.42)], 1_000_008 + i * 4, 3 + i);
+  const s = summarize(reg.slots[0], 900);
+  assert.equal(s.deviceTimestamps, false);
+  assert.equal(s.timestampsUnusable, true);
+  assert.equal(s.age, null, "an age of a million milliseconds is not reported");
+  assert.equal(s.report.basis, "our polls");
+  assert.equal(s.report.approxHz, 250, "polled every 4 ms, so the most that can be seen is 250 Hz");
+  assert.equal(s.report.avgMs, 4);
+  assert.ok(s.report.samples > 150);
+  // Entries carry no device timestamp either.
+  assert.ok(reg.slots[0].log.every((e) => e.ts === undefined && e.age === undefined));
+  const text = summaryText(s);
+  assert.match(text, /not on the page's clock/);
+  assert.match(text, /measured from this page's own polls/);
+  assert.doesNotMatch(text, /Seen after/);
+});
+
+test("timestamps on the page's clock are still used and still give an age", () => {
+  const reg = createRegistry();
+  const at = (now, down = []) => pad(0, { down, timestamp: now - 2 });
+  tick(reg, [at(0)], 0);
+  for (let now = 8; now <= 200; now += 8) tick(reg, [at(now, now > 8 ? [0] : [])], now);
+  const s = summarize(reg.slots[0], 200);
+  assert.equal(s.deviceTimestamps, true);
+  assert.equal(s.timestampsUnusable, false);
+  assert.equal(s.report.basis, "device timestamps");
+  assert.equal(s.age.avgMs, 2);
+  assert.ok(reg.slots[0].log.some((e) => e.age === 2));
+});
+
+test("a browser with no timestamps at all measures the report rate from our polls", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 4);
+  for (let i = 0; i < 100; i++) tick(reg, [pad(0, { down: [0], axes: [Math.sin(i / 7), 0, 0, 0] })], 8 + i * 4);
+  const s = summarize(reg.slots[0], 500);
+  assert.equal(s.deviceTimestamps, false);
+  assert.equal(s.timestampsUnusable, false, "there are none to distrust");
+  assert.equal(s.report.basis, "our polls");
+  assert.equal(s.report.approxHz, 250);
+  assert.equal(s.age, null);
+});
+
+test("polls that see nothing change are not counted as reports", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 4);
+  // The stick moves every 8 ms but we poll every 4 ms: half the polls see no change.
+  for (let i = 0; i < 100; i++) tick(reg, [pad(0, { down: [0], axes: [Math.floor(i / 2) * 0.02, 0, 0, 0] })], 8 + i * 4);
+  const s = summarize(reg.slots[0], 500);
+  assert.equal(s.report.avgMs, 8, "changes arrive every 8 ms");
+  assert.equal(s.report.approxHz, 125);
+});

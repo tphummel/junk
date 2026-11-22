@@ -76,6 +76,7 @@ export function summaryText(s, env) {
   out.push(`  Maker            ${known(id.vendorName, id.vendorId)}`);
   out.push(`  Product          ${known(id.productName, id.productId)}`);
   out.push(`  Id as reported   ${id.raw}`);
+  if (id.profile) out.push(`  Apple profile    ${id.profile}${/^extended/i.test(id.profile) ? " (the full layout: two sticks, triggers, shoulders, d-pad and four buttons)" : /^gamepad$/i.test(id.profile) ? " (the basic layout: d-pad, four buttons and shoulders; no sticks)" : ""}`);
   out.push(`  Mapping          ${s.mapping || "none"}${s.mapping === "standard" ? " (the standard layout: buttons and sticks have fixed meanings)" : " (not the standard layout: only the numbers are known)"}`);
   out.push(`  Index            ${s.index === null ? "none while disconnected" : s.index}`);
   out.push(`  Controls         ${s.controls.buttons} buttons, ${s.controls.axes} axes`);
@@ -96,13 +97,16 @@ export function summaryText(s, env) {
   for (const n of notes) out.push(`  ${n.short.padEnd(16)} NOT AVAILABLE: ${n.why}`);
   out.push("");
   out.push("PERFORMANCE");
+  const viaPolls = s.report.basis === "our polls";
   if (s.report.samples > 0) {
     out.push(`  Device reports   about ${num(s.report.approxHz, 0)} Hz while a stick or trigger is moving  (every ${num(s.report.avgMs, 1)} ms on average)`);
     out.push(`                   min ${num(s.report.minMs, 1)}  median ${num(s.report.p50Ms, 1)}  95th ${num(s.report.p95Ms, 1)}  max ${num(s.report.maxMs, 1)} ms  jitter ${num(s.report.jitterMs, 2)} ms  (${s.report.samples} intervals)`);
+    if (viaPolls) out.push(`                   measured from this page's own polls, so it can be no finer than they are (about ${num(s.poll.approxHz, 0)} Hz here)`);
   } else {
-    out.push(s.deviceTimestamps ? "  Device reports   not measured yet: move a stick or trigger (button presses are too far apart to tell)" : "  Device reports   this browser gives no device timestamps, so the report rate cannot be measured");
+    out.push(s.deviceTimestamps ? "  Device reports   not measured yet: move a stick or trigger (button presses are too far apart to tell)" : s.timestampsUnusable ? "  Device reports   not measured yet: move a stick or trigger (measured from this page's polls)" : "  Device reports   this browser gives no device timestamps, so it is measured from this page's polls once a stick or trigger moves");
   }
-  if (s.age) out.push(`  Seen after       ${num(s.age.avgMs, 1)} ms on average, 95th ${num(s.age.p95Ms, 1)}, worst ${num(s.age.maxMs, 1)} ms  (from the device report to this page reading it)`);
+  if (s.timestampsUnusable) out.push("  Device clock     this browser's timestamps for the controller are not on the page's clock, so they are ignored: the report rate above comes from our polls and \"seen after\" is not available");
+  else if (s.age) out.push(`  Seen after       ${num(s.age.avgMs, 1)} ms on average, 95th ${num(s.age.p95Ms, 1)}, worst ${num(s.age.maxMs, 1)} ms  (from the device report to this page reading it)`);
   out.push(`  Page polled it   ${s.polls} times, about ${num(s.poll.approxHz, 0)} Hz  (every ${num(s.poll.avgMs, 1)} ms, range ${num(s.poll.minMs, 1)} to ${num(s.poll.maxMs, 1)} ms)`);
   out.push(`  State changes    ${s.stateChanges}`);
   out.push(`  Inputs           ${s.inputs.total} in all: ${s.inputs.presses} presses, ${s.inputs.releases} releases, ${s.inputs.axisEvents} stick moves`);
