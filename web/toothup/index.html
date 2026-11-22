@@ -94,7 +94,7 @@
     .b-icon { font-size: 1.3rem; }
     .bar .left button[aria-pressed="false"] { background: none; color: var(--primary); }
     #reset { padding: .5rem; width: 2.75rem; font-size: 1.4rem; line-height: 1; }
-    #tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1rem; }
+    #tiles, .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: 1rem; }
     .tile { border: 1px solid var(--support); border-radius: .5rem; padding: .5rem; text-align: center; }
     .tile .k, .tile .u { font-size: .75rem; color: var(--support); }
     .tile .v { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
@@ -122,6 +122,17 @@
     input[type="number"], input[type="date"] { font: inherit; padding: .4rem .5rem; border-radius: .5rem; border: 2px solid var(--primary); background: var(--bg); color: var(--text); }
     .bar .right { display: flex; flex-direction: column; align-items: flex-end; gap: .25rem; }
     #today { text-align: right; font-size: .85rem; line-height: 1.4; }
+    .seg { display: flex; gap: .25rem; margin-bottom: 1rem; padding: .2rem; border: 2px solid var(--support); border-radius: 2rem; }
+    .seg button { flex: 1; min-height: 0; padding: .35rem 0; background: none; color: var(--support); border: 0; border-radius: 1.5rem; font-weight: 600; }
+    .seg button[aria-selected="true"] { background: var(--primary); color: var(--on-primary); }
+    .panel { border: 1px solid var(--support); border-radius: .5rem; padding: .6rem; margin-bottom: 1rem; }
+    .panel h3 { margin: 0 0 .4rem; font-size: .9rem; color: var(--primary); }
+    .delta { font-size: .75rem; color: var(--support); }
+    .mini { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; }
+    .mini td { aspect-ratio: 1; text-align: center; font-size: .7rem; border-radius: .3rem; border: 1px solid var(--support); }
+    .mini td.l1 { background: var(--support); color: var(--bg); }
+    .mini td.l2 { background: var(--primary); color: var(--on-primary); }
+    .mini td.empty { border-color: transparent; }
     .legend { font-size: .8rem; color: var(--support); margin: .5rem 0 1rem; }
     #day-list { padding-left: 1.25rem; }
     #backup-toast { position: fixed; left: 1rem; right: 1rem; bottom: 4.5rem; z-index: 10; display: flex; gap: .5rem; align-items: center; max-width: 32rem; margin: 0 auto; padding: .5rem .75rem; border-radius: .5rem; background: var(--primary); color: var(--bg); }
@@ -183,8 +194,36 @@
     </section>
 
     <section id="view-stats" hidden>
-      <h2>Stats</h2>
-      <div id="tiles"></div>
+      <div class="seg" role="tablist" aria-label="Report period">
+        <button id="seg-recent" role="tab" aria-selected="true">Recent</button>
+        <button id="seg-month" role="tab" aria-selected="false">Month</button>
+        <button id="seg-year" role="tab" aria-selected="false">Year</button>
+      </div>
+      <div id="pane-recent">
+        <div id="tiles"></div>
+      </div>
+      <div id="pane-month" hidden>
+        <div class="cal-head">
+          <button id="m-prev" class="secondary" aria-label="Previous month">‹</button>
+          <strong id="m-label"></strong>
+          <button id="m-next" class="secondary" aria-label="Next month">›</button>
+        </div>
+        <div id="m-body"></div>
+        <p class="legend"><button id="m-now" class="link">This month</button></p>
+      </div>
+      <div id="pane-year" hidden>
+        <div class="cal-head">
+          <button id="y-prev" class="secondary" aria-label="Previous year">‹</button>
+          <strong id="y-label"></strong>
+          <button id="y-next" class="secondary" aria-label="Next year">›</button>
+        </div>
+        <div id="y-body"></div>
+        <div class="row" style="margin-top:1rem">
+          <button id="y-export">Export annual report</button>
+          <button id="y-now" class="link">This year</button>
+        </div>
+        <p class="muted">Saves a standalone HTML page you can open, print or share.</p>
+      </div>
     </section>
 
     <section id="view-calendar" hidden>
