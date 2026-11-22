@@ -1,0 +1,452 @@
+/*
+ * super-metroid: a style sheet inspired by Super Metroid for the SNES.
+ * The box art (black field, chiseled red-to-yellow title, red label tags,
+ * orange bullet copy, grey stripes) and the in-game HUD (pink item slots,
+ * energy tanks, riveted green-grey metal).
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/super-metroid/super-metroid.css">
+ * Docs and live examples: /styles/super-metroid/
+ *
+ * Everything is prefixed: classes `sm-`, custom properties `--sm-`. The only
+ * element rules are under the opt-in `.sm` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one. Light is the grey cart
+ * label; dark is the box art. Metal panels stay dark in both.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, super-metroid-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* palette, light. Contrast vs bg: text 15.4, muted 6.9, red-ink 5.7,
+     orange-ink 5.6, pink-ink 5.5, rule 4.2. On red: white 6.1 */
+  --sm-bg: #E6E4DE;
+  --sm-surface: #F5F4F0;
+  --sm-text: #0B0B10;
+  --sm-muted: #4A4A55;
+  --sm-red-ink: #B00E18;       /* red as text on bg and surface */
+  --sm-orange-ink: #8F4300;
+  --sm-pink-ink: #A81C66;
+  --sm-rule: #6A6A76;          /* lines on bg and surface */
+  --sm-focus: #B00E18;
+
+  /* mode-independent: fills, and colors used on the dark metal */
+  --sm-red: #C4121C;           /* label tags, with white text */
+  --sm-red-deep: #5C0A0E;      /* extrusion and bevel shadow */
+  --sm-on-red: #FFFFFF;
+  --sm-orange: #FFA21A;        /* bullets, values, on metal and black */
+  --sm-yellow: #FFD21F;
+  --sm-pink: #E5559B;          /* HUD slot borders and energy tanks */
+  --sm-green: #8DDC5B;         /* the active HUD item */
+  --sm-on-orange: #0B0B10;     /* 9.8 on orange */
+  --sm-metal: #141A18;         /* panel base. Contrast on it: white-ish 15.6,
+                                  muted 9.5, orange 8.8, yellow 12.2, pink 5.1, green 10.5 */
+  --sm-metal-hi: #3B4A3A;      /* bevel light edge and rivets */
+  --sm-metal-lo: #070A09;
+  --sm-ink: #F4F1EA;           /* text on metal */
+  --sm-ink-muted: #B9C0B8;
+
+  /* type */
+  --sm-font-display: Impact, Haettenschweiler, "Franklin Gothic Heavy", "Arial Narrow Bold", "Arial Black", sans-serif;
+  --sm-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sm-font-hud: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --sm-track-label: 0.16em;
+  --sm-track-hud: 0.08em;
+
+  /* space and shape: HUD slots are square with a small radius */
+  --sm-gap: 0.5rem;
+  --sm-slot-pad: 0.6rem 0.8rem;
+  --sm-radius: 0.3rem;
+
+  /* context: components read these, so the same markup works on the page
+     background and inside a .sm-panel */
+  --sm-fg: var(--sm-text);
+  --sm-fg-muted: var(--sm-muted);
+  --sm-line: var(--sm-rule);
+  --sm-heading: var(--sm-red-ink);
+  --sm-accent: var(--sm-orange-ink);
+  --sm-hud: var(--sm-pink-ink);      /* slot borders and tanks */
+  --sm-field: var(--sm-surface);     /* what sits under slots and inputs */
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast vs bg: text 18.1, muted 10.2, red-ink 6.2, orange-ink 10.1,
+     pink-ink 8.6, rule 4.6 */
+  :root:not([data-theme="light"]) {
+    --sm-bg: #050507;
+    --sm-surface: #101416;
+    --sm-text: #F4F1EA;
+    --sm-muted: #B9B7B0;
+    --sm-red-ink: #FF4D4D;
+    --sm-orange-ink: #FFA21A;
+    --sm-pink-ink: #FF7DB8;
+    --sm-rule: #6E7B72;
+    --sm-focus: #FFD21F;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --sm-bg: #050507;
+  --sm-surface: #101416;
+  --sm-text: #F4F1EA;
+  --sm-muted: #B9B7B0;
+  --sm-red-ink: #FF4D4D;
+  --sm-orange-ink: #FFA21A;
+  --sm-pink-ink: #FF7DB8;
+  --sm-rule: #6E7B72;
+  --sm-focus: #FFD21F;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- page: opt in with class="sm" on <body> ---------------------------- */
+
+.sm {
+  margin: 0;
+  background: var(--sm-bg);
+  color: var(--sm-fg);
+  font: 1rem/1.5 var(--sm-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.sm *, .sm *::before, .sm *::after { box-sizing: border-box; }
+.sm h1, .sm h2, .sm h3, .sm h4 {
+  font-family: var(--sm-font-display);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--sm-heading);
+  margin: 0 0 0.5em;
+}
+.sm h1 { font-size: clamp(2.6rem, 9vw, 4.75rem); }
+.sm h2 { font-size: clamp(1.8rem, 5vw, 2.6rem); }
+.sm h3 { font-size: 1.4rem; }
+.sm h4 { font-size: 1rem; letter-spacing: var(--sm-track-label); }
+.sm a { color: var(--sm-red-ink); text-underline-offset: 0.2em; }
+.sm a:hover { color: var(--sm-orange-ink); }
+.sm :focus-visible { outline: 3px solid var(--sm-focus); outline-offset: 2px; }
+.sm hr { border: 0; height: 0.6rem; margin: 2rem 0; background: var(--sm-stripes); }
+.sm code, .sm kbd { font-family: var(--sm-font-hud); font-size: 0.9em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* The title: heavy italic caps, red at the top to yellow at the bottom, with a
+   stacked dark-red extrusion. Fallback color first for browsers without
+   background-clip:text. Needs a short phrase; it is a logo, not a heading. */
+.sm-title {
+  display: inline-block;
+  margin: 0;
+  padding: 0 0.08em 0.04em 0;
+  font-family: var(--sm-font-display);
+  font-style: italic;
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: 0.03em;
+  color: #FF5A1F;
+  background: linear-gradient(180deg, #E4141C 0%, #FF5A1F 42%, #FFB020 72%, #FFE23A 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 0.02em 0 var(--sm-red-deep))
+    drop-shadow(0 0.045em 0 var(--sm-red-deep))
+    drop-shadow(0 0.07em 0 var(--sm-red-deep))
+    drop-shadow(0 0.12em 0.05em #000000B3);
+}
+.sm-title--xl { font-size: clamp(3rem, 12vw, 6.5rem); }
+.sm-title--lg { font-size: clamp(2.2rem, 7vw, 3.75rem); }
+.sm-title--md { font-size: clamp(1.5rem, 4.5vw, 2.25rem); }
+
+/* the red bold lead line from the back of the box */
+.sm-lead {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--sm-heading);
+  margin: 0;
+}
+
+/* small spaced caps for HUD labels */
+.sm-label {
+  font-family: var(--sm-font-hud);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--sm-track-label);
+  color: var(--sm-fg-muted);
+}
+
+/* running copy */
+.sm-copy { max-width: 40rem; line-height: 1.45; color: var(--sm-fg); margin: 0; }
+
+/* the bulleted features list: bold, orange, round bullets */
+.sm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.2rem; font-weight: 700; color: var(--sm-accent); }
+.sm-list li { padding-left: 1.2em; position: relative; }
+.sm-list li::before { content: ""; position: absolute; left: 0.1em; top: 0.55em; width: 0.45em; height: 0.45em; border-radius: 50%; background: currentColor; }
+
+/* ---- tag: the red label ------------------------------------------------ */
+
+.sm-tag {
+  display: inline-block;
+  padding: 0.3em 0.9em 0.3em 0.7em;
+  font-family: var(--sm-font-body);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 1.05rem;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--sm-on-red);
+  background: var(--sm-red);
+  box-shadow: inset 0 -0.18em 0 #00000040;
+}
+
+/* ---- panel: riveted metal ---------------------------------------------- */
+
+.sm-panel {
+  --sm-fg: var(--sm-ink);
+  --sm-fg-muted: var(--sm-ink-muted);
+  --sm-line: var(--sm-pink);
+  --sm-heading: var(--sm-yellow);
+  --sm-accent: var(--sm-orange);
+  --sm-hud: var(--sm-pink);
+  --sm-field: var(--sm-metal-lo);
+  position: relative;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  color: var(--sm-fg);
+  background:
+    linear-gradient(180deg, #FFFFFF0D, #0000001A),
+    var(--sm-metal);
+  border: 3px solid;
+  border-color: var(--sm-metal-hi) var(--sm-metal-lo) var(--sm-metal-lo) var(--sm-metal-hi);
+  border-radius: var(--sm-radius);
+  box-shadow: 0 0 0 1px #000, 0 10px 24px -14px #000;
+}
+/* rivets in the four corners */
+.sm-panel::before, .sm-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0.45rem;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, #6A7D68 0 2px, #0000 3px) top left / 0.5rem 0.5rem no-repeat,
+    radial-gradient(circle, #6A7D68 0 2px, #0000 3px) top right / 0.5rem 0.5rem no-repeat,
+    radial-gradient(circle, #6A7D68 0 2px, #0000 3px) bottom left / 0.5rem 0.5rem no-repeat,
+    radial-gradient(circle, #6A7D68 0 2px, #0000 3px) bottom right / 0.5rem 0.5rem no-repeat;
+}
+.sm-panel::after { display: none; }
+.sm-panel > * { position: relative; }
+.sm-panel a { color: var(--sm-orange); }
+.sm-panel--center { text-align: center; }
+.sm-panel--black { background: #000; --sm-field: #0B0F0E; }
+
+/* quiet content block on the page background */
+.sm-card {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: var(--sm-surface);
+  color: var(--sm-fg);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-radius);
+}
+
+/* ---- hud: slots, tanks, meters ----------------------------------------- */
+
+/* A row or grid of separate boxes with pink borders, like the HUD item slots. */
+.sm-hud {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--sm-slot-min, 6.5rem), 1fr));
+  gap: var(--sm-gap);
+  color: var(--sm-fg);
+}
+.sm-hud--2 { grid-template-columns: repeat(2, 1fr); }
+.sm-hud--3 { grid-template-columns: repeat(3, 1fr); }
+.sm-hud--4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 34rem) { .sm-hud--3, .sm-hud--4 { grid-template-columns: repeat(2, 1fr); } }
+
+.sm-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: var(--sm-slot-pad);
+  text-align: center;
+  background: var(--sm-field);
+  border: 2px solid var(--sm-hud);
+  border-radius: var(--sm-radius);
+  box-shadow: inset 0 0 0 1px #00000066;
+}
+.sm-slot--wide { grid-column: 1 / -1; }
+.sm-slot--left { align-items: flex-start; text-align: left; }
+.sm-slot--active { border-color: var(--sm-green); box-shadow: 0 0 0 1px var(--sm-green), 0 0 0.9rem #8DDC5B66; }
+.sm-slot--active .sm-label { color: var(--sm-green); }
+.sm-slot > .sm-label { color: var(--sm-fg-muted); }
+
+/* the number: mono, bold, tabular, in the accent color */
+.sm-value {
+  font-family: var(--sm-font-hud);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: var(--sm-track-hud);
+  font-variant-numeric: tabular-nums;
+  color: var(--sm-accent);
+}
+.sm-value--plain { color: var(--sm-fg); }
+.sm-value--lg { font-size: 1.6rem; }
+.sm-value--xl { font-size: clamp(2rem, 6vw, 2.9rem); line-height: 1; }
+
+/* Energy tanks: a row of small squares; add sm-tank--full for each one held. */
+.sm-tanks { display: inline-flex; flex-wrap: wrap; gap: 0.2rem; }
+.sm-tank { width: 0.8rem; height: 0.8rem; border: 2px solid var(--sm-hud); background: transparent; }
+.sm-tank--full { background: var(--sm-hud); box-shadow: inset 0 0 0 1px #FFFFFF59; }
+
+/* Segmented meter: set --sm-pct on the element, e.g. style="--sm-pct: 43%". */
+.sm-meter {
+  --sm-pct: 50%;
+  position: relative;
+  height: 1rem;
+  border: 2px solid var(--sm-hud);
+  background: var(--sm-field);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.sm-meter::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--sm-pct);
+  background: linear-gradient(180deg, var(--sm-yellow), var(--sm-orange));
+}
+.sm-meter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 0.5rem, var(--sm-field) 0.5rem calc(0.5rem + 2px));
+}
+
+/* ---- table ------------------------------------------------------------- */
+
+.sm-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--sm-fg);
+}
+.sm-table caption {
+  caption-side: top;
+  padding: 0 0 0.5rem;
+  text-align: left;
+  font-family: var(--sm-font-hud);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--sm-track-label);
+  color: var(--sm-fg-muted);
+}
+.sm-table th, .sm-table td { padding: 0.5rem 0.8rem; text-align: left; border-bottom: 1px solid var(--sm-line); }
+.sm-table thead th {
+  background: var(--sm-red);
+  color: var(--sm-on-red);
+  border-bottom: 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.sm-table tbody th { font-family: var(--sm-font-hud); font-size: 0.75rem; text-transform: uppercase; letter-spacing: var(--sm-track-label); color: var(--sm-fg-muted); }
+.sm-table td { font-family: var(--sm-font-hud); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: var(--sm-track-hud); color: var(--sm-accent); }
+.sm-table .sm-num { text-align: right; }
+.sm-table-wrap { overflow-x: auto; }
+
+/* ---- controls ---------------------------------------------------------- */
+
+.sm-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.4rem;
+  font: italic 900 0.95rem/1 var(--sm-font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--sm-on-red);
+  background: var(--sm-red);
+  border: 2px solid var(--sm-red-deep);
+  border-radius: 2px;
+  box-shadow: inset 0 -0.2em 0 #00000040, 0 3px 0 var(--sm-red-deep);
+  transition: transform 0.1s, box-shadow 0.1s, filter 0.1s;
+}
+.sm-button:hover { filter: brightness(1.12); }
+.sm-button:active { transform: translateY(2px); box-shadow: inset 0 -0.2em 0 #00000040, 0 1px 0 var(--sm-red-deep); }
+.sm-button:focus-visible { outline: 3px solid var(--sm-focus); outline-offset: 3px; }
+.sm-button[disabled], .sm-button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; filter: none; transform: none; }
+.sm-button--orange { color: var(--sm-on-orange); background: var(--sm-orange); border-color: #8F4300; box-shadow: inset 0 -0.2em 0 #00000033, 0 3px 0 #8F4300; }
+.sm-button--hud {
+  font: 800 0.8rem/1 var(--sm-font-hud);
+  font-style: normal;
+  letter-spacing: var(--sm-track-label);
+  color: var(--sm-hud);
+  background: transparent;
+  border-color: var(--sm-hud);
+  border-radius: var(--sm-radius);
+  box-shadow: none;
+}
+.sm-button--hud:active { box-shadow: none; transform: none; }
+.sm-button--block { display: flex; width: 100%; }
+
+.sm-field { display: grid; gap: 0.35rem; }
+.sm-input, .sm-select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.8rem;
+  font: 700 1rem/1.3 var(--sm-font-hud);
+  letter-spacing: var(--sm-track-hud);
+  color: var(--sm-text);
+  background: var(--sm-surface);
+  border: 2px solid var(--sm-pink-ink);
+  border-radius: var(--sm-radius);
+}
+.sm-panel .sm-input, .sm-panel .sm-select { color: var(--sm-ink); background: var(--sm-metal-lo); border-color: var(--sm-pink); }
+.sm-input::placeholder { color: var(--sm-muted); font-weight: 400; opacity: 1; }
+.sm-panel .sm-input::placeholder { color: var(--sm-ink-muted); }
+.sm-input:focus-visible, .sm-select:focus-visible { outline: 3px solid var(--sm-focus); outline-offset: 1px; }
+.sm-input[aria-invalid="true"] { border-color: var(--sm-red-ink); box-shadow: inset 4px 0 0 var(--sm-red-ink); }
+
+/* ---- badge, stripes ---------------------------------------------------- */
+
+.sm-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  font-family: var(--sm-font-hud);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: var(--sm-track-label);
+  color: var(--sm-accent);
+  border: 1px solid var(--sm-line);
+  border-radius: 2px;
+}
+.sm-badge--solid { color: var(--sm-on-orange); background: var(--sm-orange); border-color: var(--sm-orange); }
+.sm-badge--green { color: #0B0B10; background: var(--sm-green); border-color: var(--sm-green); }
+
+/* grey bars that thin out, from the box art's right edge. A divider. */
+:root { --sm-stripes: repeating-linear-gradient(180deg, #8A8F8C 0 5px, transparent 5px 8px); }
+.sm-stripes { height: 1.25rem; margin: 1.5rem 0; border: 0; background: linear-gradient(180deg, #8A8F8C 0 20%, transparent 20% 28%, #8A8F8C 28% 44%, transparent 44% 56%, #8A8F8C 56% 68%, transparent 68% 80%, #8A8F8C 80% 88%, transparent 88% 100%); opacity: 0.8; }
+
+@media (prefers-reduced-motion: reduce) { .sm-button { transition: none; } }
+@media print {
+  .sm-panel, .sm-tag, .sm-button, .sm-table thead th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

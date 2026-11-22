@@ -87,6 +87,15 @@ export function daysBetween(a, b) {
 }
 
 /**
+ * Whether a data backup is due: a month after the last one, or at once if there is data and none was ever made.
+ * @param {string | null} last day of the last backup @param {string} today @param {boolean} hasData
+ */
+export function backupDue(last, today, hasData) {
+  if (!isDay(last)) return hasData;
+  return addMonths(/** @type {string} */ (last), 1) <= today;
+}
+
+/**
  * When a reminder is next due and how many days are left (negative once overdue); null if no date is recorded.
  * @param {Reminder} reminder @param {string} today
  */

@@ -1,5 +1,5 @@
 import {
-  DEFAULT_SETTINGS, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
+  DEFAULT_SETTINGS, backupDue, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
   makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
 } from "./logic.js";
 import { readHealthExport } from "./health.js";
@@ -9,12 +9,13 @@ const STORE = "toothup:v2";
 const $ = (id) => document.getElementById(id);
 
 /** @type {{ events: import("./logic.js").Event[], settings: import("./logic.js").Settings }} */
-let state = { events: [], settings: DEFAULT_SETTINGS };
+let state = { events: [], settings: DEFAULT_SETTINGS, lastBackup: /** @type {string | null} */ (null) };
 try {
   const saved = JSON.parse(localStorage.getItem(STORE) || "null");
   if (saved) {
     state.events = normalizeEvents(saved.events).events;
     state.settings = normalizeSettings(saved.settings) ?? DEFAULT_SETTINGS;
+    state.lastBackup = /^\d{4}-\d{2}-\d{2}$/.test(saved.lastBackup) ? saved.lastBackup : null;
   }
 } catch {}
 
@@ -22,7 +23,7 @@ function save() {
   renderToday();
   renderReminders();
   try {
-    localStorage.setItem(STORE, JSON.stringify({ events: state.events, settings: state.settings }));
+    localStorage.setItem(STORE, JSON.stringify({ events: state.events, settings: state.settings, lastBackup: state.lastBackup }));
   } catch {
     toast("Could not save to this browser's storage");
   }
@@ -509,16 +510,41 @@ syncSettingsForm();
 // ---------- data ----------
 function renderData() {
   $("count").textContent = `${state.events.length} event${state.events.length === 1 ? "" : "s"} stored on this device.`;
+  renderBackupInfo();
 }
 
-$("export").onclick = () => {
+/** Download a JSON backup and record today as the last backup day. */
+function exportBackup() {
   const blob = new Blob([JSON.stringify(buildExport(state.events, state.settings), null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `toothup-${dayKey(Date.now())}.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  state.lastBackup = todayKey(state.settings);
+  save();
+  renderBackupInfo();
+  renderBackupReminder();
+}
+
+$("export").onclick = exportBackup;
+
+function renderBackupInfo() {
+  $("last-backup").textContent = state.lastBackup ? `Last backup: ${state.lastBackup}.` : "No backup made yet.";
+}
+
+// A month after the last backup (or at once if none was ever made), show a toast; clicking it exports immediately.
+let backupSnoozed = false;
+function renderBackupReminder() {
+  const due = !backupSnoozed && backupDue(state.lastBackup, todayKey(state.settings), state.events.length > 0);
+  $("backup-toast").hidden = !due;
+}
+$("backup-toast-go").onclick = exportBackup;
+$("backup-toast-dismiss").onclick = () => {
+  backupSnoozed = true;
+  renderBackupReminder();
 };
+document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && renderBackupReminder());
 
 $("import-btn").onclick = () => $("import").click();
 $("import").onchange = async (e) => {
@@ -590,3 +616,4 @@ $("clear").onclick = () => {
 renderBrush();
 renderToday();
 renderReminders();
+renderBackupReminder();
