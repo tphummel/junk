@@ -1,0 +1,14 @@
+{
+  "name": "blockbuster style sheet",
+  "short_name": "blockbuster",
+  "description": "A royal blue and yellow style sheet inspired by a 1990s Blockbuster Video, with a storybook.",
+  "start_url": "/styles/blockbuster/",
+  "scope": "/styles/blockbuster/",
+  "display": "standalone",
+  "background_color": "#071033",
+  "theme_color": "#071033",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

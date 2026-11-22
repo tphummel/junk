@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>blockbuster style sheet</title>
+  <link rel="stylesheet" href="blockbuster.css">
+  <style>
+    /* storybook chrome only; the components below come from blockbuster.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { display: grid; gap: 0.9rem; justify-items: center; text-align: center; padding-block: clamp(2rem, 6vw, 3.5rem); }
+    .hero .bb-copy { margin: 0; }
+    .sb nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb nav a { display: block; padding: 0.35rem 0.6rem; border-left: 2px solid var(--bb-rule); color: var(--bb-fg); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--bb-track-label); }
+    .sb nav a:hover { color: var(--bb-blue-ink); border-color: var(--bb-blue-ink); }
+    .theme { display: flex; gap: 0.4rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .theme button { font: inherit; font-size: 0.75rem; }
+    .theme button[aria-pressed="true"] { background: var(--bb-blue); color: var(--bb-on-blue); border-color: var(--bb-gold); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .top .theme { margin: 0; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); background: var(--bb-bg); border: 1px dashed var(--bb-rule); border-radius: var(--bb-radius); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--bb-track-label); color: var(--bb-fg-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--bb-surface); border: 1px solid var(--bb-rule); border-radius: var(--bb-radius); font: 0.8rem/1.5 var(--bb-font-mono); color: var(--bb-fg); tab-size: 2; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; }
+    .sw { border: 1px solid var(--bb-rule); border-radius: var(--bb-radius); overflow: hidden; background: var(--bb-surface); }
+    .sw i { display: block; height: 3.5rem; border-bottom: 1px solid var(--bb-rule); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--bb-fg-muted); }
+    .spec-type { display: grid; gap: 1rem; }
+    .on-wall { background: var(--bb-yellow); }
+    footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--bb-fg-muted); }
+  </style>
+  <meta name="theme-color" content="#071033">
+  <link rel="icon" href="/styles/blockbuster/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/blockbuster/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/blockbuster/manifest.webmanifest">
+</head>
+<body class="bb">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="bb-label"><a href="/">junk</a> / style sheets / blockbuster</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="bb-carpet">
+      <div class="bb-wall bb-wall--center hero">
+        <span class="bb-ticket">Blockbuster</span>
+        <h1 class="bb-title bb-title--xl">Be kind, rewind</h1>
+        <span class="bb-new">New releases</span>
+        <p class="bb-copy bb-copy--center">A royal blue ticket stub, yellow walls, confetti carpet and a red new-release sign, inspired by a 1990s Blockbuster Video. Plain CSS, no fonts or scripts to load, light and dark.</p>
+      </div>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#ticket">Ticket, sign</a></li>
+      <li><a href="#wall">Wall</a></li>
+      <li><a href="#panel">Panel, card</a></li>
+      <li><a href="#carpet">Carpet</a></li>
+      <li><a href="#case">VHS case</a></li>
+      <li><a href="#coupon">Coupon</a></li>
+      <li><a href="#grid">Grid</a></li>
+      <li><a href="#table">Table</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge, dividers</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="bb"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>bb-</code> and every custom property <code>--bb-</code>. Plain element selectors only apply under <code>.bb</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/blockbuster/blockbuster.css"&gt;
+&lt;body class="bb"&gt;
+  &lt;div class="bb-panel"&gt;
+    &lt;h1 class="bb-title bb-title--lg"&gt;Hello&lt;/h1&gt;
+  &lt;/div&gt;
+&lt;/body&gt;</pre>
+      <p>Components read context variables (<code>--bb-fg</code>, <code>--bb-line</code>, <code>--bb-accent</code>, <code>--bb-heading</code>, <code>--bb-field</code>), so the same markup works on the page and inside a <code>.bb-panel</code>, <code>.bb-wall</code>, <code>.bb-carpet</code> or <code>.bb-coupon</code>, which flip them for their own color. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>; the switch above does that for this page. The ticket, wall, carpet, VHS case and coupon keep their colors in both themes; the page background, text and lines change.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values below are read from the live sheet, so they follow the theme switch. Ratios are WCAG contrast against the stated background; text needs 4.5, lines and controls 3. Pink, teal and purple appear only in the carpet and flourishes, never as text.</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type</h2>
+      <p>Display type is a condensed heavy sans in caps (Haettenschweiler, Franklin Gothic Condensed, Roboto Condensed or Arial Narrow, whichever the device has), like the logo. <code>bb-new</code> is the slanted black italic of the new-release sign. Labels and values are small caps with tracking.</p>
+      <div class="demo spec-type">
+        <h1 class="bb-title bb-title--lg">Friday night movie night</h1>
+        <h3 class="bb-title bb-title--md">Rent two, get one free</h3>
+        <span class="bb-new">New releases</span>
+        <span class="bb-label">Due back tomorrow by 11:59 pm</span>
+        <span class="bb-value">2 night rental</span>
+        <p class="bb-copy">I know you remember the smell, the energy, and the carpet. Pick up a few, grab some popcorn, and please be kind: rewind.</p>
+      </div>
+    </section>
+
+    <section id="ticket">
+      <h2>Ticket, sign</h2>
+      <p>The ticket stub from the logo: blue, with a punched notch on the left, nicks on the right, a gold keyline and gold caps. It sizes to its text and tilts a little; <code>bb-ticket--flat</code> straightens it, <code>--sm</code> shrinks it, <code>--sub</code> sets small spaced body caps. <code>bb-sign</code> is the genre header on the wall, and <code>bb-sign--new</code> is the yellow one.</p>
+      <div class="demo stack">
+        <div class="row">
+          <span class="bb-ticket">Blockbuster</span>
+          <span class="bb-ticket bb-ticket--flat">Video</span>
+          <span class="bb-ticket bb-ticket--sm">Member</span>
+          <span class="bb-ticket bb-ticket--flat bb-ticket--sub">Admit one</span>
+        </div>
+        <div class="row">
+          <span class="bb-sign">Action</span>
+          <span class="bb-sign">Comedy</span>
+          <span class="bb-sign">Drama</span>
+          <span class="bb-sign">Horror</span>
+          <span class="bb-sign">Sci-Fi</span>
+          <span class="bb-sign bb-sign--new">New releases</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="wall">
+      <h2>Wall</h2>
+      <p>The yellow store wall with its blue baseboard, for page headers and signs. Text on it is deep blue; links and headings are royal blue.</p>
+      <div class="demo">
+        <div class="bb-wall bb-wall--center">
+          <span class="bb-ticket">Blockbuster</span>
+          <h3 class="bb-title bb-title--md" style="margin-top: 1.25rem">Open late</h3>
+          <p class="bb-copy bb-copy--center">Genre signs, movie posters and a TV playing the trailer. <a href="#wall">Link on the wall</a>.</p>
+          <span class="bb-label">Membership required</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel">
+      <h2>Panel, card</h2>
+      <p>The blue field with a gold keyline and a faint sheen. <code>bb-panel--flat</code> drops the sheen. <code>bb-card</code> is the quiet version for content on the page background.</p>
+      <div class="demo stack">
+        <div class="bb-panel bb-panel--center">
+          <span class="bb-new">Just in</span>
+          <h3 class="bb-title bb-title--md">Panel</h3>
+          <p class="bb-copy bb-copy--center">White on blue, gold for accents and rules. <a href="#panel">A link</a>.</p>
+        </div>
+        <div class="bb-panel bb-panel--flat">
+          <h3 class="bb-title bb-title--md">Flat panel</h3>
+          <p class="bb-copy">No sheen, for large areas or print.</p>
+        </div>
+        <div class="bb-card">
+          <h3 class="bb-title bb-title--md">Card</h3>
+          <p class="bb-copy">Surface color and a rule, for content that should stay quiet.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="carpet">
+      <h2>Carpet</h2>
+      <p>The confetti floor: navy with scattered triangles, dots and squiggles. It is the same in both themes. Put panels or cards on it; its own text is white.</p>
+      <div class="demo">
+        <div class="bb-carpet">
+          <div class="bb-panel bb-panel--center">
+            <h3 class="bb-title bb-title--md">Aisle 7</h3>
+            <p class="bb-copy bb-copy--center">A panel on the carpet.</p>
+          </div>
+          <hr class="bb-film">
+          <p class="bb-copy">Plain text on the carpet is white.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="case">
+      <h2>VHS case</h2>
+      <p>A black rental case with a white store label (address in mono caps, barcode) and the blue art strip. <code>bb-sticker</code> is the white rental sticker with title, date and price, and works on its own or tucked into the case. <code>bb-barcode</code> draws the bars.</p>
+      <div class="demo stack">
+        <div class="bb-case">
+          <div class="bb-case__face">
+            <div class="bb-case__store">
+              <span>Blockbuster Video<br>900 E. Ray Rd.<br>Phoenix, AZ 85044</span>
+              <span class="bb-barcode" role="img" aria-label="Barcode"></span>
+            </div>
+            <div class="bb-case__art">Be kind, rewind<small>Rental copy</small></div>
+            <div class="bb-sticker">
+              <span>Honey, I shrunk the kids</span>
+              <span>14-Oct-1990</span>
+              <span>Price $11.88</span>
+              <span class="bb-barcode" role="img" aria-label="Barcode"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="bb-sticker">
+            <span>Twister</span>
+            <span>Due 22-Nov</span>
+            <span>Rental $3.99</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="coupon">
+      <h2>Coupon</h2>
+      <p>The red early-return card: film sprocket holes along the top, a huge white word, a yellow slanted line, and fine print. <code>bb-burst</code> is the yellow oval callout.</p>
+      <div class="demo">
+        <div class="bb-coupon">
+          <span class="bb-coupon__big">Free</span>
+          <span class="bb-coupon__sub">Early return bonus</span>
+          <p class="bb-copy bb-copy--center" style="margin-top: 0.75rem">and $1 off any new release rental that same night.</p>
+          <div style="margin-top: 1rem"><span class="bb-burst">2 great reasons<br>to bring it back<br>sometime tomorrow!</span></div>
+          <p class="bb-coupon__fine">Get a $1.00 discount toward a new release video rental when you return a previously rented video on or before its due date. One discount per rental transaction. Cannot be combined with any other offer.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="grid">
+      <h2>Grid</h2>
+      <p>Ruled cells with spaced caps, for stats, receipts and rental details. Cells share their lines however they wrap. Use <code>bb-cell--wide</code> to span a full row, <code>bb-grid--2</code>, <code>--3</code> or <code>--4</code> for fixed columns (two on a phone), or no modifier to fit as many as the width allows.</p>
+      <div class="demo stack">
+        <div class="bb-panel bb-panel--flat">
+          <div class="bb-grid">
+            <div class="bb-cell"><span class="bb-value">2 night rental</span></div>
+            <div class="bb-cell"><span class="bb-value">VHS</span></div>
+            <div class="bb-cell"><span class="bb-value">$3.99</span></div>
+            <div class="bb-cell bb-cell--wide"><span class="bb-value">Late fee $1.00 per day</span></div>
+          </div>
+        </div>
+        <div class="bb-grid bb-grid--4">
+          <div class="bb-cell bb-cell--tall"><span class="bb-label">Rented</span><span class="bb-value bb-value--xl">128</span></div>
+          <div class="bb-cell bb-cell--tall"><span class="bb-label">Streak</span><span class="bb-value bb-value--xl">7</span></div>
+          <div class="bb-cell bb-cell--tall"><span class="bb-label">Late</span><span class="bb-value bb-value--xl">2</span></div>
+          <div class="bb-cell bb-cell--tall"><span class="bb-label">Free</span><span class="bb-value bb-value--xl">31</span></div>
+          <div class="bb-cell bb-cell--wide"><span class="bb-label">Last visit</span><span class="bb-value bb-value--plain">Fri, Nov 20</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="table">
+      <h2>Table</h2>
+      <p>Blue header, gold caps, striped rows. Wrap it in <code>bb-table-wrap</code> if it can overflow a phone. Numbers right-align with <code>bb-num</code>, and <code>bb-late</code> marks an overdue cell.</p>
+      <div class="demo">
+        <div class="bb-table-wrap">
+          <table class="bb-table">
+            <caption>Rentals out</caption>
+            <thead><tr><th scope="col">Title</th><th scope="col">Due</th><th scope="col" class="bb-num">Fee</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Jurassic Park</th><td>Sat</td><td class="bb-num">$0.00</td></tr>
+              <tr><th scope="row">Twister</th><td class="bb-late">Thu</td><td class="bb-num bb-late">$2.00</td></tr>
+              <tr><th scope="row">The Rock</th><td>Sun</td><td class="bb-num">$0.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are yellow with a blue edge in condensed caps; <code>bb-button--blue</code>, <code>--red</code> and <code>--ghost</code> step through the other looks, and <code>--block</code> fills the row. Inputs are 44px tall.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="bb-button" type="button">Rent it</button>
+          <button class="bb-button bb-button--blue" type="button">Rewind</button>
+          <button class="bb-button bb-button--red" type="button">Return</button>
+          <button class="bb-button bb-button--ghost" type="button">Cancel</button>
+          <button class="bb-button" type="button" disabled>Disabled</button>
+        </div>
+        <button class="bb-button bb-button--blue bb-button--block" type="button">Check out</button>
+        <div class="bb-grid bb-grid--2" style="--bb-cell-pad: 1rem">
+          <div class="bb-cell bb-cell--left">
+            <div class="bb-field">
+              <label class="bb-label" for="sb-name">Member name</label>
+              <input class="bb-input" id="sb-name" placeholder="Your name" autocomplete="off">
+            </div>
+          </div>
+          <div class="bb-cell bb-cell--left">
+            <div class="bb-field">
+              <label class="bb-label" for="sb-fmt">Format</label>
+              <select class="bb-select" id="sb-fmt"><option>VHS</option><option>DVD</option><option>Game</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge, dividers</h2>
+      <p>Badges are small caps in a pill. <code>bb-film</code> is a blue strip with sprocket holes (gold on a panel or the carpet); <code>bb-divider</code> is two plain lines.</p>
+      <div class="demo">
+        <div class="row"><span class="bb-badge">Rated PG</span><span class="bb-badge bb-badge--solid">Member</span><span class="bb-badge bb-badge--new">New</span><span class="bb-badge bb-badge--gold">2 for 1</span></div>
+        <hr class="bb-film">
+        <hr class="bb-divider">
+        <div class="bb-panel bb-panel--flat"><div class="row"><span class="bb-badge">Rated R</span><span class="bb-badge bb-badge--gold">Staff pick</span></div><hr class="bb-film"><span class="bb-label">Please be kind, rewind</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/blockbuster/blockbuster.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009. An unofficial fan style sheet; Blockbuster is a trademark of its owner.</footer>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/\s+style="--bb-cell-pad: 1rem"/g, '').replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('bb-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('bb-theme') : localStorage.setItem('bb-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'bb-button bb-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Palette swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const tokens = [
+    ['--bb-bg', 'page'], ['--bb-surface', 'cards, inputs'], ['--bb-text', 'text', '--bb-bg'], ['--bb-muted', 'muted text', '--bb-bg'],
+    ['--bb-blue', 'the ticket: fills', '--bb-on-blue', 'white on it'], ['--bb-blue-deep', 'edges, shadows'], ['--bb-blue-ink', 'blue text, lines', '--bb-bg'],
+    ['--bb-on-blue', 'text on blue', '--bb-blue'], ['--bb-on-blue-muted', 'muted on blue', '--bb-blue'],
+    ['--bb-gold', 'gold on blue', '--bb-blue', 'on blue'], ['--bb-on-gold', 'text on gold', '--bb-gold'],
+    ['--bb-yellow', 'the wall', '--bb-on-yellow', 'deep blue on it'], ['--bb-on-yellow', 'text on yellow', '--bb-yellow'],
+    ['--bb-red', 'new releases: fills', '--bb-on-red', 'white on it'], ['--bb-red-ink', 'red text', '--bb-bg'],
+    ['--bb-pink', 'carpet only'], ['--bb-teal', 'carpet only'], ['--bb-purple', 'carpet only'], ['--bb-rule', 'lines', '--bb-bg'],
+  ];
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    const out = document.getElementById('swatches'); out.replaceChildren();
+    for (const [name, use, vs, note] of tokens) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = `var(${name})`;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      if (vs && /^#[0-9A-F]{6}$/.test(hex)) {
+        const r = ratio(hex, val(vs));
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 ${note || 'vs ' + vs.replace('--bb-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/blockbuster/sw.js', { scope: '/styles/blockbuster/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,669 @@
+/*
+ * blockbuster: a style sheet inspired by a 1990s Blockbuster Video store.
+ * The ticket-stub logo in royal blue and gold, the yellow walls with blue
+ * genre signs, the confetti carpet, new-release red, VHS rental cases with
+ * barcodes and price stickers, and the red early-return coupon.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/blockbuster/blockbuster.css">
+ * Docs and live examples: /styles/blockbuster/
+ *
+ * Everything is prefixed: classes `bb-`, custom properties `--bb-`. The only
+ * element rules are under the opt-in `.bb` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one. Light is the sunny
+ * yellow-cream store; dark is the store after closing, navy like the carpet.
+ * Blue tickets, the carpet and the VHS case look the same in both.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, blockbuster-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* palette, light. Contrast: text/bg 15.7, muted/bg 7.4, blue-ink/bg 8.8,
+     white/blue 9.4, gold/blue 4.8, on-gold/gold 7.2, on-yellow/yellow 8.7,
+     white/red 5.9, rule/bg 4.6, red-ink/bg 5.5 */
+  --bb-bg: #FFF8E3;
+  --bb-surface: #FFFFFF;
+  --bb-text: #0A1A4A;
+  --bb-muted: #40507F;
+  --bb-blue: #0F3EA3;          /* the ticket: fills, with white or gold on top */
+  --bb-blue-deep: #08266B;     /* edges and shadows */
+  --bb-blue-ink: #0F3EA3;      /* blue as text or lines on bg and surface */
+  --bb-on-blue: #FFFFFF;
+  --bb-on-blue-muted: #D6E0FF;
+  --bb-gold: #FFA800;          /* the logo's orange-gold, on blue */
+  --bb-on-gold: #08266B;
+  --bb-yellow: #FFC20E;        /* the wall, with deep blue on top */
+  --bb-on-yellow: #08266B;
+  --bb-red: #C8102E;           /* new releases: fills, with white on top */
+  --bb-on-red: #FFFFFF;
+  --bb-red-ink: #C8102E;       /* red as text on bg and surface */
+  --bb-pink: #F0457A;          /* carpet and flourishes, never text */
+  --bb-teal: #14B8A6;          /* carpet and flourishes, never text */
+  --bb-purple: #7B3FE4;        /* carpet and flourishes, never text */
+  --bb-rule: #5B6FAE;          /* lines on bg and surface */
+  --bb-focus: #0F3EA3;
+
+  /* type */
+  --bb-font-display: Haettenschweiler, "Franklin Gothic Demi Cond", "Franklin Gothic Condensed", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --bb-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bb-font-hand: "Arial Black", "Helvetica Neue", Arial, sans-serif;   /* new-release italic */
+  --bb-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bb-stretch: condensed;     /* narrows the display face where it has a width axis */
+  --bb-track-label: 0.1em;     /* small caps labels */
+  --bb-track-display: 0.02em;  /* condensed display caps */
+
+  /* space */
+  --bb-space: 0.5rem;
+  --bb-radius: 0.3rem;
+  --bb-notch: 0.7rem;          /* radius of the ticket's punched notches */
+
+  /* context: components read these, so the same markup works on the page
+     background and inside a .bb-panel */
+  --bb-fg: var(--bb-text);
+  --bb-fg-muted: var(--bb-muted);
+  --bb-line: var(--bb-rule);
+  --bb-heading: var(--bb-blue-ink);
+  --bb-accent: var(--bb-blue-ink);
+  --bb-field: var(--bb-surface);   /* what sits under cards and inputs */
+  --bb-shadow: 0 1px 2px #0A1A4A33, 0 10px 22px -12px #0A1A4A73;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast: text/bg 16.9, muted/bg 11.2, blue-ink/bg 8.8, rule/bg 5.3,
+     gold/bg 9.6, red-ink/bg 7.4, focus/bg 11.5 */
+  :root:not([data-theme="light"]) {
+    --bb-bg: #071033;
+    --bb-surface: #101C4C;
+    --bb-text: #FFF4D6;
+    --bb-muted: #BFC8E8;
+    --bb-blue-ink: #8FB1FF;
+    --bb-red-ink: #FF7A8A;
+    --bb-rule: #6C86D6;
+    --bb-focus: #FFC20E;
+    --bb-shadow: 0 1px 2px #000A, 0 10px 22px -12px #000;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bb-bg: #071033;
+  --bb-surface: #101C4C;
+  --bb-text: #FFF4D6;
+  --bb-muted: #BFC8E8;
+  --bb-blue-ink: #8FB1FF;
+  --bb-red-ink: #FF7A8A;
+  --bb-rule: #6C86D6;
+  --bb-focus: #FFC20E;
+  --bb-shadow: 0 1px 2px #000A, 0 10px 22px -12px #000;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- page: opt in with class="bb" on <body> ---------------------------- */
+
+.bb {
+  margin: 0;
+  background: var(--bb-bg);
+  color: var(--bb-fg);
+  font: 1rem/1.55 var(--bb-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.bb *, .bb *::before, .bb *::after { box-sizing: border-box; }
+.bb h1, .bb h2, .bb h3, .bb h4 {
+  font-family: var(--bb-font-display);
+  font-weight: 800;
+  line-height: 1;
+  font-stretch: var(--bb-stretch);
+  text-transform: uppercase;
+  letter-spacing: var(--bb-track-display);
+  color: var(--bb-heading);
+  margin: 0 0 0.5em;
+}
+.bb h1 { font-size: clamp(2.6rem, 9vw, 4.75rem); }
+.bb h2 { font-size: clamp(1.8rem, 5vw, 2.7rem); }
+.bb h3 { font-size: 1.5rem; }
+.bb h4 { font-size: 1.1rem; letter-spacing: var(--bb-track-label); }
+.bb a { color: var(--bb-blue-ink); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.bb a:hover { text-decoration-thickness: 2px; }
+.bb :focus-visible { outline: 3px solid var(--bb-focus); outline-offset: 2px; }
+.bb hr { border: 0; height: 0.6rem; margin: 2rem 0; background: var(--bb-blue); border-block: 2px solid var(--bb-gold); }
+.bb code, .bb kbd { font-family: var(--bb-font-mono); font-size: 0.9em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* condensed display headline */
+.bb-title {
+  font-family: var(--bb-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.95;
+  letter-spacing: var(--bb-track-display);
+  color: var(--bb-heading);
+  margin: 0;
+}
+.bb-panel .bb-title { text-shadow: 0 0.05em 0 var(--bb-blue-deep); }
+.bb-title--xl { font-size: clamp(2.8rem, 11vw, 6rem); }
+.bb-title--lg { font-size: clamp(2.1rem, 7vw, 3.5rem); }
+.bb-title--md { font-size: clamp(1.5rem, 4.5vw, 2.1rem); }
+
+/* small spaced caps */
+.bb-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--bb-track-label);
+  color: var(--bb-fg-muted);
+}
+
+/* running copy */
+.bb-copy { font-size: 0.95rem; line-height: 1.5; color: var(--bb-fg); max-width: 36rem; }
+.bb-copy--center { text-align: center; margin-inline: auto; }
+
+/* slanted red headline: NEW RELEASES. The zigzag underline is the 80s-90s squiggle. */
+.bb-new {
+  display: inline-block;
+  justify-self: start;
+  width: fit-content;
+  padding-bottom: 0.45em;
+  margin-bottom: 0.25rem;
+  font-family: var(--bb-font-hand);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(1.6rem, 6vw, 2.8rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--bb-red-ink);
+  transform: rotate(-4deg);
+  background:
+    linear-gradient(135deg, transparent 75%, var(--bb-pink) 75% 85%, transparent 85%) 0 100% / 0.9em 0.3em repeat-x,
+    linear-gradient(45deg, transparent 75%, var(--bb-pink) 75% 85%, transparent 85%) 0 100% / 0.9em 0.3em repeat-x;
+}
+.bb-panel .bb-new { color: var(--bb-on-blue); text-shadow: 0.06em 0.06em 0 var(--bb-red); }
+
+/* ---- ticket: the logo shape ------------------------------------------- */
+
+/* Blue stub, notch punched out of the left side and a torn right edge, with a
+   gold inner keyline and gold condensed caps. It sizes to its text. */
+.bb-ticket {
+  --bb-ticket-fg: var(--bb-gold);
+  position: relative;
+  display: inline-block;
+  padding: 0.6em 1.7em;
+  font-family: var(--bb-font-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 5vw, 2.6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--bb-ticket-fg);
+  background: var(--bb-blue);
+  transform: rotate(-3deg);
+  /* punched notch on the left, a pair of nicks on the right */
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, #0000 0 var(--bb-notch), #000 calc(var(--bb-notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 22%, #0000 0 0.28rem, #000 calc(0.28rem + 0.5px)) right / 51% 100% no-repeat;
+          mask:
+    radial-gradient(circle at 0 50%, #0000 0 var(--bb-notch), #000 calc(var(--bb-notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 22%, #0000 0 0.28rem, #000 calc(0.28rem + 0.5px)) right / 51% 100% no-repeat;
+}
+.bb-ticket::before {
+  content: "";
+  position: absolute;
+  inset: 0.3rem 0.5rem 0.3rem 0.9rem;
+  border: 2px solid var(--bb-gold);
+  pointer-events: none;
+}
+.bb-ticket--sm { font-size: 1.1rem; padding: 0.5em 1.4em; }
+.bb-ticket--flat { transform: none; }
+.bb-ticket--sub { font-family: var(--bb-font-body); font-weight: 800; font-size: 0.8rem; letter-spacing: var(--bb-track-label); }
+
+/* ---- sign: a genre header on the wall (ACTION, COMEDY, DRAMA) ----------- */
+
+.bb-sign {
+  display: inline-block;
+  padding: 0.3rem 1.1rem;
+  background: var(--bb-blue);
+  color: var(--bb-on-blue);
+  border: 2px solid var(--bb-gold);
+  border-radius: 0.15rem;
+  font-family: var(--bb-font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  box-shadow: 0 2px 0 var(--bb-blue-deep);
+}
+.bb-sign--new { background: var(--bb-yellow); color: var(--bb-on-yellow); border-color: var(--bb-blue); }
+
+/* ---- wall: the yellow store wall -------------------------------------- */
+
+.bb-wall {
+  --bb-fg: var(--bb-on-yellow);
+  --bb-fg-muted: #3A4A7D;
+  --bb-line: var(--bb-blue);
+  --bb-heading: var(--bb-blue);
+  --bb-accent: var(--bb-blue);
+  --bb-field: var(--bb-yellow);
+  position: relative;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  color: var(--bb-fg);
+  background:
+    linear-gradient(180deg, #FFFFFF2E, #FFFFFF00 40%, #8A5A0033),
+    var(--bb-yellow);
+  border-bottom: 0.5rem solid var(--bb-blue);
+  border-radius: var(--bb-radius) var(--bb-radius) 0 0;
+}
+.bb-wall .bb-label { color: #2D3C70; }   /* 6.1 on the wall */
+.bb-wall a { color: var(--bb-blue); }
+.bb-wall--center { text-align: center; }
+
+/* ---- panel: a blue field with a gold keyline --------------------------- */
+
+.bb-panel {
+  --bb-fg: var(--bb-on-blue);
+  --bb-fg-muted: var(--bb-on-blue-muted);
+  --bb-line: var(--bb-gold);
+  --bb-heading: var(--bb-on-blue);
+  --bb-accent: var(--bb-gold);
+  --bb-field: var(--bb-blue);
+  position: relative;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  color: var(--bb-fg);
+  background:
+    linear-gradient(160deg, #FFFFFF1F 0%, #FFFFFF00 40%, #00000040 100%),
+    var(--bb-blue);
+  border-radius: var(--bb-radius);
+  box-shadow: var(--bb-shadow);
+}
+.bb-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0.4rem;
+  border: 2px solid var(--bb-gold);
+  border-radius: calc(var(--bb-radius) / 2);
+  pointer-events: none;
+}
+.bb-panel > * { position: relative; }
+.bb-panel a { color: var(--bb-gold); }
+.bb-panel--flat { background: var(--bb-blue); }
+.bb-panel--center { text-align: center; }
+
+/* paper variant: a quiet surface for content on the page background */
+.bb-card {
+  position: relative;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: var(--bb-surface);
+  color: var(--bb-fg);
+  border: 1px solid var(--bb-line);
+  border-top: 0.4rem solid var(--bb-blue-ink);
+  border-radius: var(--bb-radius);
+}
+
+/* ---- carpet: the confetti floor ---------------------------------------- */
+
+/* Navy with scattered triangles, squares and squiggles in teal, pink, purple
+   and gold. It is the same in both modes. Text on it needs a panel or card;
+   its own text color is white. */
+.bb-carpet {
+  --bb-fg: #FFFFFF;
+  --bb-fg-muted: var(--bb-on-blue-muted);
+  --bb-line: var(--bb-gold);
+  --bb-heading: #FFFFFF;
+  --bb-accent: var(--bb-gold);
+  --bb-field: #0B1B5C;
+  padding: clamp(1rem, 4vw, 2rem);
+  color: var(--bb-fg);
+  background-color: #0B1B5C;
+  background-image:
+    linear-gradient(135deg, transparent 70%, var(--bb-teal) 70% 82%, transparent 82%),
+    linear-gradient(45deg, transparent 70%, var(--bb-pink) 70% 82%, transparent 82%),
+    linear-gradient(315deg, transparent 68%, var(--bb-gold) 68% 78%, transparent 78%),
+    linear-gradient(225deg, transparent 70%, var(--bb-purple) 70% 84%, transparent 84%),
+    radial-gradient(circle, var(--bb-pink) 0 2px, transparent 2.5px),
+    radial-gradient(circle, var(--bb-teal) 0 1.5px, transparent 2px);
+  background-size: 54px 54px, 71px 71px, 89px 89px, 63px 63px, 37px 37px, 29px 29px;
+  background-position: 0 0, 20px 31px, 41px 7px, 9px 48px, 11px 5px, 3px 19px;
+  border-radius: var(--bb-radius);
+}
+.bb-carpet > .bb-panel, .bb-carpet > .bb-card { box-shadow: 0 6px 18px -6px #000A; }
+
+/* ---- case: a VHS rental case ------------------------------------------ */
+
+/* Black clamshell, white store label with address and barcode, and a blue
+   spine strip. Put a title and a few lines of text inside. */
+.bb-case {
+  --bb-fg: #111111;
+  --bb-fg-muted: #4A4A55;
+  --bb-line: #111111;
+  position: relative;
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.55rem 0.55rem 0.55rem 1.1rem;
+  color: var(--bb-fg);
+  background: #15151A;
+  border-radius: 0.35rem;
+  box-shadow: var(--bb-shadow);
+}
+.bb-case::before {   /* the hinge */
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.55rem;
+  background: linear-gradient(90deg, #000, #3A3A44 55%, #0A0A0D);
+  border-radius: 0.35rem 0 0 0.35rem;
+}
+.bb-case__face {
+  position: relative;
+  padding: 0.7rem 0.8rem 1rem;
+  background: #FFFFFF;
+  border-radius: 0.15rem;
+}
+.bb-case__store {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font: 600 0.62rem/1.35 var(--bb-font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2A2A33;
+}
+.bb-barcode {
+  display: block;
+  width: 7.5rem;
+  height: 1.7rem;
+  background: repeating-linear-gradient(90deg,
+    #111 0 1px, #fff 1px 3px, #111 3px 5px, #fff 5px 6px, #111 6px 7px, #fff 7px 10px, #111 10px 11px, #fff 11px 12px);
+}
+.bb-case__art {
+  margin-top: 0.6rem;
+  padding: 0.9rem 0.8rem;
+  background: var(--bb-blue);
+  color: var(--bb-gold);
+  border-inline: 2px solid var(--bb-gold);
+  font-family: var(--bb-font-display);
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+.bb-case__art small { display: block; margin-top: 0.3rem; font: 700 0.65rem/1 var(--bb-font-body); letter-spacing: 0.22em; color: var(--bb-on-blue); }
+
+/* the white rental sticker with title, date and price */
+.bb-sticker {
+  display: inline-grid;
+  gap: 0.15rem;
+  padding: 0.5rem 0.7rem;
+  background: #FFFFFF;
+  color: #111111;
+  border: 1px solid #9AA0B4;
+  border-radius: 0.2rem;
+  box-shadow: 0 1px 3px #0A1A4A40;
+  font: 600 0.7rem/1.35 var(--bb-font-mono);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.bb-sticker .bb-barcode { width: 100%; height: 1.2rem; margin-top: 0.2rem; }
+.bb-case__face > .bb-sticker { position: absolute; right: 0.6rem; bottom: -0.35rem; transform: rotate(-2deg); }
+
+/* ---- coupon: the red early-return card ---------------------------------- */
+
+/* Red card with sprocket holes along the top, a gold headline and a yellow
+   burst for the fine print. Heading sizes are large text (3:1 is enough on red). */
+.bb-coupon {
+  --bb-fg: var(--bb-on-red);
+  --bb-fg-muted: #FFE3E7;
+  --bb-line: var(--bb-yellow);
+  --bb-heading: var(--bb-on-red);
+  --bb-accent: var(--bb-yellow);
+  --bb-field: var(--bb-red);
+  position: relative;
+  padding: 2.4rem clamp(1rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2rem);
+  text-align: center;
+  color: var(--bb-fg);
+  background: var(--bb-red);
+  border: 0.4rem solid var(--bb-blue);
+  border-radius: var(--bb-radius);
+  box-shadow: var(--bb-shadow);
+}
+.bb-coupon::before {   /* film sprocket holes */
+  content: "";
+  position: absolute;
+  inset: 0.55rem 0.6rem auto;
+  height: 0.85rem;
+  background: repeating-linear-gradient(90deg, var(--bb-blue) 0 1rem, transparent 1rem 1.6rem);
+  border-radius: 0.1rem;
+}
+.bb-coupon__big {
+  display: block;
+  font-family: var(--bb-font-display);
+  font-weight: 800;
+  font-size: clamp(3rem, 14vw, 6rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: var(--bb-on-red);
+}
+.bb-coupon__sub {
+  display: block;
+  font-family: var(--bb-font-hand);
+  font-weight: 900;
+  font-size: clamp(1.4rem, 6vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--bb-yellow);
+}
+.bb-coupon__fine { margin: 1rem 0 0; font-size: 0.72rem; line-height: 1.4; color: var(--bb-fg-muted); text-align: left; }
+
+/* yellow oval callout: "2 Great Reasons..." */
+.bb-burst {
+  display: inline-grid;
+  place-items: center;
+  padding: 0.8rem 1.4rem;
+  background: var(--bb-yellow);
+  color: var(--bb-on-yellow);
+  border-radius: 50%;
+  font-family: var(--bb-font-hand);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  text-align: center;
+  transform: rotate(-6deg);
+  box-shadow: 0 3px 0 #0006;
+}
+
+/* ---- film strip: the divider ------------------------------------------- */
+
+/* blue band with sprocket holes, like the red card's border */
+.bb-film {
+  height: 1.1rem;
+  margin: 1.5rem 0;
+  border: 0;
+  background:
+    repeating-linear-gradient(90deg, var(--bb-bg) 0 0.7rem, transparent 0.7rem 1.3rem) 0.3rem 0.25rem / 100% 0.6rem no-repeat,
+    var(--bb-blue);
+  border-radius: 0.15rem;
+}
+.bb-panel .bb-film, .bb-carpet .bb-film { background:
+    repeating-linear-gradient(90deg, var(--bb-blue-deep) 0 0.7rem, transparent 0.7rem 1.3rem) 0.3rem 0.25rem / 100% 0.6rem no-repeat,
+    var(--bb-gold); }
+
+/* plain divider: gold hairline between two blue ones */
+.bb-divider {
+  height: 0;
+  margin: 1.5rem 0;
+  border: 0;
+  border-top: 2px solid var(--bb-line);
+  border-bottom: 2px solid var(--bb-line);
+  box-shadow: 0 4px 0 -1px var(--bb-bg);
+}
+
+/* ---- grid: ruled cells like the receipt strip --------------------------- */
+
+.bb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--bb-cell-min, 9.5rem), 1fr));
+  border-top: 1px solid var(--bb-line);
+  border-left: 1px solid var(--bb-line);
+  color: var(--bb-fg);
+}
+.bb-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.bb-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.bb-grid--4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 34rem) {
+  .bb-grid--3, .bb-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+.bb-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: var(--bb-cell-pad, 0.75rem 1rem);
+  text-align: center;
+  background: var(--bb-field);
+  border-right: 1px solid var(--bb-line);
+  border-bottom: 1px solid var(--bb-line);
+}
+.bb-cell--wide { grid-column: 1 / -1; }
+.bb-cell--left { text-align: left; }
+.bb-cell--tall { padding-block: 1.3rem; }
+.bb-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bb-accent);
+}
+.bb-value--plain { color: var(--bb-fg); }
+.bb-value--lg { font-size: 1.25rem; }
+.bb-value--xl {
+  font-family: var(--bb-font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.bb-cell > .bb-label { color: var(--bb-fg-muted); }
+
+/* ---- table ------------------------------------------------------------- */
+
+.bb-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--bb-fg);
+  border: 1px solid var(--bb-line);
+}
+.bb-table caption {
+  caption-side: top;
+  padding: 0 0 0.6rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--bb-track-label);
+  color: var(--bb-fg-muted);
+}
+.bb-table th, .bb-table td { padding: 0.55rem 0.9rem; text-align: left; border: 1px solid var(--bb-line); }
+.bb-table thead th {
+  background: var(--bb-blue);
+  color: var(--bb-gold);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: var(--bb-track-label);
+  border-color: var(--bb-blue-deep);
+}
+.bb-table tbody th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: var(--bb-track-label);
+  color: var(--bb-fg-muted);
+}
+.bb-table tbody tr:nth-child(even) td, .bb-table tbody tr:nth-child(even) th { background: color-mix(in srgb, var(--bb-blue) 7%, var(--bb-surface)); }
+.bb-table td { font-variant-numeric: tabular-nums; }
+.bb-table .bb-num { text-align: right; }
+.bb-table-wrap { overflow-x: auto; }
+.bb-late { color: var(--bb-red-ink); font-weight: 800; }   /* overdue */
+
+/* ---- controls ---------------------------------------------------------- */
+
+.bb-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 2.75rem;
+  padding: 0.55rem 1.4rem;
+  font: 800 1.05rem/1 var(--bb-font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--bb-on-gold);
+  background: var(--bb-yellow);
+  border: 2px solid var(--bb-blue);
+  border-radius: var(--bb-radius);
+  box-shadow: 0 3px 0 var(--bb-blue-deep);
+  transition: transform 0.1s, box-shadow 0.1s, filter 0.1s;
+}
+.bb-button:hover { filter: brightness(1.06); }
+.bb-button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--bb-blue-deep); }
+.bb-button:focus-visible { outline: 3px solid var(--bb-focus); outline-offset: 3px; }
+.bb-button[disabled], .bb-button[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; filter: none; }
+
+.bb-button--blue { color: var(--bb-on-blue); background: var(--bb-blue); border-color: var(--bb-gold); box-shadow: 0 3px 0 var(--bb-blue-deep); }
+.bb-button--red { color: var(--bb-on-red); background: var(--bb-red); border-color: var(--bb-blue-deep); box-shadow: 0 3px 0 var(--bb-blue-deep); }
+.bb-button--ghost { color: var(--bb-blue-ink); background: transparent; border-color: var(--bb-line); box-shadow: none; }
+.bb-panel .bb-button--ghost, .bb-carpet .bb-button--ghost { color: var(--bb-gold); }
+.bb-button--ghost:active { transform: none; }
+.bb-button--block { display: flex; width: 100%; }
+
+.bb-field { display: grid; gap: 0.35rem; }
+.bb-input, .bb-select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.8rem;
+  font: 1rem/1.3 var(--bb-font-body);
+  color: var(--bb-text);
+  background: var(--bb-surface);
+  border: 1px solid var(--bb-rule);
+  border-radius: var(--bb-radius);
+}
+.bb-input::placeholder { color: var(--bb-muted); opacity: 1; }
+.bb-input:focus-visible, .bb-select:focus-visible { outline: 3px solid var(--bb-focus); outline-offset: 1px; border-color: var(--bb-blue-ink); }
+.bb-input[aria-invalid="true"] { border-color: var(--bb-red-ink); box-shadow: inset 4px 0 0 var(--bb-red-ink); }
+
+/* ---- badge ------------------------------------------------------------- */
+
+.bb-badge {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: var(--bb-track-label);
+  color: var(--bb-accent);
+  border: 1px solid var(--bb-line);
+  border-radius: 99px;
+}
+.bb-badge--solid { color: var(--bb-on-blue); background: var(--bb-blue); border-color: var(--bb-blue); }
+.bb-badge--new { color: var(--bb-on-red); background: var(--bb-red); border-color: var(--bb-red); }
+.bb-badge--gold { color: var(--bb-on-yellow); background: var(--bb-yellow); border-color: var(--bb-yellow); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-button { transition: none; }
+}
+@media print {
+  .bb-panel, .bb-coupon, .bb-ticket, .bb-carpet, .bb-wall, .bb-case { box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
