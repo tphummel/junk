@@ -2,6 +2,7 @@
 // state and performance, and a transcript viewer with a tab per controller. The rules about who is who, and all the
 // measuring, live in registry.js; the text is made in transcript.js. This file only reads pads and touches the DOM.
 
+import { clock, describeEnvironment, unavailable } from "./deviceinfo.js";
 import { buttonName } from "./names.js";
 import { createRegistry, exportJson, summarize } from "./registry.js";
 import { controllerReport, duration, summaryText, transcriptText } from "./transcript.js";
@@ -17,6 +18,7 @@ const transcriptEl = $("transcript");
 const tabsEl = $("tabs");
 const viewsEl = $("views");
 
+const env = describeEnvironment(navigator, window);
 const t0 = performance.now();
 const registry = createRegistry({ origin: t0 });
 const startedAt = new Date();
@@ -43,7 +45,7 @@ function note(text) {
 
 // --- cards -----------------------------------------------------------------------------------------
 
-/** @typedef {{ root: HTMLElement, buttons: HTMLElement[], axisBars: HTMLElement[], axisText: HTMLElement[], meta: HTMLElement, state: HTMLElement, last: HTMLElement, perf: HTMLElement, built: string }} Card */
+/** @typedef {{ root: HTMLElement, buttons: HTMLElement[], axisBars: HTMLElement[], axisText: HTMLElement[], meta: HTMLElement, devinfo: HTMLElement, state: HTMLElement, last: HTMLElement, perf: HTMLElement, built: string }} Card */
 /** @type {Map<number, Card>} */
 const cards = new Map();
 
@@ -55,6 +57,7 @@ function buildCard(s) {
   root.innerHTML = `
     <header><span class="badge">P${s.slot}</span><strong class="name"></strong><span class="state"></span></header>
     <p class="meta muted"></p>
+    <div class="devinfo"></div>
     <div class="buttons"></div>
     <div class="axes"></div>
     <p class="last"></p>
@@ -96,7 +99,7 @@ function buildCard(s) {
     else if (act === "transcript") show(s.slot, "transcript");
     else if (act === "stats") show(s.slot, "stats");
   });
-  return { root, buttons, axisBars, axisText, meta: q(".meta"), state: q(".state"), last: q(".last"), perf: q(".perf"), built: `${s.nButtons}x${s.nAxes}:${s.mapping}` };
+  return { root, buttons, axisBars, axisText, meta: q(".meta"), devinfo: q(".devinfo"), state: q(".state"), last: q(".last"), perf: q(".perf"), built: `${s.nButtons}x${s.nAxes}:${s.mapping}` };
 }
 
 /** Rumble the controller (where the browser supports it) and flash its card, to see which one is which. @param {number} slot */
@@ -216,6 +219,28 @@ function refreshText(hz) {
     if (!card || !summary) continue;
     card.state.textContent = s.connected ? "connected" : "disconnected";
     card.meta.textContent = `${s.index === null ? "no index" : `index ${s.index}`} · ${s.mapping || "no"} mapping · ${s.nButtons} buttons · ${s.nAxes} axes`;
+    const id = summary.device.identity;
+    const maker = id.vendorName ?? (id.vendorId ? `vendor ${id.vendorId}` : null);
+    const product = id.productName ?? (id.productId ? `product ${id.productId}` : null);
+    const lines = [
+      [maker, product].filter(Boolean).join(" · ") + (id.vendorId && id.productId ? ` (${id.vendorId}:${id.productId})` : "") || "Maker and product: not given by this browser",
+      s.connected
+        ? `Connected ${clock(summary.connection.uptimeMs)}${summary.connection.disconnects ? ` · dropped ${summary.connection.disconnects}×` : ""}${summary.device.vibration ? ` · vibration: ${summary.device.vibration.type}` : ""}`
+        : `Disconnected · was connected ${clock(summary.connection.totalConnectedMs)} in all`,
+    ];
+    card.devinfo.replaceChildren(
+      ...lines.map((text) => {
+        const span = document.createElement("span");
+        span.textContent = text;
+        return span;
+      }),
+      (() => {
+        const span = document.createElement("span");
+        span.className = "na";
+        span.textContent = "Battery, signal and protocol: not available in this browser (see Stats)";
+        return span;
+      })(),
+    );
     card.last.textContent = s.last ? `Last: ${s.last.what} at ${(s.last.t / 1000).toFixed(3)}s` : "No input yet";
     card.perf.replaceChildren(
       ...perfLines(summary).map((line) => {
@@ -225,6 +250,43 @@ function refreshText(hz) {
       }),
     );
   }
+}
+
+// --- what this browser can tell us ----------------------------------------------------------------
+
+/** The "This browser" panel: what we are running in, which APIs exist, and what no page can learn here, and why. */
+function renderEnvironment() {
+  $("env-summary").textContent = `This browser: ${env.browser} on ${env.os}. What it can and cannot tell the lab about a controller`;
+  const yes = (/** @type {boolean} */ b) => (b ? "yes" : "no");
+  const rows = [
+    ["Gamepad API", yes(env.gamepadApi)],
+    ["Secure page", yes(env.secureContext)],
+    ["Web Bluetooth", yes(env.webBluetooth)],
+    ["WebHID", yes(env.webHid)],
+    ["Engine", env.webKitOnly ? `Safari's (every browser on ${env.os} uses it)` : env.browser],
+  ];
+  const dl = document.createElement("dl");
+  for (const [k, v] of rows) {
+    const dt = document.createElement("dt");
+    dt.textContent = k;
+    const dd = document.createElement("dd");
+    dd.textContent = v;
+    dl.appendChild(dt);
+    dl.appendChild(dd);
+  }
+  const na = document.createElement("dl");
+  na.className = "na";
+  for (const n of unavailable(env)) {
+    const dt = document.createElement("dt");
+    dt.textContent = `${n.field}: not available`;
+    const dd = document.createElement("dd");
+    dd.textContent = n.why;
+    na.appendChild(dt);
+    na.appendChild(dd);
+  }
+  const intro = document.createElement("p");
+  intro.textContent = "What every controller card does show: its name, maker and product ids, mapping, every button and stick, how often it reports, vibration support, and its connection history.";
+  $("env-body").replaceChildren(dl, na, intro);
 }
 
 // --- the transcript viewer -------------------------------------------------------------------------
@@ -291,7 +353,7 @@ const currentSlot = () => registry.slots.find((s) => s.slot === tab);
 function mainText(now) {
   const s = currentSlot();
   if (tab !== 0 && !s) return "";
-  if (tab !== 0 && s && view === "stats") return summaryText(summarize(s, now - t0));
+  if (tab !== 0 && s && view === "stats") return summaryText(summarize(s, now - t0), env);
   const n = limit();
   const events = s ? s.log : registry.events;
   const shown = n ? events.slice(-n) : events;
@@ -334,7 +396,7 @@ $("clear").addEventListener("click", () => {
 });
 $("limit").addEventListener("change", () => renderMain(true));
 
-const meta = () => ({ startedAt: startedAt.toISOString(), exportedAt: new Date().toISOString(), now: performance.now() });
+const meta = () => ({ startedAt: startedAt.toISOString(), exportedAt: new Date().toISOString(), now: performance.now(), environment: env });
 
 /** A time stamp for file names, like 20261121-143005. */
 function stamp() {
@@ -347,7 +409,7 @@ function stamp() {
 function fullText() {
   const m = meta();
   const s = currentSlot();
-  if (s) return controllerReport(summarize(s, m.now - t0), s.log, { startedAt: m.startedAt, exportedAt: m.exportedAt, dropped: s.logDropped });
+  if (s) return controllerReport(summarize(s, m.now - t0), s.log, { startedAt: m.startedAt, exportedAt: m.exportedAt, dropped: s.logDropped, environment: env });
   return [`controller lab - all controllers`, `session started ${m.startedAt}, exported ${m.exportedAt}`, "", "     time        gap  player  event", transcriptText(registry.events, { player: true }), ""].join("\n");
 }
 
@@ -418,6 +480,7 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+renderEnvironment();
 renderTabs();
 refreshText(0);
 renderMain(true);

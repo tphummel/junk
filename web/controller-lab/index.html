@@ -111,6 +111,17 @@
     #transcript.stats { border-radius: 8px; }
     #note { margin: 8px 0 0; min-height: 1.2em; font-size: 0.82rem; }
     .fast { margin: 0 0 12px; font-size: 0.85rem; }
+    .env { margin: 0 0 12px; font-size: 0.85rem; max-width: 100ch; }
+    .env summary { cursor: pointer; }
+    .env dl { margin: 6px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; }
+    .env dt { color: var(--primary); }
+    .env dd { margin: 0; }
+    .env .na { margin-top: 8px; display: block; }
+    .env .na dd { margin: 0 0 8px; }
+    .env .na dt { color: var(--text); font-weight: 700; }
+    .devinfo { font-size: 0.78rem; line-height: 1.4; }
+    .devinfo span { display: block; }
+    .devinfo .na { color: var(--support); }
   </style>
   <meta name="theme-color" content="#111111">
   <link rel="icon" href="/controller-lab/icon.svg" type="image/svg+xml">
@@ -122,6 +133,7 @@
     <h1>controller lab</h1>
     <p class="lede">Press a button on each controller to register it: the first to press is P1, the next P2, and so on. Every button and stick move is logged with the player and a time.</p>
     <p id="status" class="muted" aria-live="polite">Looking for controllers...</p>
+    <details class="env" id="env"><summary id="env-summary">This browser</summary><div id="env-body"></div></details>
     <p class="fast"><label><input type="checkbox" id="fast" checked> Poll faster than the screen refreshes (about 250 Hz), so controllers that report more than 60 times a second can be measured</label></p>
     <div class="layout">
       <section aria-labelledby="pads-h">

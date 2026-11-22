@@ -10,9 +10,21 @@
 // input, hold times and press counts, and the device's own timestamp), per-button and per-stick statistics, and a
 // performance record: how often the device reports, how stale a report is when we see it, and how often we poll.
 
+import { approxBits, parsePadId, unavailable } from "./deviceinfo.js";
 import { axisName, buttonName } from "./names.js";
 
-/** @typedef {Pick<Gamepad, "index" | "id" | "mapping" | "connected" | "buttons" | "axes"> & { timestamp?: number }} PadLike */
+/**
+ * A pad as the Gamepad API gives it. The extras exist in some browsers only; none is guaranteed.
+ * @typedef {Pick<Gamepad, "index" | "id" | "mapping" | "connected" | "buttons" | "axes"> & {
+ *   timestamp?: number,
+ *   hand?: string,
+ *   displayId?: number,
+ *   vibrationActuator?: { type?: string, playEffect?: unknown } | null,
+ *   hapticActuators?: ArrayLike<unknown>,
+ *   touches?: ArrayLike<unknown>,
+ *   pose?: unknown,
+ * }} PadLike
+ */
 
 /**
  * A running summary of numbers, with a short memory of the latest ones for percentiles.
@@ -56,6 +68,27 @@ import { axisName, buttonName } from "./names.js";
  */
 
 /**
+ * Everything else the browser would tell us about a controller, and its connection history.
+ * @typedef {object} Info
+ * @property {import("./deviceinfo.js").PadIdentity} identity
+ * @property {number} connects how many times it has connected (the first registration counts)
+ * @property {number} disconnects
+ * @property {number} connectedMs time spent connected before the current stretch
+ * @property {number | null} connectedSince when the current connected stretch began, or null while disconnected
+ * @property {string} hand
+ * @property {number | null} displayId
+ * @property {{ type: string, playEffect: boolean } | null} vibration the vibration actuator, if the browser shows one
+ * @property {number} hapticActuators the older haptics list (Firefox)
+ * @property {number} touchesMax most touch points seen at once (a touchpad)
+ * @property {boolean} pose whether a pose (motion tracking) was ever present
+ * @property {Set<number>} touchable buttons that have reported being touched
+ * @property {Set<number>} analog buttons that have reported a value between 0 and 1
+ * @property {number[]} axisLast the last raw value of each axis
+ * @property {(number | null)[]} axisSmallest the smallest step each axis has been seen to move
+ * @property {number[]} axisSteps how many steps were measured for each
+ */
+
+/**
  * @typedef {object} Slot
  * @property {number} slot 1-based player number
  * @property {string} id
@@ -77,6 +110,7 @@ import { axisName, buttonName } from "./names.js";
  * @property {ButtonStats[]} buttonStats
  * @property {AxisStats[]} axisStats
  * @property {Perf} perf
+ * @property {Info} info
  */
 
 /**
@@ -109,6 +143,8 @@ const REST_MIN_SPAN_MS = 80;
  * sends a new reading every few milliseconds); it is button presses or a pause. Only shorter gaps measure the report rate.
  */
 const IDLE_GAP_MS = 50;
+/** Axis bit depth is only estimated once this many steps have been measured: a few coarse moves would overstate the step. */
+const MIN_STEPS_FOR_BITS = 8;
 /** How many recent values a Stats keeps for percentiles. */
 const RECENT = 300;
 
@@ -120,6 +156,41 @@ const makeStats = () => ({ n: 0, sum: 0, sumSq: 0, min: Infinity, max: -Infinity
 
 /** @param {number} v the axis's first value @returns {AxisStats} */
 const makeAxisStats = (v) => ({ min: Infinity, max: -Infinity, last: v, events: 0, restN: 0, restSum: 0, restMin: Infinity, restMax: -Infinity, recent: [] });
+
+/** @param {PadLike} p @param {number} t @returns {Info} */
+const makeInfo = (p, t) => ({
+  identity: parsePadId(p.id), connects: 1, disconnects: 0, connectedMs: 0, connectedSince: t, hand: "", displayId: null,
+  vibration: null, hapticActuators: 0, touchesMax: 0, pose: false, touchable: new Set(), analog: new Set(),
+  axisLast: [], axisSmallest: [], axisSteps: [],
+});
+
+/** Note what this frame shows about the device itself. @param {Slot} s @param {PadLike} p */
+function observeDevice(s, p) {
+  const i = s.info;
+  if (p.hand) i.hand = p.hand;
+  if (typeof p.displayId === "number" && p.displayId) i.displayId = p.displayId;
+  const va = p.vibrationActuator;
+  if (va) i.vibration = { type: va.type ?? "unknown", playEffect: typeof va.playEffect === "function" };
+  if (p.hapticActuators && p.hapticActuators.length) i.hapticActuators = p.hapticActuators.length;
+  if (p.touches && p.touches.length > i.touchesMax) i.touchesMax = p.touches.length;
+  if (p.pose) i.pose = true;
+  Array.from(p.buttons).forEach((b, idx) => {
+    if (b.touched) i.touchable.add(idx);
+    if (b.value > 0 && b.value < 1) i.analog.add(idx);
+  });
+  Array.from(p.axes).forEach((v, idx) => {
+    const last = i.axisLast[idx];
+    if (last !== undefined) {
+      const d = Math.abs(v - last);
+      if (d > 1e-6) {
+        const prev = i.axisSmallest[idx] ?? null;
+        if (prev === null || d < prev) i.axisSmallest[idx] = d;
+        i.axisSteps[idx] = (i.axisSteps[idx] ?? 0) + 1;
+      }
+    }
+    i.axisLast[idx] = v;
+  });
+}
 
 /** @param {Stats} s @param {number} x */
 function addStat(s, x) {
@@ -162,12 +233,37 @@ export function summarize(s, now) {
   const reportMean = mean(p.report);
   const pollMean = mean(p.poll);
   const ageMean = mean(p.age);
+  const i = s.info;
+  const uptimeMs = i.connectedSince === null ? 0 : Math.max(0, now - i.connectedSince);
   return {
     slot: s.slot,
     id: s.id,
     mapping: s.mapping,
     index: s.index,
     connected: s.connected,
+    controls: { buttons: s.nButtons, axes: s.nAxes },
+    connection: {
+      connected: s.connected,
+      connects: i.connects,
+      disconnects: i.disconnects,
+      uptimeMs: r(uptimeMs, 0),
+      totalConnectedMs: r(i.connectedMs + uptimeMs, 0),
+      sinceRegistrationMs: r(now - s.registeredAt, 0),
+    },
+    device: {
+      identity: i.identity,
+      hand: i.hand || null,
+      displayId: i.displayId,
+      vibration: i.vibration,
+      hapticActuators: i.hapticActuators,
+      touchesMax: i.touchesMax,
+      pose: i.pose,
+      analogButtons: [...i.analog].sort((a, b) => a - b).map((idx) => buttonName(s.mapping, idx)),
+      touchSensitiveButtons: [...i.touchable].sort((a, b) => a - b).map((idx) => buttonName(s.mapping, idx)),
+      axisResolution: i.axisSmallest
+        .map((step, idx) => ({ index: idx, name: axisName(s.mapping, idx), smallestStep: step === null || step === undefined ? null : round(step, 6), approxBits: (i.axisSteps[idx] ?? 0) >= MIN_STEPS_FOR_BITS ? approxBits(step ?? null) : null, steps: i.axisSteps[idx] ?? 0 }))
+        .filter((a) => a.smallestStep !== null),
+    },
     polls: p.polls,
     stateChanges: p.stateChanges,
     deviceTimestamps: p.timestamps,
@@ -284,6 +380,9 @@ export function createRegistry(options = {}) {
         const p = live.get(s.index);
         if (!p || p.id !== s.id) {
           emit(s, { type: "disconnect" });
+          s.info.disconnects++;
+          if (s.info.connectedSince !== null) s.info.connectedMs += t - s.info.connectedSince;
+          s.info.connectedSince = null;
           s.index = null;
           s.connected = false;
           s.perf.lastTs = NaN;
@@ -305,6 +404,9 @@ export function createRegistry(options = {}) {
           gone.axisLogged = Array.from(p.axes, (v) => round(v, 2));
           claimed.add(p.index);
           pending.delete(p.index);
+          gone.info.connects++;
+          gone.info.connectedSince = t;
+          gone.info.axisLast = [];
           emit(gone, { type: "reconnect", index: p.index });
           continue;
         }
@@ -323,7 +425,7 @@ export function createRegistry(options = {}) {
           lastEventAt: null, log: [], logDropped: 0,
           buttonStats: Array.from(p.buttons, () => ({ presses: 0, releases: 0, holds: makeStats(), lastDownAt: null, minPressGap: null })),
           axisStats: Array.from(p.axes, (v) => makeAxisStats(round(v, 2))),
-          perf: makePerf(),
+          perf: makePerf(), info: makeInfo(p, t),
         };
         slots.push(s);
         slots.sort((a, b) => a.slot - b.slot);
@@ -364,6 +466,7 @@ export function createRegistry(options = {}) {
         s.axes = Array.from(p.axes, (v) => round(v, 2));
         s.nButtons = p.buttons.length;
         s.nAxes = p.axes.length;
+        observeDevice(s, p);
         let inputsThisFrame = 0;
 
         s.buttons.forEach((b, i) => {
@@ -493,16 +596,17 @@ export function createRegistry(options = {}) {
 
     /**
      * Everything as plain data, for the export: each controller's summary and transcript, and the combined log.
-     * @param {{ startedAt: string, exportedAt: string, now: number }} meta now is the current clock reading (ms)
+     * @param {{ startedAt: string, exportedAt: string, now: number, environment?: import("./deviceinfo.js").Environment }} meta now is the current clock reading (ms)
      * @param {number} [only] export just this player
      */
     toExport(meta, only) {
       const chosen = only === undefined ? slots : slots.filter((s) => s.slot === only);
       return {
         app: "controller-lab",
-        format: 2,
+        format: 3,
         startedAt: meta.startedAt,
         exportedAt: meta.exportedAt,
+        ...(meta.environment ? { environment: meta.environment, notAvailableInThisBrowser: unavailable(meta.environment) } : {}),
         pads: chosen.map((s) => ({
           ...summarize(s, round(meta.now - origin, 1)),
           registeredAtMs: s.registeredAt,

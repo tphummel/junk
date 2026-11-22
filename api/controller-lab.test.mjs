@@ -4,15 +4,16 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { test } from "node:test";
+import { approxBits, clock, describeEnvironment, parsePadId, unavailable } from "../web/controller-lab/deviceinfo.js";
 import { axisName, buttonName } from "../web/controller-lab/names.js";
 import { createRegistry, exportJson, summarize } from "../web/controller-lab/registry.js";
 import { controllerReport, duration, formatEvent, seconds, summaryText, transcriptText } from "../web/controller-lab/transcript.js";
 
 /** A fake pad. `down` lists pressed button indexes (value 1); `axes` its axis values. */
-function pad(index, { down = [], axes = [0, 0, 0, 0], id = `Pad ${index} (STANDARD GAMEPAD)`, mapping = "standard", connected = true, buttons = 17, values = {}, timestamp } = {}) {
+function pad(index, { down = [], axes = [0, 0, 0, 0], id = `Pad ${index} (STANDARD GAMEPAD)`, mapping = "standard", connected = true, buttons = 17, values = {}, timestamp, extras = {}, touched = [] } = {}) {
   return {
-    index, id, mapping, connected, axes, timestamp,
-    buttons: Array.from({ length: buttons }, (_, i) => ({ pressed: down.includes(i), value: values[i] ?? (down.includes(i) ? 1 : 0) })),
+    index, id, mapping, connected, axes, timestamp, ...extras,
+    buttons: Array.from({ length: buttons }, (_, i) => ({ pressed: down.includes(i), value: values[i] ?? (down.includes(i) ? 1 : 0), touched: touched.includes(i) })),
   };
 }
 
@@ -195,7 +196,7 @@ test("the export parses back to the registered pads, their transcripts and the c
   const text = exportJson(reg.toExport({ startedAt: "2026-11-21T00:00:00.000Z", exportedAt: "2026-11-21T00:01:00.000Z", now: 100 }));
   const back = JSON.parse(text);
   assert.equal(back.app, "controller-lab");
-  assert.equal(back.format, 2);
+  assert.equal(back.format, 3);
   assert.deepEqual(back.pads.map((p) => p.slot), [1, 2]);
   assert.equal(back.pads[0].inputs.presses, 1);
   assert.equal(back.pads[1].inputs.axisEvents, 1);
@@ -548,4 +549,169 @@ test("a controller used only for button presses is not given a report rate", () 
   assert.equal(s.report.approxHz, null);
   assert.ok(s.stateChanges >= 10, "the presses are still state changes");
   assert.match(summaryText(s), /not measured yet: move a stick or trigger/);
+});
+
+// --- device identity, environment and connection ---------------------------------------------------
+
+test("ids are taken apart in the styles Chrome, Safari and Firefox use", () => {
+  const pro = parsePadId("Pro Controller (STANDARD GAMEPAD Vendor: 057e Product: 2009)");
+  assert.deepEqual([pro.name, pro.vendorId, pro.productId, pro.vendorName, pro.productName, pro.format], ["Pro Controller", "057e", "2009", "Nintendo", "Switch Pro Controller", "chromium"]);
+  const ff = parsePadId("2dc8-6101-8BitDo SN30 Pro");
+  assert.deepEqual([ff.name, ff.vendorId, ff.productId, ff.vendorName, ff.productName, ff.format], ["8BitDo SN30 Pro", "2dc8", "6101", "8BitDo", null, "firefox"]);
+  const short = parsePadId("Xbox Wireless Controller (Vendor: 45e Product: b13)");
+  assert.deepEqual([short.vendorId, short.productId, short.productName], ["045e", "0b13", "Xbox Series X|S Controller (Bluetooth)"], "short hex is padded");
+  const none = parsePadId("Wireless Controller");
+  assert.deepEqual([none.name, none.vendorId, none.productId, none.vendorName, none.format], ["Wireless Controller", null, null, null, "unknown"]);
+  const std = parsePadId("Mystery Pad (STANDARD GAMEPAD)");
+  assert.deepEqual([std.name, std.vendorId, std.format], ["Mystery Pad", null, "chromium"]);
+  assert.equal(parsePadId("Joy-Con (L) (STANDARD GAMEPAD Vendor: 057e Product: 2006)").name, "Joy-Con (L)", "a name that has brackets in it keeps them");
+  assert.equal(parsePadId("Unknown (STANDARD GAMEPAD Vendor: ffff Product: 0001)").vendorName, null, "an unfamiliar maker is left unnamed, not guessed");
+  assert.equal(parsePadId("").name, "controller");
+});
+
+test("the environment is read from the user agent, with an iPad that calls itself a Mac recognised by its touch screen", () => {
+  const safariIpad = describeEnvironment({ userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15", maxTouchPoints: 5, getGamepads() {} }, { isSecureContext: true });
+  assert.deepEqual([safariIpad.os, safariIpad.browser, safariIpad.webKitOnly, safariIpad.gamepadApi, safariIpad.secureContext, safariIpad.webBluetooth, safariIpad.webHid], ["iPadOS", "Safari 17", true, true, true, false, false]);
+  const mac = describeEnvironment({ userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15", maxTouchPoints: 0 });
+  assert.deepEqual([mac.os, mac.webKitOnly], ["macOS", false]);
+  const chromeOnIpad = describeEnvironment({ userAgent: "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/123.0.6312.52 Mobile/15E148 Safari/604.1", maxTouchPoints: 5 });
+  assert.deepEqual([chromeOnIpad.os, chromeOnIpad.browser, chromeOnIpad.webKitOnly], ["iPadOS", "Chrome 123", true], "Chrome on an iPad is still Safari's engine");
+  const chrome = describeEnvironment({ userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36", bluetooth: {}, hid: {}, getGamepads() {} });
+  assert.deepEqual([chrome.os, chrome.browser, chrome.webBluetooth, chrome.webHid], ["Windows", "Chrome 124", true, true]);
+  const edge = describeEnvironment({ userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.2478.51" });
+  assert.equal(edge.browser, "Edge 124");
+  const firefox = describeEnvironment({ userAgent: "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" });
+  assert.deepEqual([firefox.os, firefox.browser], ["Linux", "Firefox 125"]);
+  assert.equal(describeEnvironment({}).browser, "unknown");
+});
+
+test("what a browser cannot report is stated, with a reason that fits that browser", () => {
+  const ipad = describeEnvironment({ userAgent: "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 Version/17.4 Mobile/15E148 Safari/604.1", maxTouchPoints: 5 });
+  const na = unavailable(ipad);
+  assert.deepEqual(na.map((n) => n.short), ["Protocol", "Signal strength", "Battery"]);
+  assert.ok(na.every((n) => /Safari's engine/.test(n.why) && /neither Web Bluetooth nor WebHID/.test(n.why)), "the iPad reason");
+  const chrome = describeEnvironment({ userAgent: "Mozilla/5.0 (Windows NT 10.0) Chrome/124.0.0.0 Safari/537.36", bluetooth: {} });
+  assert.ok(unavailable(chrome).every((n) => /has Web Bluetooth/.test(n.why) && /does not use it/.test(n.why)), "a browser that could, but this lab does not");
+  const firefox = describeEnvironment({ userAgent: "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" });
+  assert.ok(unavailable(firefox).every((n) => /no Web Bluetooth or WebHID/.test(n.why)));
+});
+
+test("clock and approxBits", () => {
+  assert.equal(clock(0), "0:00");
+  assert.equal(clock(65000), "1:05");
+  assert.equal(clock(3725000), "1:02:05");
+  assert.equal(clock(null), "-");
+  assert.equal(approxBits(2 / 255), 8);
+  assert.equal(approxBits(2 / 4095), 12);
+  assert.equal(approxBits(2 / 65535), 16);
+  assert.equal(approxBits(null), null);
+  assert.equal(approxBits(0), null);
+});
+
+test("the registry notes the device's identity, haptics, touch points, pose and hand", () => {
+  const reg = createRegistry();
+  const extras = { hand: "right", displayId: 0, vibrationActuator: { type: "dual-rumble", playEffect() {} }, touches: [{}, {}], pose: {} };
+  tick(reg, [pad(0, { id: "Pro Controller (STANDARD GAMEPAD Vendor: 057e Product: 2009)", extras })], 0);
+  tick(reg, [pad(0, { id: "Pro Controller (STANDARD GAMEPAD Vendor: 057e Product: 2009)", down: [0], extras })], 16);
+  const d = summarize(reg.slots[0], 20).device;
+  assert.equal(d.identity.productName, "Switch Pro Controller");
+  assert.equal(d.hand, "right");
+  assert.deepEqual(d.vibration, { type: "dual-rumble", playEffect: true });
+  assert.equal(d.touchesMax, 2);
+  assert.equal(d.pose, true);
+  assert.equal(summarize(reg.slots[0], 20).controls.buttons, 17);
+  // A browser that gives none of these leaves them empty rather than inventing them.
+  const bare = createRegistry();
+  tick(bare, [pad(0)], 0);
+  tick(bare, [pad(0, { down: [0] })], 16);
+  const b = summarize(bare.slots[0], 20).device;
+  assert.deepEqual([b.hand, b.vibration, b.touchesMax, b.pose, b.displayId, b.hapticActuators], [null, null, 0, false, null, 0]);
+});
+
+test("analog and touch-sensitive buttons are found by watching what they report", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 16);
+  tick(reg, [pad(0, { values: { 6: 0.4, 7: 1 }, touched: [3, 12] })], 32);
+  tick(reg, [pad(0, { values: { 6: 0.8 } })], 48);
+  const d = summarize(reg.slots[0], 60).device;
+  assert.deepEqual(d.analogButtons, ["LT"], "LT reported values between 0 and 1; RT only 0 or 1");
+  assert.deepEqual(d.touchSensitiveButtons, ["Y", "Up"]);
+});
+
+test("stick resolution is the smallest step seen, and says about how many bits that is", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 16);
+  // An 8-bit stick moves in steps of 2/255.
+  const step = 2 / 255;
+  [0, 1, 2, 3, 5, 6, 9, 10, 11, 14, 15].forEach((n, i) => tick(reg, [pad(0, { down: [0], axes: [-1 + n * step, 0, 0, 0] })], 32 + i * 16));
+  const res = summarize(reg.slots[0], 300).device.axisResolution;
+  assert.deepEqual(res.map((a) => a.name), ["LX"], "only axes that moved are listed");
+  assert.equal(res[0].approxBits, 8);
+  assert.equal(res[0].smallestStep, Math.round(step * 1e6) / 1e6);
+  assert.ok(res[0].steps >= 8);
+});
+
+test("a few coarse stick moves are not turned into a bit depth", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 16);
+  tick(reg, [pad(0, { down: [0], axes: [0.5, 0, 0, 0] })], 32);
+  tick(reg, [pad(0, { down: [0], axes: [0, 0, 0, 0] })], 48);
+  const res = summarize(reg.slots[0], 100).device.axisResolution;
+  assert.equal(res[0].smallestStep, 0.5);
+  assert.equal(res[0].approxBits, null, "two steps tell nothing about the resolution");
+  assert.match(summaryText(summarize(reg.slots[0], 100)), /too few small steps to tell the bit depth/);
+});
+
+test("connection history: connects, drops, time connected and the current stretch", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 1000); // registers at 1000
+  let c = summarize(reg.slots[0], 6000).connection;
+  assert.deepEqual([c.connected, c.connects, c.disconnects, c.uptimeMs, c.totalConnectedMs, c.sinceRegistrationMs], [true, 1, 0, 5000, 5000, 5000]);
+  tick(reg, [null], 7000); // drops after 6 s connected
+  c = summarize(reg.slots[0], 9000).connection;
+  assert.deepEqual([c.connected, c.disconnects, c.uptimeMs, c.totalConnectedMs, c.sinceRegistrationMs], [false, 1, 0, 6000, 8000]);
+  tick(reg, [pad(3, { id: "Pad 0 (STANDARD GAMEPAD)" })], 10000); // the same controller, back at another index
+  c = summarize(reg.slots[0], 14000).connection;
+  assert.deepEqual([c.connected, c.connects, c.disconnects, c.uptimeMs, c.totalConnectedMs], [true, 2, 1, 4000, 10000]);
+});
+
+test("the summary text lists the device, the connection, and what cannot be read, with the reason", () => {
+  const reg = createRegistry();
+  const id = "Pro Controller (STANDARD GAMEPAD Vendor: 057e Product: 2009)";
+  tick(reg, [pad(0, { id, timestamp: 1, extras: { vibrationActuator: { type: "dual-rumble", playEffect() {} } } })], 0);
+  tick(reg, [pad(0, { id, down: [0], timestamp: 20, values: { 6: 0.5 }, extras: { vibrationActuator: { type: "dual-rumble", playEffect() {} } } })], 20);
+  const ipad = describeEnvironment({ userAgent: "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 Version/17.4 Mobile/15E148 Safari/604.1", maxTouchPoints: 5 });
+  const text = summaryText(summarize(reg.slots[0], 3000), ipad);
+  assert.match(text, /^P1 {2}Pro Controller/);
+  assert.match(text, /Maker\s+Nintendo \(057e\)/);
+  assert.match(text, /Product\s+Switch Pro Controller \(2009\)/);
+  assert.match(text, /Id as reported\s+Pro Controller \(STANDARD GAMEPAD Vendor: 057e Product: 2009\)/);
+  assert.match(text, /Mapping\s+standard/);
+  assert.match(text, /Analog buttons\s+LT/);
+  assert.match(text, /Vibration\s+dual-rumble, can be played from a page/);
+  assert.match(text, /connected for 0:02 this time/);
+  assert.match(text, /Protocol\s+NOT AVAILABLE: iPadOS gives web pages only the Gamepad API/);
+  assert.match(text, /Signal strength\s+NOT AVAILABLE/);
+  assert.match(text, /Battery\s+NOT AVAILABLE/);
+  const report = controllerReport(summarize(reg.slots[0], 3000), reg.slots[0].log, { startedAt: "S", exportedAt: "E", environment: ipad });
+  assert.match(report, /browser Safari 17 on iPadOS \(every browser here uses Safari's engine\)/);
+});
+
+test("the export carries the browser and the list of what it could not report", () => {
+  const reg = createRegistry();
+  tick(reg, [pad(0)], 0);
+  tick(reg, [pad(0, { down: [0] })], 16);
+  const env = describeEnvironment({ userAgent: "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" });
+  const data = JSON.parse(exportJson(reg.toExport({ startedAt: "S", exportedAt: "E", now: 50, environment: env })));
+  assert.equal(data.environment.browser, "Firefox 125");
+  assert.equal(data.notAvailableInThisBrowser.length, 3);
+  assert.ok(data.pads[0].device.identity.raw);
+  assert.equal(data.pads[0].connection.connects, 1);
+  assert.equal(data.pads[0].controls.axes, 4);
+  const without = JSON.parse(exportJson(reg.toExport({ startedAt: "S", exportedAt: "E", now: 50 })));
+  assert.equal(without.environment, undefined, "left out when none was given");
 });

@@ -15,6 +15,7 @@
   "include": [
     "api/**/*.ts",
     "web/controller-lab/app.js",
+    "web/controller-lab/deviceinfo.js",
     "web/controller-lab/names.js",
     "web/controller-lab/registry.js",
     "web/controller-lab/transcript.js",

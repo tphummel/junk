@@ -1,6 +1,9 @@
 // Turning log entries and statistics into text a person can read, copy and keep. Pure.
 
+import { clock, unavailable } from "./deviceinfo.js";
+
 /** @typedef {import("./registry.js").LogEvent} LogEvent */
+/** @typedef {import("./deviceinfo.js").Environment} Environment */
 /** @typedef {ReturnType<typeof import("./registry.js").summarize>} Summary */
 
 /** @param {number} ms @returns {string} like 12.345s */
@@ -58,14 +61,40 @@ export function transcriptText(events, options = {}) {
 }
 
 /**
- * A controller's statistics as text, for the Stats view and the text download.
+ * A controller's identity, connection and statistics as text, for the Stats view and the text download.
  * @param {Summary} s
+ * @param {Environment} [env] the browser, to explain what it cannot report
  */
-export function summaryText(s) {
+export function summaryText(s, env) {
   /** @type {string[]} */
   const out = [];
-  const name = s.id.replace(/\s*\(.*\)\s*$/, "") || s.id;
-  out.push(`P${s.slot}  ${name}`, `${s.connected ? "connected" : "disconnected"}, ${s.index === null ? "no index" : `index ${s.index}`}, ${s.mapping || "no"} mapping`, "");
+  const id = s.device.identity;
+  const known = (/** @type {string | null} */ name, /** @type {string | null} */ code) => (name ? `${name}${code ? ` (${code})` : ""}` : code ? `unknown (${code})` : "not given by this browser");
+  out.push(`P${s.slot}  ${id.name}`, "");
+  out.push("DEVICE");
+  out.push(`  Name             ${id.name}`);
+  out.push(`  Maker            ${known(id.vendorName, id.vendorId)}`);
+  out.push(`  Product          ${known(id.productName, id.productId)}`);
+  out.push(`  Id as reported   ${id.raw}`);
+  out.push(`  Mapping          ${s.mapping || "none"}${s.mapping === "standard" ? " (the standard layout: buttons and sticks have fixed meanings)" : " (not the standard layout: only the numbers are known)"}`);
+  out.push(`  Index            ${s.index === null ? "none while disconnected" : s.index}`);
+  out.push(`  Controls         ${s.controls.buttons} buttons, ${s.controls.axes} axes`);
+  out.push(`  Analog buttons   ${s.device.analogButtons.length ? s.device.analogButtons.join(", ") : "none seen (triggers that report a value between 0 and 1 show here)"}`);
+  out.push(`  Touch buttons    ${s.device.touchSensitiveButtons.length ? s.device.touchSensitiveButtons.join(", ") : "none seen"}`);
+  if (s.device.axisResolution.length) {
+    out.push("  Stick resolution (smallest step seen so far; it can only shrink with more movement)");
+    for (const a of s.device.axisResolution) out.push(`      ${a.name.padEnd(8)} ${a.smallestStep}  ${a.approxBits === null ? "too few small steps to tell the bit depth: move it slowly" : `about ${a.approxBits}-bit`}  (${a.steps} steps measured)`);
+  } else out.push("  Stick resolution not measured yet: move a stick slowly");
+  out.push(`  Vibration        ${s.device.vibration ? `${s.device.vibration.type}${s.device.vibration.playEffect ? ", can be played from a page" : ""}` : s.device.hapticActuators ? `${s.device.hapticActuators} haptic actuator(s) (older API)` : "none shown by this browser"}`);
+  out.push(`  Extras           hand: ${s.device.hand ?? "none"}, touchpad touch points seen: ${s.device.touchesMax}, motion pose: ${s.device.pose ? "yes" : "no"}${s.device.displayId ? `, display ${s.device.displayId}` : ""}`);
+  out.push("");
+  out.push("CONNECTION");
+  const c = s.connection;
+  out.push(`  Status           ${c.connected ? `connected for ${clock(c.uptimeMs)} this time` : "disconnected now"}`);
+  out.push(`  History          connected ${c.connects} time${c.connects === 1 ? "" : "s"}, dropped ${c.disconnects} time${c.disconnects === 1 ? "" : "s"}; ${clock(c.totalConnectedMs)} connected out of ${clock(c.sinceRegistrationMs)} since it registered`);
+  const notes = env ? unavailable(env) : unavailable({ browser: "this browser", os: "this device", webKitOnly: false, gamepadApi: true, secureContext: true, webBluetooth: false, webHid: false, userAgent: "" });
+  for (const n of notes) out.push(`  ${n.short.padEnd(16)} NOT AVAILABLE: ${n.why}`);
+  out.push("");
   out.push("PERFORMANCE");
   if (s.report.samples > 0) {
     out.push(`  Device reports   about ${num(s.report.approxHz, 0)} Hz while a stick or trigger is moving  (every ${num(s.report.avgMs, 1)} ms on average)`);
@@ -94,14 +123,15 @@ export function summaryText(s) {
  * Everything for one controller as a text file: its statistics, then its transcript.
  * @param {Summary} summary
  * @param {readonly LogEvent[]} events
- * @param {{ startedAt: string, exportedAt: string, dropped?: number }} meta
+ * @param {{ startedAt: string, exportedAt: string, dropped?: number, environment?: Environment }} meta
  */
 export function controllerReport(summary, events, meta) {
   return [
     `controller lab - transcript for P${summary.slot}`,
     `session started ${meta.startedAt}, exported ${meta.exportedAt}`,
+    ...(meta.environment ? [`browser ${meta.environment.browser} on ${meta.environment.os}${meta.environment.webKitOnly ? " (every browser here uses Safari's engine)" : ""}`] : []),
     "",
-    summaryText(summary),
+    summaryText(summary, meta.environment),
     "",
     `TRANSCRIPT  (${events.length} entries${meta.dropped ? `, ${meta.dropped} older entries were dropped` : ""})`,
     "     time        gap  event",

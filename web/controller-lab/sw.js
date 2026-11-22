@@ -6,6 +6,7 @@ const SCOPE_PATH = '/controller-lab/';
 const PRECACHE = [
   '/controller-lab/',
   '/controller-lab/app.js',
+  '/controller-lab/deviceinfo.js',
   '/controller-lab/names.js',
   '/controller-lab/registry.js',
   '/controller-lab/transcript.js',
