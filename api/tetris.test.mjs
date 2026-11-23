@@ -882,17 +882,14 @@ test("time limit: a replay with the same limit ends the same way", () => {
   assert.equal(again.piecesPlaced, game.piecesPlaced);
 });
 
-test("difficulties: Practice has no garbage; Easy, Medium and Hard run at a D, B and S rate", () => {
-  assert.deepEqual(DIFFICULTIES.map((d) => d.id), ["practice", "timed", "easy", "medium", "hard"]);
-  assert.equal(difficultyById("timed").garbagePerSecond, 0);
-  assert.equal(difficultyById("timed").timeLimitSeconds, 120);
-  assert.equal(difficultyById("practice").timeLimitSeconds, undefined);
-  assert.equal(difficultyById("practice").garbagePerSecond, 0);
-  assert.equal(gradePerf(1, difficultyById("easy").garbagePerSecond), "D");
-  assert.equal(gradePerf(1, difficultyById("medium").garbagePerSecond), "B");
-  assert.ok(gradePerf(1, difficultyById("hard").garbagePerSecond).endsWith("S"), "an S grade");
-  assert.equal(difficultyById("nonsense").id, "practice", "unknown falls back to Practice");
+test("modes: unlimited, 3:00 and 5:00 practice, none with garbage", () => {
+  assert.deepEqual(DIFFICULTIES.map((d) => d.id), ["practice", "practice-3", "practice-5"]);
+  assert.deepEqual(DIFFICULTIES.map((d) => d.timeLimitSeconds), [undefined, 180, 300]);
+  for (const d of DIFFICULTIES) assert.equal(d.garbagePerSecond, 0, d.id);
+  assert.equal(difficultyById("practice-5").label, "Practice 5:00");
+  assert.equal(difficultyById("easy").id, "practice", "an old or unknown id falls back to Practice");
 });
+
 
 test("Practice never gets garbage", () => {
   const game = createGame(4);
