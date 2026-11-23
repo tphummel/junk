@@ -241,12 +241,11 @@ function renderOverlay() {
   const texts = {
     title: [
       "Tetris",
-      "Pick a difficulty. Up and down choose, A or Enter starts." +
+      "Pick a mode. Up and down choose, A or Enter starts." +
         (pad ? "\nD-pad move, A/B rotate, shoulder hold, up hard drop, Start pause." : "\nPress any button on your controller to connect it.") +
         "\nKeyboard: arrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause." +
         "\nHard drop falls at once; slide or turn before it settles, or press again to lock." +
-        "\nPractice 2:00 ends when the piece in play at 2:00 is set." +
-        "\nEasy, Medium and Hard push garbage rows up at the pace of a D, B or S rating.",
+        "\nPractice 3:00 and 5:00 end when the piece in play at the time limit is set.",
     ],
     paused: ["Paused", note ?? "Esc, Start or B resumes. End game locks in your score."],
     over: resultText(),
