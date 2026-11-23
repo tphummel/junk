@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>blackjack basic strategy</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #D2A62D cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #91721F;
+      --support: #84754E;
+      --accent:  #1D8386;
+      --bg: #FFFFFF;
+      --text: #111111;
+      --line: #BDB6A4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D2A62D;
+        --support: #A18F5F;
+        --accent:  #2DCED2;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --line: #4A4637;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 52rem; margin: 0 auto; padding: 1rem 16px 3rem; }
+    h1, h2 { color: var(--primary); line-height: 1.15; }
+    h1 { font-size: 1.7rem; margin: .5rem 0 .25rem; }
+    h2 { font-size: 1.1rem; margin: 1.6rem 0 .4rem; letter-spacing: .02em; }
+    a { color: var(--primary); }
+    .muted { color: var(--support); }
+    .lede { margin: 0 0 1rem; }
+
+    /* rules picker */
+    form.rules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+      gap: .6rem .9rem;
+      padding: .8rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    form.rules label { display: grid; gap: .15rem; font-size: .85rem; color: var(--support); }
+    form.rules label.wide { grid-column: 1 / -1; }
+    form.rules label.check { display: flex; align-items: center; gap: .45rem; color: var(--text); }
+    form.rules select {
+      font: inherit; color: var(--text); background: var(--bg);
+      border: 1px solid var(--support); border-radius: 6px; padding: .35rem .4rem;
+    }
+    form.rules input[type=checkbox] { width: 1.1rem; height: 1.1rem; accent-color: var(--primary); }
+    .edge { margin: .7rem 0 0; font-size: .95rem; }
+    .edge strong { font-variant-numeric: tabular-nums; }
+
+    /* legend: shape and texture carry the meaning, never color */
+    .legend { display: flex; flex-wrap: wrap; gap: .4rem .9rem; margin: .8rem 0 0; padding: 0; list-style: none; font-size: .85rem; }
+    .legend li { display: flex; align-items: center; gap: .4rem; }
+    .legend .cell { width: 2rem; height: 1.7rem; }
+
+    /* strategy charts */
+    .chart-wrap { overflow-x: auto; }
+    table.chart { border-collapse: collapse; width: 100%; max-width: 40rem; table-layout: fixed; font-variant-numeric: tabular-nums; }
+    .chart caption { text-align: left; font-weight: 600; color: var(--primary); padding: 0 0 .25rem; }
+    .chart th, .chart td { border: 1px solid var(--line); padding: 0; text-align: center; }
+    .chart thead th { font-size: .8rem; padding: .25rem 0; background: color-mix(in srgb, var(--text) 8%, var(--bg)); }
+    .chart thead th.corner { width: 3.6rem; }
+    .chart tbody th { font-size: .82rem; padding: 0 .3rem; text-align: left; white-space: nowrap; background: color-mix(in srgb, var(--text) 8%, var(--bg)); }
+    .chart .up-note { font-weight: 400; color: var(--support); font-size: .7rem; }
+
+    .cell {
+      display: grid; place-items: center;
+      width: 100%; height: 2.15rem; margin: 0; padding: 0;
+      font: 700 .95rem/1 system-ui, sans-serif; letter-spacing: .01em;
+      color: var(--text); background: var(--bg); border: 0; border-radius: 0; cursor: pointer;
+    }
+    .cell small { font-size: .62em; font-weight: 600; margin-left: 1px; vertical-align: baseline; }
+    .cell:hover { outline: 2px solid var(--primary); outline-offset: -2px; }
+    .cell[aria-pressed="true"] { outline: 3px solid var(--accent); outline-offset: -3px; }
+    .cell.D, .cell.Ds { background-image: repeating-linear-gradient(135deg, transparent 0 3px, color-mix(in srgb, var(--text) 38%, transparent) 3px 4.5px); }
+    .cell.P { box-shadow: inset 0 0 0 2.5px var(--text); }
+    .cell.Rh, .cell.Rs, .cell.Rp { background: var(--text); color: var(--bg); }
+
+    /* detail for the chosen cell */
+    .detail { margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; min-height: 5.5rem; }
+    .detail h3 { margin: 0 0 .3rem; font-size: 1rem; }
+    .detail ul { margin: .3rem 0 0; padding: 0; list-style: none; display: grid; gap: .1rem; font-variant-numeric: tabular-nums; }
+    .detail li { display: flex; justify-content: space-between; max-width: 18rem; }
+    .detail li.best { font-weight: 700; }
+    .detail p { margin: .3rem 0 0; }
+
+    .notes li { margin: .25rem 0; }
+    footer { margin-top: 2rem; font-size: .85rem; color: var(--support); }
+
+    @media print {
+      :root { --bg: #fff; --text: #000; --line: #000; --primary: #000; --support: #333; --accent: #000; }
+      form.rules, .detail, .no-print { display: none; }
+      main { padding: 0; }
+      .cell { cursor: default; }
+      .cell:hover, .cell[aria-pressed="true"] { outline: 0; }
+    }
+  </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/blackjack/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/blackjack/apple-touch-icon.png">
+  <link rel="manifest" href="/blackjack/manifest.webmanifest">
+</head>
+<body>
+<main>
+  <h1>blackjack basic strategy</h1>
+  <p class="lede muted" id="rules-line"></p>
+
+  <form class="rules" id="rules" aria-label="Table rules">
+    <label class="wide">Preset
+      <select name="preset" id="preset"></select>
+    </label>
+    <label>Decks
+      <select name="decks">
+        <option value="1">1</option><option value="2">2</option><option value="4">4</option>
+        <option value="6">6</option><option value="8">8</option>
+      </select>
+    </label>
+    <label>Dealer on soft 17
+      <select name="h17"><option value="1">hits (H17)</option><option value="0">stands (S17)</option></select>
+    </label>
+    <label>Blackjack pays
+      <select name="blackjackPays"><option value="1.5">3:2</option><option value="1.2">6:5</option></select>
+    </label>
+    <label>Surrender
+      <select name="surrender"><option value="late">late</option><option value="none">none</option></select>
+    </label>
+    <label class="check"><input type="checkbox" name="das"> Double after split</label>
+    <label class="check"><input type="checkbox" name="resplitAces"> Resplit aces</label>
+  </form>
+  <p class="edge" id="edge"></p>
+
+  <ul class="legend" aria-label="Legend">
+    <li><span class="cell S">S</span> stand</li>
+    <li><span class="cell H">H</span> hit</li>
+    <li><span class="cell D">D</span> double, else hit</li>
+    <li><span class="cell Ds">Ds</span> double, else stand</li>
+    <li><span class="cell P">P</span> split</li>
+    <li><span class="cell Rh">R</span> surrender, else hit (Rh), stand (Rs) or split (Rp)</li>
+  </ul>
+
+  <h2>Dealer upcard across, your hand down</h2>
+  <div class="chart-wrap" id="charts"></div>
+
+  <div class="detail" id="detail" aria-live="polite">
+    <p class="muted">Tap any cell for the expected value of every option.</p>
+  </div>
+
+  <h2>Rules of thumb</h2>
+  <ul class="notes">
+    <li>Hard 17 or more always stands. Soft 19 and 20 stand unless the chart says otherwise.</li>
+    <li>With three or more cards you cannot double, split or surrender: take the hit / stand half of the code (D = hit, Ds = stand, R = the letter after it).</li>
+    <li>Never take insurance or "even money". It is a side bet that costs you on average.</li>
+    <li>Chart colors never carry meaning: letters, hatching, boxes and black fill do, so it prints in black and white.</li>
+  </ul>
+
+  <footer>
+    Charts are computed from the rules above, not copied from a table.
+    The house edge assumes you follow the chart exactly and is an estimate for the rules chosen.
+    <span class="no-print">Everything runs in your browser, offline.</span>
+  </footer>
+</main>
+
+<script type="module">
+  import { PRESETS, describeRules, normalizeRules, shortRules } from "./engine/rules.js";
+  import { HARD_TOTALS, PAIR_CARDS, SOFT_TOTALS, buildStrategy, playerEdge } from "./engine/strategy.js";
+  import { UPCARDS } from "./engine/ev.js";
+
+  const STORE_KEY = "blackjack:rules";
+  const form = document.getElementById("rules");
+  const presetSelect = document.getElementById("preset");
+
+  const upLabel = (u) => (u === 11 ? "A" : String(u));
+  const cardLabel = (c) => (c === 11 ? "A" : String(c));
+  const ACTION_NAME = { stand: "Stand", hit: "Hit", double: "Double", split: "Split", surrender: "Surrender" };
+  const CODE_TEXT = {
+    S: "Stand", H: "Hit", D: "Double, else hit", Ds: "Double, else stand", P: "Split",
+    Rh: "Surrender, else hit", Rs: "Surrender, else stand", Rp: "Surrender, else split",
+  };
+
+  const readStored = () => {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null") || {}; } catch { return {}; }
+  };
+  const store = (rules) => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(rules)); } catch { /* private mode: fine */ }
+  };
+
+  let rules = normalizeRules(readStored());
+  let strategy;
+  let selected = null; // { kind, key, up }
+
+  presetSelect.innerHTML = '<option value="">Custom</option>' +
+    PRESETS.map((p) => `<option value="${p.id}">${p.label}</option>`).join("");
+
+  function sameRules(a, b) { return JSON.stringify(normalizeRules(a)) === JSON.stringify(normalizeRules(b)); }
+
+  function writeForm() {
+    form.decks.value = String(rules.decks);
+    form.h17.value = rules.h17 ? "1" : "0";
+    form.blackjackPays.value = String(rules.blackjackPays);
+    form.surrender.value = rules.surrender;
+    form.das.checked = rules.das;
+    form.resplitAces.checked = rules.resplitAces;
+    presetSelect.value = PRESETS.find((p) => sameRules(p.rules, rules))?.id ?? "";
+  }
+
+  function readForm() {
+    return normalizeRules({
+      decks: Number(form.decks.value),
+      h17: form.h17.value === "1",
+      blackjackPays: Number(form.blackjackPays.value),
+      surrender: form.surrender.value,
+      das: form.das.checked,
+      resplitAces: form.resplitAces.checked,
+    });
+  }
+
+  /** Merge neighbouring rows whose answers are identical, so the printed chart is as short as it can be. */
+  function groupRows(keys, table, label, merge = true) {
+    const groups = [];
+    for (const k of keys) {
+      const sig = UPCARDS.map((u) => table[k][u].code).join();
+      const last = groups[groups.length - 1];
+      if (merge && last && last.sig === sig) last.keys.push(k);
+      else groups.push({ sig, keys: [k] });
+    }
+    return groups.map((g) => ({ ...g, label: label(g.keys[0], g.keys[g.keys.length - 1]) }));
+  }
+
+  function cellHtml(kind, key, up, cell, rowName) {
+    const head = cell.code[0];
+    const tail = cell.code.slice(1);
+    const text = `${head}${tail ? `<small>${tail}</small>` : ""}`;
+    const label = `${rowName} against dealer ${upLabel(up)}: ${CODE_TEXT[cell.code]}`;
+    return `<td><button type="button" class="cell ${cell.code}" data-kind="${kind}" data-key="${key}" data-up="${up}" aria-label="${label}" aria-pressed="false">${text}</button></td>`;
+  }
+
+  function tableHtml(title, kind, keys, table, rowLabel, rowName, merge = true) {
+    const head = UPCARDS.map((u) => `<th scope="col">${upLabel(u)}</th>`).join("");
+    const rows = groupRows(keys, table, rowLabel, merge)
+      .map((g) => {
+        const key = g.keys[0];
+        const cells = UPCARDS.map((u) => cellHtml(kind, key, u, table[key][u], rowName(key))).join("");
+        return `<tr><th scope="row">${g.label}</th>${cells}</tr>`;
+      })
+      .join("");
+    return `<table class="chart"><caption>${title}</caption><thead><tr><th class="corner" scope="col"></th>${head}</tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  function render() {
+    strategy = buildStrategy(rules);
+    document.getElementById("rules-line").textContent = describeRules(rules);
+
+    const hardLabel = (a, b) => (a === b ? (b === 17 ? "17+" : String(a)) : `${a}–${b === 17 ? "17+" : b}`);
+    const softLabel = (a, b) => (a === b ? `A,${a - 11}` : `A,${a - 11}–A,${b - 11}`);
+    const pairLabel = (a) => `${cardLabel(a)},${cardLabel(a)}`;
+
+    document.getElementById("charts").innerHTML =
+      tableHtml("Hard totals", "hard", HARD_TOTALS, strategy.hard, hardLabel, (k) => `Hard ${k}`) +
+      '<div style="height:1rem"></div>' +
+      tableHtml("Soft totals (ace counted as 11)", "soft", SOFT_TOTALS, strategy.soft, softLabel, (k) => `Soft ${k}, A,${k - 11}`) +
+      '<div style="height:1rem"></div>' +
+      tableHtml("Pairs", "pairs", PAIR_CARDS, strategy.pairs, pairLabel, (k) => `Pair of ${cardLabel(k)}s`, false);
+
+    const edge = -playerEdge(strategy) * 100;
+    document.getElementById("edge").innerHTML =
+      `House edge with perfect basic strategy: <strong>${edge.toFixed(2)}%</strong>` +
+      ` <span class="muted">(about $${edge.toFixed(2)} lost per $100 wagered, ${shortRules(rules)})</span>`;
+
+    selected = null;
+    document.getElementById("detail").innerHTML = '<p class="muted">Tap any cell for the expected value of every option.</p>';
+  }
+
+  const fmt = (v) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(3)}`;
+
+  function showDetail(btn) {
+    const kind = btn.dataset.kind;
+    const key = Number(btn.dataset.key);
+    const up = Number(btn.dataset.up);
+    const cell = strategy[kind][key][up];
+    const name = btn.getAttribute("aria-label").split(" against ")[0];
+    const options = [
+      ["stand", cell.evs.stand], ["hit", cell.evs.hit], ["double", cell.evs.double],
+      ["split", cell.evs.split], ["surrender", cell.evs.surrender],
+    ].filter(([, v]) => v !== null);
+    options.sort((a, b) => b[1] - a[1]);
+    const items = options
+      .map(([a, v]) => `<li class="${a === cell.action ? "best" : ""}"><span>${ACTION_NAME[a]}</span><span>${fmt(v)}</span></li>`)
+      .join("");
+    const cost = options.length > 1 ? options[0][1] - options[1][1] : 0;
+    document.getElementById("detail").innerHTML =
+      `<h3>${name} vs dealer ${upLabel(up)}: ${CODE_TEXT[cell.code]}</h3>` +
+      `<ul>${items}</ul>` +
+      `<p class="muted">Expected result per $1 bet, assuming the dealer has checked for blackjack. ` +
+      `${cost < 0.0005 ? "It is nearly a coin flip." : `The next best play gives up ${cost.toFixed(3)}.`}</p>`;
+  }
+
+  document.getElementById("charts").addEventListener("click", (e) => {
+    const btn = e.target.closest("button.cell");
+    if (!btn) return;
+    for (const b of document.querySelectorAll("button.cell[aria-pressed=true]")) b.setAttribute("aria-pressed", "false");
+    btn.setAttribute("aria-pressed", "true");
+    showDetail(btn);
+  });
+
+  form.addEventListener("change", (e) => {
+    if (e.target === presetSelect) {
+      const preset = PRESETS.find((p) => p.id === presetSelect.value);
+      if (preset) rules = normalizeRules(preset.rules);
+    } else {
+      rules = readForm();
+    }
+    store(rules);
+    writeForm();
+    render();
+  });
+  form.addEventListener("submit", (e) => e.preventDefault());
+
+  writeForm();
+  render();
+
+  if ("serviceWorker" in navigator) {
+    addEventListener("load", () => {
+      navigator.serviceWorker.register("/blackjack/sw.js", { scope: "/blackjack/" }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
