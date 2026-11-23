@@ -1,0 +1,14 @@
+{
+  "name": "controller lab",
+  "short_name": "controller lab",
+  "description": "Register two or more game controllers and log every input",
+  "start_url": "/controller-lab/",
+  "scope": "/controller-lab/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

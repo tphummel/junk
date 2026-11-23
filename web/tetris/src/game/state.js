@@ -75,6 +75,8 @@ import { markSquares, squaresInRow } from "./squares.js";
  * @property {boolean} hardDropUsed whether the piece in play has been hard-dropped already
  * @property {number} holdsUsed swaps with the held piece
  * @property {boolean} over
+ * @property {number} timeLimitTicks 0 for no limit; else the game ends when the first piece set at or after this tick locks
+ * @property {boolean} timeUp the game ended because of the time limit, not a top-out
  * @property {GameEvent[]} events what happened in the last step; replaced at the start of every step
  * @property {number} garbageMilli garbage rows per second times 1000 (0 for Practice); integers keep it exact
  * @property {number} garbageAcc thousandths of a row accrued toward the next one
@@ -94,8 +96,9 @@ export const QUEUE_MIN = 4;
 
 /**
  * @param {number} seed
- * @param {{ startLevel?: number, garbagePerSecond?: number }} [options] garbagePerSecond: rows per second of garbage,
- *   0 or missing for none
+ * @param {{ startLevel?: number, garbagePerSecond?: number, timeLimitSeconds?: number }} [options] garbagePerSecond: rows
+ *   per second of garbage, 0 or missing for none; timeLimitSeconds: once this much game time has passed, the game ends
+ *   when the piece in play is set (0 or missing for no limit)
  * @returns {Game}
  */
 export function createGame(seed, options = {}) {
@@ -136,6 +139,8 @@ export function createGame(seed, options = {}) {
     hardDropUsed: false,
     holdsUsed: 0,
     over: false,
+    timeLimitTicks: Math.round((options.timeLimitSeconds ?? 0) * TICKS_PER_SECOND),
+    timeUp: false,
     events: [],
     garbageMilli: Math.round((options.garbagePerSecond ?? 0) * 1000),
     garbageAcc: 0,
@@ -336,6 +341,13 @@ function lock(game) {
     game.level = levelFor(game.startLevel, game.lines);
     if (rows.some((r) => r.gold + r.silver > 0)) flourish = true;
     if (formSquares(game) > 0) flourish = true;
+  }
+  // Time limit: the piece set after the clock has run out is the last one. Its squares and clears still count.
+  if (game.timeLimitTicks > 0 && game.tick >= game.timeLimitTicks) {
+    game.current = null;
+    game.over = true;
+    game.timeUp = true;
+    return;
   }
   if (lockedOut && cleared === 0) {
     game.current = null;

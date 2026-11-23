@@ -1,0 +1,14 @@
+{
+  "name": "MLB Scoreboard",
+  "short_name": "MLB",
+  "description": "Daily MLB scores, lineups, ABS challenges, home runs and notable plays.",
+  "start_url": "/mlb-scoreboard/",
+  "scope": "/mlb-scoreboard/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

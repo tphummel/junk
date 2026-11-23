@@ -15,7 +15,7 @@ import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { formatTime, gameSeconds, gradePerf, isNatural, lineRate, naturalNumber, summarize } from "../web/tetris/src/game/stats.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
-import { axisDirection, bindingDown, BUTTON, createGamepad, describeBinding, describePad, detectBinding, mapPad, snapshotPad } from "../web/tetris/src/input/gamepad.js";
+import { axisDirection, BUTTON, createGamepad, describePad, dpadOnStick, hatDirections, mapPad, newPadState, observePad } from "../web/tetris/src/input/gamepad.js";
 import { createEffects } from "../web/tetris/src/ui/effects.js";
 import { buildScorecard, SCORECARD_FORMAT, scorecardFilename, scorecardJson, scorecardSections } from "../web/tetris/src/ui/scorecard.js";
 import { bestByMode, loadScores, MAX_SCORES, saveScore, SCORES_KEY } from "../web/tetris/src/ui/scores.js";
@@ -842,8 +842,51 @@ test("not naturals: equal is not greater, a bit short, and nothing scored", () =
 
 // --- difficulty and garbage ------------------------------------------------------------------------
 
+test("time limit: the piece in play at 2:00 is the last one", () => {
+  const game = createGame(5, { timeLimitSeconds: 120 });
+  assert.equal(game.timeLimitTicks, 7200);
+  game.tick = 7000;
+  slam(game);
+  assert.equal(game.over, false, "pieces set before 2:00 do not end it");
+  game.tick = 7199;
+  const placed = game.piecesPlaced;
+  for (let i = 0; i < 3; i++) step(game, []); // the piece in play at 2:00 is still falling
+  assert.equal(game.over, false, "the clock running out does not end it while a piece is falling");
+  assert.ok(game.tick >= 7200);
+  slam(game);
+  assert.equal(game.over, true);
+  assert.equal(game.timeUp, true);
+  assert.equal(game.piecesPlaced, placed + 1, "the last piece was set and counted");
+});
+
+test("time limit: none by default, and a top-out is not time up", () => {
+  const game = createGame(5);
+  game.tick = 100000;
+  slam(game);
+  assert.equal(game.over, false);
+  assert.equal(game.timeUp, false);
+});
+
+test("time limit: a replay with the same limit ends the same way", () => {
+  const log = [];
+  const game = createGame(9, { timeLimitSeconds: 1 });
+  for (let t = 1; t <= 600 && !game.over; t++) {
+    const actions = t % 20 === 0 ? ["hardDrop"] : [];
+    step(game, actions);
+    for (const action of actions) log.push({ t: game.tick, action });
+  }
+  assert.equal(game.timeUp, true);
+  const again = replay(9, log, game.tick, { timeLimitSeconds: 1 });
+  assert.equal(again.timeUp, true);
+  assert.equal(again.score, game.score);
+  assert.equal(again.piecesPlaced, game.piecesPlaced);
+});
+
 test("difficulties: Practice has no garbage; Easy, Medium and Hard run at a D, B and S rate", () => {
-  assert.deepEqual(DIFFICULTIES.map((d) => d.id), ["practice", "easy", "medium", "hard"]);
+  assert.deepEqual(DIFFICULTIES.map((d) => d.id), ["practice", "timed", "easy", "medium", "hard"]);
+  assert.equal(difficultyById("timed").garbagePerSecond, 0);
+  assert.equal(difficultyById("timed").timeLimitSeconds, 120);
+  assert.equal(difficultyById("practice").timeLimitSeconds, undefined);
   assert.equal(difficultyById("practice").garbagePerSecond, 0);
   assert.equal(gradePerf(1, difficultyById("easy").garbagePerSecond), "D");
   assert.equal(gradePerf(1, difficultyById("medium").garbagePerSecond), "B");
@@ -1151,53 +1194,91 @@ test("createGamepad: connect and disconnect callbacks", () => {
   assert.deepEqual(calls, ["connect", "disconnect"], "another pad is still attached: no disconnect");
 });
 
-test("detectBinding finds the control that was pressed, ignoring what was already down", () => {
-  const rest = snapshotPad(fakePad({ down: [BUTTON.A], axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] }));
-  assert.equal(detectBinding(rest, fakePad({ down: [BUTTON.A], axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] })), null, "nothing new");
-  assert.deepEqual(detectBinding(rest, fakePad({ down: [BUTTON.A, 12], axes: [0, 0] })), { type: "button", index: 12 });
-  assert.deepEqual(detectBinding(rest, fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, -1] })), { type: "axis", index: 9, value: -1 }, "a hat switch");
-  assert.equal(detectBinding(rest, fakePad({ axes: [0, 0.3] })), null, "a small wobble is not a press");
+/** Poll a pad that is sending the given sequence of readings, returning what each poll produced. */
+function pollSequence(readings) {
+  let pad = readings[0];
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [pad] } });
+  return readings.map((r) => {
+    pad = r;
+    return gp.poll();
+  });
+}
+
+test("a d-pad sent as the left stick hard-drops on its very first up press", () => {
+  const [rest, up] = pollSequence([fakePad({ axes: [0, 0] }), fakePad({ axes: [0, -1] })]);
+  assert.deepEqual(rest.pressed, []);
+  assert.deepEqual([...up.pressed].sort(), ["hardDrop", "up"]);
 });
 
-test("a learned axis or button binds hard drop on top of d-pad up", () => {
-  const hat = { hardDrop: { type: "axis", index: 9, value: -1 } };
+test("a d-pad on the stick still moves left, right and down", () => {
+  const [a, b, c] = pollSequence([fakePad({ axes: [-1, 0] }), fakePad({ axes: [1, 0] }), fakePad({ axes: [0, 1] })]);
+  assert.deepEqual([...a.held], ["left"]);
+  assert.deepEqual([...b.held], ["right"]);
+  assert.deepEqual([...c.held], ["softDrop"]);
+});
+
+test("an analog stick never hard-drops, even pushed fully up", () => {
+  const out = pollSequence([fakePad({ axes: [0, -0.5] }), fakePad({ axes: [0, -1] }), fakePad({ axes: [0, 0] }), fakePad({ axes: [0, -1] })]);
+  for (const r of out) assert.ok(!r.pressed.includes("hardDrop"));
+  assert.ok(out[1].pressed.includes("up"), "but it still moves menus");
+});
+
+test("a stick that shows one in-between value is analog for good", () => {
+  const state = newPadState();
+  observePad(fakePad({ axes: [0, -1] }), state);
+  assert.equal(dpadOnStick(state), true);
+  observePad(fakePad({ axes: [0.1, -0.4] }), state);
+  assert.equal(dpadOnStick(state), false);
+  observePad(fakePad({ axes: [0, -1] }), state);
+  assert.equal(dpadOnStick(state), false, "it stays analog");
+});
+
+test("a pad whose d-pad buttons work keeps its stick as a stick", () => {
+  const state = newPadState();
+  observePad(fakePad({ down: [BUTTON.LEFT] }), state);
+  observePad(fakePad({ axes: [0, -1] }), state);
+  assert.equal(dpadOnStick(state), false);
+});
+
+test("a hat switch axis is read as a d-pad once it has been seen at rest", () => {
   const axes = (v) => [0, 0, 0, 0, 0, 0, 0, 0, 0, v];
-  assert.deepEqual([...mapPad(fakePad({ axes: axes(-1) }), 0.2, hat)].sort(), ["hardDrop", "up"]);
-  assert.equal(mapPad(fakePad({ axes: axes(1.29) }), 0.2, hat).size, 0, "neutral hat");
-  assert.equal(mapPad(fakePad({ axes: axes(-0.43) }), 0.2, hat).size, 0, "another hat direction");
-  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.UP] }), 0.2, hat)].sort(), ["hardDrop", "up"], "d-pad up still works");
-  const btn = { hardDrop: { type: "button", index: 3 } };
-  assert.ok(bindingDown(fakePad({ down: [3] }), btn.hardDrop));
-  assert.equal(describeBinding(hat.hardDrop), "axis 9 at -1.00");
-  assert.equal(describeBinding(btn.hardDrop), "button 3");
+  const [rest, up, upRight, neutral, left] = pollSequence([
+    fakePad({ axes: axes(1.2857), mapping: "" }),
+    fakePad({ axes: axes(-1), mapping: "" }),
+    fakePad({ axes: axes(-0.7143), mapping: "" }),
+    fakePad({ axes: axes(1.2857), mapping: "" }),
+    fakePad({ axes: axes(0.7143), mapping: "" }),
+  ]);
+  assert.equal(rest.held.size, 0);
+  assert.deepEqual([...up.pressed].sort(), ["hardDrop", "up"]);
+  assert.deepEqual([...upRight.held], ["right"]);
+  assert.equal(neutral.held.size, 0);
+  assert.deepEqual([...left.held], ["left"]);
 });
 
-test("createGamepad.learn: captures the next control, fires no action for it, then uses it", () => {
-  let pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] });
-  let saved = {};
-  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [pad] }, bindings: () => saved });
-  assert.equal(gp.learn((b) => { saved = { hardDrop: b }; }), true);
-  assert.equal(gp.learning, true);
-  assert.deepEqual(gp.poll().pressed, [], "nothing while learning and nothing pressed yet");
-  pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, -1] });
-  const r = gp.poll();
-  assert.deepEqual(r.pressed, [], "the learning press is not also a drop");
-  assert.equal(gp.learning, false);
-  assert.deepEqual(saved, { hardDrop: { type: "axis", index: 9, value: -1 } });
-  assert.deepEqual(gp.poll().pressed, [], "still held: no edge");
-  pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.29] });
+test("hatDirections decodes the eight positions and neutral", () => {
+  assert.deepEqual(hatDirections(-1), { up: true, right: false, down: false, left: false });
+  assert.deepEqual(hatDirections(-3 / 7), { up: false, right: true, down: false, left: false });
+  assert.deepEqual(hatDirections(1 / 7), { up: false, right: false, down: true, left: false });
+  assert.deepEqual(hatDirections(1), { up: true, right: false, down: false, left: true });
+  assert.equal(hatDirections(9 / 7), null);
+});
+
+test("Y also hard-drops on a standard pad, but not on a non-standard one", () => {
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.Y] }))].sort(), ["hardDrop", "up"]);
+  assert.equal(mapPad(fakePad({ down: [BUTTON.Y], mapping: "" })).size, 0);
+});
+
+test("createGamepad.info says how the d-pad arrives", () => {
+  let pad = fakePad({ axes: [0, -1] });
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [pad] } });
+  assert.equal(gp.info(), null, "nothing known before the first poll");
   gp.poll();
-  pad = fakePad({ axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, -1] });
-  assert.deepEqual(gp.poll().pressed.sort(), ["hardDrop", "up"], "pressing it again hard-drops");
-});
-
-test("createGamepad.learn needs a pad, and can be cancelled", () => {
-  const none = createGamepad(new EventTarget(), { nav: { getGamepads: () => [null] } });
-  assert.equal(none.learn(() => {}), false);
-  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [fakePad()] } });
-  gp.learn(() => assert.fail("cancelled"));
-  gp.cancelLearn();
-  assert.equal(gp.learning, false);
+  assert.equal(gp.info()?.dpadOnStick, true);
+  pad = fakePad({ down: [BUTTON.UP] });
+  gp.poll();
+  assert.equal(gp.info()?.dpadButtons, true);
+  assert.equal(gp.info()?.dpadOnStick, false);
 });
 
 test("describePad names the pad and flags a non-standard mapping", () => {

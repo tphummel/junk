@@ -271,27 +271,38 @@ export function longestStreak(events, settings) {
 }
 
 /**
- * Stats over the last `days` days ending today. Counting starts at your first event, and today only counts once its
- * brushes are done, so an unfinished day is never a miss.
+ * Stats for the days from `from` to `to` (inclusive day keys). Counting starts at your first event and stops at today,
+ * and today only counts once its brushes are done, so an unfinished day is never a miss.
+ * `levels` maps each day shown to 2 (both brushes), 1 (one) or 0 (none); today appears even while unfinished.
  * @param {Event[]} events
+ * @param {string} from
+ * @param {string} to
+ * @param {string} today
  * @param {Settings} settings
  */
-export function rangeStats(events, today, days, settings) {
-  const out = { days: 0, fullDays: 0, brushPct: null, flossDays: 0, mouthwashDays: 0, extras: 0, avgSeconds: 0 };
+export function periodStats(events, from, to, today, settings) {
+  const out = {
+    days: 0, fullDays: 0, brushPct: null, flossDays: 0, mouthwashDays: 0, extras: 0, avgSeconds: 0,
+    brushCount: 0, brushSeconds: 0, flossCount: 0, mouthwashCount: 0,
+    bestStreak: { length: 0, start: /** @type {string | null} */ (null), end: /** @type {string | null} */ (null) },
+    /** @type {Map<string, 0 | 1 | 2>} */ levels: new Map(),
+    weekdays: Array.from({ length: 7 }, () => ({ days: 0, fullDays: 0 })),
+  };
   if (!events.length) return out;
   const byDay = groupByDay(events, settings);
-  let k = addDays(today, -(days - 1));
   const first = [...byDay.keys()].sort()[0];
-  if (k < first) k = first;
-  let brushes = 0, brushSeconds = 0, brushEvents = 0;
-  for (; k <= today; k = addDays(k, 1)) {
+  const last = to < today ? to : today;
+  let brushes = 0, run = 0, runStart = "";
+  for (let k = from < first ? first : from; k <= last; k = addDays(k, 1)) {
     const list = byDay.get(k) || [];
     const g = dayGoals(list);
+    out.levels.set(k, g.complete ? 2 : g.done.brush > 0 ? 1 : 0);
     for (const e of list) {
       if (e.type === "brush") {
-        brushSeconds += e.seconds;
-        brushEvents++;
-      }
+        out.brushSeconds += e.seconds;
+        out.brushCount++;
+      } else if (e.type === "floss") out.flossCount++;
+      else out.mouthwashCount++;
     }
     if (k === today && !g.complete) continue;
     out.days++;
@@ -300,10 +311,79 @@ export function rangeStats(events, today, days, settings) {
     out.mouthwashDays += g.done.mouthwash >= GOALS.mouthwash ? 1 : 0;
     out.extras += g.extras;
     brushes += g.done.brush;
+    const wd = out.weekdays[parseDay(k).getDay()];
+    wd.days++;
+    wd.fullDays += g.complete ? 1 : 0;
+    if (g.complete) {
+      if (!run++) runStart = k;
+      if (run > out.bestStreak.length) out.bestStreak = { length: run, start: runStart, end: k };
+    } else run = 0;
   }
   out.brushPct = out.days ? Math.round((brushes / (out.days * GOALS.brush)) * 100) : null;
-  out.avgSeconds = brushEvents ? Math.round(brushSeconds / brushEvents) : 0;
+  out.avgSeconds = out.brushCount ? Math.round(out.brushSeconds / out.brushCount) : 0;
   return out;
+}
+
+/** Stats over the last `days` days ending today. @param {Event[]} events @param {string} today @param {number} days @param {Settings} settings */
+export function rangeStats(events, today, days, settings) {
+  const r = periodStats(events, addDays(today, -(days - 1)), today, today, settings);
+  const { days: n, fullDays, brushPct, flossDays, mouthwashDays, extras, avgSeconds } = r;
+  return { days: n, fullDays, brushPct, flossDays, mouthwashDays, extras, avgSeconds };
+}
+
+// ---------- monthly and annual reports ----------
+
+/** First and last day of a month. @param {string} ym YYYY-MM */
+export function monthRange(ym) {
+  const [y, m] = ym.split("-").map(Number);
+  return { from: `${ym}-01`, to: dayKey(new Date(y, m, 0)) };
+}
+
+/** The month `n` months from `ym`. @param {string} ym YYYY-MM @param {number} n */
+export function addMonthKey(ym, n) {
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+}
+
+/** The year of the earliest event, or null with no events. @param {Event[]} events @param {Settings} settings */
+export function firstYear(events, settings) {
+  return events.length ? Number([...groupByDay(events, settings).keys()].sort()[0].slice(0, 4)) : null;
+}
+
+/** The month of the earliest event (YYYY-MM), or null with no events. @param {Event[]} events @param {Settings} settings */
+export function firstMonth(events, settings) {
+  return events.length ? [...groupByDay(events, settings).keys()].sort()[0].slice(0, 7) : null;
+}
+
+/**
+ * Report for one month: its stats, the month before for comparison, and the days with fewer than two brushes.
+ * @param {Event[]} events @param {string} ym YYYY-MM @param {string} today @param {Settings} settings
+ */
+export function monthReport(events, ym, today, settings) {
+  const { from, to } = monthRange(ym);
+  const stats = periodStats(events, from, to, today, settings);
+  const prevRange = monthRange(addMonthKey(ym, -1));
+  const prev = periodStats(events, prevRange.from, prevRange.to, today, settings);
+  const short = [...stats.levels].filter(([k, level]) => level < 2 && k < today).map(([k, level]) => ({ day: k, level }));
+  return { ym, from, to, ...stats, prev, short };
+}
+
+/**
+ * Report for one calendar year: overall stats, each month, and the best and worst month by brushing percentage.
+ * @param {Event[]} events @param {number} year @param {string} today @param {Settings} settings
+ */
+export function yearReport(events, year, today, settings) {
+  const stats = periodStats(events, `${year}-01-01`, `${year}-12-31`, today, settings);
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const ym = `${year}-${pad(i + 1)}`;
+    const { from, to } = monthRange(ym);
+    return { ym, month: i, ...periodStats(events, from, to, today, settings) };
+  });
+  const rated = months.filter((m) => m.brushPct !== null);
+  const best = rated.reduce((a, m) => (!a || m.brushPct > a.brushPct ? m : a), null);
+  const worst = rated.length > 1 ? rated.reduce((a, m) => (!a || m.brushPct < a.brushPct ? m : a), null) : null;
+  return { year, from: `${year}-01-01`, to: `${year}-12-31`, ...stats, months, bestMonth: best, worstMonth: worst && worst !== best ? worst : null };
 }
 
 /** Weeks (Sunday first) of day keys for a month; days outside the month are null. @param {number} year @param {number} month 0-11 */

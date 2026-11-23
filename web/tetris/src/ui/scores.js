@@ -11,7 +11,7 @@ export const MAX_SCORES = 200;
  * @typedef {object} ScoreRecord
  * @property {number} at when it ended, epoch ms
  * @property {string} mode difficulty id: practice, easy, medium or hard
- * @property {"topout" | "ended"} ended how it finished: the stack overflowed, or the player ended it from the pause menu
+ * @property {"topout" | "ended" | "timeup"} ended how it finished: the stack overflowed, the player ended it from the pause menu, or time ran out
  * @property {number} score what the game calls Lines (the points)
  * @property {number} lines rows actually cleared ("Lines raw")
  * @property {number} level

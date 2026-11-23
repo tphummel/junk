@@ -3,7 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>Tom Hummel :: MLB Scoreboard</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #1300DF cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #1300DF;
+      --support: #4A439C;
+      --accent:  #CD4D00;
+      --bg: #FFFFFF;
+      --text: #111111;
+      --muted: #595959;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #7265FF;
+        --support: #7972C3;
+        --accent:  #DF5400;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --muted: #A3A3A3;
+      }
+    }
+    body { background: var(--bg); color: var(--text); }
+  </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/mlb-scoreboard/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/mlb-scoreboard/apple-touch-icon.png">
+  <link rel="manifest" href="/mlb-scoreboard/manifest.webmanifest">
   <script type="importmap">
   {
     "imports": {
@@ -21,7 +50,7 @@
       if (!pre) {
         pre = document.createElement('pre');
         pre.id = 'log';
-        pre.style.color = 'red';
+        pre.style.color = 'var(--accent)';
         pre.style.whiteSpace = 'pre-wrap';
         document.body.appendChild(pre);
       }

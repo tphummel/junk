@@ -2,7 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>Tom Hummel :: Pixel Wall</title>
+  <meta name="description" content="A 16x16 wall of shared counters. Click a pixel to bump it and change its color.">
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/pixel-wall-svelte/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/pixel-wall-svelte/apple-touch-icon.png">
+  <link rel="manifest" href="/pixel-wall-svelte/manifest.webmanifest">
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #D22D7D cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #D22D7D;
+      --support: #A15F7F;
+      --accent:  #32871D;
+      --bg: #FFFFFF;
+      --text: #111111;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D6428A;
+        --support: #A76987;
+        --accent:  #4DD22D;
+        --bg: #111111;
+        --text: #EEEEEE;
+      }
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1rem; }
+  </style>
   <script type="importmap">
   {
     "imports": {
@@ -19,7 +48,7 @@
       if (!pre) {
         pre = document.createElement('pre');
         pre.id = 'log';
-        pre.style.color = 'red';
+        pre.style.color = 'var(--primary)';
         pre.style.whiteSpace = 'pre-wrap';
         document.body.appendChild(pre);
       }
