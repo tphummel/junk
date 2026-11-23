@@ -47,7 +47,10 @@ function note(text) {
 
 // --- cards -----------------------------------------------------------------------------------------
 
-/** @typedef {{ root: HTMLElement, buttons: HTMLElement[], axisRows: HTMLElement[], axisBars: HTMLElement[], axisText: HTMLElement[], meta: HTMLElement, devinfo: HTMLElement, state: HTMLElement, last: HTMLElement, perf: HTMLElement, perfSummary: HTMLElement, built: string }} Card */
+/** Slots whose card is expanded to the full view; collapsed (a heading row) is the default. @type {Set<number>} */
+const expanded = new Set();
+
+/** @typedef {{ root: HTMLElement, glance: HTMLElement, glanceKey: string, brief: HTMLElement, toggle: HTMLButtonElement, buttons: HTMLElement[], axisRows: HTMLElement[], axisBars: HTMLElement[], axisText: HTMLElement[], meta: HTMLElement, devinfo: HTMLElement, state: HTMLElement, last: HTMLElement, perf: HTMLElement, perfSummary: HTMLElement, built: string }} Card */
 /** @type {Map<number, Card>} */
 const cards = new Map();
 
@@ -57,7 +60,13 @@ function buildCard(s) {
   root.className = "pad";
   root.setAttribute("style", slotVars(s.slot));
   root.innerHTML = `
-    <header><span class="badge">P${s.slot}</span><strong class="name"></strong><span class="state"></span></header>
+    <header>
+      <button class="fold" type="button" data-act="toggle" aria-expanded="false" title="Show or hide the full card"><span class="chev" aria-hidden="true">▸</span><span class="badge">P${s.slot}</span><strong class="name"></strong></button>
+      <span class="state"></span>
+    </header>
+    <p class="brief"></p>
+    <div class="glance" aria-live="off"></div>
+    <div class="full" hidden>
     <p class="meta muted"></p>
     <div class="devinfo"></div>
     <div class="buttons"></div>
@@ -69,6 +78,7 @@ function buildCard(s) {
       <button class="tool quiet" type="button" data-act="stats">Stats</button>
       <button class="tool quiet" type="button" data-act="haptics" title="Test this controller's vibration">Haptics</button>
       <button class="tool quiet" type="button" data-act="forget">Forget</button>
+    </div>
     </div>`;
   const q = (/** @type {string} */ sel) => /** @type {HTMLElement} */ (root.querySelector(sel));
   const name = q(".name");
@@ -98,14 +108,25 @@ function buildCard(s) {
     axisText.push(value);
     q(".axes").appendChild(row);
   }
+  const toggle = /** @type {HTMLButtonElement} */ (q(".fold"));
+  const setOpen = (/** @type {boolean} */ open) => {
+    if (open) expanded.add(s.slot);
+    else expanded.delete(s.slot);
+    root.classList.toggle("open", open);
+    q(".full").hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    q(".chev").textContent = open ? "▾" : "▸";
+  };
+  setOpen(expanded.has(s.slot));
   root.addEventListener("click", (e) => {
-    const act = /** @type {HTMLElement} */ (e.target).dataset?.act;
-    if (act === "haptics") show(s.slot, "haptics");
+    const act = /** @type {HTMLElement} */ (e.target).closest("[data-act]")?.getAttribute("data-act");
+    if (act === "toggle") setOpen(!expanded.has(s.slot));
+    else if (act === "haptics") show(s.slot, "haptics");
     else if (act === "forget") forget(s.slot);
     else if (act === "transcript") show(s.slot, "transcript");
     else if (act === "stats") show(s.slot, "stats");
   });
-  return { root, buttons, axisRows, axisBars, axisText, meta: q(".meta"), devinfo: q(".devinfo"), state: q(".state"), last: q(".last"), perf: q(".perf"), perfSummary: q(".perfsum"), built: `${s.nButtons}x${s.nAxes}:${s.mapping}` };
+  return { root, glance: q(".glance"), glanceKey: "", brief: q(".brief"), toggle, buttons, axisRows, axisBars, axisText, meta: q(".meta"), devinfo: q(".devinfo"), state: q(".state"), last: q(".last"), perf: q(".perf"), perfSummary: q(".perfsum"), built: `${s.nButtons}x${s.nAxes}:${s.mapping}` };
 }
 
 /** The vibration actuator the browser exposes for a registered controller right now, or null. @param {Slot} s */
@@ -188,6 +209,18 @@ function syncCards() {
       el.classList.toggle("on", b.pressed);
       el.style.setProperty("--v", b.pressed ? "1" : String(b.value));
     });
+    // The heading row's live view: lit chips for every pressed button, and every stick or trigger that is off center.
+    const lit = s.buttons.flatMap((b, i) => (b.pressed ? [buttonName(s.mapping, i).replace("button ", "")] : []));
+    const moving = s.axes.flatMap((v, i) => (Math.abs(v) > 0.1 ? [`${s.mapping === "standard" && i < 4 ? ["LX", "LY", "RX", "RY"][i] : `a${i}`} ${v.toFixed(2)}`] : []));
+    const key = lit.join("|") + "#" + moving.join("|");
+    if (key !== card.glanceKey) {
+      card.glanceKey = key;
+      card.glance.replaceChildren(
+        ...lit.map((t) => Object.assign(document.createElement("span"), { className: "lit", textContent: t })),
+        ...moving.map((t) => Object.assign(document.createElement("span"), { className: "mv", textContent: t })),
+      );
+      card.root.classList.toggle("active", key !== "#");
+    }
     s.axes.forEach((v, i) => {
       const bar = card.axisBars[i];
       if (!bar) return;
@@ -250,6 +283,15 @@ function refreshText(hz) {
     const summary = registry.summary(s.slot, now);
     if (!card || !summary) continue;
     card.state.textContent = s.connected ? "connected" : "disconnected";
+    card.brief.textContent = [
+      s.connected ? `connected ${clock(summary.connection.uptimeMs)}` : "disconnected",
+      `${s.nButtons} btn · ${s.nAxes} axes`,
+      summary.report.samples ? `${summary.report.approxHz} Hz` : null,
+      `${summary.inputs.perSecondNow}/s`,
+      summary.connection.disconnects ? `dropped ${summary.connection.disconnects}×` : null,
+      summary.device.vibration ? "rumble" : null,
+    ].filter(Boolean).join(" · ");
+    card.brief.title = card.last.textContent;
     card.meta.textContent = `${s.index === null ? "no index" : `index ${s.index}`} · ${s.mapping || "non-standard"} · ${s.nButtons} buttons · ${s.nAxes} axes`;
     const id = summary.device.identity;
     // Short on purpose: the full identity, ids and the rest are in Stats. A known product needs no ids beside it.

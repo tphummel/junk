@@ -69,6 +69,21 @@
     .pad.gone { opacity: 0.55; border-style: dashed; }
     .pad.flash { box-shadow: 0 0 0 4px var(--c); }
     .pad header { display: flex; align-items: center; gap: 8px; }
+    /* Collapsed by default: a heading row that lights up while the pad is used. Expanded: the full card. */
+    .fold { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+    .fold:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+    .chev { flex: none; width: 1em; color: var(--support); }
+    .pad .brief { font-size: 0.7rem; color: var(--support); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .glance { display: flex; flex-wrap: wrap; gap: 3px; min-height: 1.3rem; align-content: flex-start; font-size: 0.66rem; font-variant-numeric: tabular-nums; }
+    .glance .lit { padding: 0 7px; border-radius: 5px; background: var(--c); color: var(--ink); font-weight: 700; }
+    .glance .mv { padding: 0 6px; border-radius: 5px; border: 1px solid var(--c); }
+    .pad.active:not(.open) { background: color-mix(in srgb, var(--c) 14%, transparent); }
+    .pad.active:not(.open) .badge { box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 45%, transparent); }
+    .pad.open .glance, .pad.open .brief { display: none; }
+    .full { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .full[hidden] { display: none; }
+    .pad.open { grid-column: 1 / -1; }
+    @media (min-width: 700px) { .pad.open { grid-column: span 2; } }
     .badge { flex: none; padding: 1px 9px; border-radius: 999px; background: var(--c); color: var(--ink); font-weight: 700; }
     .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .state { flex: none; font-size: 0.72rem; color: var(--support); }
