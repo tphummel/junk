@@ -45,6 +45,8 @@ Replace `photo.jpg` with your image filename. The analysis results will be writt
 ```
 face-analysis/
 ├── analyze_face.py           # Main analysis CLI
+├── api.py                    # FastAPI service
+├── index.html                # Upload form and report page served at /
 ├── visualize_landmarks.sh    # ImageMagick script to overlay landmarks on images
 ├── requirements.txt          # Python dependencies (MediaPipe, InsightFace, OpenCV)
 ├── Dockerfile                # Container build (includes MediaPipe + InsightFace models)
@@ -83,6 +85,8 @@ Run a local API server that accepts an image upload and returns the JSON analysi
 ```bash
 uvicorn api:app --host 0.0.0.0 --port 8000
 ```
+
+Open <http://localhost:8000/> for an upload page (file picker or drag and drop) that calls the endpoints below and renders a report.
 
 Send an image for analysis:
 ```bash
