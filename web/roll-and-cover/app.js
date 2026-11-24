@@ -49,19 +49,24 @@ function setTab(name) {
   render();
 }
 
-function roll() {
+function roll(simulate = false) {
   const cur = state.current[state.mode];
   if (!cur.startedAt) cur.startedAt = Date.now();
-  const r = rollOne(state.mode);
-  cur.rolls.push(r);
-  lastRoll = r;
+  const startedWithRolls = cur.rolls.length;
   let finished = null;
-  if (isComplete(state.mode, cur.rolls)) {
-    finished = { id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, mode: state.mode, startedAt: cur.startedAt, endedAt: Date.now(), rolls: cur.rolls };
-    state.games.push(finished);
-    state.current[state.mode] = { startedAt: null, rolls: [] };
-    lastFinished[state.mode] = finished;
-  } else { delete lastFinished[state.mode]; }
+  do {
+    const r = rollOne(state.mode);
+    cur.rolls.push(r);
+    lastRoll = r;
+    if (isComplete(state.mode, cur.rolls)) {
+      finished = { id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, mode: state.mode, startedAt: cur.startedAt, endedAt: Date.now(), rolls: cur.rolls };
+      if (simulate) finished.sim = true;
+      state.games.push(finished);
+      state.current[state.mode] = { startedAt: null, rolls: [] };
+      lastFinished[state.mode] = finished;
+    }
+  } while (simulate && !finished);
+  if (!finished) delete lastFinished[state.mode];
   save();
   render();
 }
@@ -215,7 +220,7 @@ function renderHistory() {
     const open = expanded.has(g.id);
     const tr = el('tr', {},
       el('td', { className: 'num', textContent: games.length - i }),
-      el('td', { textContent: when(g.endedAt) }),
+      el('td', { textContent: when(g.endedAt) + (g.sim ? ' (sim)' : '') }),
       el('td', { className: 'num', textContent: g.rolls.length }),
       el('td', { className: 'num', textContent: `${g.rolls.length <= exp ? '' : '+'}${fmt(g.rolls.length - exp, 1)}` }),
       el('td', { className: 'num', textContent: dur(g.endedAt - g.startedAt) }),
@@ -281,7 +286,8 @@ function doImport(replace) {
 
 document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { state.mode = b.dataset.mode; save(); render(); }));
 for (const t of ['play', 'stats', 'history', 'data']) $('t-' + t).addEventListener('click', () => setTab(t));
-$('roll').addEventListener('click', roll);
+$('roll').addEventListener('click', () => roll());
+$('sim').addEventListener('click', () => roll(true));
 $('abandon').addEventListener('click', () => {
   if (confirm('Abandon this game? It will not be recorded.')) { state.current[state.mode] = { startedAt: null, rolls: [] }; save(); render(); }
 });

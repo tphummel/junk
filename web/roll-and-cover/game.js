@@ -1,7 +1,7 @@
 // Pure logic for roll and cover: modes, storage shape, validation and statistics. No DOM.
 
 /** @typedef {'d6' | '2d6'} Mode */
-/** @typedef {{ id: string, mode: Mode, startedAt: number, endedAt: number, rolls: (number | number[])[] }} Game */
+/** @typedef {{ id: string, mode: Mode, startedAt: number, endedAt: number, sim?: boolean, rolls: (number | number[])[] }} Game */
 /** @typedef {{ startedAt: number | null, rolls: (number | number[])[] }} Current */
 /** @typedef {{ v: 1, mode: Mode, games: Game[], current: Record<Mode, Current> }} State */
 
@@ -74,7 +74,7 @@ export function parseImport(data) {
     if (!isComplete(g.mode, g.rolls)) throw new Error(`Game ${i + 1}: not every number was covered.`);
     const endedAt = Number.isFinite(g.endedAt) ? g.endedAt : Date.now();
     const startedAt = Number.isFinite(g.startedAt) ? g.startedAt : endedAt;
-    games.push({ id: typeof g.id === 'string' && g.id ? g.id : `${endedAt}-${i}`, mode: g.mode, startedAt, endedAt, rolls: g.rolls });
+    games.push({ id: typeof g.id === 'string' && g.id ? g.id : `${endedAt}-${i}`, mode: g.mode, startedAt, endedAt, rolls: g.rolls, ...(g.sim === true ? { sim: true } : {}) });
   });
   const current = emptyState().current;
   if (data.current && typeof data.current === 'object') {
