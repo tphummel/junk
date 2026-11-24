@@ -42,6 +42,7 @@ function die(v) {
 
 function setTab(name) {
   tab = name;
+  if (name !== 'play') stopSim();
   for (const t of ['play', 'stats', 'history', 'data']) {
     $('t-' + t).setAttribute('aria-selected', String(t === name));
     $('p-' + t).hidden = t !== name;
@@ -49,26 +50,40 @@ function setTab(name) {
   render();
 }
 
+/** Roll once. Returns true if that roll finished the game. */
 function roll(simulate = false) {
   const cur = state.current[state.mode];
   if (!cur.startedAt) cur.startedAt = Date.now();
-  const startedWithRolls = cur.rolls.length;
+  const r = rollOne(state.mode);
+  cur.rolls.push(r);
   let finished = null;
-  do {
-    const r = rollOne(state.mode);
-    cur.rolls.push(r);
-    lastRoll = r;
-    if (isComplete(state.mode, cur.rolls)) {
-      finished = { id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, mode: state.mode, startedAt: cur.startedAt, endedAt: Date.now(), rolls: cur.rolls };
-      if (simulate) finished.sim = true;
-      state.games.push(finished);
-      state.current[state.mode] = { startedAt: null, rolls: [] };
-      lastFinished[state.mode] = finished;
-    }
-  } while (simulate && !finished);
-  if (!finished) delete lastFinished[state.mode];
+  if (isComplete(state.mode, cur.rolls)) {
+    finished = { id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, mode: state.mode, startedAt: cur.startedAt, endedAt: Date.now(), rolls: cur.rolls };
+    if (simulate) finished.sim = true;
+    state.games.push(finished);
+    state.current[state.mode] = { startedAt: null, rolls: [] };
+    lastFinished[state.mode] = finished;
+  } else delete lastFinished[state.mode];
   save();
   render();
+  return !!finished;
+}
+
+// Simulation: one roll per tick so every roll can be watched.
+let simTimer = null;
+const SIM_MS = 350;
+function stopSim() {
+  if (simTimer) clearInterval(simTimer);
+  simTimer = null;
+  $('sim').textContent = 'Simulate to completion';
+  $('roll').disabled = false;
+}
+function toggleSim() {
+  if (simTimer) { stopSim(); return; }
+  $('sim').textContent = 'Stop simulation';
+  $('roll').disabled = true;
+  if (roll(true)) { stopSim(); return; }
+  simTimer = setInterval(() => { if (roll(true)) stopSim(); }, SIM_MS);
 }
 const lastFinished = {};
 
@@ -284,12 +299,12 @@ function doImport(replace) {
   } catch (e) { say(e.message || 'Import failed.', true); }
 }
 
-document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { state.mode = b.dataset.mode; save(); render(); }));
+document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => { stopSim(); state.mode = b.dataset.mode; save(); render(); }));
 for (const t of ['play', 'stats', 'history', 'data']) $('t-' + t).addEventListener('click', () => setTab(t));
 $('roll').addEventListener('click', () => roll());
-$('sim').addEventListener('click', () => roll(true));
+$('sim').addEventListener('click', toggleSim);
 $('abandon').addEventListener('click', () => {
-  if (confirm('Abandon this game? It will not be recorded.')) { state.current[state.mode] = { startedAt: null, rolls: [] }; save(); render(); }
+  if (confirm('Abandon this game? It will not be recorded.')) { stopSim(); state.current[state.mode] = { startedAt: null, rolls: [] }; save(); render(); }
 });
 $('exJson').addEventListener('click', () => download(`roll-and-cover-${stamp()}.json`, JSON.stringify(exportData(), null, 2), 'application/json'));
 $('exCsv').addEventListener('click', () => download(`roll-and-cover-${stamp()}.csv`, toCsv(state.games), 'text/csv'));
@@ -308,7 +323,7 @@ $('wipe').addEventListener('click', () => {
   }
 });
 addEventListener('keydown', (e) => {
-  if (tab === 'play' && (e.key === 'r' || e.key === 'R') && !e.metaKey && !e.ctrlKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) roll();
+  if (tab === 'play' && !simTimer && (e.key === 'r' || e.key === 'R') && !e.metaKey && !e.ctrlKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) roll();
 });
 render();
 if (!storageOk) say('Local storage is unavailable; progress will not be saved.', true);
