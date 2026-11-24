@@ -38,7 +38,7 @@ export const METAL = {
 /** Garbage blocks: a plain grey, 4.9:1 against the board stone and well over 4.5:1 against INK. */
 export const GARBAGE_COLOR = "#9AA3AE";
 
-/** Engraved letter and carved-outline color; a letter on every block keeps color from being the only cue. */
+/** Dark ink for the garbage hatching and the glyphs on gold and silver squares. */
 export const INK = "#1A1208";
 
 /** Read the page's current colors from its CSS variables, so the canvas follows light and dark mode. @returns {Theme} */
@@ -64,10 +64,28 @@ export function fitCanvas(canvas) {
   return /** @type {CanvasRenderingContext2D} */ (canvas.getContext("2d"));
 }
 
+/** Garbage rubble: diagonal hatching on the face, so it never looks like a piece. */
+function hatch(ctx, px, py, size, alpha, lw) {
+  ctx.save();
+  ctx.strokeStyle = INK;
+  ctx.globalAlpha = alpha * 0.55;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.rect(px + size * 0.2, py + size * 0.2, size * 0.6, size * 0.6);
+  ctx.clip();
+  ctx.beginPath();
+  for (let k = -size; k < size; k += size * 0.22) {
+    ctx.moveTo(px + k, py + size);
+    ctx.lineTo(px + k + size, py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 /**
- * One block: a bright face, a carved inset outline and an engraved letter, lit from the top left.
+ * One block. Bevelled tile: a flat face inside a mitred bevel, light on the top and left, dark on the bottom and right.
  * @param {CanvasRenderingContext2D} ctx
- * @param {PieceType | "G"} type "G" is a garbage block: grey, hatched, and with no letter
+ * @param {PieceType | "G"} type "G" is a garbage block: grey and hatched
  * @param {number} px left
  * @param {number} py top
  * @param {number} size cell size in pixels
@@ -75,45 +93,27 @@ export function fitCanvas(canvas) {
  */
 function drawBlock(ctx, type, px, py, size, alpha = 1) {
   ctx.globalAlpha = alpha;
-  const lw = Math.max(1, size * 0.07);
-  ctx.fillStyle = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
+  const lw = Math.max(1, size * 0.06);
+  const color = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
+  const b = size * 0.14;
+  ctx.fillStyle = color;
   ctx.fillRect(px, py, size, size);
-  // Bevel: light on the top and left edges, shade on the bottom and right.
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
-  ctx.fillRect(px, py, size, lw);
-  ctx.fillRect(px, py, lw, size);
-  ctx.fillStyle = "rgba(0,0,0,0.4)";
-  ctx.fillRect(px, py + size - lw, size, lw);
-  ctx.fillRect(px + size - lw, py, lw, size);
-  // Carved outline inset from the edge.
-  const inset = size * 0.2;
-  ctx.strokeStyle = INK;
-  ctx.globalAlpha = alpha * 0.55;
-  ctx.lineWidth = lw;
-  if (type === "G") {
-    // Hatching instead of a letter: rubble, not a piece.
-    ctx.save();
+  /** @type {[string, number[][]][]} */
+  const sides = [
+    ["rgba(255,255,255,0.38)", [[0, 0], [size, 0], [size - b, b], [b, b]]],
+    ["rgba(255,255,255,0.2)", [[0, 0], [b, b], [b, size - b], [0, size]]],
+    ["rgba(0,0,0,0.3)", [[size, 0], [size, size], [size - b, size - b], [size - b, b]]],
+    ["rgba(0,0,0,0.42)", [[0, size], [b, size - b], [size - b, size - b], [size, size]]],
+  ];
+  for (const [fill, pts] of sides) {
+    ctx.fillStyle = fill;
     ctx.beginPath();
-    ctx.rect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
-    ctx.clip();
-    ctx.beginPath();
-    for (let k = -size; k < size; k += size * 0.22) {
-      ctx.moveTo(px + k, py + size);
-      ctx.lineTo(px + k + size, py);
-    }
-    ctx.stroke();
-    ctx.restore();
-    ctx.globalAlpha = 1;
-    return;
+    pts.forEach(([x, y], i) => (i ? ctx.lineTo(px + x, py + y) : ctx.moveTo(px + x, py + y)));
+    ctx.closePath();
+    ctx.fill();
   }
-  ctx.strokeRect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = INK;
-  ctx.font = `bold ${Math.floor(size * 0.4)}px system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(type, px + size / 2, py + size / 2 + size * 0.03);
   ctx.globalAlpha = 1;
+  if (type === "G") hatch(ctx, px, py, size, alpha, lw);
 }
 
 /**
