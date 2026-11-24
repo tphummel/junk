@@ -77,6 +77,16 @@ function fillForm() {
   $('delete').hidden = !e;
   $('form-status').textContent = e ? 'Last saved ' + new Date(e.updated).toLocaleString() : '';
 }
+// Next level/star after `id` in list order that has no entry yet, wrapping around; null if everything is logged.
+function suggestNext(p, id) {
+  const flat = allItems(p).flatMap((g) => g.items);
+  const i = flat.findIndex((it) => it.id === id);
+  for (let k = 1; k <= flat.length; k++) {
+    const it = flat[(i + k) % flat.length];
+    if (!p.entries[it.id]) return it;
+  }
+  return null;
+}
 function onSave(ev) {
   ev.preventDefault();
   const p = cur(); const id = $('level').value;
@@ -92,7 +102,10 @@ function onSave(ev) {
     updated: new Date().toISOString(),
   };
   save(); flash('Saved ' + findName(p, id).name);
+  const next = suggestNext(p, id);
+  editing = next ? next.id : id; // prefilled, but the dropdown still lets you pick anything else
   renderLevelSelect(); fillForm(); renderSummary();
+  if (next) $('form-status').textContent = 'Saved. Next up: ' + next.name + ' (change it above if you went elsewhere)';
 }
 function onDelete() {
   const p = cur(); const id = $('level').value;
