@@ -4,6 +4,7 @@ import { COLS, HIDDEN_ROWS, VISIBLE_ROWS } from "../game/board.js";
 import { SQUARE_SIZE as SQUARE_PX } from "../game/squares.js";
 import { pieceCells } from "../game/pieces.js";
 import { landingY } from "../game/state.js";
+import { createPieceTween } from "./tween.js";
 
 /** @typedef {import("../game/pieces.js").PieceType} PieceType */
 /** @typedef {import("../game/state.js").Game} Game */
@@ -89,6 +90,9 @@ function hatch(ctx, px, py, size, alpha, lw) {
   ctx.stroke();
   ctx.restore();
 }
+
+/** Eases the falling piece through a turn. */
+const pieceTween = createPieceTween();
 
 /**
  * One block in brushed metal: the piece color with fine horizontal grain, alternating a little lighter and a little
@@ -330,11 +334,29 @@ export function drawBoard(canvas, game, theme, fx, now = 0) {
       const ghostRow = ghostY + dy - HIDDEN_ROWS;
       if (ghostRow >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, ghostRow * size, size, 0.25);
     }
-    for (const [dx, dy] of pieceCells(p.type, p.rot)) {
-      const row = p.y + dy - HIDDEN_ROWS;
-      if (row >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, row * size, size);
+    const cells = pieceCells(p.type, p.rot);
+    // The piece's center in cells; a turn eases between the old and new center and angle (see tween.js).
+    const mx = cells.reduce((a, [dx]) => a + dx + 0.5, 0) / cells.length;
+    const my = cells.reduce((a, [, dy]) => a + dy + 0.5, 0) / cells.length;
+    const pose = pieceTween.update({ id: p.id, rot: p.rot, cx: p.x + mx, cy: p.y + my - HIDDEN_ROWS }, now);
+    for (const [dx, dy] of cells) {
+      if (pose.angle === 0) {
+        const row = p.y + dy - HIDDEN_ROWS;
+        if (row >= 0) drawBlock(ctx, p.type, (p.x + dx) * size, row * size, size);
+        continue;
+      }
+      // Mid-turn: each block's center swings round the piece's center, and the block turns with it.
+      const rx = dx + 0.5 - mx;
+      const ry = dy + 0.5 - my;
+      const cos = Math.cos(pose.angle);
+      const sin = Math.sin(pose.angle);
+      ctx.save();
+      ctx.translate((pose.cx + rx * cos - ry * sin) * size, (pose.cy + rx * sin + ry * cos) * size);
+      ctx.rotate(pose.angle);
+      drawBlock(ctx, p.type, -size / 2, -size / 2, size);
+      ctx.restore();
     }
-  }
+  } else pieceTween.reset();
   // Garbage owed: a red bar up the left edge, one cell per row about to arrive.
   if (game.garbagePending > 0) {
     const h = Math.min(game.garbagePending, VISIBLE_ROWS) * size;
