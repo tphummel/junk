@@ -1,6 +1,6 @@
 {
-  "name": "Metroid 3",
-  "short_name": "Metroid 3",
+  "name": "Metroid 3 journal",
+  "short_name": "Metroid 3 journal",
   "description": "Super Metroid 100% checklist tracker and journal, with print and static HTML export.",
   "start_url": "/metroid-3/",
   "scope": "/metroid-3/",

@@ -153,11 +153,11 @@ function render() {
   document.body.classList.toggle("is-publish", view === "share" && Boolean(game));
   renderHeader(game, view);
   if (!game) {
-    document.title = "Metroid 3";
+    document.title = "Metroid 3 journal";
     app.innerHTML = renderPicker();
     return;
   }
-  document.title = `${game.name} · Metroid 3`;
+  document.title = `${game.name} · Metroid 3 journal`;
   const state = deriveState(game);
   const body =
     view === "route" ? renderRoute(game, state)
