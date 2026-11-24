@@ -38,7 +38,7 @@ export const METAL = {
 /** Garbage blocks: a plain grey, 4.9:1 against the board stone and well over 4.5:1 against INK. */
 export const GARBAGE_COLOR = "#9AA3AE";
 
-/** Dark ink for the garbage hatching and the glyphs on gold and silver squares. */
+/** Engraved letter and garbage-hatching color; a letter on every block keeps color from being the only cue. */
 export const INK = "#1A1208";
 
 /** Read the page's current colors from its CSS variables, so the canvas follows light and dark mode. @returns {Theme} */
@@ -92,7 +92,8 @@ function hatch(ctx, px, py, size, alpha, lw) {
 
 /**
  * One block in brushed metal: the piece color with fine horizontal grain, alternating a little lighter and a little
- * darker, inside a thin dark edge. No letters; garbage is told apart by its hatching.
+ * darker, a small bevel (light on the top and left, dark on the bottom and right) and the piece letter engraved in
+ * the middle. Garbage has hatching instead of a letter.
  * @param {CanvasRenderingContext2D} ctx
  * @param {PieceType | "G"} type "G" is a garbage block: grey and hatched
  * @param {number} px left
@@ -103,17 +104,40 @@ function hatch(ctx, px, py, size, alpha, lw) {
 function drawBlock(ctx, type, px, py, size, alpha = 1) {
   ctx.globalAlpha = alpha;
   const u = Math.max(1, size / 36);
+  const b = Math.max(2, size * 0.09);
   ctx.fillStyle = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
   ctx.fillRect(px, py, size, size);
   for (let i = 0, n = 0; i < size; i += 2 * u, n++) {
     ctx.fillStyle = n % 2 ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)";
     ctx.fillRect(px, py + i, size, Math.min(u, size - i));
   }
-  ctx.strokeStyle = "rgba(0,0,0,0.4)";
-  ctx.lineWidth = u;
-  ctx.strokeRect(px + u / 2, py + u / 2, size - u, size - u);
+  // Small mitred bevel.
+  /** @type {[string, number[][]][]} */
+  const sides = [
+    ["rgba(255,255,255,0.4)", [[0, 0], [size, 0], [size - b, b], [b, b]]],
+    ["rgba(255,255,255,0.22)", [[0, 0], [b, b], [b, size - b], [0, size]]],
+    ["rgba(0,0,0,0.3)", [[size, 0], [size, size], [size - b, size - b], [size - b, b]]],
+    ["rgba(0,0,0,0.45)", [[0, size], [b, size - b], [size - b, size - b], [size, size]]],
+  ];
+  for (const [fill, pts] of sides) {
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    pts.forEach(([x, y], i) => (i ? ctx.lineTo(px + x, py + y) : ctx.moveTo(px + x, py + y)));
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.globalAlpha = 1;
-  if (type === "G") hatch(ctx, px, py, size, alpha, Math.max(1, size * 0.06));
+  if (type === "G") {
+    hatch(ctx, px, py, size, alpha, Math.max(1, size * 0.06));
+    return;
+  }
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = INK;
+  ctx.font = `bold ${Math.floor(size * 0.4)}px system-ui, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(type, px + size / 2, py + size / 2 + size * 0.03);
+  ctx.globalAlpha = 1;
 }
 
 /**
