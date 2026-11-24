@@ -64,7 +64,15 @@ export function fitCanvas(canvas) {
   return /** @type {CanvasRenderingContext2D} */ (canvas.getContext("2d"));
 }
 
-/** Garbage rubble: diagonal hatching on the face, so it never looks like a piece. */
+/**
+ * Garbage rubble: diagonal hatching on the face, so it never looks like a piece.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} px
+ * @param {number} py
+ * @param {number} size
+ * @param {number} alpha
+ * @param {number} lw line width
+ */
 function hatch(ctx, px, py, size, alpha, lw) {
   ctx.save();
   ctx.strokeStyle = INK;
