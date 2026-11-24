@@ -11,9 +11,9 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/yahtzee/icon-192.png">
   <link rel="apple-touch-icon" href="/yahtzee/apple-touch-icon.png">
   <style>
-    :root { --bg:#fafafa; --fg:#222; --muted:#777; --line:#ccc; --accent:#2a6; --card:#fff; }
+    :root { --bg:#fafafa; --fg:#222; --muted:#777; --line:#ccc; --accent:#2a6; --card:#fff; --bad:#b3261e; }
     @media (prefers-color-scheme: dark) {
-      :root { --bg:#161616; --fg:#e8e8e8; --muted:#999; --line:#444; --accent:#4c8; --card:#202020; }
+      :root { --bg:#161616; --fg:#e8e8e8; --muted:#999; --line:#444; --accent:#4c8; --card:#202020; --bad:#ff8a80; }
     }
     * { box-sizing: border-box; }
     body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:16px/1.4 system-ui, sans-serif; }
@@ -42,6 +42,17 @@
     ol.log li:first-child { font-weight:600; }
     a { color:var(--accent); }
     .glyphs { font-size:1.3rem; letter-spacing:2px; }
+    .tiles { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:12px 0; }
+    @media (min-width:520px) { .tiles { grid-template-columns:repeat(4,1fr); } }
+    .tile { border:1px solid var(--line); border-radius:6px; padding:8px; background:var(--card); text-align:center; font-size:.85rem; }
+    .tile b { display:block; font-size:1.4rem; font-variant-numeric:tabular-nums; }
+    .report h2 { font-size:1.1rem; margin:16px 0 4px; }
+    .report p { margin:6px 0; }
+    details.turn { border-bottom:1px solid var(--line); padding:6px 0; }
+    details.turn summary { cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+    details.turn div { padding:6px 0 2px 12px; }
+    .loss { color:var(--bad); font-variant-numeric:tabular-nums; }
+    .ok { color:var(--accent); }
   </style>
 </head>
 <body>
@@ -50,6 +61,7 @@
   <div id="app"></div>
 </main>
 <script src="/yahtzee/engine.js"></script>
+<script src="/yahtzee/optimal.js"></script>
 <script>
 // finished/in-progress daily games live in this browser only, keyed by local date
 const storeKey = () => `yahtzee:daily:${dateKey(new Date())}`;
@@ -82,6 +94,7 @@ function load() {
   tokens = r.tokens;
   game = r.s;
   held = heldFrom(tokens);
+  if (game.over) tab = 'report';
 }
 
 // dice kept for the last re-roll stay frozen until the player changes them
@@ -99,6 +112,7 @@ function commit(tok) {
   game = r.s;
   saveDaily();
   held = heldFrom(tokens);
+  if (game.over) tab = 'report';
   render();
 }
 
@@ -280,13 +294,78 @@ function renderLog() {
   return `<ol class="log">${game.log.map((l) => `<li>${l}</li>`).join('')}</ol>`;
 }
 
+// --- efficiency report (finished games only) ---
+// The best possible game on today's dice is worked out in a Web Worker (about a second); if
+// workers are unavailable it runs on the page after a paint. Kept in memory for this tab only.
+let reportState = null; // { key, status: 'pending' | 'done' | 'error', data }
+
+function ensureReport() {
+  if (!game.over) return;
+  const key = `${puzzle}:${tokens}`;
+  if (reportState && reportState.key === key) return;
+  const mine = (reportState = { key, status: 'pending', data: null });
+  const finish = (status, data) => {
+    if (reportState !== mine) return;
+    mine.status = status;
+    mine.data = data;
+    if (tab === 'report') render();
+  };
+  const inline = () => setTimeout(() => {
+    try { finish('done', YahtzeeOptimal.efficiencyReport(puzzle, tokens)); } catch (e) { finish('error', null); }
+  }, 30);
+  try {
+    const w = new Worker('/yahtzee/optimal.js');
+    w.onmessage = (e) => { w.terminate(); e.data.error ? finish('error', null) : finish('done', e.data.report); };
+    w.onerror = () => { w.terminate(); inline(); };
+    w.postMessage({ puzzle, tokens });
+  } catch (e) { inline(); }
+}
+
+function fmtSteps(steps) {
+  return steps.map((st, i) => {
+    const kept = i ? `keep ${glyphs(st.dice.filter((_, j) => st.kept[j])) || 'none'} → ` : '';
+    return `${kept}<span class="glyphs">${glyphs(st.dice)}</span>`;
+  }).join(' ');
+}
+
+function renderReport() {
+  const r = reportState && reportState.data;
+  if (!reportState || reportState.status === 'pending') return '<p class="muted">Working out the best possible game on today’s dice…</p>';
+  if (reportState.status === 'error' || !r) return '<p class="muted">Could not build the efficiency report.</p>';
+  if (r.mismatch) return '<p class="muted">The dice in this game are not today’s puzzle dice, so there is nothing to compare against.</p>';
+  const pct = Math.round((100 * r.total) / r.best);
+  const worst = r.turns.filter((t) => t.loss > 0).sort((a, b) => b.loss - a.loss || a.turn - b.turn).slice(0, 3);
+  const perfect = r.best === r.total;
+  const turns = r.turns.map((t) => {
+    const cost = t.loss > 0 ? `<span class="loss">−${t.loss}</span>` : '<span class="ok">✓ best</span>';
+    const parts = [];
+    if (t.rollLoss) parts.push(`dice kept −${t.rollLoss}`);
+    if (t.catLoss) parts.push(`box chosen −${t.catLoss}`);
+    const you = `${fmtSteps(t.rolls)} → ${t.category} <b>${t.points}</b>`;
+    const best = t.best ? `<div><b>Best from there:</b> ${fmtSteps(t.best.steps)} → ${t.best.category} <b>${t.best.points}</b></div>` : '';
+    return `<details class="turn"><summary><span>Turn ${t.turn} · <span class="glyphs">${glyphs(t.dice)}</span> ${t.category} ${t.points}</span>${cost}</summary>` +
+      `<div><b>You:</b> ${you}</div>${best}${parts.length ? `<div class="muted">${parts.join(' · ')}</div>` : ''}</details>`;
+  }).join('');
+  return `<div class="report">` +
+    `<p>${perfect ? 'A perfect game: you matched the best possible score.' : `You scored <b>${r.total}</b> of a possible <b>${r.best}</b> (${pct}%).`}</p>` +
+    `<div class="tiles"><div class="tile"><b>${r.total}</b>Your score</div><div class="tile"><b>${r.best}</b>Best possible</div>` +
+    `<div class="tile"><b>${r.rollLoss}</b>Lost on dice kept</div><div class="tile"><b>${r.catLoss}</b>Lost on boxes chosen</div></div>` +
+    (worst.length ? `<h2>Biggest misses</h2><p>${worst.map((t) => `Turn ${t.turn} (−${t.loss})`).join(' · ')}</p>` : '') +
+    `<h2>Turn by turn</h2>${turns}` +
+    `<p class="muted">The dice are fixed for each puzzle, so this is the best game possible knowing every roll in advance, ` +
+    `not a game anyone could plan. A turn’s cost is measured over the whole rest of the game, not just that box’s points, ` +
+    `so it can differ from the points alone. The turn costs add up to the gap to the best score.</p></div>`;
+}
+
 function render() {
+  if (tab === 'report' && !game.over) tab = 'score';
   const tabBtn = (id, text) =>
     `<button role="tab" aria-selected="${tab === id}" data-tab="${id}">${text}</button>`;
   document.getElementById('app').innerHTML =
     renderMode() + renderDice() + renderControls() +
-    `<div role="tablist">${tabBtn('log', 'Transcript')}${tabBtn('score', 'Scorecard')}</div>` +
-    `<div role="tabpanel">${tab === 'score' ? renderScorecard() : renderLog()}${renderExport()}</div>`;
+    `<div role="tablist">${tabBtn('log', 'Transcript')}${tabBtn('score', 'Scorecard')}${game.over ? tabBtn('report', 'Report') : ''}</div>` +
+    `<div role="tabpanel">${tab === 'report' ? renderReport() : tab === 'score' ? renderScorecard() : renderLog()}${renderExport()}</div>`;
+  if (tab === 'report') ensureReport();
 }
 
 document.getElementById('app').addEventListener('click', (e) => {
