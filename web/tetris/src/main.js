@@ -6,7 +6,7 @@ import { TICKS_PER_SECOND } from "./game/rules.js";
 import { summarize } from "./game/stats.js";
 import { createGame, step } from "./game/state.js";
 import { createRepeater } from "./input/actions.js";
-import { createGamepad, describeBinding, describePad } from "./input/gamepad.js";
+import { createGamepad, describePad } from "./input/gamepad.js";
 import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
 import { createEffects } from "./ui/effects.js";
@@ -57,37 +57,8 @@ const padStatus = $("pad-status");
 const padDebug = $("pad-debug");
 const padPanel = /** @type {HTMLDetailsElement} */ ($("pad-panel"));
 
-/** @typedef {import("./input/gamepad.js").Bindings} Bindings */
-const BINDINGS_KEY = "tetris-pad-bindings";
-
-/** Learned controls per pad id, kept in localStorage. Storage can be blocked or empty, so every access is guarded. */
-/** @returns {Record<string, Bindings>} */
-function loadBindings() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(BINDINGS_KEY) ?? "{}");
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-/** @type {Record<string, Bindings>} */
-let savedBindings = loadBindings();
-/** @param {Record<string, Bindings>} all */
-function saveBindings(all) {
-  savedBindings = all;
-  try {
-    localStorage.setItem(BINDINGS_KEY, JSON.stringify(all));
-  } catch {
-    // The binding still works for this visit.
-  }
-}
-
-/** Last message from the "set hard drop" button, shown in the status panel. */
-let bindNote = "";
-
 const keyboard = createKeyboard(window);
 const gamepad = createGamepad(window, {
-  bindings: (pad) => savedBindings[pad.id] ?? {},
   onConnect: () => refreshStatus(),
   onDisconnect: () => {
     refreshStatus();
@@ -122,7 +93,7 @@ let lastResult = null;
 function newGame(mode) {
   // The seed is made here, outside game/, and recorded; the game itself never touches randomness.
   const seed = crypto.getRandomValues(new Uint32Array(1))[0];
-  return createGame(seed, { garbagePerSecond: difficultyById(mode).garbagePerSecond });
+  return createGame(seed, { garbagePerSecond: difficultyById(mode).garbagePerSecond, timeLimitSeconds: difficultyById(mode).timeLimitSeconds });
 }
 
 /** @param {Game} g @param {string} mode @returns {Round} */
@@ -284,11 +255,11 @@ function renderOverlay() {
   const texts = {
     title: [
       "Tetris",
-      "Pick a difficulty. Up and down choose, A or Enter starts." +
+      "Pick a mode. Up and down choose, A or Enter starts." +
         (pad ? "\nD-pad move, A/B rotate, shoulder hold, up hard drop, Start pause." : "\nPress any button on your controller to connect it.") +
         "\nKeyboard: arrows or WASD move, Z/X rotate, C hold, Space hard drop, Esc pause." +
         "\nHard drop falls at once; slide or turn before it settles, or press again to lock." +
-        "\nEasy, Medium and Hard push garbage rows up at the pace of a D, B or S rating.",
+        "\nPractice 3:00 and 5:00 end when the piece in play at the time limit is set.",
     ],
     paused: ["Paused", note ?? "Esc, Start or B resumes. End game locks in your score."],
     over: resultText(),
@@ -344,7 +315,7 @@ function resultText() {
     lastResult?.saved ? "" : "(Could not save: this browser is blocking storage.)",
     exportNote,
   ];
-  return [r.ended === "ended" ? "Game ended" : "Game over", lines.filter(Boolean).join("\n")];
+  return [r.ended === "ended" ? "Game ended" : r.ended === "timeup" ? "Time!" : "Game over", lines.filter(Boolean).join("\n")];
 }
 
 /** Controller line under the board. */
@@ -378,7 +349,7 @@ function startRound(id) {
 
 /**
  * Lock in the round: build the record, save it, and show the result.
- * @param {"topout" | "ended"} how the stack overflowed, or the player ended it from the pause menu
+ * @param {"topout" | "ended" | "timeup"} how the stack overflowed, the player ended it from the pause menu, or the time limit ran out
  */
 function finishRound(how) {
   const stats = summarize(game.tick, game.score);
@@ -443,7 +414,7 @@ function tick() {
   effects.add(game.events, performance.now());
   for (const action of actions) round.inputLog.push({ t: game.tick, action });
   if (game.over) {
-    finishRound("topout");
+    finishRound(game.timeUp ? "timeup" : "topout");
     return false;
   }
   return true;
@@ -454,35 +425,16 @@ function padReadout() {
   const pad = gamepad.pad();
   if (!pad) return "no controller";
   const pressed = Array.from(pad.buttons, (b, i) => (b.pressed ? i : -1)).filter((i) => i >= 0);
-  const hard = savedBindings[pad.id]?.hardDrop;
+  const info = gamepad.info();
+  const how = info?.dpadOnStick ? "d-pad is read as the left stick" : info?.hat ? "d-pad is a hat switch" : info?.dpadButtons ? "d-pad is buttons" : "d-pad not pressed yet";
   return [
     `id: ${pad.id}`,
     `mapping: ${pad.mapping || "(none)"}`,
     `buttons down: ${pressed.join(", ") || "-"}`,
     `axes: ${Array.from(pad.axes, (v) => v.toFixed(2)).join(", ")}`,
-    `hard drop: d-pad up${hard ? ` or ${describeBinding(hard)}` : ""}`,
-    bindNote,
+    `hard drop: d-pad up${pad.mapping === "standard" ? " or Y" : ""} (${how})`,
   ].filter(Boolean).join("\n");
 }
-
-$("pad-bind").addEventListener("click", () => {
-  if (screen === "playing") setScreen("paused");
-  const started = gamepad.learn((binding) => {
-    const pad = gamepad.pad();
-    if (pad) saveBindings({ ...savedBindings, [pad.id]: { ...savedBindings[pad.id], hardDrop: binding } });
-    bindNote = `Saved: hard drop is now ${describeBinding(binding)}.`;
-  });
-  bindNote = started ? "Press the control you want for hard drop (up on the d-pad)..." : "Connect a controller first: press any button on it.";
-});
-$("pad-reset").addEventListener("click", () => {
-  gamepad.cancelLearn();
-  const pad = gamepad.pad();
-  if (pad) {
-    const { [pad.id]: _removed, ...rest } = savedBindings;
-    saveBindings(rest);
-  }
-  bindNote = "Hard drop reset to d-pad up.";
-});
 
 let last = performance.now();
 let acc = 0;
@@ -511,7 +463,7 @@ function frame(now) {
 
   if (padPanel.open) padDebug.textContent = padReadout();
   drawBoard(boardCanvas, game, theme, effects, now);
-  hud.update(game, theme, difficultyById(mode).label);
+  hud.update(game, theme, game.timeLimitTicks > 0 && game.tick >= game.timeLimitTicks ? `${difficultyById(mode).label}: last piece` : difficultyById(mode).label);
   requestAnimationFrame(frame);
 }
 

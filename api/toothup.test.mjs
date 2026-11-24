@@ -346,3 +346,62 @@ test("backupDue is true once a month has passed since the last backup", () => {
   assert.equal(backupDue(null, "2026-11-22", true), true); // data but never backed up
   assert.equal(backupDue(null, "2026-11-22", false), false); // nothing to back up
 });
+
+// ---------- monthly and annual reports ----------
+import { addMonthKey, firstMonth, firstYear, monthRange, monthReport, periodStats, yearReport } from "../web/toothup/logic.js";
+import { annualReportHtml, heatmapSvg } from "../web/toothup/report.js";
+
+test("monthRange and addMonthKey handle year boundaries and leap years", () => {
+  assert.deepEqual(monthRange("2028-02"), { from: "2028-02-01", to: "2028-02-29" });
+  assert.equal(addMonthKey("2026-01", -1), "2025-12");
+  assert.equal(addMonthKey("2026-12", 1), "2027-01");
+});
+
+test("monthReport: stats for the month, a comparison with the month before, and short days", () => {
+  const events = [
+    ...fullDay("2026-10-30"), ...fullDay("2026-10-31"),
+    ...fullDay("2026-11-01"), brush("2026-11-02"), // the 2nd has one brush
+    ...fullDay("2026-11-04"), // the 3rd has none
+  ];
+  const r = monthReport(events, "2026-11", "2026-11-10", S);
+  assert.equal(r.fullDays, 2);
+  assert.equal(r.bestStreak.length, 1);
+  assert.deepEqual(r.short.map((d) => [d.day, d.level]), [["2026-11-02", 1], ["2026-11-03", 0], ...["05", "06", "07", "08", "09"].map((d) => [`2026-11-${d}`, 0])]);
+  assert.equal(r.prev.brushPct, 100);
+  assert.equal(r.brushCount, 5);
+  assert.equal(firstMonth(events, S), "2026-10");
+  assert.equal(firstYear(events, S), 2026);
+  assert.equal(firstMonth([], S), null);
+});
+
+test("periodStats: stops at today, ignores an unfinished today, and finds the best streak", () => {
+  const events = [...fullDay("2026-11-01"), ...fullDay("2026-11-02"), ...fullDay("2026-11-03"), brush("2026-11-05"), ...fullDay("2026-11-06"), brush("2026-11-07")];
+  const r = periodStats(events, "2026-11-01", "2026-11-30", "2026-11-07", S);
+  assert.equal(r.days, 6); // today (the 7th) has one brush, so it is not counted yet
+  assert.deepEqual(r.bestStreak, { length: 3, start: "2026-11-01", end: "2026-11-03" });
+  assert.equal(r.levels.get("2026-11-07"), 1);
+  assert.equal(r.levels.has("2026-11-08"), false);
+  assert.equal(r.weekdays.reduce((t, w) => t + w.days, 0), 6);
+});
+
+test("yearReport: months, best and worst month; empty years are empty", () => {
+  const events = [...fullDay("2026-02-10"), ...fullDay("2026-02-11"), brush("2026-03-01"), brush("2026-03-02", 21)];
+  const r = yearReport(events, 2026, "2026-04-01", S);
+  assert.equal(r.months.length, 12);
+  assert.equal(r.months[1].brushPct, 11); // 2 full days of the 19 counted from Feb 10
+  assert.equal(r.months[0].brushPct, null); // before the first event
+  assert.equal(r.bestMonth.ym, "2026-02");
+  assert.equal(r.worstMonth.ym, "2026-03");
+  assert.equal(yearReport(events, 2025, "2026-04-01", S).days, 0);
+});
+
+test("annualReportHtml: standalone page with no scripts or external files, and an empty-year fallback", () => {
+  const events = [...fullDay("2026-02-10"), ...fullDay("2026-02-11"), ev("floss", "2026-02-10")];
+  const html = annualReportHtml(yearReport(events, 2026, "2026-02-12", S), { generated: "2026-02-12" });
+  assert.match(html, /^<!doctype html>/);
+  assert.match(html, /My 2026 in teeth/);
+  assert.match(html, /100<small>%/);
+  assert.doesNotMatch(html, /<script|<link|src=|https?:\/\//);
+  assert.equal((heatmapSvg(yearReport(events, 2026, "2026-04-01", S)).match(/<rect/g) || []).length, 365);
+  assert.match(annualReportHtml(yearReport(events, 2024, "2026-04-01", S)), /Nothing to show for 2024/);
+});

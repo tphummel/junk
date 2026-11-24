@@ -1,7 +1,8 @@
 import {
-  DEFAULT_SETTINGS, backupDue, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, currentStreak, dayGoals, dayKey, formatClock, groupByDay, longestStreak,
-  makeEvent, mergeEvents, monthGrid, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
+  DEFAULT_SETTINGS, backupDue, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, addMonthKey, currentStreak, dayGoals, dayKey, firstMonth, firstYear, formatClock, groupByDay, longestStreak,
+  makeEvent, mergeEvents, monthGrid, monthReport, yearReport, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
 } from "./logic.js";
+import { CHART_CSS, annualReportHtml, esc, heatmapSvg, hoursMinutes, monthBarsSvg, shortDate, weekdayBarsSvg } from "./report.js";
 import { readHealthExport } from "./health.js";
 import { parseNomie } from "./nomie.js";
 
@@ -339,6 +340,7 @@ function renderStats() {
   renderCalendar();
   renderDay();
   renderToday();
+  renderReports();
 }
 
 function renderCalendar() {
@@ -356,6 +358,115 @@ function renderCalendar() {
     }).join("")}</tr>`)
     .join("");
 }
+
+// ---------- monthly and annual reports ----------
+document.head.append(Object.assign(document.createElement("style"), { textContent: CHART_CSS }));
+
+const panes = ["recent", "month", "year"];
+let pane = "recent";
+let reportMonth = today().slice(0, 7);
+let reportYear = Number(today().slice(0, 4));
+function showPane(name) {
+  pane = name;
+  for (const p of panes) {
+    $(`seg-${p}`).setAttribute("aria-selected", String(p === name));
+    $(`pane-${p}`).hidden = p !== name;
+  }
+  renderReports();
+}
+for (const p of panes) $(`seg-${p}`).onclick = () => showPane(p);
+
+const tile = (k, v, u) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="u">${esc(u)}</div></div>`;
+const pctText = (n) => (n === null ? "–" : `${n}%`);
+
+function renderReports() {
+  if (pane === "month") renderMonthReport();
+  if (pane === "year") renderYearReport();
+}
+
+function renderMonthReport() {
+  const t = today();
+  const first = firstMonth(state.events, state.settings) ?? t.slice(0, 7);
+  reportMonth = reportMonth < first ? first : reportMonth > t.slice(0, 7) ? t.slice(0, 7) : reportMonth;
+  $("m-label").textContent = new Date(Number(reportMonth.slice(0, 4)), Number(reportMonth.slice(5)) - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  $("m-prev").disabled = reportMonth <= first;
+  $("m-next").disabled = reportMonth >= t.slice(0, 7);
+  $("m-now").hidden = reportMonth === t.slice(0, 7);
+  const r = monthReport(state.events, reportMonth, t, state.settings);
+  if (!r.levels.size) {
+    $("m-body").innerHTML = '<p class="muted">Nothing logged this month.</p>';
+    return;
+  }
+  const delta = r.brushPct !== null && r.prev.brushPct !== null ? r.brushPct - r.prev.brushPct : null;
+  const vs = delta === null ? "" : delta === 0 ? "same as last month" : `${delta > 0 ? "+" : "−"}${Math.abs(delta)} pts vs last month`;
+  const [y, m] = reportMonth.split("-").map(Number);
+  const grid = monthGrid(y, m - 1).map((week) => `<tr>${week.map((k) => {
+    if (!k) return '<td class="empty"></td>';
+    const level = r.levels.get(k);
+    return `<td class="${level === undefined ? "" : `l${level}`}" title="${esc(shortDate(k))}">${Number(k.slice(8))}</td>`;
+  }).join("")}</tr>`).join("");
+  const short = r.short.length
+    ? `<p class="muted">${r.short.length} day${r.short.length === 1 ? "" : "s"} short of two brushes: ${r.short.map((d) => Number(d.day.slice(8)) + (d.level === 1 ? "*" : "")).join(", ")}${r.short.some((d) => d.level === 1) ? "<br>* one brush" : ""}</p>`
+    : '<p class="muted">Both brushes every counted day. 🎉</p>';
+  $("m-body").innerHTML = `
+    <div id="m-tiles" class="tiles">${[
+      tile("Brushing", pctText(r.brushPct), vs || "of brushes"),
+      tile("Full days", r.fullDays, `of ${r.days} counted`),
+      tile("Best streak", r.bestStreak.length, r.bestStreak.length ? `${shortDate(r.bestStreak.start)} – ${shortDate(r.bestStreak.end)}` : "days"),
+      tile("Floss goal", pctText(r.days ? Math.round((r.flossDays / r.days) * 100) : null), `${r.flossDays} days`),
+      tile("Mouthwash goal", pctText(r.days ? Math.round((r.mouthwashDays / r.days) * 100) : null), `${r.mouthwashDays} days`),
+      tile("Time brushing", hoursMinutes(r.brushSeconds), r.brushCount ? `${formatClock(r.avgSeconds)} per brush` : ""),
+    ].join("")}</div>
+    <div class="panel"><h3>Days</h3><table class="mini"><thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead><tbody>${grid}</tbody></table>
+    <p class="legend">Solid: both brushes · Muted: one · Outline: none</p>${short}</div>
+    <div class="panel"><h3>Days of the week</h3>${weekdayBarsSvg(r)}</div>`;
+}
+
+function renderYearReport() {
+  const t = today();
+  const thisYear = Number(t.slice(0, 4));
+  const first = firstYear(state.events, state.settings) ?? thisYear;
+  reportYear = Math.min(Math.max(reportYear, first), thisYear);
+  $("y-label").textContent = String(reportYear);
+  $("y-prev").disabled = reportYear <= first;
+  $("y-next").disabled = reportYear >= thisYear;
+  $("y-now").hidden = reportYear === thisYear;
+  const r = yearReport(state.events, reportYear, t, state.settings);
+  $("y-export").disabled = r.days === 0;
+  if (!r.levels.size) {
+    $("y-body").innerHTML = '<p class="muted">Nothing logged this year.</p>';
+    return;
+  }
+  $("y-body").innerHTML = `
+    <div class="tiles">${[
+      tile("Brushing", pctText(r.brushPct), "of brushes"),
+      tile("Full days", r.fullDays, `of ${r.days} counted`),
+      tile("Best streak", r.bestStreak.length, "days"),
+      tile("Floss goal", pctText(r.days ? Math.round((r.flossDays / r.days) * 100) : null), `${r.flossDays} days`),
+      tile("Mouthwash goal", pctText(r.days ? Math.round((r.mouthwashDays / r.days) * 100) : null), `${r.mouthwashDays} days`),
+      tile("Time brushing", hoursMinutes(r.brushSeconds), `${r.brushCount} brushes`),
+    ].join("")}</div>
+    <div class="panel"><h3>Every day</h3>${heatmapSvg(r)}</div>
+    <div class="panel"><h3>Brushing % by month</h3>${monthBarsSvg(r)}</div>
+    <div class="panel"><h3>Days of the week</h3>${weekdayBarsSvg(r)}</div>`;
+}
+
+$("m-prev").onclick = () => ((reportMonth = addMonthKey(reportMonth, -1)), renderReports());
+$("m-next").onclick = () => ((reportMonth = addMonthKey(reportMonth, 1)), renderReports());
+$("m-now").onclick = () => ((reportMonth = today().slice(0, 7)), renderReports());
+$("y-prev").onclick = () => (reportYear--, renderReports());
+$("y-next").onclick = () => (reportYear++, renderReports());
+$("y-now").onclick = () => ((reportYear = Number(today().slice(0, 4))), renderReports());
+
+/** Download the year as a standalone HTML page. */
+$("y-export").onclick = () => {
+  const html = annualReportHtml(yearReport(state.events, reportYear, today(), state.settings), { generated: today() });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  a.download = `toothup-${reportYear}.html`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
 
 const TYPE_LABEL = { brush: "Brush", floss: "Floss", mouthwash: "Mouthwash" };
 

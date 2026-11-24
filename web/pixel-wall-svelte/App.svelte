@@ -69,7 +69,8 @@
     width: 10px;
     height: 10px;
     background: var(--color);
-    border: 1px solid #ccc;
+    border: 1px solid var(--support);
+    cursor: pointer;
   }
   .status-table {
     margin-top: 1em;
@@ -77,7 +78,7 @@
   }
   .status-table th,
   .status-table td {
-    border: 1px solid #ccc;
+    border: 1px solid var(--support);
     padding: 2px 4px;
     font-size: 0.8em;
   }

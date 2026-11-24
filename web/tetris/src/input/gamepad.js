@@ -1,17 +1,15 @@
 // Gamepad to actions. Browsers fire no events for button presses or repeats, so the pad is polled and
 // turned into the same actions as the keyboard: held directions as state, everything else as one-shot presses.
 // This is the standard mapping (Xbox layout). Pads that report another mapping still get these indexes,
-// and describePad() says so; a remap screen is the planned fix.
+// and describePad() says so.
+//
+// The d-pad is where pads differ most. On the standard mapping it is buttons 12 to 15. Some pads send it as the left
+// stick instead, and some (in Chrome) as a hat switch on a spare axis. Left, right and down work the same either way,
+// but up is also hard drop, so a d-pad that arrives as a stick or a hat has to be recognised as a d-pad and not a stick:
+// a real analog stick must never drop a piece by accident. observePad() works that out from what the pad reports.
 
 /** @typedef {import("./actions.js").Action} Action */
 /** @typedef {Pick<Gamepad, "buttons" | "axes" | "mapping" | "id" | "connected">} PadLike */
-/**
- * A learned control for one action, for pads that report their d-pad in a way the standard mapping does not
- * expect (as an axis, or a hat switch, instead of buttons 12 to 15). `value` is what the axis reads when pressed.
- * @typedef {{ type: "button", index: number } | { type: "axis", index: number, value: number }} Binding
- */
-/** @typedef {{ hardDrop?: Binding }} Bindings */
-
 /** Radius of the stick's dead zone: drift below this is ignored. Worn sticks drift 0.15 to 0.2. */
 export const STICK_DEADZONE = 0.2;
 /** After the dead zone is removed and the rest rescaled to 0..1, a stick counts as pressed past this. */
@@ -38,70 +36,109 @@ export function axisDirection(v = 0, deadzone = STICK_DEADZONE) {
   return (mag - deadzone) / (1 - deadzone) > STICK_PRESS ? (v < 0 ? -1 : 1) : 0;
 }
 
-/** An axis counts as "at" a learned value when it is this close to it. */
-const AXIS_MATCH = 0.15;
-/** While learning, an axis must move this far from where it rested to count as the pressed control. */
-const AXIS_LEARN_TRAVEL = 0.6;
+/**
+ * What we have worked out about how a pad sends its d-pad, from what it has reported so far.
+ * @typedef {object} PadState
+ * @property {boolean} analogStick the left stick has shown an in-between value, so it is a real analog stick
+ * @property {boolean} digitalHit the left stick has reached full deflection
+ * @property {boolean} dpadButtons a d-pad button (12 to 15) has been pressed, so the d-pad is on the buttons
+ * @property {Set<number>} hatAxes axes seen resting at the hat switch's neutral value
+ */
 
-/** Is the control a binding points at pressed right now? @param {PadLike} pad @param {Binding} b */
-export function bindingDown(pad, b) {
-  if (b.type === "button") return Boolean(pad.buttons[b.index]?.pressed);
-  const v = pad.axes[b.index];
-  return v !== undefined && Math.abs(v - b.value) <= AXIS_MATCH;
-}
+/** @returns {PadState} */
+export const newPadState = () => ({ analogStick: false, digitalHit: false, dpadButtons: false, hatAxes: new Set() });
 
-/** A short description of a binding for the status panel. @param {Binding} b */
-export function describeBinding(b) {
-  return b.type === "button" ? `button ${b.index}` : `axis ${b.index} at ${b.value.toFixed(2)}`;
-}
-
-/** What a pad looked like at rest, to tell later which control was pressed. @param {PadLike} pad */
-export function snapshotPad(pad) {
-  return { buttons: Array.from(pad.buttons, (b) => b.pressed), axes: Array.from(pad.axes) };
-}
+/** An axis value strictly between these (in size) is an in-between reading that only an analog stick gives. */
+const IN_BETWEEN_MIN = 0.08;
+const IN_BETWEEN_MAX = 0.93;
+/** The neutral value of a Chrome-style hat switch: 9/7. */
+const HAT_NEUTRAL = 9 / 7;
+/** How close counts as matching one of the hat's eight positions. */
+const HAT_MATCH = 0.07;
 
 /**
- * The control pressed since `rest` was taken, or null: the first button that went down, else the first axis that
- * moved well away from where it rested.
- * @param {ReturnType<typeof snapshotPad>} rest
+ * Learn from one reading of a pad. A d-pad sent as the left stick gives only exact values (0, -1 and 1), where an
+ * analog stick gives in-between ones as it moves; so a stick that has hit full deflection and never shown an in-between
+ * value is a d-pad. Once any in-between value is seen it is an analog stick for good. A pad whose d-pad buttons have
+ * been pressed has its d-pad on the buttons, so its stick is a stick. A hat is an extra axis that rests at 9/7.
  * @param {PadLike} pad
- * @returns {Binding | null}
+ * @param {PadState} state changed in place
  */
-export function detectBinding(rest, pad) {
-  for (let i = 0; i < pad.buttons.length; i++) {
-    if (pad.buttons[i].pressed && !rest.buttons[i]) return { type: "button", index: i };
+export function observePad(pad, state) {
+  for (const i of [0, 1]) {
+    const v = pad.axes[i];
+    if (v === undefined) continue;
+    const m = Math.abs(v);
+    if (m > IN_BETWEEN_MIN && m < IN_BETWEEN_MAX) state.analogStick = true;
+    if (m >= 0.99) state.digitalHit = true;
   }
-  for (let i = 0; i < pad.axes.length; i++) {
-    if (Math.abs(pad.axes[i] - (rest.axes[i] ?? 0)) > AXIS_LEARN_TRAVEL) return { type: "axis", index: i, value: pad.axes[i] };
-  }
-  return null;
+  for (const i of [BUTTON.UP, BUTTON.DOWN, BUTTON.LEFT, BUTTON.RIGHT]) if (pad.buttons[i]?.pressed) state.dpadButtons = true;
+  pad.axes.forEach((v, i) => {
+    if (i >= 2 && Math.abs(v - HAT_NEUTRAL) < 0.02) state.hatAxes.add(i);
+  });
+}
+
+/** Does this pad send its d-pad as the left stick? @param {PadState} state */
+export const dpadOnStick = (state) => state.digitalHit && !state.analogStick && !state.dpadButtons;
+
+/**
+ * The directions a hat switch value stands for, or null if it is not one of its positions (including neutral).
+ * The positions run clockwise from up: -1, -0.714, -0.429, -0.143, 0.143, 0.429, 0.714 and 1.
+ * @param {number} v
+ * @returns {{ up: boolean, right: boolean, down: boolean, left: boolean } | null}
+ */
+export function hatDirections(v) {
+  const steps = [-1, -5 / 7, -3 / 7, -1 / 7, 1 / 7, 3 / 7, 5 / 7, 1];
+  const i = steps.findIndex((s) => Math.abs(v - s) < HAT_MATCH);
+  if (i < 0) return null;
+  return {
+    up: i === 0 || i === 1 || i === 7,
+    right: i === 1 || i === 2 || i === 3,
+    down: i === 3 || i === 4 || i === 5,
+    left: i === 5 || i === 6 || i === 7,
+  };
 }
 
 /**
  * Every action whose control is down on this pad right now.
  * A means rotate clockwise in the game and confirm in menus, B means rotate counter-clockwise and back;
- * the screen decides which one matters. Hard drop is the d-pad only, never the stick, so a stray
- * flick cannot drop a piece.
+ * the screen decides which one matters. Up on the d-pad is hard drop, wherever the pad puts its d-pad: buttons, a
+ * digital stick or a hat. Up on an analog stick never is, so a stray flick cannot drop a piece. Y is hard drop too (on
+ * the standard mapping), so there is always one more way to do it.
  * @param {PadLike} pad
  * @param {number} [deadzone]
- * @param {Bindings} [bindings] learned controls, added to the standard ones
+ * @param {PadState} [state] what observePad has learned about this pad; without it only the standard d-pad buttons count
  * @returns {Set<Action>}
  */
-export function mapPad(pad, deadzone = STICK_DEADZONE, bindings = {}) {
+export function mapPad(pad, deadzone = STICK_DEADZONE, state = newPadState()) {
   /** @type {Set<Action>} */
   const down = new Set();
   const button = (/** @type {number} */ i) => Boolean(pad.buttons[i]?.pressed);
   const x = axisDirection(pad.axes[0], deadzone);
   const y = axisDirection(pad.axes[1], deadzone);
+  const stickIsDpad = dpadOnStick(state);
 
-  if (button(BUTTON.LEFT) || x < 0) down.add("left");
-  if (button(BUTTON.RIGHT) || x > 0) down.add("right");
-  if (button(BUTTON.DOWN) || y > 0) {
+  let left = button(BUTTON.LEFT) || x < 0;
+  let right = button(BUTTON.RIGHT) || x > 0;
+  let downward = button(BUTTON.DOWN) || y > 0;
+  let upward = button(BUTTON.UP) || (stickIsDpad && y < 0);
+  for (const i of state.hatAxes) {
+    const hat = hatDirections(pad.axes[i] ?? Number.NaN);
+    if (!hat) continue;
+    left ||= hat.left;
+    right ||= hat.right;
+    downward ||= hat.down;
+    upward ||= hat.up;
+  }
+
+  if (left) down.add("left");
+  if (right) down.add("right");
+  if (downward) {
     down.add("softDrop");
     down.add("down");
   }
-  if (y < 0) down.add("up"); // the stick moves menu selection; it never drops a piece
-  if (button(BUTTON.UP) || (bindings.hardDrop && bindingDown(pad, bindings.hardDrop))) {
+  if (y < 0) down.add("up"); // the stick moves menu selection; on its own it never drops a piece
+  if (upward || (pad.mapping === "standard" && button(BUTTON.Y))) {
     down.add("hardDrop");
     down.add("up");
   }
@@ -130,17 +167,15 @@ export function describePad(pad) {
  * @param {{
  *   onConnect?: (pad: PadLike) => void,
  *   onDisconnect?: () => void,
- *   bindings?: (pad: PadLike) => Bindings,
  *   nav?: { getGamepads(): ArrayLike<PadLike | null> },
- * }} [options] `bindings` returns the learned controls for a pad
+ * }} [options]
  */
 export function createGamepad(target, options = {}) {
   const nav = options.nav ?? navigator;
   /** @type {Set<Action>} */
   let previous = new Set();
-  /** @type {{ rest: ReturnType<typeof snapshotPad>, done: (b: Binding) => void } | null} */
-  let learning = null;
-  const bindingsFor = (/** @type {PadLike} */ pad) => options.bindings?.(pad) ?? {};
+  /** What has been learned about the current pad, kept only while it is the same pad. @type {{ key: string, state: PadState } | null} */
+  let known = null;
 
   /** The first connected pad, or null. The first one wins when several are attached. @returns {PadLike | null} */
   const firstPad = () => Array.from(nav.getGamepads?.() ?? []).find((p) => p && p.connected) ?? null;
@@ -148,11 +183,13 @@ export function createGamepad(target, options = {}) {
   /** @param {Event} ev */
   const onConnected = (ev) => {
     previous = new Set();
+    known = null;
     const pad = firstPad() ?? /** @type {GamepadEvent} */ (ev).gamepad;
     options.onConnect?.(pad);
   };
   const onDisconnected = () => {
     previous = new Set();
+    known = null;
     if (!firstPad()) options.onDisconnect?.();
   };
   target.addEventListener("gamepadconnected", onConnected);
@@ -168,41 +205,24 @@ export function createGamepad(target, options = {}) {
       const pad = firstPad();
       if (!pad) {
         previous = new Set();
+        known = null;
         return { held: new Set(), pressed: [], pad: null };
       }
-      if (learning) {
-        const binding = detectBinding(learning.rest, pad);
-        if (binding) {
-          const { done } = learning;
-          learning = null;
-          done(binding);
-          // The control is still held: count it as already down so it does not also fire as an action.
-          previous = mapPad(pad, STICK_DEADZONE, bindingsFor(pad));
-        }
-        return { held: new Set(), pressed: [], pad };
-      }
-      const down = mapPad(pad, STICK_DEADZONE, bindingsFor(pad));
+      // Learn from this reading before using it, so the very first press of a digital d-pad already counts.
+      const key = pad.id;
+      if (!known || known.key !== key) known = { key, state: newPadState() };
+      observePad(pad, known.state);
+      const down = mapPad(pad, STICK_DEADZONE, known.state);
       const held = new Set([...down].filter((a) => HELD.has(a)));
       const pressed = [...down].filter((a) => !HELD.has(a) && !previous.has(a));
       previous = down;
       return { held, pressed, pad };
     },
-    /**
-     * Listen for the next control pressed on the pad and call `done` with it. While learning, poll() reports no
-     * actions. Returns false if no pad is connected.
-     * @param {(binding: Binding) => void} done
-     */
-    learn(done) {
-      const pad = firstPad();
-      if (!pad) return false;
-      learning = { rest: snapshotPad(pad), done };
-      return true;
-    },
-    cancelLearn() {
-      learning = null;
-    },
-    get learning() {
-      return learning !== null;
+    /** How this pad sends its d-pad, as far as is known, for the status panel. @returns {{ dpadOnStick: boolean, analogStick: boolean, hat: boolean, dpadButtons: boolean } | null} */
+    info() {
+      if (!known) return null;
+      const st = known.state;
+      return { dpadOnStick: dpadOnStick(st), analogStick: st.analogStick, hat: st.hatAxes.size > 0, dpadButtons: st.dpadButtons };
     },
     destroy() {
       target.removeEventListener("gamepadconnected", onConnected);
