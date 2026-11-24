@@ -48,9 +48,9 @@ export function createEffects(options = {}) {
       for (const ev of events) {
         if (ev.type === "square") {
           const tone = ev.kind;
-          list.push({ kind: "ring", tone, row: ev.row, col: ev.col, start: now, dur: calm ? 400 : 700 });
+          list.push({ kind: "ring", tone, row: ev.row, col: ev.col, start: now, dur: calm ? 500 : 900 });
           if (!calm) {
-            list.push({ kind: "shine", tone, row: ev.row, col: ev.col, start: now, dur: 800 });
+            list.push({ kind: "shine", tone, row: ev.row, col: ev.col, start: now, dur: 1000 });
             burst(tone, ev.col + SQUARE / 2, ev.row + SQUARE / 2, 22, now, 6);
           }
         } else if (ev.type === "garbage") {
@@ -62,7 +62,7 @@ export function createEffects(options = {}) {
             const { gold, silver } = ev.rowSquares[i];
             const tone = /** @type {Tone} */ (gold > 0 ? "gold" : silver > 0 ? "silver" : "plain");
             if (tone === "gold" || (tone === "silver" && best === "plain")) best = tone;
-            list.push({ kind: "flash", tone, row, start: now, dur: tone === "plain" ? 350 : 650 });
+            list.push({ kind: "flash", tone, row, start: now, dur: tone === "plain" ? 350 : 850 });
             if (!calm && tone !== "plain") {
               for (let k = 0; k < 8 + (gold + silver) * 6; k++) burst(tone, rng() * COLS, row + 0.5, 1, now, 5);
             }
