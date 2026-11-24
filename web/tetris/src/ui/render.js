@@ -38,7 +38,7 @@ export const METAL = {
 /** Garbage blocks: a plain grey, 4.9:1 against the board stone and well over 4.5:1 against INK. */
 export const GARBAGE_COLOR = "#9AA3AE";
 
-/** Engraved letter and carved-outline color; a letter on every block keeps color from being the only cue. */
+/** Dark ink for the garbage hatching and the glyphs on gold and silver squares. */
 export const INK = "#1A1208";
 
 /** Read the page's current colors from its CSS variables, so the canvas follows light and dark mode. @returns {Theme} */
@@ -64,10 +64,28 @@ export function fitCanvas(canvas) {
   return /** @type {CanvasRenderingContext2D} */ (canvas.getContext("2d"));
 }
 
+/** Garbage rubble: diagonal hatching on the face, so it never looks like a piece. */
+function hatch(ctx, px, py, size, alpha, lw) {
+  ctx.save();
+  ctx.strokeStyle = INK;
+  ctx.globalAlpha = alpha * 0.55;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.rect(px + size * 0.2, py + size * 0.2, size * 0.6, size * 0.6);
+  ctx.clip();
+  ctx.beginPath();
+  for (let k = -size; k < size; k += size * 0.22) {
+    ctx.moveTo(px + k, py + size);
+    ctx.lineTo(px + k + size, py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 /**
- * One block: a bright face, a carved inset outline and an engraved letter, lit from the top left.
+ * One block. Flat matte: a solid face with a thin darker edge all round, no shine.
  * @param {CanvasRenderingContext2D} ctx
- * @param {PieceType | "G"} type "G" is a garbage block: grey, hatched, and with no letter
+ * @param {PieceType | "G"} type "G" is a garbage block: grey and hatched
  * @param {number} px left
  * @param {number} py top
  * @param {number} size cell size in pixels
@@ -75,45 +93,15 @@ export function fitCanvas(canvas) {
  */
 function drawBlock(ctx, type, px, py, size, alpha = 1) {
   ctx.globalAlpha = alpha;
-  const lw = Math.max(1, size * 0.07);
-  ctx.fillStyle = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
+  const lw = Math.max(1, size * 0.06);
+  const color = type === "G" ? GARBAGE_COLOR : PIECE_COLORS[type];
+  ctx.fillStyle = color;
   ctx.fillRect(px, py, size, size);
-  // Bevel: light on the top and left edges, shade on the bottom and right.
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
-  ctx.fillRect(px, py, size, lw);
-  ctx.fillRect(px, py, lw, size);
-  ctx.fillStyle = "rgba(0,0,0,0.4)";
-  ctx.fillRect(px, py + size - lw, size, lw);
-  ctx.fillRect(px + size - lw, py, lw, size);
-  // Carved outline inset from the edge.
-  const inset = size * 0.2;
-  ctx.strokeStyle = INK;
-  ctx.globalAlpha = alpha * 0.55;
+  ctx.strokeStyle = "rgba(0,0,0,0.35)";
   ctx.lineWidth = lw;
-  if (type === "G") {
-    // Hatching instead of a letter: rubble, not a piece.
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
-    ctx.clip();
-    ctx.beginPath();
-    for (let k = -size; k < size; k += size * 0.22) {
-      ctx.moveTo(px + k, py + size);
-      ctx.lineTo(px + k + size, py);
-    }
-    ctx.stroke();
-    ctx.restore();
-    ctx.globalAlpha = 1;
-    return;
-  }
-  ctx.strokeRect(px + inset, py + inset, size - 2 * inset, size - 2 * inset);
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = INK;
-  ctx.font = `bold ${Math.floor(size * 0.4)}px system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(type, px + size / 2, py + size / 2 + size * 0.03);
+  ctx.strokeRect(px + lw / 2, py + lw / 2, size - lw, size - lw);
   ctx.globalAlpha = 1;
+  if (type === "G") hatch(ctx, px, py, size, alpha, lw);
 }
 
 /**
