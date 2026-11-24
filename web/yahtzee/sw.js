@@ -1,9 +1,8 @@
-const CACHE_NAME = 'yahtzee-v4';
+const CACHE_NAME = 'yahtzee-v3';
 
 const PRECACHE = [
   '/yahtzee/',
   '/yahtzee/engine.js',
-  '/yahtzee/optimal.js',
   '/yahtzee/stats/',
   '/yahtzee/manifest.webmanifest',
   '/yahtzee/icon-192.png',
