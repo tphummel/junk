@@ -9,6 +9,7 @@ const num = (v) => (v === '' || v == null || Number.isNaN(Number(v)) ? null : Nu
 const fmt = (n) => (n == null ? '–' : n.toLocaleString());
 
 /** @typedef {{coins:number|null, points:number|null, difficulty:number|null, attempts:number|null, notes:string, updated:string}} Entry */
+/** loc: where the device was when the entry was saved (only when the location option is on). @typedef {{lat:number, lon:number, acc:number|null, at:string}} Loc */
 /** @typedef {{id:string, name:string, system:string, created:string, entries:Record<string,Entry>, custom:{id:string,name:string}[]}} Playthrough */
 
 let persistOK = true;
@@ -17,7 +18,7 @@ function load() {
     const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (raw && Array.isArray(raw.playthroughs)) return raw;
   } catch { /* fall through to empty store */ }
-  return { v: 1, current: null, playthroughs: [] };
+  return { v: 1, current: null, playthroughs: [], geo: false };
 }
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(store)); persistOK = true; } catch { persistOK = false; }
@@ -100,12 +101,26 @@ function onSave(ev) {
     attempts: att == null ? null : Math.max(1, Math.round(att)),
     notes: $('notes').value.trim(),
     updated: new Date().toISOString(),
+    loc: p.entries[id]?.loc ?? null, // kept until a fresh fix replaces it
   };
+  const stamp = p.entries[id].updated;
   save(); flash('Saved ' + findName(p, id).name);
   const next = suggestNext(p, id);
   editing = next ? next.id : id; // prefilled, but the dropdown still lets you pick anything else
   renderLevelSelect(); fillForm(); renderSummary();
   if (next) $('form-status').textContent = 'Saved. Next up: ' + next.name + ' (change it above if you went elsewhere)';
+  if (store.geo) captureLocation(p, id, stamp);
+}
+// Attach the device location to a saved entry. Runs after the save so a slow or denied fix never blocks logging.
+function captureLocation(p, id, stamp) {
+  if (!('geolocation' in navigator)) { flash('Saved without location: this browser has no geolocation.'); return; }
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const e = p.entries[id];
+    if (!e || e.updated !== stamp) return; // entry was deleted or saved again meanwhile
+    const r = (n) => Math.round(n * 1e5) / 1e5;
+    e.loc = { lat: r(pos.coords.latitude), lon: r(pos.coords.longitude), acc: pos.coords.accuracy == null ? null : Math.round(pos.coords.accuracy), at: new Date(pos.timestamp).toISOString() };
+    save(); renderSummary();
+  }, (err) => flash('Saved without location: ' + (err.message || 'unavailable') + '.'), { timeout: 10000, maximumAge: 60000 });
 }
 function onDelete() {
   const p = cur(); const id = $('level').value;
@@ -150,6 +165,7 @@ function renderSummary() {
       if (CONFIG.points && e.points != null) bits.push(`★ ${fmt(e.points)} pts`);
       if (e.difficulty != null) bits.push(`difficulty ${'●'.repeat(e.difficulty)}${'○'.repeat(5 - e.difficulty)}`);
       if (e.attempts != null) bits.push(`${e.attempts} attempt${e.attempts === 1 ? '' : 's'}`);
+      if (e.loc) bits.push(`📍 ${e.loc.lat.toFixed(4)}, ${e.loc.lon.toFixed(4)}`);
       return `<li><button class="entry" data-id="${esc(it.id)}"><span class="en">${esc(it.name)}</span><span class="eb">${bits.map(esc).join(' · ')}</span>${e.notes ? `<span class="enote">${esc(e.notes)}</span>` : ''}</button></li>`;
     }).join('')}</ul>`);
   }
@@ -183,12 +199,12 @@ function exportJSON() {
 }
 function exportCSV() {
   const p = cur(); if (!p) return;
-  const cols = ['group', 'name', 'coins', ...(CONFIG.points ? ['points'] : []), 'difficulty', 'attempts', 'notes', 'updated'];
+  const cols = ['group', 'name', 'coins', ...(CONFIG.points ? ['points'] : []), 'difficulty', 'attempts', 'notes', 'updated', 'latitude', 'longitude', 'accuracy_m'];
   const q = (v) => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   const rows = [['playthrough', 'system', ...cols].join(',')];
   for (const g of allItems(p)) for (const it of g.items) {
     const e = p.entries[it.id]; if (!e) continue;
-    rows.push([p.name, p.system, g.label, it.name, e.coins, ...(CONFIG.points ? [e.points] : []), e.difficulty, e.attempts, e.notes, e.updated].map(q).join(','));
+    rows.push([p.name, p.system, g.label, it.name, e.coins, ...(CONFIG.points ? [e.points] : []), e.difficulty, e.attempts, e.notes, e.updated, e.loc?.lat, e.loc?.lon, e.loc?.acc].map(q).join(','));
   }
   download(`${CONFIG.storageKey}-${slug(p.name)}.csv`, rows.join('\n') + '\n', 'text/csv');
 }
@@ -198,7 +214,8 @@ function importJSON(file) {
     if (!src || typeof src.entries !== 'object') throw new Error('not a journal export');
     const clean = {};
     for (const [id, e] of Object.entries(src.entries)) {
-      clean[id] = { coins: num(e.coins), points: CONFIG.points ? num(e.points) : null, difficulty: num(e.difficulty), attempts: num(e.attempts), notes: String(e.notes || ''), updated: String(e.updated || new Date().toISOString()) };
+      clean[id] = { coins: num(e.coins), points: CONFIG.points ? num(e.points) : null, difficulty: num(e.difficulty), attempts: num(e.attempts), notes: String(e.notes || ''), updated: String(e.updated || new Date().toISOString()),
+        loc: e.loc && num(e.loc.lat) != null && num(e.loc.lon) != null ? { lat: num(e.loc.lat), lon: num(e.loc.lon), acc: num(e.loc.acc), at: String(e.loc.at || '') } : null };
     }
     const custom = (Array.isArray(src.custom) ? src.custom : []).map((c) => ({ id: String(c.id), name: String(c.name) }));
     const p = { id: uid(), name: String(src.name || 'Imported') + ' (imported)', system: String(src.system || ''), created: String(src.created || new Date().toISOString()), entries: clean, custom };
@@ -218,6 +235,14 @@ $('pt-system').addEventListener('change', (e) => { const p = cur(); if (p) { p.s
 $('level').addEventListener('change', fillForm);
 $('log-form').addEventListener('submit', onSave);
 $('delete').addEventListener('click', onDelete);
+$('geo').checked = !!store.geo;
+$('geo').addEventListener('change', (e) => {
+  store.geo = e.target.checked; save();
+  if (store.geo) { // ask for permission now so the first save is not interrupted
+    if ('geolocation' in navigator) navigator.geolocation.getCurrentPosition(() => flash('Location on: entries will record where you were.'), (err) => { flash('Location unavailable: ' + (err.message || 'denied') + '.'); });
+    else { flash('This browser has no geolocation.'); e.target.checked = store.geo = false; save(); }
+  }
+});
 $('add-custom').addEventListener('click', onAddCustom);
 $('export-json').addEventListener('click', exportJSON);
 $('export-csv').addEventListener('click', exportCSV);

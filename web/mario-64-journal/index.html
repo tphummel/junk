@@ -41,6 +41,8 @@
     label { display: block; font-weight: 600; font-size: .85rem; margin: .7rem 0 .2rem; }
     input, select, textarea, button { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 6px; padding: .45rem .6rem; }
     input, select, textarea { width: 100%; }
+    input[type=checkbox] { width: auto; margin-right: .4rem; }
+    .check { display: flex; align-items: center; font-weight: 400; margin-top: .9rem; }
     textarea { min-height: 5rem; resize: vertical; }
     button { cursor: pointer; width: auto; }
     button.primary { background: var(--primary); border-color: var(--primary); color: var(--bg); font-weight: 700; }
@@ -117,6 +119,8 @@
           </div>
           <label for="notes">Notes</label>
           <textarea id="notes" placeholder="Optional"></textarea>
+          <label class="check" for="geo"><input id="geo" type="checkbox"> Record my location with each entry</label>
+          <p class="muted" style="margin:.2rem 0 0">Optional. Saved on this device with the entry and included in exports. Your browser will ask permission.</p>
           <div class="actions">
             <button id="save" type="submit" class="primary">Log entry</button>
             <button id="delete" type="button" class="danger" hidden>Delete entry</button>
