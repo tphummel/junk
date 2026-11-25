@@ -509,10 +509,10 @@ function renderDay() {
     const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.steps}/${STEPS.length} steps` : "";
     li.append(`${time} · ${TYPE_LABEL[s.type]}${detail}${g.roles.get(s.id) === "extra" ? " · extra" : ""} `);
     if (s.lat !== null) {
-      // A quiet mark that the place was captured; the coordinates stay out of sight.
+      // A quiet pin that the place was captured; the coordinates stay out of sight.
       const pin = document.createElement("span");
       pin.className = "muted";
-      pin.textContent = "📍✓ ";
+      pin.textContent = "📍 ";
       pin.setAttribute("aria-label", "Location captured");
       pin.title = "Location captured";
       li.append(pin);
