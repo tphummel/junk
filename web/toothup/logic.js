@@ -5,9 +5,22 @@
  * start is epoch ms. offset is the UTC offset in minutes (east positive) where you were at the time, so an event
  * stays on the calendar day you experienced it after you change time zones. Only brush events carry seconds
  * (timer time, pauses excluded) and steps (0-9 completed, see STEPS).
- * @typedef {{ id: string, type: "floss" | "mouthwash", start: number, offset: number }
- *   | { id: string, type: "brush", start: number, offset: number, seconds: number, steps: number }} Event
+ * Every event carries its location: lat and lon in degrees and acc, the accuracy radius in meters. lat and lon are
+ * null when the place is unknown (a backdated entry, or location was denied); acc is also null for a place whose
+ * accuracy was never recorded, such as one imported from Nomie.
+ * @typedef {{ lat: number | null, lon: number | null, acc: number | null }} Place
+ * @typedef {({ id: string, type: "floss" | "mouthwash", start: number, offset: number }
+ *   | { id: string, type: "brush", start: number, offset: number, seconds: number, steps: number }) & Place} Event
  */
+
+/** Validate a location; lat and lon together or all null, acc null if unknown. @param {any} e @returns {Place} */
+export function normalizePlace(e) {
+  const lat = e?.lat == null ? NaN : Number(e.lat);
+  const lon = e?.lon == null ? NaN : Number(e.lon);
+  const acc = e?.acc == null ? NaN : Number(e.acc);
+  if (!(Math.abs(lat) <= 90) || !(Math.abs(lon) <= 180)) return { lat: null, lon: null, acc: null };
+  return { lat: Math.round(lat * 1e6) / 1e6, lon: Math.round(lon * 1e6) / 1e6, acc: acc >= 0 && Number.isFinite(acc) ? Math.round(acc) : null };
+}
 
 export const QUADRANTS = ["Upper right", "Upper left", "Lower left", "Lower right"];
 export const STEP_SECONDS = 15;
@@ -142,7 +155,7 @@ export function normalizeEvent(e) {
   const start = Math.round(Number(e.start));
   const offset = Math.round(Number(e.offset));
   if (!(start > 0) || !(Math.abs(offset) <= 14 * 60)) return null;
-  const base = { id: e.id, type: e.type, start, offset };
+  const base = { id: e.id, type: e.type, start, offset, ...normalizePlace(e) };
   if (e.type !== "brush") return base;
   const seconds = Math.round(Number(e.seconds));
   const steps = Math.round(Number(e.steps));
@@ -193,7 +206,8 @@ export function mergeEvents(a, b) {
  * @param {Event[]} events existing events
  * @param {Event["type"]} type
  * @param {number} start epoch ms
- * @param {{ seconds?: number, steps?: number, offset?: number }} [opts] seconds and steps are required for brush events
+ * @param {{ seconds?: number, steps?: number, offset?: number, lat?: number | null, lon?: number | null, acc?: number | null }} [opts]
+ *   seconds and steps are required for brush events; lat, lon and acc default to unknown (null)
  * @returns {Event}
  */
 export function makeEvent(events, type, start, opts = {}) {
@@ -201,7 +215,7 @@ export function makeEvent(events, type, start, opts = {}) {
   start = Math.round(start);
   while (ids.has(`${ID_PREFIX[type]}${start}`)) start += 1;
   const offset = opts.offset ?? -new Date(start).getTimezoneOffset();
-  const base = { id: `${ID_PREFIX[type]}${start}`, type, start, offset };
+  const base = { id: `${ID_PREFIX[type]}${start}`, type, start, offset, ...normalizePlace(opts) };
   return type === "brush" ? { ...base, seconds: opts.seconds, steps: opts.steps } : base;
 }
 
