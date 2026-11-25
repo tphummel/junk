@@ -7,7 +7,7 @@ metadata:
 
 # New webpage
 
-Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../adr/0002-no-web-build-step.md) (no build step), [0001](../../adr/0001-web-styling.md) (colors) and [0008](../../adr/0008-pwa-for-all-offline-for-self-contained.md) (icons, manifest, service worker; supersedes 0007). This is the procedure.
+Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../adr/0002-no-web-build-step.md) (no build step), [0001](../../adr/0001-web-styling.md) (colors) and [0008](../../adr/0008-pwa-for-all-offline-for-self-contained.md) (icons, manifest, service worker; supersedes 0007) and [0010](../../adr/0010-page-version-string.md) (version string). This is the procedure.
 
 ## Steps
 
@@ -26,8 +26,12 @@ Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../ad
    `data-icon` is the icon file the index card shows (the `icon.svg` from step 4; omit it if the page has none). A page you use every day can also go in the `Featured` list at the top of `web/index.html`, in addition to its class.
    If the page has an API, put its link on the same line (`<a href="/api/<name>/...">api</a>`) instead of a separate entry.
 6. **If it needs an API**, use the [`new-api` skill](../new-api/SKILL.md) with the same `<name>`. Call it with a same-origin path (`fetch("/api/<name>/...")`). Logic both sides need goes in `web/<name>/<something>.js` as a plain ES module with JSDoc types; the API imports it.
-7. **Check locally:** do the one-time setup in the [README](../../README.md#site-and-api) if needed, then `npm run dev` and open `http://localhost:8787/<name>/`. Pages that import ES modules do not work from `file://`.
-8. **Push and open a PR.** Open the preview at `https://<branch>.junk.tomhummel.com/<name>/`, exercise the page, and view it in light and dark mode (browser or OS setting). Fix console errors and 404s.
+7. **Version string.** Put `<small id="version">` as the last thing on the page and set it to a fresh `YYYY-MM-DDTHH:MM-xxx` (UTC time, three random lowercase letters; ADR 0010). Rewrite it whenever you later change the page:
+   ```sh
+   echo "$(date -u +%Y-%m-%dT%H:%M)-$(LC_ALL=C tr -dc a-z </dev/urandom | head -c3)"
+   ```
+8. **Check locally:** do the one-time setup in the [README](../../README.md#site-and-api) if needed, then `npm run dev` and open `http://localhost:8787/<name>/`. Pages that import ES modules do not work from `file://`.
+9. **Push and open a PR.** Open the preview at `https://<branch>.junk.tomhummel.com/<name>/`, exercise the page, and view it in light and dark mode (browser or OS setting). Fix console errors and 404s.
 
 ## Template
 
@@ -49,6 +53,7 @@ Rules are in [ADR 0003](../../adr/0003-webpages.md) (structure), [0002](../../ad
 </head>
 <body>
   <!-- ... -->
+  <small id="version">2026-11-25T04:45-abc</small> <!-- ADR 0010: refresh on every change to the page -->
   <!-- service worker registration: self-contained pages only (ADR 0008); omit if the page has an API or CDN dependency -->
   <script>
     if ('serviceWorker' in navigator) {
