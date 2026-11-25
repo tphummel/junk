@@ -51,8 +51,11 @@ test("normalizeEvent keeps well-formed events and rejects everything else", () =
   assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, offset: 0, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
   // an old event without location gains null fields; a bad or partial location is dropped whole
   assert.deepEqual(normalizeEvent({ id: "f2", type: "floss", start: 5, offset: 0 }), { id: "f2", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
-  for (const loc of [{ lat: 91, lon: 0, acc: 5 }, { lat: 0, lon: 181, acc: 5 }, { lat: 1, lon: 1, acc: -1 }, { lat: 1, lon: 1 }, { lat: "x", lon: 1, acc: 5 }])
+  for (const loc of [{ lat: 91, lon: 0, acc: 5 }, { lat: 0, lon: 181, acc: 5 }, { lat: "x", lon: 1, acc: 5 }])
     assert.deepEqual(normalizeEvent({ id: "f3", type: "floss", start: 5, offset: 0, ...loc }), { id: "f3", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  // a good place without a usable accuracy keeps lat and lon
+  for (const acc of [undefined, null, -1, "x"])
+    assert.deepEqual(normalizeEvent({ id: "f5", type: "floss", start: 5, offset: 0, lat: 1, lon: 2, acc }), { id: "f5", type: "floss", start: 5, offset: 0, lat: 1, lon: 2, acc: null });
   const placed = { id: "f4", type: "floss", start: 5, offset: 0, lat: 51.5, lon: -0.12, acc: 30 };
   assert.deepEqual(normalizeEvent(placed), placed);
   for (const bad of [
@@ -329,6 +332,13 @@ test("parseNomie: tags become floss and mouthwash events, with the offset flippe
     { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480, lat: null, lon: null, acc: null },
   ]);
   assert.ok(events.every((e) => normalizeEvent(e)));
+});
+
+test("parseNomie: lat and lng become lat and lon, with no accuracy; missing or null coordinates stay unknown", () => {
+  const raw = (lat, lng) => JSON.stringify({ nomie: { number: "5.6.4" }, events: [{ _id: "a", note: "#floss_teeth", start: 1700000000000, offset: 480, lat, lng }] });
+  assert.deepEqual(parseNomie(raw(34.02122522110962, -118.42036528542205)).events[0], { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: 34.021225, lon: -118.420365, acc: null });
+  for (const [lat, lng] of [[null, null], [undefined, undefined], [34, null]])
+    assert.deepEqual(parseNomie(raw(lat, lng)).events[0], { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: null, lon: null, acc: null });
 });
 
 test("parseNomie: one note can hold both, a (0) value is not done, other tags and look-alike tags are ignored", () => {

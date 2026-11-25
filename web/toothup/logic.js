@@ -5,20 +5,21 @@
  * start is epoch ms. offset is the UTC offset in minutes (east positive) where you were at the time, so an event
  * stays on the calendar day you experienced it after you change time zones. Only brush events carry seconds
  * (timer time, pauses excluded) and steps (0-9 completed, see STEPS).
- * Every event carries its location: lat and lon in degrees and acc, the accuracy radius in meters. All three are null
- * when the place is unknown (an import, a backdated entry, or location was denied).
+ * Every event carries its location: lat and lon in degrees and acc, the accuracy radius in meters. lat and lon are
+ * null when the place is unknown (a backdated entry, or location was denied); acc is also null for a place whose
+ * accuracy was never recorded, such as one imported from Nomie.
  * @typedef {{ lat: number | null, lon: number | null, acc: number | null }} Place
  * @typedef {({ id: string, type: "floss" | "mouthwash", start: number, offset: number }
  *   | { id: string, type: "brush", start: number, offset: number, seconds: number, steps: number }) & Place} Event
  */
 
-/** Validate a location; all three fields or all null. @param {any} e @returns {Place} */
+/** Validate a location; lat and lon together or all null, acc null if unknown. @param {any} e @returns {Place} */
 export function normalizePlace(e) {
   const lat = e?.lat == null ? NaN : Number(e.lat);
   const lon = e?.lon == null ? NaN : Number(e.lon);
   const acc = e?.acc == null ? NaN : Number(e.acc);
-  if (!(Math.abs(lat) <= 90) || !(Math.abs(lon) <= 180) || !(acc >= 0) || !Number.isFinite(acc)) return { lat: null, lon: null, acc: null };
-  return { lat: Math.round(lat * 1e6) / 1e6, lon: Math.round(lon * 1e6) / 1e6, acc: Math.round(acc) };
+  if (!(Math.abs(lat) <= 90) || !(Math.abs(lon) <= 180)) return { lat: null, lon: null, acc: null };
+  return { lat: Math.round(lat * 1e6) / 1e6, lon: Math.round(lon * 1e6) / 1e6, acc: acc >= 0 && Number.isFinite(acc) ? Math.round(acc) : null };
 }
 
 export const QUADRANTS = ["Upper right", "Upper left", "Lower left", "Lower right"];
