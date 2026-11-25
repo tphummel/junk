@@ -34,7 +34,7 @@ export function parseNomie(text) {
         continue;
       }
       const id = `${ID_PREFIX[type]}${start}`;
-      found.set(id, { id, type, start, offset: -nomieOffset });
+      found.set(id, { id, type, start, offset: -nomieOffset, lat: null, lon: null, acc: null });
     }
   }
   return { events: [...found.values()], skipped };

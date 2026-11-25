@@ -1,6 +1,6 @@
 import {
   DEFAULT_SETTINGS, backupDue, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, addMonthKey, currentStreak, dayGoals, dayKey, firstMonth, firstYear, formatClock, groupByDay, longestStreak,
-  makeEvent, mergeEvents, monthGrid, monthReport, yearReport, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
+  makeEvent, mergeEvents, normalizePlace, monthGrid, monthReport, yearReport, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
 } from "./logic.js";
 import { CHART_CSS, annualReportHtml, esc, heatmapSvg, hoursMinutes, monthBarsSvg, shortDate, weekdayBarsSvg } from "./report.js";
 import { readHealthExport } from "./health.js";
@@ -19,6 +19,27 @@ try {
     state.lastBackup = /^\d{4}-\d{2}-\d{2}$/.test(saved.lastBackup) ? saved.lastBackup : null;
   }
 } catch {}
+
+/** Where you are now as { lat, lon, acc }, or all null if location is off, denied or slow. */
+function locate() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(normalizePlace(null));
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve(normalizePlace({ lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy })),
+      () => resolve(normalizePlace(null)),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  });
+}
+/** Fill in an event's location once it is known; no-op if the event was deleted meanwhile. */
+function setPlace(id, placePromise) {
+  placePromise.then((place) => {
+    const i = state.events.findIndex((e) => e.id === id);
+    if (i < 0 || place.lat === null) return;
+    state.events[i] = { ...state.events[i], ...place };
+    save();
+  });
+}
 
 function save() {
   renderToday();
@@ -52,7 +73,7 @@ for (const t of tabs) $(`tab-${t}`).addEventListener("click", () => showTab(t));
 
 // ---------- timer ----------
 /** idle | running | paused | done */
-const run = { phase: "idle", step: 0, endAt: 0, left: 0, begun: 0, elapsed: 0, timer: 0, wake: null };
+const run = { phase: "idle", step: 0, endAt: 0, left: 0, begun: 0, elapsed: 0, timer: 0, wake: null, place: null };
 
 function audio() {
   try {
@@ -98,6 +119,7 @@ function begin() {
   if (run.phase === "idle" || run.phase === "done") {
     if (run.phase === "done") clearLogged();
     run.begun = Date.now();
+    run.place = locate(); // where the routine started
     run.elapsed = 0;
         startStep(0);
   } else {
@@ -152,6 +174,7 @@ function finish(steps) {
   const s = makeEvent(state.events, "brush", run.begun, { seconds: run.elapsed, steps });
   state.events = mergeEvents(state.events, [s]).events;
   save();
+  setPlace(s.id, run.place ?? locate());
   cue(true);
   renderBrush();
 }
@@ -275,6 +298,7 @@ for (const type of ["floss", "mouthwash"]) {
       const e = makeEvent(state.events, type, Date.now());
       state.events = mergeEvents(state.events, [e]).events;
       logged[type] = e.id;
+      setPlace(e.id, locate());
       cue(false);
     }
     $(type).setAttribute("aria-pressed", String(!!logged[type]));
@@ -527,6 +551,7 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
     const e = makeEvent(state.events, btn.dataset.log, when, { seconds: TOTAL_SECONDS, steps: STEPS.length });
     state.events = mergeEvents(state.events, [e]).events;
     save();
+    if (view.selected === today()) setPlace(e.id, locate()); // a backdated entry has no known place
     renderStats();
   };
 });

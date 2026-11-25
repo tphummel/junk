@@ -37,17 +37,24 @@ test("routine: 8 facial/lingual steps of 15s per quadrant, then 5s of tongue", (
 });
 
 test("makeEvent: ids come from type and time, a taken id moves the start by 1 ms, only brushes carry seconds and steps", () => {
-  assert.deepEqual(makeEvent([], "floss", 2000, { offset: 60 }), { id: "f2000", type: "floss", start: 2000, offset: 60 });
-  assert.deepEqual(makeEvent([], "brush", 1000, { seconds: 90, steps: 8, offset: 0 }), { id: "s1000", type: "brush", start: 1000, offset: 0, seconds: 90, steps: 8 });
+  assert.deepEqual(makeEvent([], "floss", 2000, { offset: 60 }), { id: "f2000", type: "floss", start: 2000, offset: 60, lat: null, lon: null, acc: null });
+  assert.deepEqual(makeEvent([], "brush", 1000, { seconds: 90, steps: 8, offset: 0 }), { id: "s1000", type: "brush", start: 1000, offset: 0, lat: null, lon: null, acc: null, seconds: 90, steps: 8 });
+  assert.deepEqual(makeEvent([], "floss", 3000, { offset: 0, lat: 40.7128004, lon: -74.006, acc: 12.4 }), { id: "f3000", type: "floss", start: 3000, offset: 0, lat: 40.7128, lon: -74.006, acc: 12 });
   const taken = [makeEvent([], "floss", 1000, { offset: 0 })];
   assert.equal(makeEvent(taken, "floss", 1000, { offset: 0 }).start, 1001);
   assert.equal(makeEvent(taken, "mouthwash", 1000, { offset: 0 }).start, 1000);
 });
 
 test("normalizeEvent keeps well-formed events and rejects everything else", () => {
-  const good = { id: "s1", type: "brush", start: 1000, offset: -300, seconds: 125, steps: 9 };
+  const good = { id: "s1", type: "brush", start: 1000, offset: -300, lat: null, lon: null, acc: null, seconds: 125, steps: 9 };
   assert.deepEqual(normalizeEvent(good), good);
-  assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, offset: 0, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5, offset: 0 });
+  assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, offset: 0, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  // an old event without location gains null fields; a bad or partial location is dropped whole
+  assert.deepEqual(normalizeEvent({ id: "f2", type: "floss", start: 5, offset: 0 }), { id: "f2", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  for (const loc of [{ lat: 91, lon: 0, acc: 5 }, { lat: 0, lon: 181, acc: 5 }, { lat: 1, lon: 1, acc: -1 }, { lat: 1, lon: 1 }, { lat: "x", lon: 1, acc: 5 }])
+    assert.deepEqual(normalizeEvent({ id: "f3", type: "floss", start: 5, offset: 0, ...loc }), { id: "f3", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  const placed = { id: "f4", type: "floss", start: 5, offset: 0, lat: 51.5, lon: -0.12, acc: 30 };
+  assert.deepEqual(normalizeEvent(placed), placed);
   for (const bad of [
     null, {}, { ...good, id: "" }, { ...good, type: "gargle" }, { ...good, start: "x" }, { ...good, start: 0 },
     { ...good, offset: undefined }, { ...good, offset: 900 }, { ...good, seconds: -1 }, { ...good, steps: 10 }, { ...good, steps: undefined },
@@ -261,7 +268,7 @@ test("parseHealthDate: keeps the UTC offset where the brush happened", () => {
 });
 
 test("brushFromRecord: 60s or more is a full brush, shorter is a partial one, bad dates are rejected", () => {
-  assert.deepEqual(brushFromRecord(R1), { id: `s${Date.UTC(2024, 2, 5, 12, 31, 2)}`, type: "brush", start: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300, seconds: 130, steps: 9 });
+  assert.deepEqual(brushFromRecord(R1), { id: `s${Date.UTC(2024, 2, 5, 12, 31, 2)}`, type: "brush", start: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300, lat: null, lon: null, acc: null, seconds: 130, steps: 9 });
   assert.equal(brushFromRecord(R2).steps, 4);
   assert.equal(brushFromRecord(rec("2024-03-05 07:31:02 -0500", "2024-03-05 07:30:00 -0500")), null);
   assert.equal(normalizeEvent(brushFromRecord(R1))?.id, brushFromRecord(R1).id);
@@ -318,8 +325,8 @@ test("parseNomie: tags become floss and mouthwash events, with the offset flippe
   const { events, skipped } = parseNomie(nomie("#floss_teeth", "#mouthwash ", "#sneeze"));
   assert.equal(skipped, 0);
   assert.deepEqual(events, [
-    { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480 },
-    { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480 },
+    { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: null, lon: null, acc: null },
+    { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480, lat: null, lon: null, acc: null },
   ]);
   assert.ok(events.every((e) => normalizeEvent(e)));
 });
