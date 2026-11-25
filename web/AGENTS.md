@@ -9,3 +9,5 @@ date -u +%Y-%m-%dT%H:%M:%SZ
 ```
 
 A page without a `#version` element gets one the next time you change it. Reasoning and format are in [ADR 0010](../adr/0010-page-version-string.md).
+
+`AGENTS.md`, `CLAUDE.md` and `.assetsignore` here are listed in `web/.assetsignore` so they are not served; keep other non-page files out of `web/` ([ADR 0003](../adr/0003-webpages.md)).
