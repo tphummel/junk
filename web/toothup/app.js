@@ -1,5 +1,5 @@
 import {
-  DEFAULT_SETTINGS, backupDue, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, addMonthKey, currentStreak, dayGoals, dayKey, firstMonth, firstYear, formatClock, groupByDay, longestStreak,
+  DEFAULT_SETTINGS, backupDue, GOAL_TYPES, MAX_DAY_STARTS_AT, MAX_GOAL, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, addMonthKey, currentStreak, dayGoals, dayKey, firstMonth, firstYear, formatClock, groupByDay, longestStreak,
   makeEvent, mergeEvents, normalizePlace, monthGrid, monthReport, yearReport, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey, versionOf,
 } from "./logic.js";
 import { CHART_CSS, annualReportHtml, esc, heatmapSvg, hoursMinutes, monthBarsSvg, shortDate, weekdayBarsSvg } from "./report.js";
@@ -328,7 +328,8 @@ for (const type of ["floss", "mouthwash"]) $(type).innerHTML = `<span class="b-i
 
 /** ["🪥 1/2", "🧵 1/1", "🌊 0/2", "+1 extra"] for one day's goals. */
 function goalsParts(g) {
-  const parts = Object.keys(GOALS).map((type) => `${ICON[type]} ${g.done[type]}/${GOALS[type]}`);
+  const goals = state.settings.goals;
+  const parts = ["brush", "mouthwash", "floss"].map((type) => `${ICON[type]} ${g.done[type]}/${goals[type]}`);
   if (g.extras) parts.push(`+${g.extras} extra`);
   return parts;
 }
@@ -339,8 +340,11 @@ const eventsOn = (day) => groupByDay(state.events, state.settings).get(day) || [
 
 function renderToday() {
   // One line per goal, stacked above the total time.
-  $("today").replaceChildren(...goalsParts(dayGoals(eventsOn(today()))).map((text) => Object.assign(document.createElement("div"), { textContent: text })));
+  $("today").replaceChildren(...goalsParts(dayGoals(eventsOn(today()), state.settings.goals)).map((text) => Object.assign(document.createElement("div"), { textContent: text })));
 }
+
+/** The brush goal in words: "both brushes" for two, otherwise "3 brushes". */
+const brushGoalText = () => (state.settings.goals.brush === 2 ? "both brushes" : `${state.settings.goals.brush} brush${state.settings.goals.brush === 1 ? "" : "es"}`);
 
 function renderStats() {
   const t = today();
@@ -348,8 +352,8 @@ function renderStats() {
   const w30 = rangeStats(state.events, t, 30, state.settings);
   const pct = (r) => (r.brushPct === null ? "–" : `${r.brushPct}%`);
   const tiles = [
-    ["Streak", currentStreak(state.events, t, state.settings), "days, both brushes"],
-    ["Best streak", longestStreak(state.events, state.settings), "days, both brushes"],
+    ["Streak", currentStreak(state.events, t, state.settings), `days, ${brushGoalText()}`],
+    ["Best streak", longestStreak(state.events, state.settings), `days, ${brushGoalText()}`],
     ["Brushing", pct(w7), "last 7 days"],
     ["Brushing", pct(w30), "last 30 days"],
     ["Full days", w30.fullDays, `of ${w30.days}, last 30`],
@@ -374,7 +378,7 @@ function renderCalendar() {
   $("cal-body").innerHTML = monthGrid(view.y, view.m)
     .map((week) => `<tr>${week.map((k) => {
       if (!k) return "<td></td>";
-      const g = dayGoals(byDay.get(k) || []);
+      const g = dayGoals(byDay.get(k) || [], state.settings.goals);
       const level = g.complete ? 2 : g.done.brush > 0 ? 1 : 0;
       const label = `${parseDay(k).toLocaleDateString(undefined, { dateStyle: "full" })}: ${goalsText(g)}`;
       return `<td><button class="day l${level}${k === t ? " today" : ""}${k === view.selected ? " sel" : ""}" data-day="${k}" aria-label="${label}">` +
@@ -430,8 +434,8 @@ function renderMonthReport() {
     return `<td class="${level === undefined ? "" : `l${level}`}" title="${esc(shortDate(k))}">${Number(k.slice(8))}</td>`;
   }).join("")}</tr>`).join("");
   const short = r.short.length
-    ? `<p class="muted">${r.short.length} day${r.short.length === 1 ? "" : "s"} short of two brushes: ${r.short.map((d) => Number(d.day.slice(8)) + (d.level === 1 ? "*" : "")).join(", ")}${r.short.some((d) => d.level === 1) ? "<br>* one brush" : ""}</p>`
-    : '<p class="muted">Both brushes every counted day. 🎉</p>';
+    ? `<p class="muted">${r.short.length} day${r.short.length === 1 ? "" : "s"} short of ${brushGoalText()}: ${r.short.map((d) => Number(d.day.slice(8)) + (d.level === 1 ? "*" : "")).join(", ")}${r.short.some((d) => d.level === 1) ? "<br>* some brushing" : ""}</p>`
+    : '<p class="muted">Brush goal met every counted day. 🎉</p>';
   $("m-body").innerHTML = `
     <div id="m-tiles" class="tiles">${[
       tile("Brushing", pctText(r.brushPct), vs || "of brushes"),
@@ -442,7 +446,7 @@ function renderMonthReport() {
       tile("Time brushing", hoursMinutes(r.brushSeconds), r.brushCount ? `${formatClock(r.avgSeconds)} per brush` : ""),
     ].join("")}</div>
     <div class="panel"><h3>Days</h3><table class="mini"><thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead><tbody>${grid}</tbody></table>
-    <p class="legend">Solid: both brushes · Muted: one · Outline: none</p>${short}</div>
+    <p class="legend">Solid: brush goal met · Muted: some · Outline: none</p>${short}</div>
     <div class="panel"><h3>Days of the week</h3>${weekdayBarsSvg(r)}</div>`;
 }
 
@@ -496,7 +500,7 @@ const TYPE_LABEL = { brush: "Brush", floss: "Floss", mouthwash: "Mouthwash" };
 
 function renderDay() {
   const list = eventsOn(view.selected).sort((a, b) => a.start - b.start);
-  const g = dayGoals(list);
+  const g = dayGoals(list, state.settings.goals);
   $("day-title").textContent = parseDay(view.selected).toLocaleDateString(undefined, { dateStyle: "full" });
   $("day-routine").textContent = goalsText(g);
   const ul = $("day-list");
@@ -614,6 +618,27 @@ $("day-starts-at").onchange = () => {
   renderStats();
 };
 
+// Daily goals: one number input per thing, each saved on change.
+const GOAL_LABEL = { brush: "Brushes", floss: "Flosses", mouthwash: "Mouthwashes" };
+$("goal-settings").innerHTML = GOAL_TYPES.map((type) => `
+  <div class="row">
+    <label for="goal-${type}">${ICON[type]} ${GOAL_LABEL[type]} per day</label>
+    <input id="goal-${type}" type="number" min="1" max="${MAX_GOAL}" inputmode="numeric" style="width:4.5rem">
+  </div>`).join("");
+for (const type of GOAL_TYPES) {
+  $(`goal-${type}`).onchange = (e) => {
+    const n = Number(e.target.value);
+    if (Number.isInteger(n) && n >= 1 && n <= MAX_GOAL) {
+      state.settings = { ...state.settings, goals: { ...state.settings.goals, [type]: n } };
+      save();
+      renderStats();
+    } else {
+      syncSettingsForm();
+      toast(`Enter a whole number from 1 to ${MAX_GOAL}.`);
+    }
+  };
+}
+
 $("reminder-settings").innerHTML = REMINDER_TYPES.map((type) => `
   <div class="reminder-setting">
     <h3>${REMINDER_INFO[type].title}</h3>
@@ -644,6 +669,7 @@ for (const type of REMINDER_TYPES) {
 /** Show the saved settings in the form fields. */
 function syncSettingsForm() {
   $("day-starts-at").value = String(state.settings.dayStartsAt);
+  for (const type of GOAL_TYPES) $(`goal-${type}`).value = String(state.settings.goals[type]);
   for (const type of REMINDER_TYPES) {
     const r = state.settings.reminders[type];
     $(`rem-${type}-every`).value = String(r.everyMonths);

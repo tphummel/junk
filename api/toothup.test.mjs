@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
+  DEFAULT_SETTINGS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
   formatClock, groupByDay, versionOf, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
   parseImport, rangeStats, reminderStatus,
 } from "../web/toothup/logic.js";
@@ -85,7 +85,7 @@ test("the day rolls over at 4am, not midnight: a 12:30am routine belongs to the 
   assert.equal(eventDay(ev("floss", "2026-11-21", 3), S), "2026-11-20");
   assert.equal(eventDay(ev("floss", "2026-11-21", 4), S), "2026-11-21");
   // The late brush completes the previous day instead of starting a new one.
-  const g = dayGoals(groupByDay([brush("2026-11-20", 7), brushed], S).get("2026-11-20"));
+  const g = dayGoals(groupByDay([brush("2026-11-20", 7), brushed], S).get("2026-11-20"), S.goals);
   assert.ok(g.complete);
 });
 
@@ -96,21 +96,21 @@ test("the cutoff applies in the local clock of wherever you were", () => {
 });
 
 test("a day is complete with two full brushes; floss and mouthwash are tracked on top", () => {
-  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21)]);
+  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21)], S.goals);
   assert.ok(g.complete);
   assert.deepEqual(g.done, { brush: 2, floss: 0, mouthwash: 0 });
   assert.equal(g.extras, 0);
   const all = dayGoals([
-    ev("mouthwash", "2026-11-18", 7), brush("2026-11-18", 7), ev("floss", "2026-11-18", 20), brush("2026-11-18", 21), ev("mouthwash", "2026-11-18", 21),
-  ]);
-  assert.deepEqual(all.done, { brush: GOALS.brush, floss: GOALS.floss, mouthwash: GOALS.mouthwash });
+    ev("mouthwash", "2026-11-18", 7), brush("2026-11-18", 7), ev("floss", "2026-11-18", 20), brush("2026-11-18", 21),
+  ], S.goals);
+  assert.deepEqual(all.done, S.goals);
   assert.equal(all.extras, 0);
 });
 
 test("anything beyond a goal, and partial brushes, are extras and do not break completion", () => {
   const partial = brush("2026-11-18", 8, { steps: 4 });
   const midday = brush("2026-11-18", 13);
-  const g = dayGoals([brush("2026-11-18", 7), midday, brush("2026-11-18", 21), partial, ev("floss", "2026-11-18"), ev("floss", "2026-11-18", 13)]);
+  const g = dayGoals([brush("2026-11-18", 7), midday, brush("2026-11-18", 21), partial, ev("floss", "2026-11-18"), ev("floss", "2026-11-18", 13)], S.goals);
   assert.ok(g.complete);
   assert.equal(g.extras, 3); // third brush, partial brush, second floss
   assert.equal(g.roles.get(partial.id), "extra");
@@ -119,7 +119,7 @@ test("anything beyond a goal, and partial brushes, are extras and do not break c
 });
 
 test("a partial brush does not count toward the key goal", () => {
-  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21, { steps: 8 })]);
+  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21, { steps: 8 })], S.goals);
   assert.ok(!g.complete);
   assert.equal(g.done.brush, 1);
 });
@@ -145,7 +145,7 @@ test("rangeStats: counts from the first event, ignores an unfinished today, trac
   assert.equal(r.brushPct, 100);
   assert.equal(r.flossDays, 2);
   assert.equal(r.mouthwashDays, 1);
-  assert.equal(r.extras, 1); // the second floss on the 19th (the first one meets the goal)
+  assert.equal(r.extras, 2); // the second floss on the 19th and the second mouthwash on the 18th (the first of each meets the goal)
   assert.equal(r.avgSeconds, 125);
   assert.equal(rangeStats(events, "2026-11-20", 1, S).days, 0);
   assert.equal(rangeStats([], "2026-11-20", 7, S).brushPct, null);
@@ -169,6 +169,7 @@ test("monthGrid pads to whole Sunday-first weeks", () => {
 
 const custom = {
   dayStartsAt: 2,
+  goals: { brush: 3, floss: 2, mouthwash: 4 },
   reminders: { dentist: { everyMonths: 4, last: "2026-09-01" }, head: { everyMonths: 2, last: null } },
 };
 
@@ -206,7 +207,31 @@ test("normalizeSettings accepts valid settings and rejects everything else", () 
     { ...S, reminders: undefined }, { ...S, reminders: { dentist: S.reminders.dentist } },
     withHead({ everyMonths: 0, last: null }), withHead({ everyMonths: 37, last: null }), withHead({ everyMonths: 1.5, last: null }),
     withHead({ everyMonths: 3 }), withHead({ everyMonths: 3, last: "2026-02-30" }), withHead({ everyMonths: 3, last: "11/21/2026" }),
+    { ...S, goals: { brush: 0, floss: 1, mouthwash: 1 } }, { ...S, goals: { brush: 7, floss: 1, mouthwash: 1 } },
+    { ...S, goals: { brush: 2, floss: 1.5, mouthwash: 1 } }, { ...S, goals: { brush: 2, floss: 1 } }, { ...S, goals: null },
+    { ...S, goals: { brush: "2", floss: 1, mouthwash: 1 } },
   ]) assert.equal(normalizeSettings(bad), null);
+  // Settings saved before goals existed get the defaults; goals round-trip.
+  const { goals, ...old } = S;
+  assert.deepEqual(normalizeSettings(old), S);
+  assert.deepEqual(normalizeSettings({ ...S, goals: { brush: 6, floss: 1, mouthwash: 3, extra: 9 } }).goals, { brush: 6, floss: 1, mouthwash: 3 });
+});
+
+test("goals: defaults are 2 brushes, 1 floss, 1 mouthwash, and custom goals change completion, extras and stats", () => {
+  assert.deepEqual(S.goals, { brush: 2, floss: 1, mouthwash: 1 });
+  const day = [brush("2026-11-18", 7), brush("2026-11-18", 21), ev("floss", "2026-11-18", 8), ev("floss", "2026-11-18", 20), ev("mouthwash", "2026-11-18", 8)];
+  const one = dayGoals(day, { brush: 3, floss: 2, mouthwash: 2 });
+  assert.ok(!one.complete); // two brushes is short of three
+  assert.equal(one.extras, 0);
+  const lax = dayGoals(day, { brush: 1, floss: 1, mouthwash: 1 });
+  assert.ok(lax.complete);
+  assert.equal(lax.extras, 2); // second brush and second floss are extras
+  const events = [...day, brush("2026-11-19", 7), brush("2026-11-19", 21), brush("2026-11-19", 22)];
+  const strict = { ...S, goals: { brush: 3, floss: 2, mouthwash: 2 } };
+  assert.equal(periodStats(events, "2026-11-18", "2026-11-19", "2026-11-20", strict).fullDays, 1); // only the 19th has three brushes
+  assert.equal(periodStats(events, "2026-11-18", "2026-11-19", "2026-11-20", strict).flossDays, 1);
+  assert.equal(periodStats(events, "2026-11-18", "2026-11-19", "2026-11-20", S).fullDays, 2);
+  assert.equal(longestStreak(events, strict), 1);
 });
 
 test("addMonths clamps to the end of shorter months and crosses years", () => {
@@ -245,7 +270,7 @@ test("dayStartsAt moves the cutoff: at 0 the day is midnight to midnight, at 6 a
   // Changing the setting regroups the same events, and streaks and stats follow.
   const events = [brush("2026-11-20", 7), brush("2026-11-21", 1)];
   assert.equal(longestStreak(events, S), 1); // both on the 20th
-  assert.equal(longestStreak(events, { dayStartsAt: 0 }), 0); // one brush on each day
+  assert.equal(longestStreak(events, { ...S, dayStartsAt: 0 }), 0); // one brush on each day
 });
 
 test("formatClock rounds up", () => {
