@@ -508,6 +508,15 @@ function renderDay() {
     const time = new Date(s.start + s.offset * 60000).toLocaleTimeString(undefined, { timeStyle: "short", timeZone: "UTC" });
     const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.steps}/${STEPS.length} steps` : "";
     li.append(`${time} · ${TYPE_LABEL[s.type]}${detail}${g.roles.get(s.id) === "extra" ? " · extra" : ""} `);
+    if (s.lat !== null) {
+      // A quiet mark that the place was captured; the coordinates stay out of sight.
+      const pin = document.createElement("span");
+      pin.className = "muted";
+      pin.textContent = "📍✓ ";
+      pin.setAttribute("aria-label", "Location captured");
+      pin.title = "Location captured";
+      li.append(pin);
+    }
     const del = document.createElement("button");
     del.className = "link";
     del.textContent = "delete";
