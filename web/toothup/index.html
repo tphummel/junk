@@ -141,7 +141,8 @@
     #backup-toast-dismiss { background: none; color: inherit; border: 0; font-size: 1.25rem; cursor: pointer; }
     #update-toast { position: fixed; left: 1rem; right: 1rem; bottom: 8rem; z-index: 10; max-width: 32rem; margin: 0 auto; padding: .5rem .75rem; border-radius: .5rem; background: var(--primary); color: var(--bg); border: 0; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
     #update-toast[hidden] { display: none; }
-    #goal-settings label { min-width: 11.5rem; }
+    .goal-row { justify-content: space-between; flex-wrap: nowrap; margin-bottom: .5rem; }
+    .goal-row input { text-align: right; }
     #toast:empty { display: none; }
     #toast { min-height: 1.5rem; margin-top: 1rem; color: var(--accent); font-weight: 600; }
     .box { border: 1px solid var(--support); border-radius: .5rem; padding: .75rem 1rem; margin-bottom: 1rem; }
@@ -257,7 +258,7 @@
         <h2>Daily goals</h2>
         <p class="muted">Full brushes a day is the goal that counts. Floss and mouthwash goals sit on top of it, and anything beyond a goal is an extra. Days follow the time zone you were in when you logged each event.</p>
         <div id="goal-settings"></div>
-        <div class="row">
+        <div class="row goal-row">
           <label for="day-starts-at">A new day starts at</label>
           <select id="day-starts-at"></select>
         </div>
@@ -293,7 +294,7 @@
         <h2>Danger zone</h2>
         <button id="clear" class="secondary">Delete all history</button>
       </div>
-      <p class="muted"><small id="version">2026-11-25T05:52:53Z</small></p>
+      <p class="muted"><small id="version">2026-11-25T06:14:10Z</small></p>
     </section>
   </main>
   <div id="toast" role="status"></div>

@@ -621,7 +621,7 @@ $("day-starts-at").onchange = () => {
 // Daily goals: one number input per thing, each saved on change.
 const GOAL_LABEL = { brush: "Brushes", floss: "Flosses", mouthwash: "Mouthwashes" };
 $("goal-settings").innerHTML = GOAL_TYPES.map((type) => `
-  <div class="row">
+  <div class="row goal-row">
     <label for="goal-${type}">${ICON[type]} ${GOAL_LABEL[type]} per day</label>
     <input id="goal-${type}" type="number" min="1" max="${MAX_GOAL}" inputmode="numeric" style="width:4.5rem">
   </div>`).join("");
