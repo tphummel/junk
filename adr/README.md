@@ -13,6 +13,7 @@ How the site (`web/`), API (`api/`) and Docker image projects are built and ship
 | [0007](0007-web-icons-and-offline.md) | Superseded by 0008: icons, manifest and service worker for self-contained pages only |
 | [0008](0008-pwa-for-all-offline-for-self-contained.md) | Every webpage ships icons and a manifest so it installs; only pages with no external dependencies add a service worker and work offline |
 | [0009](0009-style-sheets.md) | Style sheets: a named, hand-designed look in `web/styles/<name>/` with a sheet other pages can link and a storybook page that documents it |
+| [0010](0010-web-project-data-management.md) | Browser-stored page data: one JSON export/import format, a weekly backup reminder with last backup time, and fine-grained event logs with opt-in location where the use case needs it |
 
 ## Adding one
 
