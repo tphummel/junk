@@ -417,3 +417,8 @@ export function formatClock(s) {
   const t = Math.max(0, Math.ceil(s));
   return `${Math.floor(t / 60)}:${pad(t % 60)}`;
 }
+
+/** The page version string (the #version element, ADR 0010) in a page's HTML, or null if there is none. @param {string} html */
+export function versionOf(html) {
+  return /<[a-z]+[^>]*\bid="version"[^>]*>\s*([^<\s][^<]*?)\s*</i.exec(html)?.[1] ?? null;
+}

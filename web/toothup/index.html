@@ -139,6 +139,8 @@
     #backup-toast[hidden] { display: none; }
     #backup-toast-go { flex: 1; text-align: left; font-weight: 600; background: none; color: inherit; border: 0; padding: .25rem; cursor: pointer; font: inherit; }
     #backup-toast-dismiss { background: none; color: inherit; border: 0; font-size: 1.25rem; cursor: pointer; }
+    #update-toast { position: fixed; left: 1rem; right: 1rem; bottom: 8rem; z-index: 10; max-width: 32rem; margin: 0 auto; padding: .5rem .75rem; border-radius: .5rem; background: var(--primary); color: var(--bg); border: 0; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+    #update-toast[hidden] { display: none; }
     #toast:empty { display: none; }
     #toast { min-height: 1.5rem; margin-top: 1rem; color: var(--accent); font-weight: 600; }
     .box { border: 1px solid var(--support); border-radius: .5rem; padding: .75rem 1rem; margin-bottom: 1rem; }
@@ -289,10 +291,11 @@
         <h2>Danger zone</h2>
         <button id="clear" class="secondary">Delete all history</button>
       </div>
-      <p class="muted"><small id="version">2026-11-25T04:50:38Z</small></p>
+      <p class="muted"><small id="version">2026-11-25T05:02:21Z</small></p>
     </section>
   </main>
   <div id="toast" role="status"></div>
+  <button id="update-toast" hidden>A new version is ready. Tap to reload.</button>
   <div id="backup-toast" role="status" hidden>
     <button id="backup-toast-go">Monthly reminder: back up your data offsite. Tap to export now.</button>
     <button id="backup-toast-dismiss" aria-label="Dismiss until next visit">×</button>

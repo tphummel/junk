@@ -1,6 +1,6 @@
 import {
   DEFAULT_SETTINGS, backupDue, GOALS, MAX_DAY_STARTS_AT, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, addMonthKey, currentStreak, dayGoals, dayKey, firstMonth, firstYear, formatClock, groupByDay, longestStreak,
-  makeEvent, mergeEvents, normalizePlace, monthGrid, monthReport, yearReport, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey,
+  makeEvent, mergeEvents, normalizePlace, monthGrid, monthReport, yearReport, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey, versionOf,
 } from "./logic.js";
 import { CHART_CSS, annualReportHtml, esc, heatmapSvg, hoursMinutes, monthBarsSvg, shortDate, weekdayBarsSvg } from "./report.js";
 import { readHealthExport } from "./health.js";
@@ -690,6 +690,20 @@ $("backup-toast-dismiss").onclick = () => {
   renderBackupReminder();
 };
 document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && renderBackupReminder());
+
+// An installed app keeps running its old code when you bring it to the front. Compare the deployed page's version string
+// with the one on screen, and offer a reload if they differ. Offline or failing, it stays quiet.
+async function checkForUpdate() {
+  try {
+    const res = await fetch("/toothup/", { cache: "no-store" });
+    const deployed = res.ok ? versionOf(await res.text()) : null;
+    const running = $("version").textContent.trim();
+    $("update-toast").hidden = !deployed || deployed === running;
+  } catch {}
+}
+$("update-toast").onclick = () => location.reload();
+document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && checkForUpdate());
+checkForUpdate();
 
 $("import-btn").onclick = () => $("import").click();
 $("import").onchange = async (e) => {
