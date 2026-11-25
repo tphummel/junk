@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
-  formatClock, groupByDay, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
+  formatClock, groupByDay, versionOf, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
   parseImport, rangeStats, reminderStatus,
 } from "../web/toothup/logic.js";
 
@@ -421,4 +421,11 @@ test("annualReportHtml: standalone page with no scripts or external files, and a
   assert.doesNotMatch(html, /<script|<link|src=|https?:\/\//);
   assert.equal((heatmapSvg(yearReport(events, 2026, "2026-04-01", S)).match(/<rect/g) || []).length, 365);
   assert.match(annualReportHtml(yearReport(events, 2024, "2026-04-01", S)), /Nothing to show for 2024/);
+});
+
+test("versionOf: reads the #version element's text from a page, null when there is none", () => {
+  assert.equal(versionOf('<p class="muted"><small id="version">2026-11-25T04:50:38Z</small></p>'), "2026-11-25T04:50:38Z");
+  assert.equal(versionOf('<small class="x" id="version" title="v"> 2026-11-25T04:50:38Z </small>'), "2026-11-25T04:50:38Z");
+  assert.equal(versionOf("<small>no version here</small>"), null);
+  assert.equal(versionOf('<small id="version"></small>'), null);
 });
