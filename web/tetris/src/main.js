@@ -6,7 +6,7 @@ import { TICKS_PER_SECOND } from "./game/rules.js";
 import { summarize } from "./game/stats.js";
 import { createGame, step } from "./game/state.js";
 import { createRepeater } from "./input/actions.js";
-import { createGamepad, describePad } from "./input/gamepad.js";
+import { bindButton, buttonName, createGamepad, defaultBindings, describePad, REMAPPABLE, sanitizeBindings } from "./input/gamepad.js";
 import { createKeyboard } from "./input/keyboard.js";
 import { createHud } from "./ui/hud.js";
 import { createEffects } from "./ui/effects.js";
@@ -56,8 +56,20 @@ const padStatus = $("pad-status");
 const padDebug = $("pad-debug");
 const padPanel = /** @type {HTMLDetailsElement} */ ($("pad-panel"));
 
+const BINDINGS_KEY = "tetris-pad-bindings";
+const bindingStorage = browserStorage();
+/** Saved button remaps; anything unreadable falls back to the defaults. */
+function loadBindings() {
+  try {
+    return sanitizeBindings(JSON.parse(bindingStorage?.getItem(BINDINGS_KEY) ?? "null"));
+  } catch {
+    return defaultBindings();
+  }
+}
+
 const keyboard = createKeyboard(window);
 const gamepad = createGamepad(window, {
+  bindings: loadBindings(),
   onConnect: () => refreshStatus(),
   onDisconnect: () => {
     refreshStatus();
@@ -304,6 +316,51 @@ function resultText() {
   return [r.ended === "ended" ? "Game ended" : r.ended === "timeup" ? "Time!" : "Game over", lines.filter(Boolean).join("\n")];
 }
 
+const ACTION_LABELS = { rotateCW: "Spin clockwise", rotateCCW: "Spin counter-clockwise", hold: "Hold", hardDrop: "Hard drop", pause: "Pause" };
+/** The action waiting for a button press in the remap panel, if any. @type {(typeof REMAPPABLE)[number] | null} */
+let listening = null;
+
+/** @param {import("./input/gamepad.js").Bindings} b */
+function applyBindings(b) {
+  gamepad.setBindings(b);
+  try {
+    bindingStorage?.setItem(BINDINGS_KEY, JSON.stringify(b));
+  } catch {
+    // Storage blocked: the remap still works until the page closes.
+  }
+  renderRemap();
+}
+
+function renderRemap() {
+  const list = $("remap-list");
+  list.replaceChildren();
+  const b = gamepad.bindings();
+  for (const action of REMAPPABLE) {
+    const row = document.createElement("div");
+    row.className = "remap-row";
+    const label = document.createElement("span");
+    label.textContent = ACTION_LABELS[action];
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = listening === action ? "Press a button…" : b[action].map(buttonName).join(" / ");
+    btn.addEventListener("click", () => {
+      if (screen === "playing") setScreen("paused");
+      listening = listening === action ? null : action;
+      gamepad.resetListen();
+      renderRemap();
+    });
+    row.append(label, btn);
+    list.append(row);
+  }
+}
+
+$("remap-swap").addEventListener("click", () => {
+  const b = gamepad.bindings();
+  applyBindings({ ...b, rotateCW: b.rotateCCW, rotateCCW: b.rotateCW });
+});
+$("remap-reset").addEventListener("click", () => applyBindings(defaultBindings()));
+renderRemap();
+
 /** Controller line under the board. */
 function refreshStatus() {
   const pad = gamepad.pad();
@@ -452,6 +509,15 @@ function frame(now) {
       }
     }
     if (n === MAX_TICKS_PER_FRAME) acc = 0;
+  } else if (listening) {
+    acc = 0;
+    keyboard.takePressed();
+    const pressed = gamepad.listen();
+    if (pressed !== null) {
+      const action = listening;
+      listening = null;
+      applyBindings(bindButton(gamepad.bindings(), action, pressed));
+    }
   } else {
     acc = 0;
     for (const a of [...keyboard.takePressed(), ...gamepad.poll().pressed]) onMenuAction(a);
