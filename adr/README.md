@@ -14,6 +14,7 @@ How the site (`web/`), API (`api/`) and Docker image projects are built and ship
 | [0008](0008-pwa-for-all-offline-for-self-contained.md) | Every webpage ships icons and a manifest so it installs; only pages with no external dependencies add a service worker and work offline |
 | [0009](0009-style-sheets.md) | Style sheets: a named, hand-designed look in `web/styles/<name>/` with a sheet other pages can link and a storybook page that documents it |
 | [0010](0010-page-version-string.md) | Every webpage shows a version string (an ISO UTC timestamp to the second, `2026-11-22T14:37:09Z`) in `#version` at the end of the page, rewritten by hand with any change to the page |
+| [0011](0011-web-project-data-management.md) | Browser-stored page data: one JSON export/import format, a weekly backup reminder with last backup time, and fine-grained event logs with opt-in location where the use case needs it |
 
 ## Adding one
 
