@@ -1,4 +1,4 @@
-# 0010: Web project data lives in the browser, with export, import and a weekly backup reminder
+# 0011: Web project data lives in the browser, with export, import and a weekly backup reminder
 
 - Status: Proposed
 - Date: 2026-11-25
@@ -27,7 +27,7 @@ Any webpage that stores user data in the browser follows this. Pages that store 
    }
    ```
    - `schema` is an integer the page bumps when the shape changes. Pages keep a function that upgrades older schemas, so old backups always import.
-   - Timestamps are ISO 8601 UTC strings. No page-specific binary formats.
+   - `exportedAt` and `lastBackupAt` are ISO 8601 UTC strings; event times follow item 5. No page-specific binary formats.
    - Export is a button that builds a `Blob` and downloads it via an `<a download>`. Where `navigator.share` accepts files (phones), offer that too so the file can go to Files or cloud storage.
    - A page may also offer a CSV export of events for use in a spreadsheet. JSON stays the backup of record.
 3. **Import** is a file picker (and drop target) that reads JSON locally.
@@ -42,28 +42,30 @@ Any webpage that stores user data in the browser follows this. Pages that store 
    - Reminder state is device-local and is not part of the export. Importing a backup does not carry another device's `lastBackupAt`.
 5. **Event data, where the use case calls for a history.**
    - Store an append-only log of events rather than only the current state, and derive current state and summaries from it. A page that is a simple setting or a single document keeps a snapshot and is exempt from this item.
-   - Record each event at the finest granularity the user actually acts at, not a daily or session rollup. Rollups are computed when displayed. Each event has:
+   - Record each event at the finest granularity the user actually acts at, not a daily or session rollup. Rollups are computed when displayed. Each event has the shape `toothup` already uses:
      ```json
      {
-       "id": "01JD...",
-       "type": "check",
-       "at": "2026-11-25T14:03:11.250Z",
-       "tz": "America/Los_Angeles",
-       "data": {},
-       "place": null
+       "id": "f1700000000000",
+       "type": "floss",
+       "start": 1700000000000,
+       "offset": -480,
+       "lat": null,
+       "lon": null,
+       "acc": null
      }
      ```
-     - `id` is a unique, sortable ID (ULID-style, generated in the page) so merges are idempotent and ordered.
-     - `at` is when it happened, UTC, to the millisecond. `tz` is the IANA zone at the time, so local calendar days can be recomputed correctly after travel.
-     - `data` is page-specific and flat where possible.
+     - `id` is unique within the log and derived from the event, so merges are idempotent (`toothup` uses a type prefix plus `start`).
+     - `start` is when it happened, epoch milliseconds. `offset` is the UTC offset in minutes (east positive) where the user was at that moment, so the local calendar day can be recomputed correctly after travel.
+     - `lat`, `lon` and `acc` are the location (item 6), each `null` when unknown or not recorded. Page-specific fields (for example `seconds`) sit alongside them.
+     - Imports normalize every event and drop any that are malformed.
    - Events are not edited in place. A correction is a new event that references the old `id` (for example `type: "void"`), so history stays auditable and merges stay simple. Deleting is allowed, and is the user's explicit action.
 6. **Location is opt-in per use case.**
    - A page records location only if knowing where an event happened is part of what the page is for. Decide that when writing the page, and say so in its README or page text. Most pages should not.
    - When it does, the page asks for permission with `navigator.geolocation` only after the user turns on a "record location" setting, never on load, and records nothing if permission is refused. The setting is off by default and can be turned off at any time.
-   - `place` is `{ "lat": 0, "lon": 0, "accuracyM": 0 }` with coordinates rounded to the precision the page needs (5 decimal places, about 1 m, only for pages that need that; 3 decimal places, about 100 m, otherwise). `place` is `null` when unknown or not recorded.
-   - Location is captured at the moment of the event, so an event never gets a position from later. A failed or slow lookup (a short timeout) leaves `place` null; it never blocks recording the event.
+   - `lat` and `lon` are decimal degrees rounded to 6 places and `acc` is the reported accuracy in whole meters, as `toothup` does. All three are `null` when unknown, out of range or not recorded; a good `lat` and `lon` with no usable accuracy keeps `acc` as `null`. A page that does not need that precision may round coarser.
+   - Location is captured at the moment of the event, so an event never gets a position from later. A failed or slow lookup (a short timeout) leaves them `null`; it never blocks recording the event.
    - Location is stored locally and leaves the device only in an export file the user chose to save. It is never sent to an API, analytics service or third-party map or geocoding service. A page that wants a map or address lookup must say so and link a plain URL the user opens, rather than sending coordinates itself.
-   - The export includes `place` data, so the page tells the user that backups contain locations. A page may offer "export without locations".
+   - The export includes `lat`, `lon` and `acc`, so the page tells the user that backups contain locations. A page may offer "export without locations".
 7. **Backup files are the user's.** Pages never send them anywhere, and nothing in the repo stores real backups. Fixtures for tests use made-up data.
 8. **Pages that predate this ADR** are exempt until next modified, as in [ADR 0001](0001-web-styling.md) and [ADR 0008](0008-pwa-for-all-offline-for-self-contained.md), and then add what is missing. Migrated pages (ADR 0003) are treated the same.
 9. **Shared code.** Each page carries its own copy of the export, import and reminder code, in line with ADR 0003. A page that wants to share it follows the rules for shared files in ADR 0003 rather than inventing a loader or build step.

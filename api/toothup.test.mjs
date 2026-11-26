@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
-  formatClock, groupByDay, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
+  formatClock, groupByDay, versionOf, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
   parseImport, rangeStats, reminderStatus,
 } from "../web/toothup/logic.js";
 
@@ -37,17 +37,27 @@ test("routine: 8 facial/lingual steps of 15s per quadrant, then 5s of tongue", (
 });
 
 test("makeEvent: ids come from type and time, a taken id moves the start by 1 ms, only brushes carry seconds and steps", () => {
-  assert.deepEqual(makeEvent([], "floss", 2000, { offset: 60 }), { id: "f2000", type: "floss", start: 2000, offset: 60 });
-  assert.deepEqual(makeEvent([], "brush", 1000, { seconds: 90, steps: 8, offset: 0 }), { id: "s1000", type: "brush", start: 1000, offset: 0, seconds: 90, steps: 8 });
+  assert.deepEqual(makeEvent([], "floss", 2000, { offset: 60 }), { id: "f2000", type: "floss", start: 2000, offset: 60, lat: null, lon: null, acc: null });
+  assert.deepEqual(makeEvent([], "brush", 1000, { seconds: 90, steps: 8, offset: 0 }), { id: "s1000", type: "brush", start: 1000, offset: 0, lat: null, lon: null, acc: null, seconds: 90, steps: 8 });
+  assert.deepEqual(makeEvent([], "floss", 3000, { offset: 0, lat: 40.7128004, lon: -74.006, acc: 12.4 }), { id: "f3000", type: "floss", start: 3000, offset: 0, lat: 40.7128, lon: -74.006, acc: 12 });
   const taken = [makeEvent([], "floss", 1000, { offset: 0 })];
   assert.equal(makeEvent(taken, "floss", 1000, { offset: 0 }).start, 1001);
   assert.equal(makeEvent(taken, "mouthwash", 1000, { offset: 0 }).start, 1000);
 });
 
 test("normalizeEvent keeps well-formed events and rejects everything else", () => {
-  const good = { id: "s1", type: "brush", start: 1000, offset: -300, seconds: 125, steps: 9 };
+  const good = { id: "s1", type: "brush", start: 1000, offset: -300, lat: null, lon: null, acc: null, seconds: 125, steps: 9 };
   assert.deepEqual(normalizeEvent(good), good);
-  assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, offset: 0, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5, offset: 0 });
+  assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, offset: 0, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  // an old event without location gains null fields; a bad or partial location is dropped whole
+  assert.deepEqual(normalizeEvent({ id: "f2", type: "floss", start: 5, offset: 0 }), { id: "f2", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  for (const loc of [{ lat: 91, lon: 0, acc: 5 }, { lat: 0, lon: 181, acc: 5 }, { lat: "x", lon: 1, acc: 5 }])
+    assert.deepEqual(normalizeEvent({ id: "f3", type: "floss", start: 5, offset: 0, ...loc }), { id: "f3", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  // a good place without a usable accuracy keeps lat and lon
+  for (const acc of [undefined, null, -1, "x"])
+    assert.deepEqual(normalizeEvent({ id: "f5", type: "floss", start: 5, offset: 0, lat: 1, lon: 2, acc }), { id: "f5", type: "floss", start: 5, offset: 0, lat: 1, lon: 2, acc: null });
+  const placed = { id: "f4", type: "floss", start: 5, offset: 0, lat: 51.5, lon: -0.12, acc: 30 };
+  assert.deepEqual(normalizeEvent(placed), placed);
   for (const bad of [
     null, {}, { ...good, id: "" }, { ...good, type: "gargle" }, { ...good, start: "x" }, { ...good, start: 0 },
     { ...good, offset: undefined }, { ...good, offset: 900 }, { ...good, seconds: -1 }, { ...good, steps: 10 }, { ...good, steps: undefined },
@@ -261,7 +271,7 @@ test("parseHealthDate: keeps the UTC offset where the brush happened", () => {
 });
 
 test("brushFromRecord: 60s or more is a full brush, shorter is a partial one, bad dates are rejected", () => {
-  assert.deepEqual(brushFromRecord(R1), { id: `s${Date.UTC(2024, 2, 5, 12, 31, 2)}`, type: "brush", start: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300, seconds: 130, steps: 9 });
+  assert.deepEqual(brushFromRecord(R1), { id: `s${Date.UTC(2024, 2, 5, 12, 31, 2)}`, type: "brush", start: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300, lat: null, lon: null, acc: null, seconds: 130, steps: 9 });
   assert.equal(brushFromRecord(R2).steps, 4);
   assert.equal(brushFromRecord(rec("2024-03-05 07:31:02 -0500", "2024-03-05 07:30:00 -0500")), null);
   assert.equal(normalizeEvent(brushFromRecord(R1))?.id, brushFromRecord(R1).id);
@@ -318,10 +328,17 @@ test("parseNomie: tags become floss and mouthwash events, with the offset flippe
   const { events, skipped } = parseNomie(nomie("#floss_teeth", "#mouthwash ", "#sneeze"));
   assert.equal(skipped, 0);
   assert.deepEqual(events, [
-    { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480 },
-    { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480 },
+    { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: null, lon: null, acc: null },
+    { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480, lat: null, lon: null, acc: null },
   ]);
   assert.ok(events.every((e) => normalizeEvent(e)));
+});
+
+test("parseNomie: lat and lng become lat and lon, with no accuracy; missing or null coordinates stay unknown", () => {
+  const raw = (lat, lng) => JSON.stringify({ nomie: { number: "5.6.4" }, events: [{ _id: "a", note: "#floss_teeth", start: 1700000000000, offset: 480, lat, lng }] });
+  assert.deepEqual(parseNomie(raw(34.02122522110962, -118.42036528542205)).events[0], { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: 34.021225, lon: -118.420365, acc: null });
+  for (const [lat, lng] of [[null, null], [undefined, undefined], [34, null]])
+    assert.deepEqual(parseNomie(raw(lat, lng)).events[0], { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: null, lon: null, acc: null });
 });
 
 test("parseNomie: one note can hold both, a (0) value is not done, other tags and look-alike tags are ignored", () => {
@@ -404,4 +421,11 @@ test("annualReportHtml: standalone page with no scripts or external files, and a
   assert.doesNotMatch(html, /<script|<link|src=|https?:\/\//);
   assert.equal((heatmapSvg(yearReport(events, 2026, "2026-04-01", S)).match(/<rect/g) || []).length, 365);
   assert.match(annualReportHtml(yearReport(events, 2024, "2026-04-01", S)), /Nothing to show for 2024/);
+});
+
+test("versionOf: reads the #version element's text from a page, null when there is none", () => {
+  assert.equal(versionOf('<p class="muted"><small id="version">2026-11-25T04:50:38Z</small></p>'), "2026-11-25T04:50:38Z");
+  assert.equal(versionOf('<small class="x" id="version" title="v"> 2026-11-25T04:50:38Z </small>'), "2026-11-25T04:50:38Z");
+  assert.equal(versionOf("<small>no version here</small>"), null);
+  assert.equal(versionOf('<small id="version"></small>'), null);
 });

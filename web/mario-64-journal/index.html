@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Super Mario 64 journal</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      /* golden-angle seed: #2F2DD2 cw */
+      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
+      --primary: #2F2DD2;
+      --support: #5F5FA1;
+      --accent:  #C15729;
+      --bg: #FFFFFF;
+      --text: #111111;
+      --card: #F4F4F6;
+      --line: #C9C9D0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #706FE0;
+        --support: #7777AF;
+        --accent:  #D25F2D;
+        --bg: #111111;
+        --text: #EEEEEE;
+        --card: #1C1C20;
+        --line: #3A3A42;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, sans-serif; }
+    main, header { max-width: 46rem; margin: 0 auto; padding: 0 1rem; }
+    h1 { color: var(--primary); font-size: 1.5rem; margin: 1rem 0 .25rem; }
+    h2 { color: var(--primary); font-size: 1.1rem; margin: 0 0 .6rem; }
+    h3 { font-size: 1rem; margin: 1.1rem 0 .4rem; border-bottom: 1px solid var(--line); padding-bottom: .2rem; }
+    a { color: var(--primary); }
+    .muted { color: var(--support); font-size: .9rem; }
+    section, .bar { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: .9rem; margin: 1rem 0; }
+    label { display: block; font-weight: 600; font-size: .85rem; margin: .7rem 0 .2rem; }
+    input, select, textarea, button { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: 6px; padding: .45rem .6rem; }
+    input, select, textarea { width: 100%; }
+    input[type=checkbox] { width: auto; margin-right: .4rem; }
+    .check { display: flex; align-items: center; font-weight: 400; margin-top: .9rem; }
+    textarea { min-height: 5rem; resize: vertical; }
+    button { cursor: pointer; width: auto; }
+    button.primary { background: var(--primary); border-color: var(--primary); color: var(--bg); font-weight: 700; }
+    button.danger { border-color: var(--text); }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+    .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; }
+    .row > * { flex: 1 1 8rem; }
+    .row > button { flex: 0 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: .5rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; align-items: center; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: .5rem; }
+    .stat { border: 1px solid var(--line); border-radius: 8px; padding: .5rem; background: var(--bg); }
+    .stat b { display: block; font-size: 1.25rem; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .stat span { font-size: .8rem; color: var(--support); }
+    ul.entries { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+    .entry { width: 100%; text-align: left; display: grid; gap: .1rem; background: var(--bg); border-color: var(--line); }
+    .entry:hover { border-color: var(--accent); }
+    .en { font-weight: 600; }
+    .eb { font-size: .85rem; color: var(--support); }
+    .enote { font-size: .85rem; white-space: pre-wrap; }
+    .banner { border: 2px solid var(--accent); border-radius: 8px; padding: .5rem .7rem; margin: 1rem 0; }
+    [hidden] { display: none !important; }
+  </style>
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="/mario-64-journal/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/mario-64-journal/apple-touch-icon.png">
+  <link rel="manifest" href="/mario-64-journal/manifest.webmanifest">
+</head>
+<body>
+  <header>
+    <h1>⭐ Super Mario 64 journal</h1>
+    <p class="muted">Log stars from Super Mario 64 in any order, with coins, difficulty and attempts. Everything stays in this browser; export to keep a copy.</p>
+  </header>
+  <main>
+    <div id="storage-warning" class="banner" hidden>This browser is blocking storage, so entries will be lost when you close the page. Export to keep them.</div>
+    <div id="flash" class="banner" role="status" hidden></div>
+
+    <div class="bar">
+      <div class="row">
+        <div>
+          <label for="pt-select">Playthrough</label>
+          <select id="pt-select"></select>
+        </div>
+        <button id="pt-new" type="button">New playthrough</button>
+      </div>
+      <div id="pt-edit" class="row" hidden>
+        <div><label for="pt-name">Name</label><input id="pt-name" type="text" maxlength="80"></div>
+        <div><label for="pt-system">System</label><input id="pt-system" type="text" list="system-list" maxlength="60"></div>
+        <datalist id="system-list"></datalist>
+        <button id="pt-delete" type="button" class="danger">Delete</button>
+      </div>
+    </div>
+
+    <section id="empty">
+      <h2>Start a playthrough</h2>
+      <p>A playthrough is one run through the game on one system. Create one to begin logging.</p>
+      <button id="pt-new2" type="button" class="primary">New playthrough</button>
+    </section>
+
+    <div id="main" hidden>
+      <section>
+        <h2>Log a star</h2>
+        <form id="log-form">
+          <label for="level">Star</label>
+          <div class="row">
+            <select id="level"></select>
+            <button id="add-custom" type="button">Add custom</button>
+          </div>
+          <div class="grid">
+            <div><label for="coins">Coins (or red coins) collected</label><input id="coins" type="number" min="0" inputmode="numeric"></div>
+            <div><label for="difficulty">Difficulty</label>
+              <select id="difficulty"><option value="">–</option><option value="1">1 · easy</option><option value="2">2</option><option value="3">3 · medium</option><option value="4">4</option><option value="5">5 · brutal</option></select></div>
+            <div><label for="attempts">Attempts to pass</label><input id="attempts" type="number" min="1" step="1" inputmode="numeric"></div>
+          </div>
+          <label for="notes">Notes</label>
+          <textarea id="notes" placeholder="Optional"></textarea>
+          <label class="check" for="geo"><input id="geo" type="checkbox"> Record my location with each entry</label>
+          <p class="muted" style="margin:.2rem 0 0">Optional. Saved on this device with the entry and included in exports. Your browser will ask permission.</p>
+          <div class="actions">
+            <button id="save" type="submit" class="primary">Log entry</button>
+            <button id="delete" type="button" class="danger" hidden>Delete entry</button>
+            <span id="form-status" class="muted" role="status"></span>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <h2>Progress</h2>
+        <div id="stats" class="stats"></div>
+        <div id="entries"></div>
+      </section>
+
+      <section>
+        <h2>Export and import</h2>
+        <div class="actions">
+          <button id="export-json" type="button">Export JSON</button>
+          <button id="export-csv" type="button">Export CSV</button>
+          <button id="import" type="button">Import JSON</button>
+          <input id="import-file" type="file" accept=".json,application/json" hidden>
+        </div>
+        <p class="muted">Import adds the file as a new playthrough; nothing is overwritten.</p>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="/mario-64-journal/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('/mario-64-journal/sw.js', { scope: '/mario-64-journal/' }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
