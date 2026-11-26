@@ -342,15 +342,16 @@ function renderRemap() {
     label.textContent = ACTION_LABELS[action];
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.textContent = listening === action ? "Press a button…" : b[action].map(buttonName).join(" / ");
+    btn.textContent = listening === action ? "Press a button…" : b[action].map(buttonName).join(" / ") || "unbound";
     btn.addEventListener("click", () => {
       if (screen === "playing") setScreen("paused");
       listening = listening === action ? null : action;
       gamepad.resetListen();
       renderRemap();
     });
-    row.append(label, btn);
-    list.append(row);
+    row.appendChild(label);
+    row.appendChild(btn);
+    list.appendChild(row);
   }
 }
 

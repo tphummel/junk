@@ -45,14 +45,14 @@ export function sanitizeBindings(raw) {
   if (!raw || typeof raw !== "object") return out;
   for (const action of REMAPPABLE) {
     const v = /** @type {Record<string, unknown>} */ (raw)[action];
-    if (Array.isArray(v) && v.length > 0 && v.length <= 4 && v.every((n) => Number.isInteger(n) && n >= 0 && n < 64)) out[action] = v;
+    if (Array.isArray(v) && v.length <= 4 && v.every((n) => Number.isInteger(n) && n >= 0 && n < 64)) out[action] = v;
   }
   return out;
 }
 
 /**
  * Bind one button to an action. The same button can't do two game actions, so it is taken from any other action;
- * an action left with no button goes back to its default (unless that is the button just claimed).
+ * an action left with no button goes back to its default, or stays unbound if that is the button just claimed.
  * @param {Bindings} bindings
  * @param {(typeof REMAPPABLE)[number]} action
  * @param {number} button
@@ -195,7 +195,10 @@ export function mapPad(pad, deadzone = STICK_DEADZONE, state = newPadState(), bi
     down.add("up");
   }
   // The default hard-drop button (Y) only counts on the standard mapping, where its index is known to be Y.
-  if (bound("hardDrop") && (pad.mapping === "standard" || bindings.hardDrop[0] !== BUTTON.Y)) down.add("hardDrop");
+  if (bound("hardDrop") && (pad.mapping === "standard" || bindings.hardDrop[0] !== BUTTON.Y)) {
+    down.add("hardDrop");
+    down.add("up");
+  }
   if (button(BUTTON.A)) down.add("confirm");
   if (button(BUTTON.B)) down.add("back");
   if (bound("rotateCW")) down.add("rotateCW");
