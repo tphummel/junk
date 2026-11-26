@@ -135,9 +135,6 @@
     /* Controller status; open it to see the raw pad state for comparing with a gamepad tester. */
     .padbar { max-width: 92vw; padding: 6px 12px; font-size: 0.8rem; color: var(--support); }
     .padbar summary { cursor: pointer; }
-    .remap p { margin: 6px 0; }
-    .remap-row { display: flex; gap: 8px; align-items: center; margin: 3px 0; }
-    .remap-row span { min-width: 9em; }
     .padbar pre { margin: 6px 0 0; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text); }
   </style>
   <meta name="theme-color" content="#111111">
@@ -203,11 +200,6 @@
     <details id="pad-panel">
       <summary id="pad-status">Controller: none (press any button to connect)</summary>
       <pre id="pad-debug"></pre>
-      <div class="remap">
-        <p id="remap-help">Remap buttons: choose an action, then press the controller button you want for it.</p>
-        <div id="remap-list"></div>
-        <p><button type="button" id="remap-swap">Swap spin buttons</button> <button type="button" id="remap-reset">Reset to defaults</button></p>
-      </div>
     </details>
   </div>
   <script type="module" src="/tetris/src/main.js"></script>

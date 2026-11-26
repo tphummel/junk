@@ -21,56 +21,6 @@ export const BUTTON = /** @type {const} */ ({
   UP: 12, DOWN: 13, LEFT: 14, RIGHT: 15,
 });
 
-/** Game actions whose button can be remapped. Menus keep A to confirm and B to go back, and d-pad up always hard drops. */
-export const REMAPPABLE = /** @type {const} */ (["rotateCW", "rotateCCW", "hold", "hardDrop", "pause"]);
-
-/** @typedef {Record<(typeof REMAPPABLE)[number], number[]>} Bindings Button indexes that trigger each remappable action. */
-
-/** The standard-layout defaults: A spins clockwise, B counter-clockwise, either bumper holds, Y hard drops, Start pauses. @returns {Bindings} */
-export const defaultBindings = () => ({ rotateCW: [BUTTON.A], rotateCCW: [BUTTON.B], hold: [BUTTON.LB, BUTTON.RB], hardDrop: [BUTTON.Y], pause: [BUTTON.START] });
-
-/** Human label for a button index, using the standard layout's names. @param {number} i */
-export function buttonName(i) {
-  const names = Object.entries(BUTTON).find(([, v]) => v === i);
-  return names ? names[0] : `button ${i}`;
-}
-
-/**
- * Read saved bindings back, ignoring anything that is not a list of small whole numbers for a known action.
- * @param {unknown} raw parsed JSON
- * @returns {Bindings}
- */
-export function sanitizeBindings(raw) {
-  const out = defaultBindings();
-  if (!raw || typeof raw !== "object") return out;
-  for (const action of REMAPPABLE) {
-    const v = /** @type {Record<string, unknown>} */ (raw)[action];
-    if (Array.isArray(v) && v.length > 0 && v.length <= 4 && v.every((n) => Number.isInteger(n) && n >= 0 && n < 64)) out[action] = v;
-  }
-  return out;
-}
-
-/**
- * Bind one button to an action. The same button can't do two game actions, so it is taken from any other action;
- * an action left with no button goes back to its default (unless that is the button just claimed).
- * @param {Bindings} bindings
- * @param {(typeof REMAPPABLE)[number]} action
- * @param {number} button
- * @returns {Bindings} a new object
- */
-export function bindButton(bindings, action, button) {
-  const next = /** @type {Bindings} */ ({});
-  const defaults = defaultBindings();
-  for (const a of REMAPPABLE) {
-    if (a === action) next[a] = [button];
-    else {
-      const rest = bindings[a].filter((b) => b !== button);
-      next[a] = rest.length ? rest : defaults[a].filter((b) => b !== button);
-    }
-  }
-  return next;
-}
-
 /** Actions that are state while a button is down; the rest fire once per press. */
 const HELD = new Set(["left", "right", "softDrop"]);
 
@@ -158,10 +108,9 @@ export function hatDirections(v) {
  * @param {PadLike} pad
  * @param {number} [deadzone]
  * @param {PadState} [state] what observePad has learned about this pad; without it only the standard d-pad buttons count
- * @param {Bindings} [bindings] which buttons do the remappable actions; menus still use A and B
  * @returns {Set<Action>}
  */
-export function mapPad(pad, deadzone = STICK_DEADZONE, state = newPadState(), bindings = defaultBindings()) {
+export function mapPad(pad, deadzone = STICK_DEADZONE, state = newPadState()) {
   /** @type {Set<Action>} */
   const down = new Set();
   const button = (/** @type {number} */ i) => Boolean(pad.buttons[i]?.pressed);
@@ -189,19 +138,20 @@ export function mapPad(pad, deadzone = STICK_DEADZONE, state = newPadState(), bi
     down.add("down");
   }
   if (y < 0) down.add("up"); // the stick moves menu selection; on its own it never drops a piece
-  const bound = (/** @type {(typeof REMAPPABLE)[number]} */ a) => bindings[a].some(button);
-  if (upward) {
+  if (upward || (pad.mapping === "standard" && button(BUTTON.Y))) {
     down.add("hardDrop");
     down.add("up");
   }
-  // The default hard-drop button (Y) only counts on the standard mapping, where its index is known to be Y.
-  if (bound("hardDrop") && (pad.mapping === "standard" || bindings.hardDrop[0] !== BUTTON.Y)) down.add("hardDrop");
-  if (button(BUTTON.A)) down.add("confirm");
-  if (button(BUTTON.B)) down.add("back");
-  if (bound("rotateCW")) down.add("rotateCW");
-  if (bound("rotateCCW")) down.add("rotateCCW");
-  if (bound("hold")) down.add("hold");
-  if (bound("pause")) down.add("pause");
+  if (button(BUTTON.A)) {
+    down.add("rotateCW");
+    down.add("confirm");
+  }
+  if (button(BUTTON.B)) {
+    down.add("rotateCCW");
+    down.add("back");
+  }
+  if (button(BUTTON.LB) || button(BUTTON.RB)) down.add("hold");
+  if (button(BUTTON.START)) down.add("pause");
   return down;
 }
 
@@ -218,7 +168,6 @@ export function describePad(pad) {
  *   onConnect?: (pad: PadLike) => void,
  *   onDisconnect?: () => void,
  *   nav?: { getGamepads(): ArrayLike<PadLike | null> },
- *   bindings?: Bindings,
  * }} [options]
  */
 export function createGamepad(target, options = {}) {
@@ -227,9 +176,6 @@ export function createGamepad(target, options = {}) {
   let previous = new Set();
   /** What has been learned about the current pad, kept only while it is the same pad. @type {{ key: string, state: PadState } | null} */
   let known = null;
-  let bindings = options.bindings ?? defaultBindings();
-  /** Buttons that were down at the last listen() call. @type {Set<number>} */
-  let listenPrev = new Set();
 
   /** The first connected pad, or null. The first one wins when several are attached. @returns {PadLike | null} */
   const firstPad = () => Array.from(nav.getGamepads?.() ?? []).find((p) => p && p.connected) ?? null;
@@ -266,34 +212,11 @@ export function createGamepad(target, options = {}) {
       const key = pad.id;
       if (!known || known.key !== key) known = { key, state: newPadState() };
       observePad(pad, known.state);
-      const down = mapPad(pad, STICK_DEADZONE, known.state, bindings);
+      const down = mapPad(pad, STICK_DEADZONE, known.state);
       const held = new Set([...down].filter((a) => HELD.has(a)));
       const pressed = [...down].filter((a) => !HELD.has(a) && !previous.has(a));
       previous = down;
       return { held, pressed, pad };
-    },
-    bindings: () => bindings,
-    /** @param {Bindings} b */
-    setBindings(b) {
-      bindings = b;
-      previous = new Set();
-    },
-    /**
-     * For remapping: the index of a button that went down since the last call, or null. Call once per frame while
-     * listening; call reset first so a button still held from before is not taken.
-     * @returns {number | null}
-     */
-    listen() {
-      const pad = firstPad();
-      const now = new Set(pad ? Array.from(pad.buttons, (b, i) => (b.pressed ? i : -1)).filter((i) => i >= 0) : []);
-      const fresh = [...now].find((i) => !listenPrev.has(i));
-      listenPrev = now;
-      return fresh ?? null;
-    },
-    /** Start listening from the current state of the pad, so held buttons don't count. */
-    resetListen() {
-      listenPrev = new Set();
-      this.listen();
     },
     /** How this pad sends its d-pad, as far as is known, for the status panel. @returns {{ dpadOnStick: boolean, analogStick: boolean, hat: boolean, dpadButtons: boolean } | null} */
     info() {
