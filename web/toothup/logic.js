@@ -56,16 +56,21 @@ export function dayKey(t) {
  * User settings, stored with the data and included in exports.
  * dayStartsAt: a day runs from this hour (local clock) to the same hour the next morning, so a routine at 12:30am
  * still belongs to the night before.
+ * goals: the least a day needs of each thing; `brush` is the key goal, floss and mouthwash sit on top of it.
  * reminders: things done every few months. `last` is the day it was last done (null if never recorded) and the
  * next one is due everyMonths after it.
  * @typedef {{ everyMonths: number, last: string | null }} Reminder
- * @typedef {{ dayStartsAt: number, reminders: { dentist: Reminder, head: Reminder } }} Settings
+ * @typedef {{ brush: number, floss: number, mouthwash: number }} Goals
+ * @typedef {{ dayStartsAt: number, goals: Goals, reminders: { dentist: Reminder, head: Reminder } }} Settings
  */
 export const DEFAULT_SETTINGS = {
   dayStartsAt: 4,
+  goals: { brush: 2, floss: 1, mouthwash: 1 },
   reminders: { dentist: { everyMonths: 6, last: null }, head: { everyMonths: 3, last: null } },
 };
 export const MAX_DAY_STARTS_AT = 6;
+export const MAX_GOAL = 6;
+export const GOAL_TYPES = /** @type {const} */ (["brush", "floss", "mouthwash"]);
 export const MAX_REMINDER_MONTHS = 36;
 export const REMINDER_TYPES = /** @type {const} */ (["dentist", "head"]);
 
@@ -78,13 +83,24 @@ function normalizeReminder(r) {
   return ok ? { everyMonths: r.everyMonths, last: r.last } : null;
 }
 
-/** Validate settings from storage or an import; returns null if malformed. @param {any} s @returns {Settings | null} */
+/** Whole numbers from 1 to MAX_GOAL for every type; null if malformed. @param {any} g @returns {Goals | null} */
+function normalizeGoals(g) {
+  const ok = GOAL_TYPES.every((t) => Number.isInteger(g?.[t]) && g[t] >= 1 && g[t] <= MAX_GOAL);
+  return ok ? { brush: g.brush, floss: g.floss, mouthwash: g.mouthwash } : null;
+}
+
+/**
+ * Validate settings from storage or an import; returns null if malformed. Settings saved before goals existed have none
+ * and get the default goals.
+ * @param {any} s @returns {Settings | null}
+ */
 export function normalizeSettings(s) {
   const h = s?.dayStartsAt;
   const dentist = normalizeReminder(s?.reminders?.dentist);
   const head = normalizeReminder(s?.reminders?.head);
-  if (!(Number.isInteger(h) && h >= 0 && h <= MAX_DAY_STARTS_AT) || !dentist || !head) return null;
-  return { dayStartsAt: h, reminders: { dentist, head } };
+  const goals = s?.goals === undefined ? { ...DEFAULT_SETTINGS.goals } : normalizeGoals(s.goals);
+  if (!(Number.isInteger(h) && h >= 0 && h <= MAX_DAY_STARTS_AT) || !dentist || !head || !goals) return null;
+  return { dayStartsAt: h, goals, reminders: { dentist, head } };
 }
 
 /** The day `n` calendar months after `day`, clamped to the end of a shorter month (Aug 31 + 6 months is Feb 28). */
@@ -232,32 +248,30 @@ export function groupByDay(events, settings) {
 
 // ---------- daily goals ----------
 
-/** What a day needs. Brushing is the key goal; floss and mouthwash sit on top of it. */
-export const GOALS = { brush: 2, mouthwash: 2, floss: 1 };
-
 /** A brush only counts if the whole routine was done. @param {Event} e */
 const countable = (e) => e.type !== "brush" || e.steps >= STEPS.length;
 
 /**
- * Check one day's events against GOALS. Events beyond a goal, and partial brushes, are extras.
- * `complete` means the key goal is met: two full brushes.
+ * Check one day's events against the goals. Events beyond a goal, and partial brushes, are extras.
+ * `complete` means the key goal is met: the brush goal's number of full brushes.
  * @param {Event[]} list the events of a single day
+ * @param {Goals} goals
  */
-export function dayGoals(list) {
+export function dayGoals(list, goals) {
   const done = { brush: 0, floss: 0, mouthwash: 0 };
   /** @type {Map<string, "goal" | "extra">} */
   const roles = new Map();
   for (const e of [...list].sort((a, b) => a.start - b.start)) {
-    const credited = countable(e) && done[e.type] < GOALS[e.type];
+    const credited = countable(e) && done[e.type] < goals[e.type];
     if (credited) done[e.type]++;
     roles.set(e.id, credited ? "goal" : "extra");
   }
-  return { done, roles, extras: list.length - Object.values(done).reduce((a, b) => a + b, 0), complete: done.brush >= GOALS.brush };
+  return { done, roles, extras: list.length - Object.values(done).reduce((a, b) => a + b, 0), complete: done.brush >= goals.brush };
 }
 
-/** Days on which both brushes were done. @param {Event[]} events @param {Settings} settings @returns {Set<string>} */
+/** Days on which the brush goal was met. @param {Event[]} events @param {Settings} settings @returns {Set<string>} */
 function completeDays(events, settings) {
-  return new Set([...groupByDay(events, settings)].filter(([, list]) => dayGoals(list).complete).map(([k]) => k));
+  return new Set([...groupByDay(events, settings)].filter(([, list]) => dayGoals(list, settings.goals).complete).map(([k]) => k));
 }
 
 /** Consecutive complete days up to today, or up to yesterday if today is not complete yet. */
@@ -287,7 +301,7 @@ export function longestStreak(events, settings) {
 /**
  * Stats for the days from `from` to `to` (inclusive day keys). Counting starts at your first event and stops at today,
  * and today only counts once its brushes are done, so an unfinished day is never a miss.
- * `levels` maps each day shown to 2 (both brushes), 1 (one) or 0 (none); today appears even while unfinished.
+ * `levels` maps each day shown to 2 (brush goal met), 1 (some brushing) or 0 (none); today appears even while unfinished.
  * @param {Event[]} events
  * @param {string} from
  * @param {string} to
@@ -309,7 +323,7 @@ export function periodStats(events, from, to, today, settings) {
   let brushes = 0, run = 0, runStart = "";
   for (let k = from < first ? first : from; k <= last; k = addDays(k, 1)) {
     const list = byDay.get(k) || [];
-    const g = dayGoals(list);
+    const g = dayGoals(list, settings.goals);
     out.levels.set(k, g.complete ? 2 : g.done.brush > 0 ? 1 : 0);
     for (const e of list) {
       if (e.type === "brush") {
@@ -321,8 +335,8 @@ export function periodStats(events, from, to, today, settings) {
     if (k === today && !g.complete) continue;
     out.days++;
     out.fullDays += g.complete ? 1 : 0;
-    out.flossDays += g.done.floss >= GOALS.floss ? 1 : 0;
-    out.mouthwashDays += g.done.mouthwash >= GOALS.mouthwash ? 1 : 0;
+    out.flossDays += g.done.floss >= settings.goals.floss ? 1 : 0;
+    out.mouthwashDays += g.done.mouthwash >= settings.goals.mouthwash ? 1 : 0;
     out.extras += g.extras;
     brushes += g.done.brush;
     const wd = out.weekdays[parseDay(k).getDay()];
@@ -333,7 +347,7 @@ export function periodStats(events, from, to, today, settings) {
       if (run > out.bestStreak.length) out.bestStreak = { length: run, start: runStart, end: k };
     } else run = 0;
   }
-  out.brushPct = out.days ? Math.round((brushes / (out.days * GOALS.brush)) * 100) : null;
+  out.brushPct = out.days ? Math.round((brushes / (out.days * settings.goals.brush)) * 100) : null;
   out.avgSeconds = out.brushCount ? Math.round(out.brushSeconds / out.brushCount) : 0;
   return out;
 }
@@ -371,7 +385,7 @@ export function firstMonth(events, settings) {
 }
 
 /**
- * Report for one month: its stats, the month before for comparison, and the days with fewer than two brushes.
+ * Report for one month: its stats, the month before for comparison, and the days short of the brush goal.
  * @param {Event[]} events @param {string} ym YYYY-MM @param {string} today @param {Settings} settings
  */
 export function monthReport(events, ym, today, settings) {
