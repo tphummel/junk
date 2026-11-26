@@ -65,6 +65,7 @@ function homeView() {
   const last = sessions[0];
   return `
     <h1>pounce</h1>
+    ${backupBanner()}
     <section>
       <h2>New session</h2>
       <form data-form="new-session" class="row">
@@ -89,6 +90,7 @@ function homeView() {
         <button data-act="export">Export JSON</button>
         <label class="btn">Import JSON<input type="file" accept="application/json" data-act="import" hidden></label>
       </div>
+      <p class="muted">Last backup: ${backupLabel()}</p>
     </section>`;
 }
 
@@ -319,7 +321,8 @@ app.addEventListener('click', (e) => {
   const act = /** @type {HTMLElement} */ (t).dataset.act;
   const id = /** @type {HTMLElement} */ (t).dataset.id ?? '';
   const s = currentSession();
-  if (act === 'export') return exportData();
+  if (act === 'export') return void exportData();
+  if (act === 'snooze') { setLS(REMIND_AFTER, new Date(Date.now() + 864e5).toISOString()); return render(); }
   if (act === 'export-session-json' && s) return exportSession(s, 'json');
   if (act === 'export-session-html' && s) return exportSession(s, 'html');
   if (act === 'edit-game' && s) return openGameModal(s, id);
@@ -542,26 +545,107 @@ function openGameModal(s, gameId) {
   dlg.showModal();
 }
 
-function exportData() {
+// ---------- backup (ADR 0011) ----------
+
+const SCHEMA = 1;
+const LAST_BACKUP = 'pounce:lastBackupAt';
+const REMIND_AFTER = 'pounce:remindAfter';
+const WEEK = 7 * 864e5;
+const getLS = (/** @type {string} */ k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const setLS = (/** @type {string} */ k, /** @type {string} */ v) => { try { localStorage.setItem(k, v); } catch {} };
+const hasData = () => db.players.length > 0 || db.sessions.length > 0;
+
+/** @param {number} ms */
+function ago(ms) {
+  const d = Math.floor(ms / 864e5);
+  return d < 1 ? 'today' : d === 1 ? '1 day ago' : `${d} days ago`;
+}
+function backupLabel() {
+  const last = getLS(LAST_BACKUP);
+  const t = last ? Date.parse(last) : NaN;
+  return Number.isNaN(t) ? 'never' : `${new Date(t).toLocaleString()} (${ago(Date.now() - t)})`;
+}
+function backupBanner() {
+  if (!hasData()) return '';
+  const t = Date.parse(getLS(LAST_BACKUP) ?? '');
+  const stale = Number.isNaN(t) || Date.now() - t > WEEK;
+  const snoozed = Date.now() < Date.parse(getLS(REMIND_AFTER) ?? '');
+  if (!stale || snoozed) return '';
+  return `<section role="status"><p>Last backup: ${Number.isNaN(t) ? 'never' : ago(Date.now() - t)}. Export now.</p>
+    <div class="row"><button class="primary" data-act="export">Export</button><button data-act="snooze">Remind me tomorrow</button></div></section>`;
+}
+
+function backupJson() {
+  return JSON.stringify({ app: 'pounce', schema: SCHEMA, exportedAt: new Date().toISOString(), settings: {}, players: db.players, sessions: db.sessions }, null, 2);
+}
+
+async function exportData() {
+  const name = `pounce-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = new File([backupJson()], name, { type: 'application/json' });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: name });
+      setLS(LAST_BACKUP, new Date().toISOString());
+      return render();
+    } catch (err) {
+      if (/** @type {any} */ (err)?.name === 'AbortError') return;
+    }
+  }
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }));
-  a.download = `pounce-${new Date().toISOString().slice(0, 10)}.json`;
+  a.href = URL.createObjectURL(file);
+  a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  setLS(LAST_BACKUP, new Date().toISOString());
+  render();
+}
+
+/** Upgrade an older file to the current shape; throws on a file we cannot read. @param {any} raw */
+function upgradeBackup(raw) {
+  if (!raw || typeof raw !== 'object') throw new Error('shape');
+  // Files exported before ADR 0011 have no app or schema field.
+  if (raw.app === undefined && raw.schema === undefined) { /* legacy: players + sessions only */ }
+  else if (raw.app !== 'pounce') throw new Error('app');
+  else if (!Number.isInteger(raw.schema) || raw.schema > SCHEMA) throw new Error('schema');
+  if (!Array.isArray(raw.players) || !Array.isArray(raw.sessions)) throw new Error('shape');
+  const ok = (/** @type {any} */ x) => x && typeof x.id === 'string';
+  return {
+    players: raw.players.filter((p) => ok(p) && typeof p.name === 'string'),
+    sessions: raw.sessions.filter((x) => ok(x) && Array.isArray(x.games)),
+  };
+}
+
+/** Merge by id; importing the same file twice adds nothing. @param {{ players: Player[], sessions: Session[] }} inc */
+function mergeData(inc) {
+  const pids = new Set(db.players.map((p) => p.id));
+  for (const p of inc.players) if (!pids.has(p.id)) db.players.push(p);
+  for (const s of inc.sessions) {
+    const mine = db.sessions.find((x) => x.id === s.id);
+    if (!mine) { db.sessions.push(s); continue; }
+    const gids = new Set(mine.games.map((g) => g.id));
+    for (const g of s.games) if (!gids.has(g.id)) mine.games.push(g);
+    mine.games.sort((a, b) => a.startedAt - b.startedAt);
+  }
 }
 
 /** @param {File} file */
 async function importData(file) {
+  let inc;
   try {
-    const raw = JSON.parse(await file.text());
-    if (!Array.isArray(raw.players) || !Array.isArray(raw.sessions)) throw new Error('shape');
-    if (!confirm('Replace all pounce data on this device with the file?')) return;
-    db = raw;
-    save();
-    render();
-  } catch {
-    alert('That file is not a pounce export.');
+    inc = upgradeBackup(JSON.parse(await file.text()));
+  } catch (err) {
+    const m = /** @type {Error} */ (err).message;
+    alert(m === 'schema' ? 'That backup is from a newer version of pounce. Reload the page and try again.' : 'That file is not a pounce export.');
+    return;
   }
+  if (!hasData()) mergeData(inc);
+  else if (confirm('Merge the file into this device? (OK = merge, Cancel = more options)')) mergeData(inc);
+  else if (confirm('Replace ALL pounce data on this device with the file? Export first if you need the current data.')) {
+    db = { players: inc.players, sessions: inc.sessions };
+    setLS(LAST_BACKUP, new Date().toISOString());
+  } else return;
+  save();
+  render();
 }
 
 render();
