@@ -324,6 +324,7 @@ function setScreen(next, message) {
 
 /** @param {string} id difficulty */
 function startRound(id) {
+  pendingFinish = null;
   mode = id;
   effects.clear();
   game = newGame(mode);
@@ -338,6 +339,7 @@ function startRound(id) {
  * @param {"topout" | "ended" | "timeup"} how the stack overflowed, the player ended it from the pause menu, or the time limit ran out
  */
 function finishRound(how) {
+  pendingFinish = null;
   const stats = summarize(game.tick, game.score);
   Object.assign(round, {
     ticks: game.tick, score: game.score, lines: game.lines, level: game.level, piecesPlaced: game.piecesPlaced,
@@ -380,6 +382,9 @@ function onMenuAction(action) {
   else if (screen === "over" && action === "back") setScreen("title");
 }
 
+/** Set while the final play's animation plays out before the result card. @type {"timeup" | null} */
+let pendingFinish = null;
+
 /** Run one game tick from the keyboard state. */
 function tick() {
   const pad = gamepad.poll();
@@ -400,7 +405,9 @@ function tick() {
   effects.add(game.events, performance.now());
   for (const action of actions) round.inputLog.push({ t: game.tick, action });
   if (game.over) {
-    finishRound(game.timeUp ? "timeup" : "topout");
+    // At the time limit, let the flourish from the final play finish before the summary appears.
+    if (game.timeUp && effects.active(performance.now()).length > 0) pendingFinish = "timeup";
+    else finishRound(game.timeUp ? "timeup" : "topout");
     return false;
   }
   return true;
@@ -430,7 +437,10 @@ function frame(now) {
   const dt = Math.min(now - last, 250);
   last = now;
 
-  if (screen === "playing") {
+  if (pendingFinish && screen === "playing") {
+    acc = 0;
+    if (effects.active(now).length === 0) finishRound(pendingFinish);
+  } else if (screen === "playing") {
     acc += dt;
     let n = 0;
     while (acc >= TICK_MS && n < MAX_TICKS_PER_FRAME) {
