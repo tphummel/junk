@@ -126,6 +126,7 @@
       <summary>Buy a property</summary>
       <form id="quick" class="grid">
         <label>Title deed <select id="deed"></select></label>
+        <label>Price paid <input id="paid" type="number" min="0" step="1" placeholder="list price"></label>
         <button class="primary">Buy</button>
       </form>
     </details>
@@ -158,10 +159,10 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T17:40:22Z</small>
+  <small id="version">2026-11-27T17:52:24Z</small>
 
   <script type="module">
-    import { CARDS, GROUPS, collectAutoRent, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
+    import { CARDS, GROUPS, collectAutoRent, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
 
     const KEY = 'monopoly-tracker-v1';
     const SWATCH = { brown: '#955436', lightblue: '#7fc6e8', pink: '#d93a96', orange: '#f7941d', red: '#ed1b24', yellow: '#fef200', green: '#1fb25a', darkblue: '#0072bb', railroad: '#444', utility: '#9aa', other: '#888' };
@@ -249,7 +250,7 @@
       const n = (label, value, k = '') => h('span', { text: label + ' ' }, h('b', { class: k, text: value }));
       const hits = s.remaining === 0 ? '' : s.hitsToBreakEven == null ? 'no rent data to estimate' : '≈ ' + s.hitsToBreakEven + (s.hitsToBreakEven === 1 ? ' rent' : ' rents');
       c.append(h('div', { class: 'nums' },
-        n('invested', money(s.invested)), n('rent', money(s.rent) + (s.rentCount ? ' (' + s.rentCount + '×)' : '')),
+        n('invested', money(s.invested)), ...(pricePaid(p) !== p.price ? [n('paid', money(pricePaid(p)) + ' (list ' + money(p.price) + ')', pricePaid(p) < p.price ? 'good' : 'bad')] : []), n('rent', money(s.rent) + (s.rentCount ? ' (' + s.rentCount + '×)' : '')),
         n('profit', money(s.profit), cls(s.profit)), n('ROI', s.invested ? pct(s.roi) : '–', cls(s.profit)),
         n('to break even', money(s.remaining) + (hits ? ', ' + hits : '')),
         ...(s.loan ? [n('mortgage loan', money(s.loan), 'bad')] : [])));
@@ -311,7 +312,14 @@
       const g = game(); if (!g) return;
       g.properties.push(newProperty(o)); save(); say(); render();
     }
-    $('quick').addEventListener('submit', (e) => { e.preventDefault(); add(CARDS[game().edition][+$('deed').value]); });
+    $('quick').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Blank means list price; enter the bid for an auction or the agreed price.
+      const raw = $('paid').value.trim();
+      if (raw !== '' && !(Number(raw) >= 0)) { say('Price paid must be a number.'); return; }
+      add({ ...CARDS[game().edition][+$('deed').value], paid: raw === '' ? undefined : Number(raw) });
+      $('paid').value = '';
+    });
     $('list').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-action]'); if (!b) return;
       const c = b.closest('.card'); const g = game(); const p = g.properties.find((x) => x.id === c.dataset.id);
@@ -327,6 +335,7 @@
       else if (a === 'remove') { if (!confirm('Remove ' + p.name + ' and its history?')) return; g.properties = g.properties.filter((x) => x !== p); }
       else if (a === 'edit') {
         const v = (q, cur) => { const r = prompt(q, String(cur)); return r === null || r.trim() === '' || !(Number(r) >= 0) ? cur : Number(r); };
+        setPricePaid(p, v('Price paid (list price ' + money(p.price) + ')', pricePaid(p)));
         p.houseCost = v('Cost per house/improvement', p.houseCost);
         p.mortgageValue = v('Mortgage value', p.mortgageValue);
       }

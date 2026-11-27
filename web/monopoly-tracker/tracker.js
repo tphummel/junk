@@ -94,15 +94,30 @@ let seq = 0;
 /** @returns {string} */
 export const uid = () => Date.now().toString(36) + (seq++).toString(36) + Math.random().toString(36).slice(2, 5);
 
-/** @param {{name: string, group: string, price: number, kind?: Property["kind"], rents?: number[] | null, tiers?: number[] | null, groupSize?: number, houseCost?: number, rent?: number, mortgageValue?: number}} o @returns {Property} */
+/**
+ * `price` is the printed list price (mortgage value comes from it); `paid` is what you actually paid,
+ * for example an auction bid, and defaults to the list price. The purchase entry records `paid`.
+ * @param {{name: string, group: string, price: number, paid?: number, kind?: Property["kind"], rents?: number[] | null, tiers?: number[] | null, groupSize?: number, houseCost?: number, rent?: number, mortgageValue?: number}} o @returns {Property} */
 export function newProperty(o) {
   return {
     id: uid(), name: o.name, group: o.group || "other", price: o.price,
     kind: o.kind ?? "custom", rents: o.rents ?? null, tiers: o.tiers ?? null, groupSize: o.groupSize ?? 0,
     mortgageValue: o.mortgageValue ?? Math.floor(o.price / 2), houseCost: o.houseCost ?? 0, rent: o.rent ?? 0,
     level: 0, mortgaged: false,
-    entries: [{ id: uid(), type: "buy", amount: -o.price, at: Date.now() }],
+    entries: [{ id: uid(), type: "buy", amount: -(o.paid ?? o.price), at: Date.now() }],
   };
+}
+
+/** What you paid for the property (the purchase entry). @param {Property} p */
+export function pricePaid(p) {
+  const e = p.entries.find((x) => x.type === "buy");
+  return e ? -e.amount : p.price;
+}
+
+/** Correct the purchase price, for example after an auction. @param {Property} p @param {number} amount */
+export function setPricePaid(p, amount) {
+  const e = p.entries.find((x) => x.type === "buy");
+  if (e) e.amount = -round(amount);
 }
 
 /** @param {Property} p @param {Entry["type"]} type @param {number} amount @param {string} [note] */

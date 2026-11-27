@@ -1,7 +1,7 @@
 // Tests for the Monopoly tracker logic (web/monopoly-tracker/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CARDS, CLASSIC, MEGA, collectAutoRent, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
+import { CARDS, CLASSIC, MEGA, collectAutoRent, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -203,4 +203,29 @@ test("mega has three utilities with 4x, 10x, 20x", () => {
   assert.equal(rentFor(g, util[0], 5), 50);
   g.properties.push(util[2]);
   assert.equal(rentFor(g, util[0], 5), 100);
+});
+
+test("price paid defaults to list price and can be overridden for an auction", () => {
+  const card = CLASSIC.find((c) => c.name === "Boardwalk");
+  const list = newProperty(card);
+  assert.equal(pricePaid(list), 400);
+  const auction = newProperty({ ...card, paid: 520 });
+  assert.equal(pricePaid(auction), 520);
+  assert.equal(auction.price, 400);
+  assert.equal(auction.mortgageValue, 200); // mortgage value follows the printed price, not the bid
+  assert.equal(stats(auction).invested, 520);
+  assert.equal(stats(auction).remaining, 520);
+});
+
+test("correcting the price paid updates cost basis everywhere", () => {
+  const p = newProperty(CLASSIC.find((c) => c.name === "Park Place"));
+  collectRent(p, 100);
+  setPricePaid(p, 275);
+  const s = stats(p);
+  assert.equal(s.invested, 275);
+  assert.equal(s.profit, -175);
+  assert.equal(p.entries.filter((e) => e.type === "buy").length, 1);
+  toggleMortgage(p);
+  assert.equal(p.mortgageValue, 175);
+  assert.equal(stats(p).loan, 175);
 });
