@@ -91,6 +91,7 @@ function homeView() {
         <label class="btn">Import JSON<input type="file" accept="application/json" data-act="import" hidden></label>
       </div>
       <p class="muted">Last backup: ${backupLabel()}</p>
+      <p class="muted">Each game saves where it started when your browser allows location. Backups include it.</p>
     </section>`;
 }
 
@@ -547,13 +548,13 @@ function openGameModal(s, gameId) {
   dlg.showModal();
 }
 
-// ---------- location: looked up when a game starts if the device already allows it, saved only if available ----------
+// ---------- location: looked up when a game starts (browser prompt is the opt-in), saved only if available ----------
 
-/** Look up the position for a new game, only if the browser already allows location for this site. Never prompts, never blocks play, and leaves the fields unset otherwise. @param {Current} cur */
+/** Look up the position for a new game. The browser's own permission prompt is the opt-in: it appears the first time a game starts, and a refusal means no location from then on. Never blocks play; leaves the fields unset on any failure. @param {Current} cur */
 async function captureLocation(cur) {
   try {
-    if (!navigator.geolocation || !navigator.permissions) return;
-    if ((await navigator.permissions.query({ name: 'geolocation' })).state !== 'granted') return;
+    if (!navigator.geolocation) return;
+    if (navigator.permissions && (await navigator.permissions.query({ name: 'geolocation' })).state === 'denied') return;
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude, longitude, accuracy } = pos.coords;
       if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) return;
