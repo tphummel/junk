@@ -156,6 +156,7 @@
       <div class="demo row">
         <div class="mon-space mon-g-lblue"><span class="mon-bar"></span><span class="mon-space-name">Connecticut Avenue</span><span class="mon-space-price">Price $120</span></div>
         <div class="mon-space mon-g-blue"><span class="mon-bar"></span><span class="mon-space-name">Park Place</span><span class="mon-space-price">Price $350</span></div>
+        <div class="mon-space"><span class="mon-space-name">Reading Railroad<span class="mon-space-mark" aria-hidden="true">🚂</span></span><span class="mon-space-price">Price $200</span></div>
         <div class="mon-space"><span class="mon-space-name">Luxury Tax</span><span class="mon-space-price">Pay $75.00</span></div>
         <div class="mon-space mon-space--corner"><span class="mon-space-name">Collect $200.00 salary as you pass</span></div>
       </div>
@@ -163,10 +164,10 @@
 
     <section id="cards">
       <h2>Chance, Community Chest</h2>
-      <p>Orange Chance and yellow Community Chest, with a big mark and a line of text.</p>
+      <p>Salmon Chance and gold Community Chest, landscape like the real ones: an italic script title, bold caps text and a line of fine print. Put a <code>mon-card-mark</code> (a glyph or drawing) beside the text if you want an illustration.</p>
       <div class="demo row">
-        <div class="mon-card"><span class="mon-card-mark" aria-hidden="true">?</span><span class="mon-card-title">Chance</span><span class="mon-card-text">Advance to Go. Collect $200.</span></div>
-        <div class="mon-card mon-card--chest"><span class="mon-card-mark" aria-hidden="true">✓</span><span class="mon-card-title">Community Chest</span><span class="mon-card-text">Bank error in your favor. Collect $200.</span></div>
+        <div class="mon-card"><span class="mon-card-title">Chance</span><span class="mon-card-text">Pay poor tax of $15</span><span class="mon-card-fine">Monopoly style sheet</span></div>
+        <div class="mon-card mon-card--chest"><span class="mon-card-title">Community Chest</span><span class="mon-card-text">Income tax refund. Collect $20</span><span class="mon-card-fine">Monopoly style sheet</span></div>
       </div>
     </section>
 
@@ -244,7 +245,7 @@
   </main>
 
   <footer>Source: <code>web/styles/monopoly/monopoly.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009. Not affiliated with Hasbro; the look is inspired by a vintage set.</footer>
-  <small id="version">2026-11-27T03:44:08Z</small>
+  <small id="version">2026-11-27T04:00:58Z</small>
 </div>
 <script>
 (() => {
@@ -280,7 +281,7 @@
     ['--mon-bg', 'board (page)'], ['--mon-text', 'text', '--mon-bg'], ['--mon-muted', 'muted text', '--mon-bg'],
     ['--mon-red-ink', 'red text', '--mon-bg'], ['--mon-line', 'board lines', '--mon-bg'],
     ['--mon-paper', 'cards, deeds'], ['--mon-ink', 'ink on paper', '--mon-paper'], ['--mon-ink-muted', 'muted on paper', '--mon-paper'],
-    ['--mon-red', 'Go red', '--mon-on-red', 'white on it'], ['--mon-chance', 'Chance', '--mon-ink', 'ink on it'], ['--mon-chest', 'Community Chest', '--mon-ink', 'ink on it'],
+    ['--mon-red', 'Go red', '--mon-on-red', 'white on it'], ['--mon-chance', 'Chance (salmon)', '--mon-ink', 'ink on it'], ['--mon-chest', 'Community Chest (gold)', '--mon-ink', 'ink on it'],
     ['--mon-purple', 'purple', '--mon-on-purple', 'text on it'], ['--mon-lblue', 'light blue', '--mon-on-lblue', 'text on it'],
     ['--mon-magenta', 'magenta', '--mon-on-magenta', 'text on it'], ['--mon-orange', 'orange', '--mon-on-orange', 'text on it'],
     ['--mon-red-group', 'red group', '--mon-on-red-group', 'text on it'], ['--mon-yellow', 'yellow', '--mon-on-yellow', 'text on it'],

@@ -40,8 +40,8 @@
   --mon-rule: #121712;
   --mon-red: #C8201B;          /* the Go arrow; white on it 5.7 */
   --mon-on-red: #FFFFFF;
-  --mon-chance: #F28C28;       /* Chance cards; ink on it 7.4 */
-  --mon-chest: #F7D84A;        /* Community Chest cards; ink on it 12.5 */
+  --mon-chance: #F4916E;       /* Chance cards, salmon; ink on it ~8 */
+  --mon-chest: #F7CB6B;        /* Community Chest cards, gold; ink on it ~11 */
 
   /* property color groups: the bar, and the text color that reads on it
      (each pair is at least 4.5:1) */
@@ -66,6 +66,7 @@
   /* type: geometric sans in caps, like the board lettering */
   --mon-font-display: Futura, "Century Gothic", "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
   --mon-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mon-font-script: "Segoe Print", "Bradley Hand", "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive;
   --mon-font-serif: "Times New Roman", Times, Georgia, serif;
   --mon-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --mon-track: 0.12em;
@@ -251,31 +252,35 @@
 }
 .mon-space .mon-bar { min-height: 1.6rem; border: 0; border-bottom: 1px solid var(--mon-ink); padding: 0; }
 .mon-space-name { flex: 1; display: grid; place-items: center; padding: 0.4rem; font-size: 0.72rem; font-weight: 700; line-height: 1.15; text-transform: uppercase; letter-spacing: 0.06em; }
+.mon-space-mark { display: block; margin-top: 0.3rem; font-size: 1.8rem; line-height: 1; }
 .mon-space-price { padding: 0.35rem; font-size: 0.7rem; letter-spacing: 0.04em; }
 .mon-space--corner { width: 9.5rem; background: var(--mon-red); color: var(--mon-on-red); border-color: var(--mon-ink); }
 .mon-space--corner .mon-space-name { font-size: 0.9rem; letter-spacing: 0.1em; }
 
 /* ---- Chance and Community Chest cards ----------------------------------- */
 
+/* landscape card: italic script title at left, bold slanted-free caps text,
+   a mark or drawing slot at right, a line of fine print at the foot */
 .mon-card {
   display: grid;
-  gap: 0.4rem;
-  justify-items: center;
-  width: min(100%, 15rem);
-  min-height: 8rem;
-  padding: 1rem;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "title text" "fine fine";
+  align-items: center;
+  gap: 0.5rem 1rem;
+  width: min(100%, 22rem);
+  min-height: 9rem;
+  padding: 1rem 1.25rem 0.6rem;
   background: var(--mon-chance);
   color: var(--mon-ink);
   border: 1px solid var(--mon-ink);
-  border-radius: 0.3rem;
-  text-align: center;
-  align-content: center;
+  border-radius: 0.2rem;
   box-shadow: var(--mon-shadow);
 }
 .mon-card--chest { background: var(--mon-chest); }
-.mon-card-mark { font-family: var(--mon-font-display); font-size: 2.6rem; font-weight: 800; line-height: 1; }
-.mon-card-title { font-family: var(--mon-font-display); font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.16em; }
-.mon-card-text { font-size: 0.9rem; line-height: 1.35; }
+.mon-card-title { grid-area: title; font-family: var(--mon-font-script); font-style: italic; font-weight: 700; font-size: 1.15rem; line-height: 1.1; }
+.mon-card-text { grid-area: text; font-family: var(--mon-font-display); font-size: 1rem; font-weight: 800; line-height: 1.25; text-transform: uppercase; letter-spacing: 0.05em; }
+.mon-card-mark { font-family: var(--mon-font-display); font-size: 2.4rem; font-weight: 800; line-height: 1; }
+.mon-card-fine { grid-area: fine; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mon-ink-muted); }
 
 /* ---- paper money --------------------------------------------------------- */
 
