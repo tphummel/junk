@@ -74,6 +74,16 @@
     label { font-size: .85rem; color: var(--muted); display: grid; gap: .15rem; }
     form.grid { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; }
     #msg { min-height: 1.4rem; color: var(--accent); }
+    dialog { border: 1px solid var(--support); border-radius: .6rem; background: var(--bg); color: var(--text); padding: 1rem 1.25rem; width: min(26rem, calc(100vw - 32px)); }
+    dialog::backdrop { background: #0009; }
+    dialog form { display: grid; gap: .75rem; }
+    fieldset.editions { border: 1px solid var(--line); border-radius: .5rem; display: grid; gap: .5rem; margin: 0; }
+    fieldset.editions legend { color: var(--muted); font-size: .85rem; }
+    label.opt { display: flex; gap: .6rem; align-items: start; color: var(--text); font-size: 1rem; }
+    label.opt input { margin-top: .3rem; min-height: 0; }
+    table.rents { border-collapse: collapse; font-size: .85rem; font-variant-numeric: tabular-nums; margin: .4rem 0 0; }
+    table.rents td { border-top: 1px solid var(--line); padding: .1rem .75rem .1rem 0; }
+    table.rents tr.now td { color: var(--primary); font-weight: 700; }
     small#version { display: block; margin-top: 2rem; color: var(--muted); }
   </style>
   <meta name="theme-color" content="#111111">
@@ -93,23 +103,40 @@
   </div>
   <div id="msg" role="status"></div>
 
+  <dialog id="newGameDlg">
+    <form id="newGameForm" method="dialog">
+      <h2>New game</h2>
+      <label>Name <input name="name" required maxlength="40" autocomplete="off"></label>
+      <fieldset class="editions">
+        <legend>Edition</legend>
+        <label class="opt"><input type="radio" name="edition" value="classic" checked> <span><b>Standard Monopoly</b><br><span class="muted">40 spaces. Improvements: 4 houses, then a hotel.</span></span></label>
+        <label class="opt"><input type="radio" name="edition" value="mega"> <span><b>Monopoly Mega</b><br><span class="muted">Adds a skyscraper level above the hotel.</span></span></label>
+      </fieldset>
+      <div class="row">
+        <button class="primary" value="create">Create game</button>
+        <button value="cancel" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
   <div id="main" hidden>
     <div class="summary" id="summary"></div>
 
     <details class="panel" id="addPanel" open>
       <summary>Add a property</summary>
       <form id="quick" class="grid">
-        <label>Classic deed <select id="deed"></select></label>
+        <label>Title deed <select id="deed"></select></label>
         <button class="primary">Buy</button>
       </form>
-      <p class="muted">Or enter any property (Mega deeds, house rules, custom boards):</p>
+      <p class="muted">Standard deeds come with their full rent table, house cost and mortgage value. For anything else (Mega-only deeds, house rules), enter the card:</p>
       <form id="custom" class="grid">
         <label>Name <input name="name" required maxlength="60"></label>
         <label>Group <select name="group"></select></label>
         <label>Price <input name="price" type="number" min="0" step="1" required></label>
         <label>Mortgage value <input name="mv" type="number" min="0" step="1" placeholder="half price"></label>
         <label>Cost per house <input name="house" type="number" min="0" step="1"></label>
-        <label>Current rent <input name="rent" type="number" min="0" step="1"></label>
+        <label>Properties in group <input name="size" type="number" min="1" step="1" placeholder="for set rent"></label>
+        <label>Rents: base, 1–4 houses, hotel[, skyscraper] <input name="rents" placeholder="2,10,30,90,160,250"></label>
         <button class="primary">Buy</button>
       </form>
     </details>
@@ -136,15 +163,16 @@
       <li><b>Returned</b>: rent collected plus improvements sold back (at half cost).</li>
       <li><b>Break even</b> when returned reaches invested. <b>ROI</b> is (returned − invested) ÷ invested.</li>
       <li>A mortgage is a loan: the cash is not counted as income, only the interest is a cost. Outstanding loans are shown separately.</li>
-      <li><b>Rents to break even</b> uses your average rent collected so far, or the current rent you entered.</li>
-      <li>Improvement levels: 1–4 houses, 5 hotel, and in Mega 6 skyscraper. Edit the cost per house on any property.</li>
+      <li><b>Rent</b> is taken from the card and your game: improvement level, double rent for a full unimproved set, railroads and utilities by number owned. You only enter the dice total for a utility.</li>
+      <li><b>Rents to break even</b> uses your average rent collected so far, or what the card pays now.</li>
+      <li>Improvement levels: 1–4 houses, 5 hotel, and in Mega 6 skyscraper (its rent isn't preloaded; the page asks for it).</li>
     </ul>
   </details>
 
-  <small id="version">2026-11-27T03:42:31Z</small>
+  <small id="version">2026-11-27T07:30:43Z</small>
 
   <script type="module">
-    import { CLASSIC, GROUPS, MAX_LEVEL, collectRent, gameStats, improve, levelLabel, newProperty, parseGames, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
+    import { CLASSIC, GROUPS, GROUP_SIZE, MAX_LEVEL, collectAutoRent, gameStats, improve, levelLabel, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
 
     const KEY = 'monopoly-tracker-v1';
     const SWATCH = { brown: '#955436', lightblue: '#7fc6e8', pink: '#d93a96', orange: '#f7941d', red: '#ed1b24', yellow: '#fef200', green: '#1fb25a', darkblue: '#0072bb', railroad: '#444', utility: '#9aa', other: '#888' };
@@ -161,7 +189,7 @@
       try {
         const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
         const g = raw && parseGames(raw.games);
-        if (g) { games = g; currentId = raw.current; }
+        if (g) { games = migrateGames(g); currentId = raw.current; }
       } catch {}
       if (!games.some((g) => g.id === currentId)) currentId = games[0]?.id || '';
     }
@@ -191,11 +219,23 @@
         stat('Net profit', money(t.profit), cls(t.profit)), stat('ROI', t.invested ? pct(t.roi) : '–', cls(t.profit)),
         stat('Left to break even', money(t.remaining)), stat('Broken even', t.count + ' owned: ' + t.broken),
         stat('Mortgage loans out', money(t.loan), t.loan ? 'bad' : ''));
-      const props = g.properties.map((p) => ({ p, s: stats(p) }));
+      const props = g.properties.map((p) => ({ p, s: stats(p, g) }));
       if (sort === 'remaining') props.sort((a, b) => b.s.remaining - a.s.remaining);
       else if (sort === 'profit') props.sort((a, b) => b.s.profit - a.s.profit);
       else if (sort === 'group') props.sort((a, b) => GROUPS.indexOf(a.p.group) - GROUPS.indexOf(b.p.group));
       $('list').replaceChildren(...(props.length ? props.map(({ p, s }) => card(g, p, s)) : [h('p', { class: 'muted', text: 'No properties yet. Add one above.' })]));
+    }
+
+    const LABELS = ['rent', '1 house', '2 houses', '3 houses', '4 houses', 'hotel', 'skyscraper'];
+    function rentTable(g, p, due) {
+      const rows = [];
+      if (p.kind === 'railroad') p.rents.forEach((r, i) => rows.push([(i + 1) + ' owned', money(r), i + 1 === Math.min(g.properties.filter((x) => x.group === p.group).length, p.rents.length)]));
+      else if (p.kind === 'utility') p.rents.forEach((r, i) => rows.push([(i + 1) + ' owned', r + '× dice', i + 1 === Math.min(g.properties.filter((x) => x.group === p.group).length, p.rents.length)]));
+      else p.rents.forEach((r, i) => rows.push([LABELS[i] || 'level ' + i, money(r), i === p.level]));
+      const note = p.kind === 'street' && p.groupSize ? 'Unimproved rent doubles with the full set (' + g.properties.filter((x) => x.group === p.group).length + ' of ' + p.groupSize + ' owned).' : '';
+      return h('details', {}, h('summary', { class: 'muted', text: 'Rent card' + (due != null && p.kind !== 'utility' ? ' · pays ' + money(due) + ' now' : '') }),
+        h('table', { class: 'rents' }, ...rows.map(([a, b, now]) => h('tr', { class: now ? 'now' : '' }, h('td', { text: a }), h('td', { text: b })))),
+        ...(note ? [h('p', { class: 'muted', text: note })] : []));
     }
 
     function card(g, p, s) {
@@ -208,7 +248,7 @@
       if (s.broken) tags.append(h('span', { class: 'tag ok', text: 'broke even' }));
       c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), tags));
       const n = (label, value, k = '') => h('span', { text: label + ' ' }, h('b', { class: k, text: value }));
-      const hits = s.remaining === 0 ? '' : s.hitsToBreakEven == null ? 'set a rent to estimate' : '≈ ' + s.hitsToBreakEven + (s.hitsToBreakEven === 1 ? ' rent' : ' rents');
+      const hits = s.remaining === 0 ? '' : s.hitsToBreakEven == null ? 'no rent data to estimate' : '≈ ' + s.hitsToBreakEven + (s.hitsToBreakEven === 1 ? ' rent' : ' rents');
       c.append(h('div', { class: 'nums' },
         n('invested', money(s.invested)), n('rent', money(s.rent) + (s.rentCount ? ' (' + s.rentCount + '×)' : '')),
         n('profit', money(s.profit), cls(s.profit)), n('ROI', s.invested ? pct(s.roi) : '–', cls(s.profit)),
@@ -216,13 +256,18 @@
         ...(s.loan ? [n('mortgage loan', money(s.loan), 'bad')] : [])));
       const prog = h('progress', { max: String(s.invested || 1), value: String(Math.min(s.returned, s.invested)), 'aria-label': 'Progress to break even' });
       c.append(prog);
-      const rentIn = h('input', { type: 'number', min: '0', step: '1', 'aria-label': 'Rent amount', placeholder: p.rent ? String(p.rent) : 'rent', 'data-rent': '' });
       const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: extra, text });
-      const actions = h('div', { class: 'row bar' }, rentIn, btn('rent', 'Collect rent', 'primary'));
+      const due = rentFor(g, p);
+      // The card and game state say what is owed; ask only for what they cannot know.
+      const ask = p.mortgaged ? null : p.kind === 'utility' ? 'dice total' : due == null ? 'rent' : null;
+      const actions = h('div', { class: 'row bar' });
+      if (ask) actions.append(h('input', { type: 'number', min: '0', step: '1', 'aria-label': ask, placeholder: ask, 'data-rent': '' }));
+      actions.append(btn('rent', p.mortgaged ? 'Collect rent' : 'Collect rent' + (due != null && !ask ? ' (' + money(due) + ')' : ''), 'primary'));
       if (p.houseCost > 0) actions.append(btn('build', '+ build (' + money(p.houseCost) + ')'), btn('sell', '− sell back'));
       actions.append(btn('mortgage', p.mortgaged ? 'Lift mortgage (' + money(Math.ceil(p.mortgageValue * 1.1)) + ')' : 'Mortgage (+' + money(p.mortgageValue) + ')'), btn('edit', 'Edit'), btn('remove', 'Remove', 'danger'));
       if (p.level >= max) actions.querySelector('[data-action=build]')?.setAttribute('disabled', '');
       c.append(actions);
+      if (p.rents && p.rents.length) c.append(rentTable(g, p, due));
       const hist = h('details', {}, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
         h('ul', { class: 'hist' }, ...[...p.entries].reverse().map((e) =>
           h('li', {}, h('span', { text: e.type + (e.note ? ': ' + e.note : '') }), h('span', { class: cls(e.amount), text: money(e.amount) })))));
@@ -233,11 +278,19 @@
     // --- events ---
     $('game').addEventListener('change', (e) => { currentId = e.target.value; save(); say(); render(); });
     $('sort').addEventListener('change', (e) => { sort = e.target.value; render(); });
+    const dlg = $('newGameDlg');
     $('newGame').addEventListener('click', () => {
-      const name = prompt('Game name', 'Game ' + (games.length + 1));
+      $('newGameForm').reset();
+      $('newGameForm').elements.name.value = 'Game ' + (games.length + 1);
+      dlg.showModal();
+      $('newGameForm').elements.name.select();
+    });
+    $('newGameForm').addEventListener('submit', (e) => {
+      if (e.submitter?.value !== 'create') return;
+      const f = e.target.elements;
+      const name = f.name.value.trim().slice(0, 40);
       if (!name) return;
-      const mega = confirm('Is this Monopoly Mega?\n\nOK = Mega (adds skyscraper level)\nCancel = Classic');
-      const g = { id: uid(), name: name.trim().slice(0, 40), edition: mega ? 'mega' : 'classic', properties: [] };
+      const g = { id: uid(), name, edition: f.edition.value, properties: [] };
       games.push(g); currentId = g.id; save(); say(); render();
     });
     $('renameGame').addEventListener('click', () => {
@@ -260,7 +313,10 @@
       e.preventDefault();
       const f = new FormData(e.target);
       const num = (k) => (f.get(k) === '' ? undefined : Number(f.get(k)));
-      add({ name: String(f.get('name')).trim(), group: String(f.get('group')), price: Number(f.get('price')), mortgageValue: num('mv'), houseCost: num('house'), rent: num('rent') });
+      const rents = String(f.get('rents')).split(',').map((x) => x.trim()).filter(Boolean).map(Number);
+      if (rents.some((r) => !(r >= 0))) { say('Rents must be numbers separated by commas.'); return; }
+      add({ name: String(f.get('name')).trim(), group: String(f.get('group')), price: Number(f.get('price')), mortgageValue: num('mv'), houseCost: num('house'),
+        kind: rents.length ? 'street' : 'custom', rents: rents.length ? rents : null, groupSize: num('size') ?? GROUP_SIZE[String(f.get('group'))] ?? 0 });
       e.target.reset();
     });
 
@@ -271,14 +327,14 @@
       let err = null;
       if (a === 'rent') {
         const input = c.querySelector('[data-rent]');
-        err = collectRent(p, input.value === '' ? p.rent : Number(input.value));
+        err = collectAutoRent(g, p, input && input.value !== '' ? Number(input.value) : undefined);
+        if (err && input) input.focus();
       } else if (a === 'build') err = improve(p, MAX_LEVEL[g.edition]);
       else if (a === 'sell') err = sellImprovement(p);
       else if (a === 'mortgage') err = toggleMortgage(p);
       else if (a === 'remove') { if (!confirm('Remove ' + p.name + ' and its history?')) return; g.properties = g.properties.filter((x) => x !== p); }
       else if (a === 'edit') {
         const v = (q, cur) => { const r = prompt(q, String(cur)); return r === null || r.trim() === '' || !(Number(r) >= 0) ? cur : Number(r); };
-        p.rent = v('Current rent (used to estimate rents to break even)', p.rent);
         p.houseCost = v('Cost per house/improvement', p.houseCost);
         p.mortgageValue = v('Mortgage value', p.mortgageValue);
       }
@@ -295,7 +351,7 @@
         const g = parseGames(JSON.parse(await file.text()));
         if (!g) throw new Error('bad file');
         if (!confirm('Replace all games here with ' + g.length + ' imported game(s)?')) return;
-        games = g; currentId = g[0]?.id || ''; save(); say('Imported.'); render();
+        games = migrateGames(g); currentId = g[0]?.id || ''; save(); say('Imported.'); render();
       } catch { say('That file is not a valid Monopoly tracker export.'); }
       e.target.value = '';
     });
