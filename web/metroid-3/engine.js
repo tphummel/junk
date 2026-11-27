@@ -20,6 +20,7 @@ export const FORMAT_VERSION = 1;
  *   ts: number | null,
  *   igt: number | null,
  *   log: string | null,
+ *   feedback: string | null,
  * }} Step
  * @typedef {{ id: string, ts: number, title: string, body: string }} Entry
  * @typedef {{ id: string, ts: number, kind: "start" | "stop" }} SessionEvent
@@ -215,6 +216,7 @@ function buildSteps(steps) {
     ts: s.ts ?? null,
     igt: s.igt ?? null,
     log: s.log ?? null,
+    feedback: s.feedback ?? null,
   }));
 }
 
@@ -699,6 +701,50 @@ export function fmtSheetStamp(ts) {
   return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
 }
 
+export const NOTES_FORMAT = "metroid-3-notes";
+
+/**
+ * Every note in a game, for the notes report: each step that has a route note, a log note or
+ * route feedback (in route order), and every free-form journal entry. Feedback is the notes to
+ * apply to the built-in route later.
+ * @param {Game} game
+ * @param {number} [now]
+ */
+export function notesReport(game, now = Date.now()) {
+  const steps = game.steps
+    .filter((s) => s.note || s.log || s.feedback)
+    .map((s) => ({
+      stepId: s.id,
+      step: s.step,
+      checkpoint: s.checkpoint,
+      area: s.area,
+      seq: s.seq,
+      room: s.room,
+      done: s.ts == null ? null : new Date(s.ts).toISOString(),
+      routeNote: s.note,
+      log: s.log,
+      feedback: s.feedback,
+    }));
+  const entries = [...game.entries]
+    .sort((a, b) => a.ts - b.ts)
+    .map((e) => ({ id: e.id, ts: new Date(e.ts).toISOString(), title: e.title, body: e.body }));
+  return {
+    format: NOTES_FORMAT,
+    version: 1,
+    exportedAt: new Date(now).toISOString(),
+    game: { id: game.id, name: game.name, meta: game.meta, steps: game.steps.length },
+    counts: {
+      stepsWithNotes: steps.length,
+      routeNotes: steps.filter((s) => s.routeNote).length,
+      logNotes: steps.filter((s) => s.log).length,
+      feedback: steps.filter((s) => s.feedback).length,
+      journalEntries: entries.length,
+    },
+    steps,
+    entries,
+  };
+}
+
 /** Active play time from session events. @param {State} state */
 export function fmtPlay(state) {
   return state.sessions.length ? fmtDuration(state.playMs) : "—";
@@ -797,6 +843,7 @@ export function normalizeGame(raw) {
           classify(String(s.checkpoint)).cat === "milestone" && str(s.igt) && !str(s.log)
             ? `Countdown timer: ${str(s.igt)}`
             : str(s.log),
+        feedback: str(s.feedback),
       })),
   );
   const seen = new Set();

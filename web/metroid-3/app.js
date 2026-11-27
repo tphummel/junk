@@ -33,6 +33,7 @@ import {
   removeStep,
   renumber,
   setDone,
+  slug,
   toInputValue,
   uid,
   upcoming,
@@ -51,7 +52,7 @@ import {
   timelineHtml,
   where,
 } from "./widgets.js";
-import { backupJson, buildJournalHtml, buildSheetHtml, download, gameFilename, paperCss } from "./export.js";
+import { backupJson, buildJournalHtml, buildSheetHtml, download, gameFilename, notesReportJson, paperCss } from "./export.js";
 
 /** @typedef {import("./engine.js").Game} Game */
 
@@ -305,6 +306,7 @@ function renderDash(game, state) {
         <div class="actions">
           <button type="button" class="primary" data-action="done" data-id="${esc(cur.id)}">✔ Done</button>
           <button type="button" data-action="edit-step" data-id="${esc(cur.id)}">✎ Done with note</button>
+          <button type="button" data-action="feedback" data-id="${esc(cur.id)}">⚑ Feedback${cur.feedback ? " ✓" : ""}</button>
           ${undoBtn}
         </div>
       </div>`
@@ -364,7 +366,7 @@ function renderRoute(game, state) {
     if (show === "bosses" && cat !== "boss") return false;
     if (show.startsWith("area:") && s.area !== show.slice(5)) return false;
     if (needle) {
-      const hay = `${s.checkpoint} ${s.area ?? ""} ${s.room ?? ""} ${s.note ?? ""} ${s.log ?? ""}`.toLowerCase();
+      const hay = `${s.checkpoint} ${s.area ?? ""} ${s.room ?? ""} ${s.note ?? ""} ${s.log ?? ""} ${s.feedback ?? ""}`.toLowerCase();
       if (!hay.includes(needle)) return false;
     }
     return true;
@@ -381,7 +383,7 @@ function renderRoute(game, state) {
         <td><b>${esc(s.checkpoint)}</b></td>
         <td>${esc(s.area ?? "")}${s.seq != null ? ` #${s.seq}` : ""}</td>
         <td>${esc(s.room ?? "")}</td>
-        <td class="note">${esc(s.note ?? "")}${s.log ? `<br><b>Log:</b> ${esc(s.log)}` : ""}</td>
+        <td class="note">${esc(s.note ?? "")}${s.log ? `<br><b>Log:</b> ${esc(s.log)}` : ""}${s.feedback ? `<br><b>⚑ Feedback:</b> ${esc(s.feedback)}` : ""}</td>
         <td class="time">${s.ts != null ? esc(fmtStamp(s.ts)) : '<span class="pending">—</span>'}</td>
         <td class="time">${s.igt != null ? esc(fmtIgt(s.igt)) : ""}</td>
         <td class="act"><button type="button" class="small" data-action="edit-step" data-id="${esc(s.id)}">Edit</button></td>
@@ -432,7 +434,7 @@ function renderPublish(game, state) {
       <div class="card"><h3>Printable scorecard</h3>
         <p class="hint">A one-sheet summary and checkpoint log, sized for pasting into a journal. Use the print dialog’s “Save as PDF”, with margins set to default and “Background graphics” on.</p>
         <div class="field-row" style="margin-top:0.75rem">
-          <label class="field">Layout<select id="p-layout">${sel(p.layout, "scoresheet", "Scoresheet: one page, like the spreadsheet")}${sel(p.layout, "illustrated", "Illustrated: progress grid and log")}${sel(p.layout, "card", "Summary card: progress grid, no log")}</select></label>
+          <label class="field">Layout<select id="p-layout">${sel(p.layout, "scoresheet", "Scoresheet: one page, like the spreadsheet")}${sel(p.layout, "illustrated", "Illustrated: progress grid and log")}${sel(p.layout, "card", "Summary card: progress grid, no log")}${sel(p.layout, "notes", "Notes report: every note and feedback")}</select></label>
         </div>
         <div class="field-row" style="margin-top:0.75rem">
           <label class="field">Paper<select id="p-paper">${sel(p.paper, "letter", "Letter")}${sel(p.paper, "a4", "A4")}${sel(p.paper, "a5", "A5 (journal size)")}</select></label>
@@ -443,7 +445,10 @@ function renderPublish(game, state) {
           ${chk("p-notes", "Include route notes", p.notes)}
           ${chk("p-remaining", "Include unfinished checkpoints (as a to-do checklist)", p.remaining)}
         </div>
-        <button type="button" class="primary" data-action="print">Print / save as PDF</button>
+        <div class="toolbar"><button type="button" class="primary" data-action="print">Print / save as PDF</button>${
+          p.layout === "notes" ? `<button type="button" data-action="export-notes">Download notes (JSON)</button>` : ""
+        }</div>
+        ${p.layout === "notes" ? `<p class="hint">Includes every route note, log note, route feedback and journal entry. The JSON file is what to hand back to update the built-in route.</p>` : ""}
       </div>
       <div class="card"><h3>Static journal page (HTML)</h3>
         <p class="hint">One self-contained, read-only file with no scripts and no external requests. Host it on your blog or anywhere. It follows the visitor’s light or dark setting, and it also re-imports into this app.</p>
@@ -513,7 +518,7 @@ const val = (fd, k) => String(fd.get(k) ?? "").trim();
 /** @param {Game} game @param {string | null} id step id, or null to add */
 async function stepDialog(game, id) {
   const existing = id ? game.steps.find((s) => s.id === id) : null;
-  const s = existing ?? { checkpoint: "", area: null, seq: null, room: null, note: null, ts: Date.now(), igt: null, log: null };
+  const s = existing ?? { checkpoint: "", area: null, seq: null, room: null, note: null, ts: Date.now(), igt: null, log: null, feedback: null };
   const areaOpts = ["", ...ALL_AREAS].map((a) => `<option value="${esc(a)}"${(s.area ?? "") === a ? " selected" : ""}>${a || "—"}</option>`).join("");
   const fd = await openDialog(`<form method="dialog">
     <h2>${existing ? `Step ${existing.step}` : "Log an unplanned pickup"}</h2>
@@ -532,6 +537,7 @@ async function stepDialog(game, id) {
     <div class="toolbar"><button type="button" class="small" data-now>Set to now</button><button type="button" class="small" data-clear-ts>Not done yet</button></div>
     <label class="field">Route note (where it is, how to get it)<textarea name="note">${esc(s.note ?? "")}</textarea></label>
     <label class="field">My log (what happened; Ceres Escape: countdown timer reading)<textarea name="log">${esc(s.log ?? "")}</textarea></label>
+    <label class="field">⚑ Route feedback (what should change in the checklist)<textarea name="feedback">${esc(s.feedback ?? "")}</textarea></label>
     ${
       existing
         ? ""
@@ -559,9 +565,28 @@ async function stepDialog(game, id) {
     igt: parseIgt(val(fd, "igt")),
     note: val(fd, "note") || null,
     log: val(fd, "log") || null,
+    feedback: val(fd, "feedback") || null,
   };
   if (existing) return mutate(game, (g) => Object.assign(/** @type {any} */ (g.steps.find((x) => x.id === existing.id)), fields));
   return mutate(game, (g) => void addStep(g, fields, /** @type {any} */ (val(fd, "where") || "afterLast")));
+}
+
+/** Quick route-feedback note for a step, without marking it done. @param {Game} game @param {string} id */
+async function feedbackDialog(game, id) {
+  const st = game.steps.find((x) => x.id === id);
+  if (!st) return;
+  const fd = await openDialog(`<form method="dialog">
+    <h2>⚑ Route feedback</h2>
+    <p class="hint">Step ${st.step}: ${esc(st.checkpoint)}${where(st) ? ` (${esc(where(st))})` : ""}. What should change about this step in the checklist? It goes in the notes report; the step stays as it is.</p>
+    <label class="field">Feedback<textarea name="feedback" style="min-height:8rem" autofocus>${esc(st.feedback ?? "")}</textarea></label>
+    <div class="dialog-actions">
+      <button type="submit" value="cancel" formnovalidate>Cancel</button>
+      <button type="submit" name="act" value="save" class="primary">Save</button>
+    </div></form>`);
+  if (!fd) return;
+  const text = val(fd, "feedback") || null;
+  await mutate(game, (g) => void (/** @type {any} */ (g.steps.find((x) => x.id === id)).feedback = text));
+  toast(text ? "Feedback saved" : "Feedback cleared");
 }
 
 /** @param {Game} game @param {string | null} id */
@@ -832,6 +857,15 @@ document.addEventListener("click", async (ev) => {
         const playing = Boolean(deriveState(game).playing);
         await mutate(game, (g) => void (g.events = [...(g.events ?? []), { id: uid(), ts: Date.now(), kind: playing ? "stop" : "start" }]));
         toast(playing ? "Session stopped" : "Session started");
+      }
+      break;
+    case "feedback":
+      if (game && id) await feedbackDialog(game, id);
+      break;
+    case "export-notes":
+      if (game) {
+        download(`metroid-3-notes-${slug(game.name)}.json`, notesReportJson(game));
+        toast("Notes report downloaded");
       }
       break;
     case "edit-event":

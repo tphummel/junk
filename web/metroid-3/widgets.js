@@ -221,7 +221,7 @@ export function timelineHtml(game, opts = {}) {
             <time>${esc(fmtClock(/** @type {number} */ (s.ts)))}</time>
             <span class="m3-chip" aria-hidden="true">${esc(CATEGORIES[cat].short)}</span>
             <div><b>${esc(s.checkpoint)}</b>${w ? `<small>${esc(w)}</small>` : ""}${s.igt != null ? `<small>IGT ${esc(fmtIgt(s.igt))}</small>` : ""}
-              ${note ? `<em>${esc(note)}</em>` : ""}${s.log ? `<p>${esc(s.log)}</p>` : ""}
+              ${note ? `<em>${esc(note)}</em>` : ""}${s.log ? `<p>${esc(s.log)}</p>` : ""}${edit && s.feedback ? `<p class="m3-fb">⚑ ${esc(s.feedback)}</p>` : ""}
               ${edit ? `<div class="m3-row-actions"><button type="button" data-action="edit-step" data-id="${esc(s.id)}">Edit</button></div>` : ""}</div></li>`;
         })
         .join("");
