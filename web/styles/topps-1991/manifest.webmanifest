@@ -1,0 +1,14 @@
+{
+  "name": "topps 1991 style sheet",
+  "short_name": "topps 1991",
+  "description": "A baseball card style sheet inspired by a 1991-design set: colored team frames, script banners, a gold seal and an orange-red stat back, with a storybook.",
+  "start_url": "/styles/topps-1991/",
+  "scope": "/styles/topps-1991/",
+  "display": "standalone",
+  "background_color": "#0E1130",
+  "theme_color": "#0E1130",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
