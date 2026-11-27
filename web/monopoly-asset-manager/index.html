@@ -180,7 +180,7 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T19:06:26Z</small>
+  <small id="version">2026-11-27T19:09:04Z</small>
 
   <script type="module">
     import { CARDS, GROUPS, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
@@ -188,7 +188,8 @@
     // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
     // The monopoly sheet's color groups (its names for them), by this page's group names.
-    // The sheet's vintage palette colors the first group purple and has no brown, so brown is this page's own (.g-brown).
+    // The first group is purple in the sheet's vintage palette, which suits the original game. Mega's is brown,
+    // which the sheet does not have, so that one is this page's own (.g-brown).
     const MON_GROUP = { lightblue: 'lblue', pink: 'magenta', orange: 'orange', red: 'red', yellow: 'yellow', green: 'green', darkblue: 'blue' };
     const $ = (id) => document.getElementById(id);
     const money = (n) => (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n * 100) / 100).toLocaleString();
@@ -285,12 +286,12 @@
     }
 
     /** The class that sets a card's color accent, or '' for railroads and utilities. */
-    const groupClass = (p) => (p.group === 'brown' ? 'g-brown' : MON_GROUP[p.group] ? 'mon-g-' + MON_GROUP[p.group] : '');
+    const groupClass = (g, p) => (p.group === 'brown' ? (g.edition === 'mega' ? 'g-brown' : 'mon-g-purple') : MON_GROUP[p.group] ? 'mon-g-' + MON_GROUP[p.group] : '');
 
     function archivedCard(g, p) {
       const s = stats(p, g);
       const c = h('div', { class: 'card', 'data-id': p.id });
-      if (groupClass(p)) c.classList.add(groupClass(p));
+      if (groupClass(g, p)) c.classList.add(groupClass(g, p));
       c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), h('span', { class: 'mon-badge', text: 'traded away' })));
       c.append(h('div', { class: 'nums' }, h('span', { text: 'invested ' }, h('b', { text: money(s.invested) })),
         h('span', { text: 'rent ' }, h('b', { text: money(s.rent) })), h('span', { text: 'profit ' }, h('b', { class: cls(s.profit), text: money(s.profit) }))));
@@ -304,12 +305,12 @@
       const max = maxLevel(g, p);
       const open = expanded.has(p.id);
       const c = h('div', { class: 'card' + (p.mortgaged ? ' mortgaged' : '') + (open ? ' open' : ''), 'data-id': p.id });
-      if (groupClass(p)) c.classList.add(groupClass(p));
+      if (groupClass(g, p)) c.classList.add(groupClass(g, p));
       const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: 'mon-button' + (extra === 'primary' ? '' : ' mon-button--paper' + (extra ? ' ' + extra : '')), text });
 
       // Collapsed view: name, pills and the rent button.
       // The color accent already names the group; railroads and utilities have none, so they keep a pill.
-      const tags = h('span', { class: 'row' }, ...(groupClass(p) ? [] : [h('span', { class: 'mon-badge', text: p.group })]));
+      const tags = h('span', { class: 'row' }, ...(groupClass(g, p) ? [] : [h('span', { class: 'mon-badge', text: p.group })]));
       if (p.houseCost > 0) tags.append(h('span', { class: 'mon-badge', text: levelName(p) }));
       if (p.mortgaged) tags.append(h('span', { class: 'mon-badge mon-badge--solid', text: 'mortgaged' }));
       if (s.broken) tags.append(h('span', { class: 'mon-badge', text: '✓ broke even' }));
