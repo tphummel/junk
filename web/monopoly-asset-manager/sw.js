@@ -8,6 +8,7 @@ const SHEET_PATH = '/styles/monopoly/monopoly.css';
 const PRECACHE = [
   '/monopoly-asset-manager/',
   '/monopoly-asset-manager/tracker.js',
+  '/monopoly-asset-manager/report.js',
   '/monopoly-asset-manager/manifest.webmanifest',
   '/monopoly-asset-manager/icon.svg',
   '/monopoly-asset-manager/icon-192.png',

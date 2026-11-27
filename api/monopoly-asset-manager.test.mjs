@@ -1,6 +1,7 @@
 // Tests for the Monopoly asset manager logic (web/monopoly-asset-manager/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
+import { reportFileName, reportHtml, esc } from "../web/monopoly-asset-manager/report.js";
 import { CARDS, CLASSIC, MEGA, REPAIR_RATES, exportFileName, gameCreated, slug, uid, basisOf, payRepairs, pieces, planRepairs, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
@@ -572,4 +573,50 @@ test("migrateGames stamps created on older games", () => {
   const keep = { id: "x", name: "kept", edition: "classic", properties: [], created: "2026-01-02T03:04:05.000Z" };
   migrateGames([keep]);
   assert.equal(keep.created, "2026-01-02T03:04:05.000Z");
+});
+
+test("report: totals, properties, traded-away list and every history, as a standalone page", () => {
+  const g = { id: "g", name: "Tilden 11/27/2026", edition: "mega", properties: [], created: new Date(2026, 10, 27, 12).toISOString() };
+  for (const name of ["Boardwalk", "Park Place", "Mediterranean Avenue"]) assert.equal(buyProperty(g, MEGA.find((c) => c.name === name)), null);
+  const [bw, , med] = g.properties;
+  collectRent(bw, 670);
+  executeTrade(g, { giveIds: [med.id], receive: [], cashReceived: 10 });
+  const html = reportHtml(g, new Date(2026, 10, 28, 9));
+  assert.match(html, /^<!doctype html>/);
+  assert.match(html, /<html lang="en">/);
+  assert.match(html, /<title>Tilden 11\/27\/2026: Monopoly asset manager report<\/title>/);
+  assert.match(html, /Monopoly Mega · created 2026-11-27 · report made 2026-11-28/);
+  const t = gameStats(g);
+  assert.match(html, new RegExp("Game left to break even</span>"));
+  assert.ok(html.includes(">$" + t.gameRemaining.toLocaleString("en-US") + "<"));
+  assert.ok(html.includes("Properties owned"));
+  assert.ok(html.includes("Boardwalk") && html.includes("Park Place"));
+  assert.ok(html.includes("Traded away") && html.includes("Mediterranean Avenue"));
+  assert.ok(html.includes("<h2>History</h2>"));
+  assert.equal((html.match(/<section class="prop">/g) || []).length, 3); // one history per property, traded away too
+  assert.ok(html.includes("rent") && html.includes("trade-cash"));
+  assert.ok(!/<script/i.test(html)); // no scripts, and a policy forbidding them
+  assert.ok(html.includes("default-src 'none'"));
+  assert.equal(reportFileName(g), "monopoly-asset-manager-2026-11-27-tilden-11-27-2026-report.html");
+});
+
+test("report: names are escaped, so a hostile game or property name cannot inject markup", () => {
+  const evil = '<img src=x onerror=alert(1)> & "q"';
+  const g = { id: "g", name: evil, edition: "classic", properties: [], created: new Date(2026, 0, 2, 12).toISOString() };
+  buyProperty(g, CLASSIC.find((c) => c.name === "Boardwalk"));
+  g.properties[0].name = evil;
+  g.properties[0].entries[0].note = "<b>note</b>";
+  const html = reportHtml(g);
+  assert.ok(!html.includes("<img src=x"));
+  assert.ok(!html.includes("<b>note</b>"));
+  assert.ok(html.includes("&lt;img src=x onerror=alert(1)&gt; &amp; &quot;q&quot;"));
+  assert.equal(esc("a<b>&'\""), "a&lt;b&gt;&amp;&#39;&quot;");
+});
+
+test("report: an empty game still makes a valid report", () => {
+  const g = { id: "g", name: "Empty", edition: "classic", properties: [], created: new Date(2026, 0, 2, 12).toISOString() };
+  const html = reportHtml(g);
+  assert.ok(html.includes("No properties owned."));
+  assert.ok(html.includes("Nothing yet."));
+  assert.ok(!html.includes("Traded away"));
 });

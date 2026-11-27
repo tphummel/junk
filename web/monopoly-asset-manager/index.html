@@ -180,10 +180,11 @@
       <summary>Backup</summary>
       <div class="row">
         <button id="export" class="mon-button mon-button--paper">Export this game</button>
+        <button id="exportReport" class="mon-button mon-button--paper">Export report (HTML)</button>
         <button id="exportAll" class="mon-button mon-button--paper">Export all games</button>
         <label>Import JSON <input id="import" class="mon-input" type="file" accept="application/json,.json"></label>
       </div>
-      <p class="muted">Import adds the games in a file to this browser. A game with the same ID is replaced; your other games are kept.</p>
+      <p class="muted">The report is a single page you can open anywhere or print. Import adds the games in a file to this browser. A game with the same ID is replaced; your other games are kept.</p>
     </details>
   </div>
 
@@ -203,9 +204,10 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T19:47:59Z</small>
+  <small id="version">2026-11-27T19:50:09Z</small>
 
   <script type="module">
+    import { reportFileName, reportHtml } from './report.js';
     import { CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, exportFileName, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     // Kept from this page's earlier name so games already saved in the browser still load.
@@ -549,14 +551,20 @@
       rdlg.close(); say(plan.card + ' repairs paid: ' + money(plan.total) + ' across ' + plan.lines.length + (plan.lines.length === 1 ? ' property.' : ' properties.')); save(); render();
     });
 
-    function download(name, data) {
-      const a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })), download: name });
+    function downloadText(name, text, type) {
+      const a = h('a', { href: URL.createObjectURL(new Blob([text], { type })), download: name });
       a.click(); URL.revokeObjectURL(a.href);
     }
+    const download = (name, data) => downloadText(name, JSON.stringify(data, null, 2), 'application/json');
     // One game per file, named with the day it was created and its name.
     $('export').addEventListener('click', () => {
       const g = game(); if (!g) return;
       download(exportFileName(g), { exportedAt: new Date().toISOString(), games: [g] });
+    });
+    // A standalone page for reading or printing: totals, what you own, what you traded away, and every history.
+    $('exportReport').addEventListener('click', () => {
+      const g = game(); if (!g) return;
+      downloadText(reportFileName(g), reportHtml(g), 'text/html');
     });
     $('exportAll').addEventListener('click', () => {
       download('monopoly-asset-manager-all-games-' + new Date().toISOString().slice(0, 10) + '.json', { exportedAt: new Date().toISOString(), games });
