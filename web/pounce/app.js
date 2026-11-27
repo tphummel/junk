@@ -21,8 +21,35 @@ function load() {
   } catch {}
   return { players: [], sessions: [] };
 }
+let persistAsked = false;
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {}
+  try {
+    localStorage.setItem(KEY, JSON.stringify(db));
+    showSaveError(false);
+    requestPersistence();
+  } catch {
+    showSaveError(true);
+  }
+}
+
+/** Ask the browser to keep this site's storage once there is real data (ADR 0011 item 1); a refusal is ignored. */
+function requestPersistence() {
+  if (persistAsked || !hasData()) return;
+  persistAsked = true;
+  try { navigator.storage?.persisted?.().then((yes) => yes || navigator.storage.persist()).catch(() => {}); } catch {}
+}
+
+/** A write failed (storage full or blocked): say so, because the data is not being kept. @param {boolean} on */
+function showSaveError(on) {
+  let el = document.getElementById('save-error');
+  if (!on) { el?.remove(); return; }
+  if (el) return;
+  el = document.createElement('div');
+  el.id = 'save-error';
+  el.setAttribute('role', 'alert');
+  el.innerHTML = 'Could not save: this browser\'s storage is full or blocked, so recent changes are not kept. <button type="button">Export a backup now</button>';
+  el.querySelector('button')?.addEventListener('click', () => exportData());
+  document.body.prepend(el);
 }
 const uid = () => Math.random().toString(36).slice(2, 10);
 /** @param {string} s */
