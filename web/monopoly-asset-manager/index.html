@@ -167,7 +167,7 @@
     <div class="row"><h2 style="margin:0">Properties</h2>
       <button id="trade" class="mon-button mon-button--paper">Trade</button>
       <button id="repairs" class="mon-button mon-button--paper">Repairs</button>
-      <select id="sort" class="mon-select" aria-label="Sort"><option value="added">in order bought</option><option value="remaining">most left to break even</option><option value="profit">best profit</option><option value="group">by group</option></select>
+      <select id="sort" class="mon-select" aria-label="Sort"><option value="group">by group</option><option value="added">in order bought</option><option value="remaining">most left to break even</option><option value="profit">best profit</option></select>
     </div>
     <div id="list"></div>
     <details class="panel" id="archivedPanel" hidden>
@@ -200,7 +200,7 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T19:14:26Z</small>
+  <small id="version">2026-11-27T19:19:08Z</small>
 
   <script type="module">
     import { CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
@@ -218,7 +218,7 @@
 
     let games = [];
     let currentId = '';
-    let sort = 'added';
+    let sort = 'group'; // matches the first option of #sort
 
     function load() {
       try {
@@ -258,7 +258,11 @@
       const props = g.properties.map((p) => ({ p, s: stats(p, g) }));
       if (sort === 'remaining') props.sort((a, b) => b.s.remaining - a.s.remaining);
       else if (sort === 'profit') props.sort((a, b) => b.s.profit - a.s.profit);
-      else if (sort === 'group') props.sort((a, b) => GROUPS.indexOf(a.p.group) - GROUPS.indexOf(b.p.group));
+      else if (sort === 'group') {
+        // Color groups in board order, and within a group the deeds in board order.
+        const spot = (p) => { const i = CARDS[g.edition].findIndex((c) => c.name === p.name); return i < 0 ? Infinity : i; };
+        props.sort((a, b) => GROUPS.indexOf(a.p.group) - GROUPS.indexOf(b.p.group) || spot(a.p) - spot(b.p));
+      }
       const arch = g.archived || [];
       $('archivedPanel').hidden = !arch.length;
       $('archivedSummary').textContent = 'Traded away (' + arch.length + ')';
