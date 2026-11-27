@@ -547,19 +547,22 @@ function openGameModal(s, gameId) {
   dlg.showModal();
 }
 
-// ---------- location: looked up when a game starts, saved with the game only if available ----------
+// ---------- location: looked up when a game starts if the device already allows it, saved only if available ----------
 
-/** Start a position lookup for a new game; it never blocks play and leaves the fields unset on failure. @param {Current} cur */
-function captureLocation(cur) {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition((pos) => {
-    const { latitude, longitude, accuracy } = pos.coords;
-    if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) return;
-    cur.lat = +latitude.toFixed(6);
-    cur.lon = +longitude.toFixed(6);
-    cur.acc = Number.isFinite(accuracy) && accuracy >= 0 ? Math.round(accuracy) : null;
-    save();
-  }, () => {}, { timeout: 8000, maximumAge: 0, enableHighAccuracy: false });
+/** Look up the position for a new game, only if the browser already allows location for this site. Never prompts, never blocks play, and leaves the fields unset otherwise. @param {Current} cur */
+async function captureLocation(cur) {
+  try {
+    if (!navigator.geolocation || !navigator.permissions) return;
+    if ((await navigator.permissions.query({ name: 'geolocation' })).state !== 'granted') return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) return;
+      cur.lat = +latitude.toFixed(6);
+      cur.lon = +longitude.toFixed(6);
+      cur.acc = Number.isFinite(accuracy) && accuracy >= 0 ? Math.round(accuracy) : null;
+      save();
+    }, () => {}, { timeout: 8000, maximumAge: 0 });
+  } catch {}
 }
 
 /** lat, lon and acc for a saved game, or nothing when no position was found. @param {Current} cur */
