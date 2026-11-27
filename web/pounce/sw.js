@@ -1,6 +1,6 @@
 // Offline support: cache the page's own files, never the requests the page sends.
 // Bump CACHE_NAME when a file is removed or renamed so the old entries are deleted on activate.
-const CACHE_NAME = 'pounce-v1';
+const CACHE_NAME = 'pounce-v2';
 const SCOPE_PATH = '/pounce/';
 
 const PRECACHE = [

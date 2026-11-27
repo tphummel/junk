@@ -55,7 +55,7 @@ export function heatmapSvg(r) {
       if (!day.startsWith(String(r.year))) continue;
       const level = r.levels.get(day);
       const x = w * STEP, y = TOP + d * STEP;
-      const label = level === undefined ? "" : level === 2 ? "both brushes" : level === 1 ? "one brush" : "no brushing";
+      const label = level === undefined ? "" : level === 2 ? "brush goal met" : level === 1 ? "some brushing" : "no brushing";
       cells += `<rect class="${level === undefined ? "hmx" : `hm${level}`}" x="${x}" y="${y}" width="12" height="12" rx="3"><title>${esc(longDate(day))}${label ? `: ${label}` : ""}</title></rect>`;
       if (d === 0 || (w === 0 && lastMonth < 0)) {
         const m = parseDay(day).getMonth();
@@ -66,7 +66,7 @@ export function heatmapSvg(r) {
       }
     }
   }
-  return `<svg viewBox="0 0 ${weeks * STEP - 3} ${TOP + 7 * STEP - 3}" role="img" aria-label="Every day of ${r.year}: solid for two brushes, muted for one, faint for none" width="100%">${labels}${cells}</svg>`;
+  return `<svg viewBox="0 0 ${weeks * STEP - 3} ${TOP + 7 * STEP - 3}" role="img" aria-label="Every day of ${r.year}: solid for the brush goal met, muted for some, faint for none" width="100%">${labels}${cells}</svg>`;
 }
 
 /** Twelve bars of brushing percentage, the best month highlighted. @param {{ months: any[], bestMonth: any }} r */
@@ -92,7 +92,7 @@ export function weekdayBarsSvg(r) {
       (p ? `<rect class="ch-bar" x="32" y="${y + 3}" width="${Math.max(4, p * 2.2)}" height="14" rx="4"/>` : "") +
       `<text class="ch-val" x="260" y="${y + 13}">${p === null ? "–" : `${p}%`}</text>`;
   });
-  return `<svg viewBox="0 0 295 ${7 * 22}" role="img" aria-label="Share of days with both brushes, by weekday" width="100%">${rows.join("")}</svg>`;
+  return `<svg viewBox="0 0 295 ${7 * 22}" role="img" aria-label="Share of days with the brush goal met, by weekday" width="100%">${rows.join("")}</svg>`;
 }
 
 /** Highest and lowest full-day rate by weekday, or null if there is no data. @param {{ weekdays: { days: number, fullDays: number }[] }} r */
@@ -206,7 +206,7 @@ ${highlights.length ? `<section aria-labelledby="h-hi">
   <h2 id="h-year">Every day of ${r.year}</h2>
   <div class="panel">
     ${heatmapSvg(r)}
-    <div class="legend"><span><i class="hm2" style="background:var(--primary)"></i>Both brushes</span><span><i style="background:var(--support)"></i>One</span><span><i style="background:var(--text);opacity:.12"></i>None</span></div>
+    <div class="legend"><span><i class="hm2" style="background:var(--primary)"></i>Brush goal met</span><span><i style="background:var(--support)"></i>Some</span><span><i style="background:var(--text);opacity:.12"></i>None</span></div>
   </div>
 </section>
 <div class="two">
@@ -216,7 +216,7 @@ ${highlights.length ? `<section aria-labelledby="h-hi">
   </section>
   <section aria-labelledby="h-week">
     <h2 id="h-week">Days of the week</h2>
-    <div class="panel">${weekdayBarsSvg(r)}<div class="legend"><span>Days with both brushes</span></div></div>
+    <div class="panel">${weekdayBarsSvg(r)}<div class="legend"><span>Days with the brush goal met</span></div></div>
   </section>
 </div>`}
 <footer>Made with toothup${opts.generated ? ` on ${esc(longDate(opts.generated))}` : ""}. Everything stays on the device it was recorded on.</footer>

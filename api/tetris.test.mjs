@@ -15,7 +15,8 @@ import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { formatTime, gameSeconds, gradePerf, isNatural, lineRate, naturalNumber, summarize } from "../web/tetris/src/game/stats.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
-import { axisDirection, BUTTON, createGamepad, describePad, dpadOnStick, hatDirections, mapPad, newPadState, observePad } from "../web/tetris/src/input/gamepad.js";
+import { axisDirection, bindButton, BUTTON, createGamepad, defaultBindings, describePad, dpadOnStick, hatDirections, mapPad, newPadState, observePad, sanitizeBindings } from "../web/tetris/src/input/gamepad.js";
+import { createPieceTween, easeOutCubic, TWEEN_MS } from "../web/tetris/src/ui/tween.js";
 import { createEffects } from "../web/tetris/src/ui/effects.js";
 import { buildScorecard, SCORECARD_FORMAT, scorecardFilename, scorecardJson, scorecardSections } from "../web/tetris/src/ui/scorecard.js";
 import { bestByMode, loadScores, MAX_SCORES, saveScore, SCORES_KEY } from "../web/tetris/src/ui/scores.js";
@@ -1277,6 +1278,40 @@ test("Y also hard-drops on a standard pad, but not on a non-standard one", () =>
   assert.equal(mapPad(fakePad({ down: [BUTTON.Y], mapping: "" })).size, 0);
 });
 
+test("swapping the spin bindings makes A spin counter-clockwise and B clockwise, with menus unchanged", () => {
+  let b = bindButton(defaultBindings(), "rotateCW", BUTTON.B);
+  b = bindButton(b, "rotateCCW", BUTTON.A);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.A] }), undefined, undefined, b)].sort(), ["confirm", "rotateCCW"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.B] }), undefined, undefined, b)].sort(), ["back", "rotateCW"]);
+});
+
+test("a button can only do one remappable action; a stripped action falls back to its default", () => {
+  const b = bindButton(defaultBindings(), "hold", BUTTON.A);
+  assert.deepEqual(b.hold, [BUTTON.A]);
+  assert.ok(!b.rotateCW.includes(BUTTON.A), "A was taken from spin clockwise");
+  assert.deepEqual(b.rotateCW, [], "its default button was the one claimed, so it is left unbound");
+  assert.deepEqual(bindButton(defaultBindings(), "rotateCW", BUTTON.Y).hardDrop, [], "hard drop lost Y and has no other default");
+  assert.deepEqual(bindButton(defaultBindings(), "hold", BUTTON.LB).hold, [BUTTON.LB]);
+  assert.deepEqual(bindButton(bindButton(defaultBindings(), "hold", BUTTON.LB), "pause", BUTTON.RB).hold, [BUTTON.LB]);
+});
+
+test("sanitizeBindings ignores junk and keeps valid entries", () => {
+  assert.deepEqual(sanitizeBindings(null), defaultBindings());
+  assert.deepEqual(sanitizeBindings({ rotateCW: "x", rotateCCW: [-1], hold: [2] }), { ...defaultBindings(), hold: [2] });
+});
+
+test("createGamepad uses and updates bindings, and listen reports a fresh button press", () => {
+  let pad = fakePad({ down: [BUTTON.A] });
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [pad] } });
+  gp.setBindings(bindButton(bindButton(defaultBindings(), "rotateCW", BUTTON.B), "rotateCCW", BUTTON.A));
+  assert.deepEqual(gp.poll().pressed.sort(), ["confirm", "rotateCCW"]);
+  gp.resetListen();
+  assert.equal(gp.listen(), null, "a button already held is not a press");
+  pad = fakePad({ down: [BUTTON.A, BUTTON.X] });
+  assert.equal(gp.listen(), BUTTON.X);
+  assert.equal(gp.listen(), null);
+});
+
 test("createGamepad.info says how the d-pad arrives", () => {
   let pad = fakePad({ axes: [0, -1] });
   const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [pad] } });
@@ -1323,4 +1358,72 @@ test("service worker PRECACHE lists exactly the page's files, and they all exist
     .map((p) => (p === "index.html" ? "/tetris/" : `/tetris/${p}`));
   const expected = onDisk;
   assert.deepEqual([...listed].sort(), [...expected].sort());
+});
+
+// --- smooth rotation (drawing only) ------------------------------------------------------------------
+
+const pose = (rot, over = {}) => ({ id: 1, rot, cx: 5, cy: 5, ...over });
+const near = (a, b, msg) => assert.ok(Math.abs(a - b) < 1e-9, `${msg}: ${a} vs ${b}`);
+
+test("tween: easing runs from 0 to 1 and slows down", () => {
+  assert.equal(easeOutCubic(0), 0);
+  assert.equal(easeOutCubic(1), 1);
+  assert.ok(easeOutCubic(0.5) > 0.5, "fast at the start");
+  assert.ok(easeOutCubic(0.9) - easeOutCubic(0.8) < easeOutCubic(0.2) - easeOutCubic(0.1), "slow at the end");
+});
+
+test("tween: a piece that does not turn is drawn where it is", () => {
+  const t = createPieceTween();
+  assert.deepEqual(t.update(pose(0), 0), { cx: 5, cy: 5, angle: 0 });
+  assert.deepEqual(t.update(pose(0, { cx: 6, cy: 7 }), 16), { cx: 6, cy: 7, angle: 0 }, "moves and drops are not smoothed");
+});
+
+test("tween: a clockwise turn starts a quarter turn back and settles", () => {
+  const t = createPieceTween();
+  t.update(pose(0), 0);
+  const start = t.update(pose(1), 100);
+  near(start.angle, -Math.PI / 2, "starts turned back");
+  const mid = t.update(pose(1), 100 + TWEEN_MS / 2);
+  assert.ok(mid.angle < 0 && mid.angle > -Math.PI / 2, "partway round");
+  assert.deepEqual(t.update(pose(1), 100 + TWEEN_MS), { cx: 5, cy: 5, angle: 0 }, "done");
+  assert.equal(t.update(pose(1), 1000).angle, 0, "stays done");
+});
+
+test("tween: counter-clockwise turns the other way, and a half turn goes the long way round", () => {
+  const t = createPieceTween();
+  t.update(pose(1), 0);
+  near(t.update(pose(0), 10).angle, Math.PI / 2, "ccw");
+  const u = createPieceTween();
+  u.update(pose(0), 0);
+  near(Math.abs(u.update(pose(2), 10).angle), Math.PI, "180");
+  const w = createPieceTween();
+  w.update(pose(3), 0);
+  near(w.update(pose(0), 10).angle, -Math.PI / 2, "wrapping 3 to 0 is clockwise");
+});
+
+test("tween: a kick moves the center smoothly from where it was", () => {
+  const t = createPieceTween();
+  t.update(pose(0), 0);
+  const start = t.update(pose(1, { cx: 6 }), 50);
+  near(start.cx, 5, "starts at the old center");
+  const end = t.update(pose(1, { cx: 6 }), 50 + TWEEN_MS);
+  near(end.cx, 6, "ends at the new one");
+});
+
+test("tween: turning again mid-turn carries on from what is on screen", () => {
+  const t = createPieceTween();
+  t.update(pose(0), 0);
+  t.update(pose(1), 100);
+  const before = t.update(pose(1), 100 + TWEEN_MS / 3);
+  const again = t.update(pose(2), 100 + TWEEN_MS / 3);
+  near(again.angle, before.angle - Math.PI / 2, "no jump back to the start");
+});
+
+test("tween: a new piece, or none in play, starts clean", () => {
+  const t = createPieceTween();
+  t.update(pose(0), 0);
+  assert.equal(t.update(pose(2, { id: 2 }), 10).angle, 0, "a new piece spawns without turning");
+  t.update(pose(0, { id: 2 }), 20);
+  t.reset();
+  assert.equal(t.update(pose(3, { id: 2 }), 30).angle, 0);
 });

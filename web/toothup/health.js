@@ -27,7 +27,7 @@ export function brushFromRecord(tag) {
   const seconds = Math.round((b.ms - a.ms) / 1000);
   const steps = seconds >= FULL_BRUSH_SECONDS ? STEPS.length : Math.floor((seconds * STEPS.length) / FULL_BRUSH_SECONDS);
   // The id depends only on the start time, so importing the same export twice, or the same brush from a watch and a phone, adds it once.
-  return { id: `s${a.ms}`, type: "brush", start: a.ms, offset: a.offset, seconds, steps };
+  return { id: `s${a.ms}`, type: "brush", start: a.ms, offset: a.offset, lat: null, lon: null, acc: null, seconds, steps };
 }
 
 /**

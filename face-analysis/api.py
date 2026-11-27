@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pathlib import Path
 import shutil
 import tempfile
@@ -7,6 +7,8 @@ import cv2
 import io
 
 app = FastAPI(title="Face Analysis API")
+
+INDEX_PATH = Path(__file__).parent / "index.html"
 
 
 def get_analyzer():
@@ -35,6 +37,11 @@ def draw_landmarks(image_path, landmarks):
         raise ValueError("Unable to encode annotated image")
 
     return buffer.tobytes()
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    return FileResponse(INDEX_PATH, media_type="text/html")
 
 
 @app.get("/healthz")

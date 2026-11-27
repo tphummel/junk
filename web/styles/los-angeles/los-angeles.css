@@ -1,0 +1,698 @@
+/*
+ * los-angeles: a style sheet inspired by Los Angeles street and freeway
+ * signs. The blue neighborhood and city sign with its round seal, the blue
+ * street-name blade with the block number, the green freeway guide sign with
+ * a route shield and arrows, the green city-limit sign, the double yellow
+ * lines of the road, and white block letters on a dry hillside.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/los-angeles/los-angeles.css">
+ * Docs and live examples: /styles/los-angeles/
+ *
+ * Everything is prefixed: classes `la-`, custom properties `--la-`. The only
+ * element rules are under the opt-in `.la` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one. Light is a bright
+ * warm-white afternoon; dark is the city at night. The signs, the road strip
+ * and the hillside look the same in both, like signs that are lit at night.
+ *
+ * Unofficial: the seal is a plain stand-in, not the city's seal.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, los-angeles-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* palette, light. Contrast: text/bg 16.3, muted/bg 7.6, blue-ink/bg 9.5,
+     green-ink/bg 6.4, red-ink/bg 5.5, rule/bg 4.2 (4.4 on surface),
+     white/blue 10.1, muted-on-blue/blue 7.7, gold/blue 5.5,
+     white/green 6.8, on-gold/gold 7.8, white/red 5.9, white/hill 8.6 */
+  --la-bg: #FBF8F1;
+  --la-surface: #FFFFFF;
+  --la-text: #0D1A33;
+  --la-muted: #445068;
+  --la-blue: #0B3A9A;          /* the city sign: fills, with white or gold on top */
+  --la-blue-deep: #072668;     /* edges and shadows */
+  --la-blue-ink: #0B3A9A;      /* blue as text or lines on bg and surface */
+  --la-on-blue: #FFFFFF;
+  --la-on-blue-muted: #D5E1FF;
+  --la-green: #00693E;         /* the freeway sign: fills, with white on top */
+  --la-green-deep: #00432A;    /* edges and shadows */
+  --la-green-ink: #00693E;     /* green as text or lines on bg and surface */
+  --la-on-green: #FFFFFF;
+  --la-gold: #F2B705;          /* the double yellow line and the seal ring */
+  --la-on-gold: #072668;
+  --la-red: #C8102E;           /* fills, with white on top */
+  --la-on-red: #FFFFFF;
+  --la-red-ink: #C8102E;       /* red as text on bg and surface */
+  --la-asphalt: #2B303B;       /* the road strip, never text */
+  --la-sky: #8EC5F0;           /* hillside scene only, never text */
+  --la-sky-high: #3F86CF;
+  --la-hill: #5A4A2C;          /* hillside scene: white letters sit on this */
+  --la-hill-light: #B48A4A;
+  --la-rule: #6B7894;          /* lines on bg and surface */
+  --la-focus: #0B3A9A;
+
+  /* type */
+  --la-font-sign: "Clearview", "Highway Gothic", "Frutiger", "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --la-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --la-font-block: Impact, "Arial Black", "Helvetica Neue", Arial, sans-serif;   /* hillside letters */
+  --la-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --la-track-label: 0.1em;     /* small caps labels */
+  --la-track-sign: 0.04em;     /* sign lettering is spaced wide */
+
+  /* space */
+  --la-space: 0.5rem;
+  --la-radius: 0.5rem;         /* the sign's rounded corner */
+  --la-border: 0.3rem;         /* the sign's white edge */
+
+  /* context: components read these, so the same markup works on the page
+     background and inside a .la-panel or .la-highway */
+  --la-fg: var(--la-text);
+  --la-fg-muted: var(--la-muted);
+  --la-line: var(--la-rule);
+  --la-heading: var(--la-blue-ink);
+  --la-accent: var(--la-blue-ink);
+  --la-field: var(--la-surface);   /* what sits under cards and inputs */
+  --la-shadow: 0 1px 2px #0D1A3333, 0 10px 22px -12px #0D1A3373;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast: text/bg 16.2, muted/bg 10.6, blue-ink/bg 8.7, green-ink/bg 10.0,
+     red-ink/bg 8.3, rule/bg 5.3, focus/bg 10.3; on surface: text 14.2,
+     muted 9.2, blue-ink 7.6, rule 4.6 */
+  :root:not([data-theme="light"]) {
+    --la-bg: #0A1224;
+    --la-surface: #131F3B;
+    --la-text: #F3EFE3;
+    --la-muted: #B9C3DB;
+    --la-blue-ink: #8CB0FF;
+    --la-green-ink: #5ED39B;
+    --la-red-ink: #FF8A97;
+    --la-rule: #7288BA;
+    --la-focus: #F2B705;
+    --la-shadow: 0 1px 2px #000A, 0 10px 22px -12px #000;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --la-bg: #0A1224;
+  --la-surface: #131F3B;
+  --la-text: #F3EFE3;
+  --la-muted: #B9C3DB;
+  --la-blue-ink: #8CB0FF;
+  --la-green-ink: #5ED39B;
+  --la-red-ink: #FF8A97;
+  --la-rule: #7288BA;
+  --la-focus: #F2B705;
+  --la-shadow: 0 1px 2px #000A, 0 10px 22px -12px #000;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- page: opt in with class="la" on <body> ---------------------------- */
+
+.la {
+  margin: 0;
+  background: var(--la-bg);
+  color: var(--la-fg);
+  font: 1rem/1.55 var(--la-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.la *, .la *::before, .la *::after { box-sizing: border-box; }
+.la h1, .la h2, .la h3, .la h4 {
+  font-family: var(--la-font-sign);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: var(--la-track-sign);
+  color: var(--la-heading);
+  margin: 0 0 0.5em;
+}
+.la h1 { font-size: clamp(2.4rem, 8vw, 4.25rem); }
+.la h2 { font-size: clamp(1.7rem, 5vw, 2.5rem); }
+.la h3 { font-size: 1.4rem; }
+.la h4 { font-size: 1rem; text-transform: uppercase; letter-spacing: var(--la-track-label); }
+.la a { color: var(--la-blue-ink); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.la a:hover { text-decoration-thickness: 2px; }
+.la :focus-visible { outline: 3px solid var(--la-focus); outline-offset: 2px; }
+.la hr { border: 0; height: 9px; margin: 2rem 0; border-top: 3px solid var(--la-gold); border-bottom: 3px solid var(--la-gold); }
+.la code, .la kbd { font-family: var(--la-font-mono); font-size: 0.9em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* sign lettering: wide-spaced, medium-heavy sans */
+.la-title {
+  font-family: var(--la-font-sign);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: var(--la-track-sign);
+  color: var(--la-heading);
+  margin: 0;
+}
+.la-title--xl { font-size: clamp(2.6rem, 10vw, 5.25rem); }
+.la-title--lg { font-size: clamp(2rem, 7vw, 3.25rem); }
+.la-title--md { font-size: clamp(1.4rem, 4.5vw, 2rem); }
+.la-title--caps { text-transform: uppercase; }
+
+/* small spaced caps */
+.la-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--la-track-label);
+  color: var(--la-fg-muted);
+}
+
+/* running copy */
+.la-copy { font-size: 0.95rem; line-height: 1.5; color: var(--la-fg); max-width: 36rem; }
+.la-copy--center { text-align: center; margin-inline: auto; }
+
+/* ---- seal: the round emblem on city signs ------------------------------- */
+
+/* A plain stand-in for the city seal: a gold-ringed disc with a red and white
+   striped shield and spaced letters around it. Decorative; label it with
+   aria-hidden or put the name next to it. */
+.la-seal {
+  --la-seal-size: 3.4rem;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--la-seal-size);
+  height: var(--la-seal-size);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #F4EBD3 0 36%, transparent 37%),
+    repeating-conic-gradient(from 0deg, #6B4E2B 0 6deg, #8B6A3C 6deg 12deg);
+  border: 0.12em solid #FFFFFF;
+  box-shadow: 0 0 0 0.1em var(--la-gold) inset, 0 1px 3px #0006;
+  font-size: calc(var(--la-seal-size) / 3.4);
+  overflow: hidden;
+}
+.la-seal::before {   /* the shield: red and white stripes under a blue chief */
+  content: "";
+  position: absolute;
+  inset: 24% 31% 22%;
+  background:
+    linear-gradient(#0B3A9A 0 36%, transparent 36%),
+    repeating-linear-gradient(90deg, #C8102E 0 14%, #FFFFFF 14% 28%);
+  border: 0.06em solid #3A2A12;
+  border-radius: 0.2em 0.2em 50% 50% / 0.2em 0.2em 70% 70%;
+}
+.la-seal--sm { --la-seal-size: 2.4rem; }
+.la-seal--lg { --la-seal-size: 5rem; }
+
+/* ---- sign: the blue city and neighborhood sign ------------------------- */
+
+/* Blue blade with a white edge, rounded corners and the seal riding the top
+   edge, white lettering. Put the seal first inside it; the sign makes room.
+   Without a seal it is a plain neighborhood blade. */
+.la-sign {
+  --la-fg: var(--la-on-blue);
+  --la-fg-muted: var(--la-on-blue-muted);
+  --la-line: #FFFFFF;
+  --la-heading: var(--la-on-blue);
+  --la-accent: var(--la-gold);
+  --la-field: var(--la-blue);
+  position: relative;
+  display: block;
+  margin-top: 0;
+  padding: 1.1rem clamp(1rem, 4vw, 2.25rem) 1.2rem;
+  text-align: center;
+  color: var(--la-on-blue);
+  background: var(--la-blue);
+  border: var(--la-border) solid #FFFFFF;
+  border-radius: var(--la-radius);
+  box-shadow: 0 0 0 1px #0D1A3366, var(--la-shadow);
+  font-family: var(--la-font-sign);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 5.5vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: var(--la-track-sign);
+}
+.la-sign > .la-seal {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--la-seal-size) / -2 - var(--la-border));
+  translate: -50% 0;
+}
+.la-sign > .la-seal ~ * { position: relative; }
+.la-sign:has(> .la-seal) { margin-top: 2rem; padding-top: 2.4rem; }
+.la-sign small {
+  display: block;
+  margin-top: 0.3em;
+  font-size: 0.45em;
+  font-weight: 600;
+  letter-spacing: var(--la-track-label);
+  text-transform: uppercase;
+  color: var(--la-on-blue-muted);
+}
+.la-sign--left { text-align: left; }
+.la-sign--inline { display: inline-block; }
+.la-sign a { color: var(--la-gold); }
+
+/* ---- street: the blue street-name blade --------------------------------- */
+
+/* The name in large lettering, with the block number tucked under the left
+   end and the suffix (St, Blvd) at the right. */
+.la-street {
+  --la-fg: var(--la-on-blue);
+  --la-fg-muted: var(--la-on-blue-muted);
+  --la-heading: var(--la-on-blue);
+  display: inline-grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "name name name" "block . suffix";
+  align-items: end;
+  column-gap: 0.75rem;
+  min-width: 14rem;
+  padding: 0.4rem 1rem 0.5rem;
+  color: var(--la-on-blue);
+  background: var(--la-blue);
+  border: var(--la-border) solid #FFFFFF;
+  border-radius: 0.3rem;
+  box-shadow: 0 0 0 1px #0D1A3366, var(--la-shadow);
+  font-family: var(--la-font-sign);
+  font-weight: 600;
+  line-height: 1;
+}
+.la-street__name { grid-area: name; font-size: clamp(1.7rem, 6vw, 2.4rem); letter-spacing: var(--la-track-sign); }
+.la-street__block { grid-area: block; font-size: 0.95rem; letter-spacing: 0.06em; }
+.la-street__suffix { grid-area: suffix; font-size: 1rem; }
+
+/* ---- highway: the green freeway guide sign ----------------------------- */
+
+/* Green panel, white inner keyline with rounded corners, white lettering.
+   Lay it out with la-highway__row (shield and destination) and arrows. */
+.la-highway {
+  --la-fg: var(--la-on-green);
+  --la-fg-muted: #DDF3E8;
+  --la-line: #FFFFFF;
+  --la-heading: var(--la-on-green);
+  --la-accent: #FFFFFF;
+  --la-field: var(--la-green);
+  position: relative;
+  padding: clamp(1.1rem, 4vw, 1.9rem) clamp(1.1rem, 4vw, 2.2rem);
+  color: var(--la-on-green);
+  background:
+    linear-gradient(180deg, #FFFFFF14, #FFFFFF00 40%, #00000030),
+    var(--la-green);
+  border-radius: 0.7rem;
+  box-shadow: 0 0 0 0.12rem #FFFFFF66, var(--la-shadow);
+  font-family: var(--la-font-sign);
+  font-weight: 600;
+  letter-spacing: var(--la-track-sign);
+}
+.la-highway::before {   /* the keyline */
+  content: "";
+  position: absolute;
+  inset: 0.35rem;
+  border: 0.18rem solid #FFFFFF;
+  border-radius: 0.5rem;
+  pointer-events: none;
+}
+.la-highway > * { position: relative; }
+.la-highway a { color: #FFFFFF; }
+.la-highway__dir {   /* SOUTH, NORTH, EXIT 3 */
+  display: block;
+  font-size: clamp(0.85rem, 2.6vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.la-highway__row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 3vw, 1.75rem);
+  margin-top: 0.4rem;
+}
+.la-highway__to {
+  font-size: clamp(1.8rem, 7vw, 3.4rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: 0.06em;
+}
+.la-highway__sub { display: block; margin-top: 0.2rem; font-size: 0.95rem; font-weight: 600; letter-spacing: var(--la-track-label); color: var(--la-fg-muted); text-transform: uppercase; }
+.la-highway__arrows {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-top: 1.1rem;
+}
+.la-highway__exit {   /* the yellow EXIT ONLY tab hanging off the top */
+  position: absolute;
+  top: -0.9rem;
+  right: 1.4rem;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--la-on-gold);
+  background: var(--la-gold);
+  border-radius: 0.2rem;
+}
+
+/* route shield: the white highway marker with black numerals */
+.la-shield {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 3.6rem;
+  height: 4rem;
+  padding-bottom: 0.25rem;
+  color: #111111;
+  background: #111111;
+  clip-path: polygon(50% 0, 62% 6%, 84% 6%, 100% 14%, 96% 50%, 86% 78%, 50% 100%, 14% 78%, 4% 50%, 0 14%, 16% 6%, 38% 6%);
+  font-family: var(--la-font-sign);
+  font-weight: 800;
+  font-size: 1.35rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.la-shield::before {
+  content: "";
+  position: absolute;
+  inset: 0.2rem;
+  z-index: -1;
+  background: #FFFFFF;
+  clip-path: polygon(50% 0, 62% 6%, 84% 6%, 100% 14%, 96% 50%, 86% 78%, 50% 100%, 14% 78%, 4% 50%, 0 14%, 16% 6%, 38% 6%);
+}
+.la-shield--sm { width: 2.7rem; height: 3rem; font-size: 1rem; }
+
+/* down arrow, white, for lane arrows under a highway sign */
+.la-arrow {
+  display: inline-block;
+  width: 3rem;
+  height: 3.2rem;
+  background: #FFFFFF;
+  clip-path: polygon(38% 0, 62% 0, 62% 46%, 100% 46%, 50% 100%, 0 46%, 38% 46%);
+}
+.la-arrow--sm { width: 1.6rem; height: 1.7rem; }
+.la-arrow--right { rotate: -90deg; }
+.la-arrow--left { rotate: 90deg; }
+.la-arrow--up { rotate: 180deg; }
+
+/* ---- limit: the green city-limit sign ----------------------------------- */
+
+.la-limit {
+  --la-fg: var(--la-on-green);
+  --la-fg-muted: #DDF3E8;
+  --la-line: #FFFFFF;
+  --la-heading: var(--la-on-green);
+  display: inline-grid;
+  gap: 0.35rem;
+  justify-items: center;
+  min-width: 15rem;
+  padding: 0.9rem 1.5rem 0.8rem;
+  text-align: center;
+  color: var(--la-on-green);
+  background: var(--la-green);
+  border: var(--la-border) solid #FFFFFF;
+  border-radius: 0.9rem;
+  box-shadow: 0 0 0 1px #00432A66, var(--la-shadow);
+  font-family: var(--la-font-sign);
+  font-weight: 600;
+  letter-spacing: var(--la-track-sign);
+}
+.la-limit__name { font-size: clamp(1.6rem, 6vw, 2.3rem); line-height: 1.05; font-weight: 600; letter-spacing: 0.06em; }
+.la-limit__tag { font-size: 1.1rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.la-limit__facts { display: flex; justify-content: space-between; gap: 1.5rem; width: 100%; font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ---- hollywood: white block letters on the hill ------------------------- */
+
+/* Sky above, a dry hillside below, and big white letters standing on it.
+   Same in both modes. The letters sit in la-hollywood__sign. */
+.la-hollywood {
+  --la-fg: #FFFFFF;
+  --la-fg-muted: #F1E6D0;
+  --la-line: #FFFFFF;
+  --la-heading: #FFFFFF;
+  --la-accent: #FFFFFF;
+  --la-field: var(--la-hill);
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3rem, 14vw, 6.5rem) clamp(1rem, 4vw, 2rem) clamp(1.5rem, 5vw, 2.5rem);
+  text-align: center;
+  color: var(--la-fg);
+  background:
+    radial-gradient(120% 70% at 30% 100%, var(--la-hill-light) 0 24%, transparent 25%),
+    linear-gradient(180deg, var(--la-sky-high), var(--la-sky) 34%, #0000 34%),
+    var(--la-hill);
+  border-radius: var(--la-radius);
+}
+.la-hollywood::before {   /* the ridge line, a darker band under the sky */
+  content: "";
+  position: absolute;
+  inset: 34% 0 auto;
+  height: 4rem;
+  background: linear-gradient(180deg, #00000040, #0000);
+  pointer-events: none;
+}
+.la-hollywood > * { position: relative; }
+.la-hollywood__sign {
+  display: block;
+  font-family: var(--la-font-block);
+  font-weight: 900;
+  font-size: clamp(2.4rem, 12vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  text-shadow: 0 0.04em 0 #0003, 0 0.12em 0.18em #0006;
+}
+.la-hollywood .la-label { color: var(--la-fg-muted); }
+
+/* ---- panel: a blue field with a white edge ------------------------------ */
+
+.la-panel {
+  --la-fg: var(--la-on-blue);
+  --la-fg-muted: var(--la-on-blue-muted);
+  --la-line: #FFFFFF;
+  --la-heading: var(--la-on-blue);
+  --la-accent: var(--la-gold);
+  --la-field: var(--la-blue);
+  position: relative;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  color: var(--la-fg);
+  background:
+    linear-gradient(160deg, #FFFFFF1A 0%, #FFFFFF00 40%, #00000038 100%),
+    var(--la-blue);
+  border: var(--la-border) solid #FFFFFF;
+  border-radius: var(--la-radius);
+  box-shadow: 0 0 0 1px #0D1A3366, var(--la-shadow);
+}
+.la-panel a { color: var(--la-gold); }
+.la-panel--flat { background: var(--la-blue); }
+.la-panel--green {
+  --la-fg-muted: #DDF3E8;
+  --la-accent: #FFFFFF;
+  --la-field: var(--la-green);
+  background: linear-gradient(160deg, #FFFFFF14 0%, #FFFFFF00 40%, #00000030 100%), var(--la-green);
+}
+.la-panel--green a { color: #FFFFFF; }
+.la-panel--center { text-align: center; }
+
+/* paper variant: a quiet surface for content on the page background */
+.la-card {
+  position: relative;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: var(--la-surface);
+  color: var(--la-fg);
+  border: 1px solid var(--la-line);
+  border-top: 0.4rem solid var(--la-blue-ink);
+  border-radius: var(--la-radius);
+}
+.la-card--green { border-top-color: var(--la-green-ink); }
+
+/* ---- road: the lane-line dividers --------------------------------------- */
+
+/* Asphalt strip with a double yellow line and a dashed white edge. Decorative. */
+.la-road {
+  height: 1.4rem;
+  margin: 1.5rem 0;
+  border: 0;
+  border-radius: 0.2rem;
+  background:
+    linear-gradient(var(--la-gold), var(--la-gold)) 0 0.4rem / 100% 3px no-repeat,
+    linear-gradient(var(--la-gold), var(--la-gold)) 0 0.75rem / 100% 3px no-repeat,
+    repeating-linear-gradient(90deg, #FFFFFF 0 1.4rem, transparent 1.4rem 2.6rem) 0 1.15rem / 100% 2px no-repeat,
+    var(--la-asphalt);
+}
+/* plain divider: a double rule */
+.la-divider {
+  height: 6px;
+  margin: 1.5rem 0;
+  border: 0;
+  border-top: 2px solid var(--la-line);
+  border-bottom: 2px solid var(--la-line);
+}
+
+/* ---- grid: ruled cells -------------------------------------------------- */
+
+.la-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--la-cell-min, 9.5rem), 1fr));
+  border-top: 1px solid var(--la-line);
+  border-left: 1px solid var(--la-line);
+  color: var(--la-fg);
+}
+.la-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.la-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.la-grid--4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 34rem) {
+  .la-grid--3, .la-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+.la-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: var(--la-cell-pad, 0.75rem 1rem);
+  text-align: center;
+  background: var(--la-field);
+  border-right: 1px solid var(--la-line);
+  border-bottom: 1px solid var(--la-line);
+}
+.la-cell--wide { grid-column: 1 / -1; }
+.la-cell--left { text-align: left; }
+.la-cell--tall { padding-block: 1.3rem; }
+.la-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--la-accent);
+}
+.la-value--plain { color: var(--la-fg); }
+.la-value--lg { font-size: 1.25rem; }
+.la-value--xl {
+  font-family: var(--la-font-sign);
+  font-weight: 700;
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.la-cell > .la-label { color: var(--la-fg-muted); }
+
+/* ---- table ------------------------------------------------------------- */
+
+.la-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--la-fg);
+  border: 1px solid var(--la-line);
+}
+.la-table caption {
+  caption-side: top;
+  padding: 0 0 0.6rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--la-track-label);
+  color: var(--la-fg-muted);
+}
+.la-table th, .la-table td { padding: 0.55rem 0.9rem; text-align: left; border: 1px solid var(--la-line); }
+.la-table thead th {
+  background: var(--la-green);
+  color: var(--la-on-green);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: var(--la-track-label);
+  border-color: var(--la-green-deep);
+}
+.la-table tbody th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: var(--la-track-label);
+  color: var(--la-fg-muted);
+}
+.la-table tbody tr:nth-child(even) td, .la-table tbody tr:nth-child(even) th { background: color-mix(in srgb, var(--la-blue) 7%, var(--la-surface)); }
+.la-table td { font-variant-numeric: tabular-nums; }
+.la-table .la-num { text-align: right; }
+.la-table-wrap { overflow-x: auto; }
+.la-late { color: var(--la-red-ink); font-weight: 800; }   /* alert */
+
+/* ---- controls ---------------------------------------------------------- */
+
+.la-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 2.75rem;
+  padding: 0.55rem 1.4rem;
+  font: 700 1rem/1 var(--la-font-sign);
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--la-on-blue);
+  background: var(--la-blue);
+  border: 2px solid #FFFFFF;
+  border-radius: var(--la-radius);
+  box-shadow: 0 0 0 1px var(--la-blue-deep), 0 3px 0 1px var(--la-blue-deep);
+  transition: transform 0.1s, box-shadow 0.1s, filter 0.1s;
+}
+.la-button:hover { filter: brightness(1.1); }
+.la-button:active { transform: translateY(2px); box-shadow: 0 0 0 1px var(--la-blue-deep), 0 1px 0 1px var(--la-blue-deep); }
+.la-button:focus-visible { outline: 3px solid var(--la-focus); outline-offset: 3px; }
+.la-button[disabled], .la-button[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; filter: none; }
+
+.la-button--green { background: var(--la-green); box-shadow: 0 0 0 1px var(--la-green-deep), 0 3px 0 1px var(--la-green-deep); }
+.la-button--green:active { box-shadow: 0 0 0 1px var(--la-green-deep), 0 1px 0 1px var(--la-green-deep); }
+.la-button--gold { color: var(--la-on-gold); background: var(--la-gold); border-color: var(--la-blue-deep); }
+.la-button--red { color: var(--la-on-red); background: var(--la-red); }
+.la-button--ghost { color: var(--la-blue-ink); background: transparent; border-color: var(--la-line); box-shadow: none; }
+.la-panel .la-button--ghost, .la-highway .la-button--ghost { color: #FFFFFF; }
+.la-button--ghost:active { transform: none; box-shadow: none; }
+.la-button--block { display: flex; width: 100%; }
+
+.la-field { display: grid; gap: 0.35rem; }
+.la-input, .la-select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.8rem;
+  font: 1rem/1.3 var(--la-font-body);
+  color: var(--la-text);
+  background: var(--la-surface);
+  border: 1px solid var(--la-rule);
+  border-radius: var(--la-radius);
+}
+.la-input::placeholder { color: var(--la-muted); opacity: 1; }
+.la-input:focus-visible, .la-select:focus-visible { outline: 3px solid var(--la-focus); outline-offset: 1px; border-color: var(--la-blue-ink); }
+.la-input[aria-invalid="true"] { border-color: var(--la-red-ink); box-shadow: inset 4px 0 0 var(--la-red-ink); }
+
+/* ---- badge ------------------------------------------------------------- */
+
+.la-badge {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: var(--la-track-label);
+  color: var(--la-accent);
+  border: 1px solid var(--la-line);
+  border-radius: 99px;
+}
+.la-badge--blue { color: var(--la-on-blue); background: var(--la-blue); border-color: var(--la-blue); }
+.la-badge--green { color: var(--la-on-green); background: var(--la-green); border-color: var(--la-green); }
+.la-badge--gold { color: var(--la-on-gold); background: var(--la-gold); border-color: var(--la-gold); }
+.la-badge--red { color: var(--la-on-red); background: var(--la-red); border-color: var(--la-red); }
+
+@media (prefers-reduced-motion: reduce) {
+  .la-button { transition: none; }
+}
+@media print {
+  .la-sign, .la-street, .la-highway, .la-limit, .la-panel, .la-hollywood, .la-road, .la-seal { box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

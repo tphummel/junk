@@ -44,3 +44,13 @@ def test_healthcheck():
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "service": "Face Analysis API"}
+
+
+def test_index_page():
+    client = TestClient(api.app)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "/analyze" in response.text

@@ -1,6 +1,8 @@
 // Import floss and mouthwash events from a Nomie 5 data export (one JSON file holding every tracker, mixed together).
 // Pure, so the API test suite can import it.
 
+import { normalizePlace } from "./logic.js";
+
 /** Nomie tracker tag to the toothup event type it becomes. */
 const TAGS = { floss_teeth: "floss", mouthwash: "mouthwash" };
 const ID_PREFIX = { floss: "f", mouthwash: "m" };
@@ -34,7 +36,8 @@ export function parseNomie(text) {
         continue;
       }
       const id = `${ID_PREFIX[type]}${start}`;
-      found.set(id, { id, type, start, offset: -nomieOffset });
+      // Nomie records lat and lng (null when unknown) but no accuracy.
+      found.set(id, { id, type, start, offset: -nomieOffset, ...normalizePlace({ lat: e.lat, lon: e.lng }) });
     }
   }
   return { events: [...found.values()], skipped };
