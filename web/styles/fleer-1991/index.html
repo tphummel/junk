@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>fleer 1991 style sheet</title>
+  <link rel="stylesheet" href="fleer-1991.css">
+  <style>
+    /* storybook chrome only; the components below come from fleer-1991.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb > header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { padding-block: clamp(1.5rem, 5vw, 2.5rem); }
+    .hero .fl-copy { margin: 0; }
+    .sb > nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb > nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb > nav a { display: block; padding: 0.35rem 0.6rem; border-left: 2px solid var(--fl-rule); color: var(--fl-fg); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--fl-track-label); }
+    .sb > nav a:hover { color: var(--fl-blue-ink); border-color: var(--fl-blue-ink); }
+    .theme { display: flex; gap: 0.4rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .theme button { font: inherit; font-size: 0.75rem; min-height: 2.25rem; padding-inline: 0.8rem; }
+    .theme button[aria-pressed="true"] { background: var(--fl-yellow); color: var(--fl-ink); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .top .theme { margin: 0; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); background: var(--fl-bg); border: 1px dashed var(--fl-rule); border-radius: var(--fl-radius); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 18rem)); gap: 1.25rem; align-items: start; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--fl-track-label); color: var(--fl-fg-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--fl-surface); border: 1px solid var(--fl-rule); border-radius: var(--fl-radius); font: 0.8rem/1.5 var(--fl-font-mono); color: var(--fl-fg); tab-size: 2; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; }
+    .sw { border: 1px solid var(--fl-rule); border-radius: var(--fl-radius); overflow: hidden; background: var(--fl-surface); }
+    .sw i { display: block; height: 3.5rem; border-bottom: 1px solid var(--fl-rule); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--fl-fg-muted); }
+    .spec-type { display: grid; gap: 1rem; justify-items: start; }
+    .sb > footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--fl-fg-muted); }
+  </style>
+  <meta name="theme-color" content="#12110B">
+  <link rel="icon" href="/styles/fleer-1991/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/fleer-1991/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/fleer-1991/manifest.webmanifest">
+</head>
+<body class="fl">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="fl-label"><a href="/">junk</a> / style sheets / fleer 1991</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="fl-banner fl-banner--center hero">
+      <span class="fl-kicker">Baseball cards</span>
+      <h1 class="fl-title fl-title--xl">Fleer</h1>
+      <span class="fl-logo fl-logo--lg">Fleer<b>'91</b></span>
+      <p class="fl-copy fl-copy--center">Bright yellow cards, triple black rules, a small first name over a big heavy serif last name, and a blue and red card back with light blue stats. Inspired by the 1991 Fleer baseball set. Plain CSS, no fonts or scripts to load, light and dark.</p>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type, logo</a></li>
+      <li><a href="#banner">Banner</a></li>
+      <li><a href="#card">Card front</a></li>
+      <li><a href="#back">Card back</a></li>
+      <li><a href="#sheet">Binder page</a></li>
+      <li><a href="#table">Tables</a></li>
+      <li><a href="#panel">Panel, note</a></li>
+      <li><a href="#grid">Grid</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge, divider</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="fl"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>fl-</code> and every custom property <code>--fl-</code>. Plain element selectors only apply under <code>.fl</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/fleer-1991/fleer-1991.css"&gt;
+&lt;body class="fl"&gt;
+  &lt;div class="fl-banner fl-banner--center"&gt;
+    &lt;h1 class="fl-title fl-title--lg"&gt;Hello&lt;/h1&gt;
+  &lt;/div&gt;
+&lt;/body&gt;</pre>
+      <p>Components read context variables (<code>--fl-fg</code>, <code>--fl-line</code>, <code>--fl-accent</code>, <code>--fl-heading</code>, <code>--fl-field</code>), so the same markup works on the page and inside a <code>.fl-card</code>, <code>.fl-banner</code> or <code>.fl-panel</code>, which flip them for their own color. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>; the switch above does that for this page. Cards, banners, stat tables and the panel keep their colors in both themes; the page background, text and lines change.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values below are read from the live sheet, so they follow the theme switch. Ratios are WCAG contrast against the stated background; text needs 4.5, lines and controls 3.</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type, logo</h2>
+      <p>Display type is a heavy high-contrast serif in caps (Bodoni, Didot, Playfair, or Georgia where none is installed). <code>fl-kicker</code> is the small first name; <code>fl-label</code> is small spaced caps. The logo is italic black on white with a red year; <code>fl-logo--lg</code> enlarges it.</p>
+      <div class="demo spec-type">
+        <span class="fl-kicker">Shawon</span>
+        <h1 class="fl-title fl-title--lg">Dunston</h1>
+        <h3 class="fl-title fl-title--md">Cubs shortstop</h3>
+        <span class="fl-label">Home: Fremont, CA</span>
+        <p class="fl-copy">In his first 17 at-bats in 1990, Mike delivered six hits. Running copy is a plain sans at a comfortable size.</p>
+        <div class="row"><span class="fl-logo">Fleer<b>'91</b></span><span class="fl-logo fl-logo--lg">Fleer<b>'91</b></span></div>
+      </div>
+    </section>
+
+    <section id="banner">
+      <h2>Banner</h2>
+      <p>A yellow header with the card's triple rules above and below, for page titles. <code>fl-banner--center</code> centers it.</p>
+      <div class="demo stack">
+        <div class="fl-banner fl-banner--center">
+          <span class="fl-kicker">Chicago Cubs</span>
+          <h2 class="fl-title fl-title--lg">Team set</h2>
+          <span class="fl-label">Cards 415 to 423 · <a href="#banner">a link</a></span>
+        </div>
+        <div class="fl-banner">
+          <h3 class="fl-title fl-title--md">Left aligned</h3>
+        </div>
+      </div>
+    </section>
+
+    <section id="card">
+      <h2>Card front</h2>
+      <p>The yellow card: triple rules, a small first name over a big last name, the photo in a black frame, and the team and position with a rule running out each side. Put an <code>&lt;img&gt;</code> in <code>fl-card__photo</code>, or use <code>fl-photo</code> as a placeholder; the logo sits in the photo corner. Cards fill the width of their container.</p>
+      <div class="demo">
+        <div class="cards">
+          <article class="fl-card">
+            <header class="fl-card__head"><span class="fl-card__first">Mike</span><h3 class="fl-card__last">Bielecki</h3></header>
+            <div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span><span class="fl-logo">Fleer<b>'91</b></span></div>
+            <footer class="fl-card__foot"><span class="fl-card__team">Cubs • P</span></footer>
+          </article>
+          <article class="fl-card">
+            <header class="fl-card__head"><span class="fl-card__first">Andre</span><h3 class="fl-card__last">Dawson</h3></header>
+            <div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span><span class="fl-logo">Fleer<b>'91</b></span></div>
+            <footer class="fl-card__foot"><span class="fl-card__team">Cubs • OF</span></footer>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="back">
+      <h2>Card back</h2>
+      <p>A blue number bar, two red name bars, a round portrait and team seal, a few lines of bio, the stat line and a white blurb. </p>
+      <div class="demo">
+        <div class="cards">
+          <article class="fl-back">
+            <header class="fl-back__head">
+              <span class="fl-back__portrait"><span class="fl-photo"></span></span>
+              <span class="fl-back__no">416</span>
+              <span class="fl-back__name"><span>Shawn</span><span>Boskie</span></span>
+              <span class="fl-seal">Cubs</span>
+            </header>
+            <p class="fl-back__bio">Height 6'3", Weight 205<br>Bats Right, Throws Right<br>Born 3-28-67, Hawthorne, NV</p>
+            <table class="fl-stats">
+              <thead><tr><th scope="col">Yr</th><th scope="col">Club</th><th scope="col" class="fl-hl">ERA</th><th scope="col">W</th><th scope="col">L</th><th scope="col" class="fl-hl">IP</th></tr></thead>
+              <tbody>
+                <tr><td>88</td><td>Peoria</td><td class="fl-hl">4.55</td><td>8</td><td>11</td><td class="fl-hl">149</td></tr>
+                <tr><td>89</td><td>Winst.</td><td class="fl-hl">3.39</td><td>12</td><td>7</td><td class="fl-hl">178</td></tr>
+                <tr><td>90</td><td>Cubs</td><td class="fl-hl">3.69</td><td>5</td><td>6</td><td class="fl-hl">97</td></tr>
+              </tbody>
+              <tfoot><tr><th scope="row" colspan="2">ML Totals</th><td class="fl-hl">3.69</td><td>5</td><td>6</td><td class="fl-hl">97</td></tr></tfoot>
+            </table>
+            <p class="fl-blurb">A promising rookie, Shawn led the Southern League in strikeouts with 164 in 1989 and 11 wins but also led the league in hit batsmen and hits allowed.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="sheet">
+      <h2>Binder page</h2>
+      <p>A nine-pocket page: two across on a phone, three from a wide screen. <code>fl-sheet--3</code> keeps three across at any width, with tighter spacing. Each <code>fl-pocket</code> holds a card front or back.</p>
+      <div class="demo">
+        <div class="fl-sheet fl-sheet--3">
+          <div class="fl-pocket"><article class="fl-card"><header class="fl-card__head"><span class="fl-card__first">Mike</span><h3 class="fl-card__last">Bielecki</h3></header><div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span></div><footer class="fl-card__foot"><span class="fl-card__team">Cubs • P</span></footer></article></div>
+          <div class="fl-pocket"><article class="fl-card"><header class="fl-card__head"><span class="fl-card__first">Shawn</span><h3 class="fl-card__last">Boskie</h3></header><div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span></div><footer class="fl-card__foot"><span class="fl-card__team">Cubs • P</span></footer></article></div>
+          <div class="fl-pocket"><article class="fl-card"><header class="fl-card__head"><span class="fl-card__first">Dave</span><h3 class="fl-card__last">Clark</h3></header><div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span></div><footer class="fl-card__foot"><span class="fl-card__team">Cubs • OF</span></footer></article></div>
+        </div>
+      </div>
+      <div class="demo" style="margin-top: 1rem">
+        <div class="fl-sheet">
+          <div class="fl-pocket"><article class="fl-card"><header class="fl-card__head"><span class="fl-card__first">Doug</span><h3 class="fl-card__last">Dascenzo</h3></header><div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span></div><footer class="fl-card__foot"><span class="fl-card__team">Cubs • OF</span></footer></article></div>
+          <div class="fl-pocket"><article class="fl-card"><header class="fl-card__head"><span class="fl-card__first">Mark</span><h3 class="fl-card__last">Grace</h3></header><div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span></div><footer class="fl-card__foot"><span class="fl-card__team">Cubs • 1B</span></footer></article></div>
+          <div class="fl-pocket"><article class="fl-card"><header class="fl-card__head"><span class="fl-card__first">Joe</span><h3 class="fl-card__last">Girardi</h3></header><div class="fl-card__photo"><span class="fl-photo" style="aspect-ratio: 4 / 5"></span></div><footer class="fl-card__foot"><span class="fl-card__team">Cubs • C</span></footer></article></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="table">
+      <h2>Tables</h2>
+      <p>Light blue field, blue header rule, pink highlight columns (<code>fl-hl</code>) and ink type, the same in both themes. <code>fl-table</code> is page size; <code>fl-stats</code> is the small one from the card back. Wrap a table in <code>fl-table-wrap</code> if it can overflow a phone, and right-align numbers with <code>fl-num</code>.</p>
+      <div class="demo">
+        <div class="fl-table-wrap">
+          <table class="fl-table">
+            <caption>Andre Dawson</caption>
+            <thead><tr><th scope="col">Year</th><th scope="col">Club</th><th scope="col" class="fl-num">AVG</th><th scope="col" class="fl-num fl-hl">HR</th><th scope="col" class="fl-num">RBI</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">1987</th><td>Cubs</td><td class="fl-num">.287</td><td class="fl-num fl-hl">49</td><td class="fl-num">137</td></tr>
+              <tr><th scope="row">1989</th><td>Cubs</td><td class="fl-num">.252</td><td class="fl-num fl-hl">21</td><td class="fl-num">77</td></tr>
+              <tr><th scope="row">1990</th><td>Cubs</td><td class="fl-num">.310</td><td class="fl-num fl-hl">27</td><td class="fl-num">100</td></tr>
+            </tbody>
+            <tfoot><tr><th scope="row" colspan="2">ML totals</th><td class="fl-num">.283</td><td class="fl-num fl-hl">346</td><td class="fl-num">1231</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel">
+      <h2>Panel, note</h2>
+      <p>The blue panel with a yellow band across the top. <code>fl-note</code> is the quiet version for content on the page background.</p>
+      <div class="demo stack">
+        <div class="fl-panel fl-panel--center">
+          <span class="fl-kicker">Just in</span>
+          <h3 class="fl-title fl-title--md">Panel</h3>
+          <p class="fl-copy fl-copy--center">White on blue, yellow for accents and rules. <a href="#panel">A link</a>.</p>
+        </div>
+        <div class="fl-note">
+          <h3 class="fl-title fl-title--md">Note</h3>
+          <p class="fl-copy">Surface color, a rule and a yellow edge, for content that should stay quiet.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="grid">
+      <h2>Grid</h2>
+      <p>Ruled boxes for stat lines. Cells share their lines however they wrap. <code>fl-cell--wide</code> spans a row, <code>fl-cell--tall</code> gives height, <code>fl-cell--left</code> aligns content left; <code>fl-grid--2</code>, <code>--3</code> and <code>--4</code> set columns (two on a phone), or no modifier fits as many as the width allows. <code>fl-value--xl</code> is the big number, <code>--plain</code> sets it in body type.</p>
+      <div class="demo stack">
+        <div class="fl-panel">
+          <div class="fl-grid">
+            <div class="fl-cell"><span class="fl-value">.310</span></div>
+            <div class="fl-cell"><span class="fl-value">27 HR</span></div>
+            <div class="fl-cell"><span class="fl-value">100 RBI</span></div>
+            <div class="fl-cell fl-cell--wide"><span class="fl-value">NL MVP 1987</span></div>
+          </div>
+        </div>
+        <div class="fl-grid fl-grid--4">
+          <div class="fl-cell fl-cell--tall"><span class="fl-label">Cards</span><span class="fl-value fl-value--xl">9</span></div>
+          <div class="fl-cell fl-cell--tall"><span class="fl-label">Pages</span><span class="fl-value fl-value--xl">1</span></div>
+          <div class="fl-cell fl-cell--tall"><span class="fl-label">Doubles</span><span class="fl-value fl-value--xl">2</span></div>
+          <div class="fl-cell fl-cell--tall"><span class="fl-label">Need</span><span class="fl-value fl-value--xl">0</span></div>
+          <div class="fl-cell fl-cell--wide"><span class="fl-label">Set</span><span class="fl-value fl-value--plain">1991 Fleer, Chicago Cubs</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are yellow with a black edge and heavy serif caps; <code>fl-button--blue</code>, <code>--red</code> and <code>--ghost</code> step through the other looks, and <code>--block</code> fills the row. Inputs are 44px tall with a 2px edge.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="fl-button" type="button">Add card</button>
+          <button class="fl-button fl-button--blue" type="button">Flip</button>
+          <button class="fl-button fl-button--red" type="button">Remove</button>
+          <button class="fl-button fl-button--ghost" type="button">Cancel</button>
+          <button class="fl-button" type="button" disabled>Disabled</button>
+        </div>
+        <button class="fl-button fl-button--blue fl-button--block" type="button">Save binder</button>
+        <div class="fl-grid fl-grid--2" style="--fl-cell-pad: 1rem">
+          <div class="fl-cell fl-cell--left">
+            <div class="fl-field">
+              <label class="fl-label" for="sb-name">Player</label>
+              <input class="fl-input" id="sb-name" placeholder="Last name" autocomplete="off">
+            </div>
+          </div>
+          <div class="fl-cell fl-cell--left">
+            <div class="fl-field">
+              <label class="fl-label" for="sb-pos">Position</label>
+              <select class="fl-select" id="sb-pos"><option>P</option><option>C</option><option>1B</option><option>SS</option><option>OF</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge, divider</h2>
+      <p>Badges are small caps in a pill. <code>fl-divider</code> is the card's triple rule: one thick line over two thin ones. A plain <code>&lt;hr&gt;</code> under <code>.fl</code> looks the same.</p>
+      <div class="demo">
+        <div class="row"><span class="fl-badge">Cubs</span><span class="fl-badge fl-badge--yellow">Fleer</span><span class="fl-badge fl-badge--blue">All-Star</span><span class="fl-badge fl-badge--red">Rookie</span></div>
+        <hr class="fl-divider">
+        <hr>
+        <div class="fl-panel"><div class="row"><span class="fl-badge">1990</span><span class="fl-badge fl-badge--yellow">MVP</span></div><hr class="fl-divider"><span class="fl-label">Triple rules on a panel are yellow</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/fleer-1991/fleer-1991.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009. An unofficial fan style sheet; Fleer is a trademark of its owner.</footer>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/\s+style="--fl-cell-pad: 1rem"/g, '').replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('fl-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('fl-theme') : localStorage.setItem('fl-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'fl-button fl-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Palette swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const tokens = [
+    ['--fl-bg', 'page'], ['--fl-surface', 'cards, inputs'], ['--fl-text', 'text', '--fl-bg'], ['--fl-muted', 'muted text', '--fl-bg'],
+    ['--fl-yellow', 'the card: fills', '--fl-ink', 'ink on it'], ['--fl-ink', 'card type, rules', '--fl-yellow', 'on yellow'],
+    ['--fl-blue', 'number bar: fills', '--fl-on-blue', 'white on it'], ['--fl-blue-ink', 'blue text, lines', '--fl-bg'], ['--fl-on-blue', 'text on blue', '--fl-blue'],
+    ['--fl-red', 'name bars: fills', '--fl-on-red', 'white on it'], ['--fl-red-ink', 'red text', '--fl-bg'], ['--fl-on-red', 'text on red', '--fl-red'],
+    ['--fl-ice', 'stat field', '--fl-ink', 'ink on it'], ['--fl-pink', 'stat highlight', '--fl-ink', 'ink on it'],
+    ['--fl-rule', 'lines', '--fl-bg'], ['--fl-edge', 'button, input edges', '--fl-bg'], ['--fl-focus', 'focus ring', '--fl-bg'],
+  ];
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    const out = document.getElementById('swatches'); out.replaceChildren();
+    for (const [name, use, vs, note] of tokens) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = `var(${name})`;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      if (vs && /^#[0-9A-F]{6}$/.test(hex)) {
+        const r = ratio(hex, val(vs));
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 ${note || 'vs ' + vs.replace('--fl-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/fleer-1991/sw.js', { scope: '/styles/fleer-1991/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
