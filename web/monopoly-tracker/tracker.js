@@ -1,11 +1,14 @@
 // Pure logic for the Monopoly property tracker. No DOM; tested by api/monopoly-tracker.test.mjs.
 
 /**
- * @typedef {{ id: string, type: "buy"|"rent"|"improve"|"sell"|"mortgage"|"unmortgage"|"other", amount: number, note?: string, at: number }} Entry
- *   amount is the cash flow to you: negative when you pay, positive when you receive.
+ * @typedef {{ id: string, type: "buy"|"rent"|"improve"|"sell"|"mortgage"|"unmortgage"|"trade-out"|"trade-cash"|"other", amount: number, note?: string, at: number, carried?: number }} Entry
+ *   amount is the cash flow to you: negative when you pay, positive when you receive. Trades: a property received
+ *   is a "buy" whose `carried` part is cost basis moved over from what you gave (not new cash); a property given
+ *   away gets a "trade-out" for the basis it passed on and a "trade-cash" for cash received.
  * @typedef {{ id: string, name: string, group: string, kind: "street"|"railroad"|"utility"|"custom", rents: number[] | null,
  *   tiers?: number[] | null, groupSize: number, price: number, mortgageValue: number, houseCost: number, rent: number, level: number, mortgaged: boolean, entries: Entry[] }} Property
- * @typedef {{ id: string, name: string, edition: "classic"|"mega", properties: Property[] }} Game
+ * @typedef {{ id: string, name: string, edition: "classic"|"mega", properties: Property[], archived?: Property[] }} Game
+ * `archived` holds properties traded away: out of your set counts and lists, still in the game's money totals.
  */
 
 /** Highest improvement level per edition: 1-4 houses, 5 hotel, 6 skyscraper (Mega). */
@@ -44,10 +47,13 @@ export const round = (n) => Math.round(n * 100) / 100;
  * @param {Game} [g] when given, the estimate of rents to break even uses the rent the card pays now
  */
 export function stats(p, g) {
-  let invested = 0, rent = 0, sold = 0, interest = 0, loan = 0, rentCount = 0, other = 0;
+  let invested = 0, rent = 0, sold = 0, interest = 0, loan = 0, rentCount = 0, other = 0, transferIn = 0, transferOut = 0, tradeCash = 0;
   for (const e of p.entries) {
     switch (e.type) {
-      case "buy": case "improve": invested -= e.amount; break;
+      case "buy": invested -= e.amount; transferIn += e.carried ?? 0; break;
+      case "improve": invested -= e.amount; break;
+      case "trade-out": transferOut += e.amount; break;
+      case "trade-cash": tradeCash += e.amount; break;
       case "rent": rent += e.amount; rentCount++; break;
       case "sell": sold += e.amount; break;
       case "mortgage": loan += e.amount; break;
@@ -62,14 +68,14 @@ export function stats(p, g) {
     }
   }
   invested += interest;
-  const returned = rent + sold + (other > 0 ? other : 0);
+  const returned = rent + sold + tradeCash + transferOut + (other > 0 ? other : 0);
   invested += other < 0 ? -other : 0;
   const profit = returned - invested;
   const remaining = Math.max(0, invested - returned);
   const avgRent = rentCount ? rent / rentCount : 0;
   const perHit = avgRent || (g ? rentFor(g, p, 7) : null) || p.rent || 0;
   return {
-    invested: round(invested), rent: round(rent), sold: round(sold), returned: round(returned),
+    invested: round(invested), rent: round(rent), sold: round(sold), returned: round(returned), transferIn: round(transferIn), transferOut: round(transferOut),
     profit: round(profit), loan: round(loan), rentCount, avgRent: round(avgRent),
     remaining: round(remaining), broken: invested > 0 && remaining === 0,
     roi: invested > 0 ? profit / invested : 0,
@@ -77,13 +83,21 @@ export function stats(p, g) {
   };
 }
 
-/** @param {Game} g */
+/**
+ * Game totals. Money counts every property including ones traded away; basis carried from a traded-away
+ * property to what replaced it is a transfer, not new money, so it is left out of invested and returned.
+ * Break-even, loans and counts cover only what you own now.
+ * @param {Game} g
+ */
 export function gameStats(g) {
   const t = { invested: 0, rent: 0, returned: 0, profit: 0, loan: 0, remaining: 0, count: g.properties.length, broken: 0 };
+  for (const p of [...g.properties, ...(g.archived || [])]) {
+    const s = stats(p, g);
+    t.invested += s.invested - s.transferIn; t.rent += s.rent; t.returned += s.returned - s.transferOut; t.profit += s.profit;
+  }
   for (const p of g.properties) {
     const s = stats(p, g);
-    t.invested += s.invested; t.rent += s.rent; t.returned += s.returned; t.profit += s.profit; t.loan += s.loan;
-    t.remaining += s.remaining;
+    t.loan += s.loan; t.remaining += s.remaining;
     if (s.broken) t.broken++;
   }
   for (const k of ["invested", "rent", "returned", "profit", "loan", "remaining"]) t[k] = round(t[k]);
@@ -322,6 +336,7 @@ export function rentFor(g, p, dice) {
 
 /** Fill in card data on properties saved before cards were stored. @param {Game[]} games */
 export function migrateGames(games) {
+  for (const g of games) g.archived ||= [];
   for (const g of games) for (const p of g.properties) {
     if (p.kind) continue;
     const c = CLASSIC.find((x) => x.name === p.name);
@@ -331,6 +346,96 @@ export function migrateGames(games) {
     if (c && !(p.houseCost > 0)) p.houseCost = c.houseCost;
   }
   return games;
+}
+
+/** Cost basis of an unimproved property: what you put in, less any improvements sold back. @param {Property} p */
+export function basisOf(p) {
+  const s = stats(p);
+  return Math.max(0, round(s.invested - s.sold));
+}
+
+/** Why a property can't be traded, or null. @param {Property} p @returns {string | null} */
+export function tradeBlock(p) {
+  if (p.level > 0) return "has improvements";
+  if (p.mortgaged) return "is mortgaged";
+  return null;
+}
+
+/** Split an amount evenly into `n` shares in whole cents; the leftover cents go to the first shares. @param {number} amount @param {number} n */
+export function splitEvenly(amount, n) {
+  const cents = Math.round(amount * 100);
+  const base = Math.floor(cents / n), extra = cents - base * n;
+  return Array.from({ length: n }, (_, i) => (base + (i < extra ? 1 : 0)) / 100);
+}
+
+/** @param {number} amount @param {number[]} weights positive weights; rounded to cents, remainder on the last */
+function splitProportional(amount, weights) {
+  const total = weights.reduce((a, b) => a + b, 0);
+  let left = amount;
+  return weights.map((w, i) => {
+    const part = i === weights.length - 1 ? round(left) : round((amount * w) / total);
+    left = round(left - part);
+    return part;
+  });
+}
+
+/**
+ * Work out a trade without changing anything. You give properties (and maybe cash) and receive deeds (and maybe
+ * cash). The basis of what you give, plus cash you pay, less cash you receive, becomes the cost basis of what
+ * you receive, split evenly. Cash on one side only. Returns `error` if the trade is not allowed.
+ * @param {Game} g
+ * @param {{ giveIds: string[], receive: Card[], cashPaid?: number, cashReceived?: number }} t
+ */
+export function planTrade(g, t) {
+  const give = t.giveIds.map((id) => g.properties.find((p) => p.id === id));
+  if (give.some((p) => !p)) return { error: "Pick properties you own." };
+  const gives = /** @type {Property[]} */ (give);
+  const paid = t.cashPaid || 0, got = t.cashReceived || 0;
+  if (!(paid >= 0) || !(got >= 0)) return { error: "Cash must be zero or more." };
+  if (paid > 0 && got > 0) return { error: "Cash goes on one side of a trade: either you pay it or you receive it." };
+  if (!gives.length && !t.receive.length) return { error: "Pick something to trade." };
+  if (!t.receive.length && !(got > 0)) return { error: "You receive nothing: add a property or cash." };
+  for (const p of gives) {
+    const b = tradeBlock(p);
+    if (b) return { error: `${p.name} ${b}. Only unimproved, unmortgaged properties can be traded.` };
+  }
+  const owned = new Set(g.properties.map((p) => p.name));
+  for (const c of t.receive) if (owned.has(c.name) && !gives.some((p) => p.name === c.name)) return { error: `You already own ${c.name}.` };
+  const bases = gives.map(basisOf);
+  const giveBasis = round(bases.reduce((a, b) => a + b, 0));
+  // Cash received soaks up basis first; anything beyond the basis is a gain, booked as cash on the properties given.
+  const cashParts = !gives.length ? [] : giveBasis > 0 ? splitProportional(got, bases) : gives.map((_, i) => (i === 0 ? got : 0));
+  const out = gives.map((_, i) => round(Math.max(0, bases[i] - cashParts[i])));
+  const n = t.receive.length;
+  const carried = n ? round(out.reduce((a, b) => a + b, 0)) : 0;
+  const carriedShares = n ? splitEvenly(carried, n) : [];
+  const cashShares = n ? splitEvenly(paid, n) : [];
+  return {
+    give: gives, bases, giveBasis, cashParts, out, carried, cashPaid: paid, cashReceived: got,
+    shares: carriedShares.map((c, i) => ({ carried: c, cash: cashShares[i], basis: round(c + cashShares[i]) })),
+  };
+}
+
+/** Do the trade. Returns an error string if it is not allowed. @param {Game} g @param {Parameters<typeof planTrade>[1]} t @returns {string | null} */
+export function executeTrade(g, t) {
+  const plan = planTrade(g, t);
+  if ("error" in plan) return plan.error;
+  const names = t.receive.map((c) => c.name).join(", ") || "cash";
+  const gave = plan.give.map((p) => p.name).join(", ") || "cash";
+  plan.give.forEach((p, i) => {
+    if (plan.out[i] > 0) addEntry(p, "trade-out", plan.out[i], `traded for ${names}: basis carried over`);
+    if (plan.cashParts[i] > 0) addEntry(p, "trade-cash", plan.cashParts[i], `cash received in trade for ${names}`);
+    g.properties = g.properties.filter((x) => x !== p);
+    (g.archived ||= []).push(p);
+  });
+  t.receive.forEach((card, i) => {
+    const sh = plan.shares[i];
+    const p = newProperty({ ...card, paid: sh.basis });
+    p.entries[0].carried = sh.carried;
+    p.entries[0].note = `traded for ${gave}: basis $${sh.basis}` + (sh.cash ? ` (incl. $${sh.cash} cash)` : "");
+    g.properties.push(p);
+  });
+  return null;
 }
 
 export const GROUPS = ["brown", "lightblue", "pink", "orange", "red", "yellow", "green", "darkblue", "railroad", "utility", "other"];

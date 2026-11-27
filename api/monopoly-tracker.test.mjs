@@ -1,7 +1,7 @@
 // Tests for the Monopoly tracker logic (web/monopoly-tracker/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CARDS, CLASSIC, MEGA, collectAutoRent, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
+import { CARDS, CLASSIC, MEGA, basisOf, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -228,4 +228,97 @@ test("correcting the price paid updates cost basis everywhere", () => {
   toggleMortgage(p);
   assert.equal(p.mortgageValue, 175);
   assert.equal(stats(p).loan, 175);
+});
+
+const card = (name) => CLASSIC.find((c) => c.name === name);
+const own = (g, name, paid) => { const p = newProperty({ ...card(name), paid }); g.properties.push(p); return p; };
+
+test("trade: two for one, cash on my side adds to the basis, totals are not double counted", () => {
+  const g = game();
+  const ori = own(g, "Oriental Avenue", 150), ver = own(g, "Vermont Avenue", 100);
+  collectRent(ori, 30);
+  assert.equal(executeTrade(g, { giveIds: [ori.id, ver.id], receive: [card("Boardwalk")], cashPaid: 50 }), null);
+  assert.deepEqual(g.properties.map((p) => p.name), ["Boardwalk"]);
+  assert.deepEqual(g.archived.map((p) => p.name), ["Oriental Avenue", "Vermont Avenue"]);
+  assert.equal(stats(g.properties[0]).invested, 300); // 150 + 100 carried, 50 cash
+  const t = gameStats(g);
+  assert.equal(t.invested, 300); // real money in: 150 + 100 + 50
+  assert.equal(t.rent, 30);
+  assert.equal(t.profit, -270);
+  assert.equal(stats(g.archived[0]).profit, 30); // the old property keeps its own rent as profit
+});
+
+test("trade: one for two splits the basis evenly", () => {
+  const g = game();
+  const bw = own(g, "Boardwalk", 400);
+  assert.equal(executeTrade(g, { giveIds: [bw.id], receive: [card("Park Place"), card("Mediterranean Avenue")] }), null);
+  assert.deepEqual(g.properties.map((p) => stats(p).invested), [200, 200]);
+  assert.equal(gameStats(g).invested, 400);
+  assert.equal(gameStats(g).profit, -400);
+});
+
+test("trade: odd cents are split without losing a cent", () => {
+  assert.deepEqual(splitEvenly(100, 3), [33.34, 33.33, 33.33]);
+  const g = game();
+  const bw = own(g, "Boardwalk", 100);
+  executeTrade(g, { giveIds: [bw.id], receive: [card("Park Place"), card("Mediterranean Avenue"), card("Baltic Avenue")] });
+  assert.equal(Math.round(g.properties.reduce((a, p) => a + stats(p).invested, 0) * 100), 10000);
+});
+
+test("trade: cash I receive reduces the basis I carry; the rest is returned", () => {
+  const g = game();
+  const pp = own(g, "Park Place", 350);
+  executeTrade(g, { giveIds: [pp.id], receive: [card("Mediterranean Avenue")], cashReceived: 50 });
+  assert.equal(stats(g.properties[0]).invested, 300);
+  assert.equal(stats(g.archived[0]).profit, 0);
+  const t = gameStats(g);
+  assert.equal(t.invested, 350);
+  assert.equal(t.returned, 50);
+  assert.equal(t.profit, -300);
+});
+
+test("trade: cash beyond the basis is a gain; trading for cash only is a sale", () => {
+  const g = game();
+  const med = own(g, "Mediterranean Avenue", 60);
+  executeTrade(g, { giveIds: [med.id], receive: [card("Baltic Avenue")], cashReceived: 100 });
+  assert.equal(stats(g.properties[0]).invested, 0);
+  assert.equal(gameStats(g).profit, 40);
+  const g2 = game();
+  const bw = own(g2, "Boardwalk", 400);
+  assert.equal(executeTrade(g2, { giveIds: [bw.id], receive: [], cashReceived: 450 }), null);
+  assert.equal(g2.properties.length, 0);
+  assert.equal(gameStats(g2).profit, 50);
+});
+
+test("trade: buying from another player is just a purchase with a basis", () => {
+  const g = game();
+  assert.equal(executeTrade(g, { giveIds: [], receive: [card("Boardwalk"), card("Park Place")], cashPaid: 900 }), null);
+  assert.deepEqual(g.properties.map((p) => stats(p).invested), [450, 450]);
+  assert.equal(gameStats(g).invested, 900);
+});
+
+test("trade: only unimproved, unmortgaged properties; cash on one side; no duplicates", () => {
+  const g = game();
+  const a = own(g, "Park Place", 350), b = own(g, "Boardwalk", 400);
+  improve(a, 5);
+  assert.match(executeTrade(g, { giveIds: [a.id], receive: [card("Baltic Avenue")] }), /improvements/);
+  sellImprovement(a);
+  toggleMortgage(b);
+  assert.match(executeTrade(g, { giveIds: [b.id], receive: [card("Baltic Avenue")] }), /mortgaged/);
+  assert.match(executeTrade(g, { giveIds: [a.id], receive: [card("Baltic Avenue")], cashPaid: 10, cashReceived: 10 }), /one side/);
+  assert.match(executeTrade(g, { giveIds: [a.id], receive: [card("Boardwalk")] }), /already own/);
+  assert.match(executeTrade(g, { giveIds: [], receive: [] }), /something/);
+  assert.equal(g.properties.length, 2); // nothing changed on any refusal
+  assert.equal(g.archived, undefined);
+});
+
+test("trade: basis ignores improvement spend that was sold back, and set counts drop the traded property", () => {
+  const g = game();
+  const med = own(g, "Mediterranean Avenue", 60), bal = own(g, "Baltic Avenue", 60);
+  improve(med, 5); sellImprovement(med); // spent 50, got 25 back
+  assert.equal(basisOf(med), 60 + 25);
+  assert.equal(rentFor(g, bal), 8); // full brown set doubles
+  executeTrade(g, { giveIds: [med.id], receive: [card("Boardwalk")] });
+  assert.equal(rentFor(g, bal), 4); // set broken
+  assert.equal(planTrade(g, { giveIds: [bal.id], receive: [card("Park Place")] }).carried, 60);
 });
