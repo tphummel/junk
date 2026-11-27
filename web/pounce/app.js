@@ -655,8 +655,12 @@ function mergeData(inc) {
   for (const s of inc.sessions) {
     const mine = db.sessions.find((x) => x.id === s.id);
     if (!mine) { db.sessions.push(s); continue; }
-    const gids = new Set(mine.games.map((g) => g.id));
-    for (const g of s.games) if (!gids.has(g.id)) mine.games.push(g);
+    // Same game id: keep the more recently edited copy (games can be edited after saving).
+    for (const g of s.games) {
+      const i = mine.games.findIndex((x) => x.id === g.id);
+      if (i < 0) mine.games.push(g);
+      else if ((g.updatedAt ?? 0) > (mine.games[i].updatedAt ?? 0)) mine.games[i] = g;
+    }
     mine.games.sort((a, b) => a.startedAt - b.startedAt);
   }
 }
