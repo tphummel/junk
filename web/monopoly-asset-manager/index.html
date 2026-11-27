@@ -179,7 +179,7 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T18:47:29Z</small>
+  <small id="version">2026-11-27T18:52:25Z</small>
 
   <script type="module">
     import { CARDS, GROUPS, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
@@ -303,7 +303,8 @@
       const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: 'mon-button' + (extra === 'primary' ? '' : ' mon-button--paper' + (extra ? ' ' + extra : '')), text });
 
       // Collapsed view: name, pills and the rent button.
-      const tags = h('span', { class: 'row' }, h('span', { class: 'mon-badge', text: p.group }));
+      // The color accent already names the group; railroads and utilities have none, so they keep a pill.
+      const tags = h('span', { class: 'row' }, ...(MON_GROUP[p.group] ? [] : [h('span', { class: 'mon-badge', text: p.group })]));
       if (p.houseCost > 0) tags.append(h('span', { class: 'mon-badge', text: levelName(p) }));
       if (p.mortgaged) tags.append(h('span', { class: 'mon-badge mon-badge--solid', text: 'mortgaged' }));
       if (s.broken) tags.append(h('span', { class: 'mon-badge', text: '✓ broke even' }));
