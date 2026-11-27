@@ -8,7 +8,7 @@ const KEY = 'pounce:v1';
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
 
 /** @typedef {{ id: string, name: string }} Player */
-/** @typedef {{ startedAt: number, endedAt: number | null, scores: Record<string, string>, pouncer: string | null, notes?: string }} Current */
+/** @typedef {{ startedAt: number, endedAt: number | null, lat?: number, lon?: number, acc?: number | null, scores: Record<string, string>, pouncer: string | null, notes?: string }} Current */
 /** @typedef {{ id: string, venue: string, bonus: number, pile?: number, handicaps?: Record<string, number>, createdAt: number, present: string[], games: any[], current: Current | null }} Session */
 
 /** @type {{ players: Player[], sessions: Session[] }} */
@@ -91,6 +91,8 @@ function homeView() {
         <label class="btn">Import JSON<input type="file" accept="application/json" data-act="import" hidden></label>
       </div>
       <p class="muted">Last backup: ${backupLabel()}</p>
+      ${locationSetting()}
+      <p class="muted">Backups include game locations when location is recorded. <button class="link" data-act="export-noloc">Export without locations</button></p>
     </section>`;
 }
 
@@ -108,6 +110,7 @@ function sessionView(s) {
         <label class="inline">Pounce bonus <input data-field="bonus" type="number" inputmode="numeric" min="0" max="60" value="${s.bonus}" class="narrow"></label>
       </div>
       <p class="muted">Changing the bonus or pile affects future games; saved games keep the rules they were played with.</p>
+      ${locationSetting()}
     </details>
     ${rosterView(s)}
     ${gamePanel(s, cur)}
@@ -322,6 +325,7 @@ app.addEventListener('click', (e) => {
   const id = /** @type {HTMLElement} */ (t).dataset.id ?? '';
   const s = currentSession();
   if (act === 'export') return void exportData();
+  if (act === 'export-noloc') return void exportData(false);
   if (act === 'snooze') { setLS(REMIND_AFTER, new Date(Date.now() + 864e5).toISOString()); return render(); }
   if (act === 'export-session-json' && s) return exportSession(s, 'json');
   if (act === 'export-session-html' && s) return exportSession(s, 'html');
@@ -341,6 +345,7 @@ app.addEventListener('click', (e) => {
     }
   } else if (act === 'start') {
     s.current = { startedAt: Date.now(), endedAt: null, scores: {}, pouncer: null };
+    captureLocation(s.current);
   } else if (act === 'end' && s.current) {
     s.current.endedAt = Date.now();
   } else if (act === 'cancel') {
@@ -383,6 +388,7 @@ app.addEventListener('input', (e) => {
 app.addEventListener('change', (e) => {
   const el = /** @type {HTMLInputElement} */ (e.target);
   if (el.dataset.act === 'import' && el.files?.[0]) importData(el.files[0]);
+  if (el.dataset.act === 'record-location') { setLS(REC_LOC, el.checked ? '1' : '0'); render(); }
   if (el.dataset.field === 'venue') render();
 });
 
@@ -418,7 +424,8 @@ app.addEventListener('submit', (e) => {
     if (validateResults(results).length) return;
     const notes = (s.current.notes ?? '').trim();
     s.games.push({
-      id: uid(), startedAt: s.current.startedAt, durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, pile: pileOf(s),
+      id: uid(), startedAt: s.current.startedAt, offset: -new Date(s.current.startedAt).getTimezoneOffset(),
+      ...place(s.current), durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, pile: pileOf(s),
       results: results.map((r) => ({ ...r, ...(startPile(s, r.playerId) < pileOf(s) ? { pile: startPile(s, r.playerId) } : {}) })),
       ...(notes ? { notes } : {}),
     });
@@ -545,6 +552,40 @@ function openGameModal(s, gameId) {
   dlg.showModal();
 }
 
+// ---------- location (ADR 0011 item 6): opt-in, captured at game start, kept on the device ----------
+
+const REC_LOC = 'pounce:recordLocation';
+const recordingLocation = () => getLS(REC_LOC) === '1';
+function locationSetting() {
+  return `<label class="inline"><input type="checkbox" data-act="record-location" ${recordingLocation() ? 'checked' : ''}> Record location of each game</label>
+    <p class="muted">Off by default. Asked for when you turn it on; stored only on this device and in backups you export.</p>`;
+}
+
+/** Start a position lookup for a new game; it never blocks play and leaves nothing set on failure. @param {Current} cur */
+function captureLocation(cur) {
+  if (!recordingLocation() || !navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const { latitude, longitude, accuracy } = pos.coords;
+    if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) return;
+    cur.lat = +latitude.toFixed(6);
+    cur.lon = +longitude.toFixed(6);
+    cur.acc = Number.isFinite(accuracy) && accuracy >= 0 ? Math.round(accuracy) : null;
+    save();
+  }, () => {}, { timeout: 8000, maximumAge: 0, enableHighAccuracy: false });
+}
+
+/** lat, lon, acc for a saved game: all null when unknown. @param {Current} cur */
+function place(cur) {
+  const ok = typeof cur.lat === 'number' && typeof cur.lon === 'number';
+  return { lat: ok ? cur.lat : null, lon: ok ? cur.lon : null, acc: ok && typeof cur.acc === 'number' ? cur.acc : null };
+}
+
+/** Make a game's location fields valid or null. @param {any} g */
+function cleanGame(g) {
+  const ok = Number.isFinite(g.lat) && Number.isFinite(g.lon) && Math.abs(g.lat) <= 90 && Math.abs(g.lon) <= 180;
+  return { ...g, lat: ok ? g.lat : null, lon: ok ? g.lon : null, acc: ok && Number.isFinite(g.acc) && g.acc >= 0 ? Math.round(g.acc) : null };
+}
+
 // ---------- backup (ADR 0011) ----------
 
 const SCHEMA = 1;
@@ -575,13 +616,16 @@ function backupBanner() {
     <div class="row"><button class="primary" data-act="export">Export</button><button data-act="snooze">Remind me tomorrow</button></div></section>`;
 }
 
-function backupJson() {
-  return JSON.stringify({ app: 'pounce', schema: SCHEMA, exportedAt: new Date().toISOString(), settings: {}, players: db.players, sessions: db.sessions }, null, 2);
+/** @param {boolean} withLocation */
+function backupJson(withLocation) {
+  const sessions = withLocation ? db.sessions
+    : db.sessions.map((x) => ({ ...x, games: x.games.map((g) => ({ ...g, lat: null, lon: null, acc: null })) }));
+  return JSON.stringify({ app: 'pounce', schema: SCHEMA, exportedAt: new Date().toISOString(), settings: {}, players: db.players, sessions }, null, 2);
 }
 
-async function exportData() {
+async function exportData(withLocation = true) {
   const name = `pounce-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  const file = new File([backupJson()], name, { type: 'application/json' });
+  const file = new File([backupJson(withLocation)], name, { type: 'application/json' });
   if (navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: name });
@@ -611,7 +655,7 @@ function upgradeBackup(raw) {
   const ok = (/** @type {any} */ x) => x && typeof x.id === 'string';
   return {
     players: raw.players.filter((p) => ok(p) && typeof p.name === 'string'),
-    sessions: raw.sessions.filter((x) => ok(x) && Array.isArray(x.games)),
+    sessions: raw.sessions.filter((x) => ok(x) && Array.isArray(x.games)).map((x) => ({ ...x, games: x.games.filter(ok).map(cleanGame) })),
   };
 }
 
