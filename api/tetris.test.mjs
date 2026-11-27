@@ -15,7 +15,7 @@ import { markSquares, squaresInRow } from "../web/tetris/src/game/squares.js";
 import { formatTime, gameSeconds, gradePerf, isNatural, lineRate, naturalNumber, summarize } from "../web/tetris/src/game/stats.js";
 import { createGame, landingY, replay, step } from "../web/tetris/src/game/state.js";
 import { createRepeater } from "../web/tetris/src/input/actions.js";
-import { axisDirection, BUTTON, createGamepad, describePad, dpadOnStick, hatDirections, mapPad, newPadState, observePad } from "../web/tetris/src/input/gamepad.js";
+import { axisDirection, bindButton, BUTTON, createGamepad, defaultBindings, describePad, dpadOnStick, hatDirections, mapPad, newPadState, observePad, sanitizeBindings } from "../web/tetris/src/input/gamepad.js";
 import { createPieceTween, easeOutCubic, TWEEN_MS } from "../web/tetris/src/ui/tween.js";
 import { createEffects } from "../web/tetris/src/ui/effects.js";
 import { buildScorecard, SCORECARD_FORMAT, scorecardFilename, scorecardJson, scorecardSections } from "../web/tetris/src/ui/scorecard.js";
@@ -1276,6 +1276,40 @@ test("hatDirections decodes the eight positions and neutral", () => {
 test("Y also hard-drops on a standard pad, but not on a non-standard one", () => {
   assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.Y] }))].sort(), ["hardDrop", "up"]);
   assert.equal(mapPad(fakePad({ down: [BUTTON.Y], mapping: "" })).size, 0);
+});
+
+test("swapping the spin bindings makes A spin counter-clockwise and B clockwise, with menus unchanged", () => {
+  let b = bindButton(defaultBindings(), "rotateCW", BUTTON.B);
+  b = bindButton(b, "rotateCCW", BUTTON.A);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.A] }), undefined, undefined, b)].sort(), ["confirm", "rotateCCW"]);
+  assert.deepEqual([...mapPad(fakePad({ down: [BUTTON.B] }), undefined, undefined, b)].sort(), ["back", "rotateCW"]);
+});
+
+test("a button can only do one remappable action; a stripped action falls back to its default", () => {
+  const b = bindButton(defaultBindings(), "hold", BUTTON.A);
+  assert.deepEqual(b.hold, [BUTTON.A]);
+  assert.ok(!b.rotateCW.includes(BUTTON.A), "A was taken from spin clockwise");
+  assert.deepEqual(b.rotateCW, [], "its default button was the one claimed, so it is left unbound");
+  assert.deepEqual(bindButton(defaultBindings(), "rotateCW", BUTTON.Y).hardDrop, [], "hard drop lost Y and has no other default");
+  assert.deepEqual(bindButton(defaultBindings(), "hold", BUTTON.LB).hold, [BUTTON.LB]);
+  assert.deepEqual(bindButton(bindButton(defaultBindings(), "hold", BUTTON.LB), "pause", BUTTON.RB).hold, [BUTTON.LB]);
+});
+
+test("sanitizeBindings ignores junk and keeps valid entries", () => {
+  assert.deepEqual(sanitizeBindings(null), defaultBindings());
+  assert.deepEqual(sanitizeBindings({ rotateCW: "x", rotateCCW: [-1], hold: [2] }), { ...defaultBindings(), hold: [2] });
+});
+
+test("createGamepad uses and updates bindings, and listen reports a fresh button press", () => {
+  let pad = fakePad({ down: [BUTTON.A] });
+  const gp = createGamepad(new EventTarget(), { nav: { getGamepads: () => [pad] } });
+  gp.setBindings(bindButton(bindButton(defaultBindings(), "rotateCW", BUTTON.B), "rotateCCW", BUTTON.A));
+  assert.deepEqual(gp.poll().pressed.sort(), ["confirm", "rotateCCW"]);
+  gp.resetListen();
+  assert.equal(gp.listen(), null, "a button already held is not a press");
+  pad = fakePad({ down: [BUTTON.A, BUTTON.X] });
+  assert.equal(gp.listen(), BUTTON.X);
+  assert.equal(gp.listen(), null);
 });
 
 test("createGamepad.info says how the d-pad arrives", () => {
