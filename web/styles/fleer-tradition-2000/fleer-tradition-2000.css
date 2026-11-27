@@ -1,0 +1,480 @@
+/*
+ * fleer-tradition-2000: a style sheet inspired by the 2000 Fleer Tradition
+ * baseball card set. Fronts are a flat team color with a cream border, a wide
+ * black-caps name, a round team logo, a big portrait with a small black-and-
+ * white action shot, a silver facsimile signature and a blue Fleer Tradition
+ * badge. Backs are a maroon border around kraft cardboard with a home-plate
+ * card number, a cartoon, a stat table under a black bar and a faint team
+ * watermark.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/fleer-tradition-2000/fleer-tradition-2000.css">
+ * Docs and live examples: /styles/fleer-tradition-2000/
+ *
+ * Everything is prefixed: classes `ft-`, custom properties `--ft-`. The only
+ * element rules are under the opt-in `.ft` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one.
+ *
+ * Cards and sleeves are printed cardboard: they keep their cream, kraft and ink
+ * colors in both modes, like cards on a dark table. Only the page (a binder
+ * page of card stock) changes between modes.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, fleer-tradition-2000-2.css. Additive changes are
+ * fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* page, light. Contrast on bg: text 15.0, muted 6.9, link 7.6, line 15.0 */
+  --ft-bg: #F1E9D4;
+  --ft-text: #1A1510;
+  --ft-muted: #5A4B3A;
+  --ft-link: #8A1C2B;
+  --ft-line: #1A1510;
+  --ft-focus: #8A1C2B;
+  --ft-shadow: 0 1px 2px #1A151026, 0 8px 18px -10px #1A151099;
+
+  /* printed cardboard, the same in both modes */
+  --ft-paper: #F5EFDD;          /* the cream border of a front */
+  --ft-ink: #16120E;            /* ink/paper 17.2, muted/paper 7.7 */
+  --ft-ink-muted: #55483A;
+  --ft-kraft: #CDAE7F;          /* the back stock; ink on it 7.8, muted 5.5 */
+  --ft-kraft-ink: #2B1C10;
+  --ft-kraft-muted: #4A3520;
+  --ft-maroon: #7B1E2B;         /* the back border and number plate; white on it 10.2 */
+  --ft-on-maroon: #FFFFFF;
+  --ft-brand: #2C4A9A;          /* the Fleer Tradition badge; white on it 8.2 */
+  --ft-on-brand: #FFFFFF;
+  --ft-silver: #E4E7EC;         /* facsimile signature and badge lettering */
+
+  /* team color fields, and the text color that reads on each (each pair is at
+     least 4.5:1: ink on yellow 11.4, blue 6.1, green 7.0, orange 5.2; white
+     on red 6.5, purple 5.7) */
+  --ft-yellow: #F4C531; --ft-on-yellow: #16120E;
+  --ft-blue:   #3F9BDB; --ft-on-blue:   #16120E;
+  --ft-red:    #B3262F; --ft-on-red:    #FFFFFF;
+  --ft-green:  #62B050; --ft-on-green:  #16120E;
+  --ft-purple: #6F57B5; --ft-on-purple: #FFFFFF;
+  --ft-orange: #E8563A; --ft-on-orange: #16120E;
+
+  /* type: wide heavy caps for names, plain sans for the rest */
+  --ft-font-display: "Eurostile Extended", Eurostile, "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --ft-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ft-font-narrow: "Arial Narrow", "Franklin Gothic Medium", "Helvetica Neue", Arial, sans-serif;
+  --ft-font-script: "Segoe Script", "Bradley Hand", "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive;
+  --ft-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ft-track: 0.14em;
+  --ft-radius: 0.15rem;
+
+  /* team color in context: set by .ft-c-* classes */
+  --ft-field: var(--ft-yellow);
+  --ft-on-field: var(--ft-on-yellow);
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast on bg: text 15.1, muted 8.6, link 8.3, line 4.8 */
+  :root:not([data-theme="light"]) {
+    --ft-bg: #15171E;
+    --ft-text: #F2EBDA;
+    --ft-muted: #B9B4A6;
+    --ft-link: #F29A8C;
+    --ft-line: #7E8497;
+    --ft-focus: #F4C531;
+    --ft-shadow: 0 1px 2px #000A, 0 8px 18px -10px #000;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ft-bg: #15171E;
+  --ft-text: #F2EBDA;
+  --ft-muted: #B9B4A6;
+  --ft-link: #F29A8C;
+  --ft-line: #7E8497;
+  --ft-focus: #F4C531;
+  --ft-shadow: 0 1px 2px #000A, 0 8px 18px -10px #000;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- team colors: add to a front card or a swatch ----------------------- */
+
+.ft-c-yellow { --ft-field: var(--ft-yellow); --ft-on-field: var(--ft-on-yellow); }
+.ft-c-blue   { --ft-field: var(--ft-blue);   --ft-on-field: var(--ft-on-blue); }
+.ft-c-red    { --ft-field: var(--ft-red);    --ft-on-field: var(--ft-on-red); }
+.ft-c-green  { --ft-field: var(--ft-green);  --ft-on-field: var(--ft-on-green); }
+.ft-c-purple { --ft-field: var(--ft-purple); --ft-on-field: var(--ft-on-purple); }
+.ft-c-orange { --ft-field: var(--ft-orange); --ft-on-field: var(--ft-on-orange); }
+
+/* ---- page: opt in with class="ft" on <body> ----------------------------- */
+
+.ft {
+  margin: 0;
+  background: var(--ft-bg);
+  color: var(--ft-text);
+  font: 1rem/1.55 var(--ft-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.ft *, .ft *::before, .ft *::after { box-sizing: border-box; }
+.ft h1, .ft h2, .ft h3, .ft h4 {
+  font-family: var(--ft-font-display);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ft-text);
+  margin: 0 0 0.5em;
+}
+.ft h1 { font-size: clamp(2rem, 7vw, 3.75rem); }
+.ft h2 { font-size: clamp(1.25rem, 3.6vw, 1.75rem); }
+.ft h3 { font-size: 1.05rem; }
+.ft h4 { font-size: 0.85rem; letter-spacing: var(--ft-track); }
+.ft a { color: var(--ft-link); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.ft a:hover { text-decoration-thickness: 2px; }
+.ft :focus-visible { outline: 3px solid var(--ft-focus); outline-offset: 2px; }
+.ft hr { border: 0; border-top: 2px solid var(--ft-line); margin: 2rem 0; }
+.ft code, .ft kbd { font-family: var(--ft-font-mono); font-size: 0.9em; }
+
+/* ---- type --------------------------------------------------------------- */
+
+/* wide black caps, the player-name look */
+.ft-title {
+  font-family: var(--ft-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: var(--ft-text);
+  margin: 0;
+}
+.ft-title--xl { font-size: clamp(2.2rem, 9vw, 4.75rem); }
+.ft-title--lg { font-size: clamp(1.75rem, 5vw, 2.75rem); }
+.ft-title--md { font-size: clamp(1.15rem, 3.5vw, 1.5rem); }
+
+/* small spaced caps, like the team and position line */
+.ft-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--ft-track);
+  color: var(--ft-muted);
+}
+.ft-copy { font-size: 0.95rem; line-height: 1.5; max-width: 38rem; }
+
+/* ---- front: a team-color card in a cream border -------------------------- */
+
+.ft-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 15rem);
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  background: var(--ft-field);
+  color: var(--ft-on-field);
+  border: 0.4rem solid var(--ft-paper);
+  border-bottom-width: 0.6rem;
+  border-radius: 0.2rem;
+  box-shadow: var(--ft-shadow);
+  font-family: var(--ft-font-display);
+}
+.ft-card-head { padding: 0.6rem 0.75rem 0; text-align: center; }
+.ft .ft-card-name, .ft-card-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: inherit;
+}
+.ft-card-sub {
+  margin: 0.2rem 0 0;
+  font-family: var(--ft-font-body);
+  font-size: 0.55rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+/* round white team logo; put an <img>, an emoji or a short word in it */
+.ft-logo {
+  position: absolute;
+  top: 3.7rem;
+  right: 0.55rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  overflow: hidden;
+  background: #FFFFFF;
+  color: var(--ft-ink);
+  border: 1px solid var(--ft-ink);
+  border-radius: 50%;
+  font-family: var(--ft-font-body);
+  font-size: 0.5rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+.ft-logo img { width: 100%; height: 100%; object-fit: contain; }
+/* the big portrait: an <img> fills it; empty, it shows a plain placeholder */
+.ft-photo {
+  flex: 1;
+  min-height: 0;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 40% 34% at 50% 38%, #16120E55 0 99%, transparent 100%),
+    radial-gradient(ellipse 80% 40% at 50% 100%, #16120E40 0 99%, transparent 100%);
+}
+.ft-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+/* the small black-and-white action shot at lower left */
+.ft-action {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 1.9rem;
+  z-index: 2;
+  width: 32%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #FFFFFF66;
+  filter: grayscale(1);
+}
+.ft-action img { display: block; width: 100%; height: 100%; object-fit: contain; }
+/* silver facsimile signature across the foot; it is decoration, so the name stays in the head */
+.ft-sig {
+  position: absolute;
+  left: 0.6rem;
+  right: 4.2rem;
+  bottom: 0.45rem;
+  z-index: 2;
+  font-family: var(--ft-font-script);
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--ft-silver);
+  text-shadow: 0 0 2px #16120E, 0 1px 3px #16120E;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+/* blue Fleer Tradition badge, bottom right */
+.ft-brand {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  z-index: 2;
+  display: grid;
+  gap: 0.05rem;
+  padding: 0.15rem 0.4rem 0.2rem;
+  background: var(--ft-brand);
+  color: var(--ft-silver);
+  border: 1px solid var(--ft-silver);
+  font-family: var(--ft-font-display);
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.ft-brand small { font-family: var(--ft-font-body); font-size: 0.4rem; font-weight: 700; letter-spacing: 0.18em; }
+
+/* ---- back: maroon border, kraft cardboard -------------------------------- */
+
+.ft-back {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: min(100%, 19rem);
+  min-height: 26rem;
+  padding: 0.7rem 0.75rem 0.5rem;
+  overflow: hidden;
+  background: var(--ft-kraft);
+  color: var(--ft-kraft-ink);
+  border: 0.4rem solid var(--ft-maroon);
+  border-radius: 0.2rem;
+  box-shadow: var(--ft-shadow);
+  font-family: var(--ft-font-narrow);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+/* faint team name behind the stats: <div class="ft-back" data-team="Pirates"> */
+.ft-back[data-team]::after {
+  content: attr(data-team);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22%;
+  z-index: 0;
+  text-align: center;
+  font-family: var(--ft-font-display);
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ft-kraft-ink);
+  opacity: 0.1;
+  pointer-events: none;
+}
+.ft-back > * { position: relative; z-index: 1; }
+.ft-back-head { display: grid; gap: 0.1rem; padding-right: 2.6rem; }
+.ft .ft-back-name, .ft-back-name {
+  margin: 0;
+  font-family: var(--ft-font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ft-kraft-ink);
+}
+.ft-back-team { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ft-maroon); }
+.ft-back-pos { font-style: italic; text-transform: lowercase; letter-spacing: 0.02em; color: var(--ft-kraft-muted); }
+/* home-plate card number, top right */
+.ft-num {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  display: grid;
+  place-items: start center;
+  width: 2.3rem;
+  height: 2.2rem;
+  padding-top: 0.3rem;
+  background: var(--ft-maroon);
+  color: var(--ft-on-maroon);
+  clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
+  font-family: var(--ft-font-display);
+  font-size: 0.85rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.ft-bio { margin: 0; font-size: 0.62rem; line-height: 1.3; color: var(--ft-kraft-muted); }
+.ft-bio b { font-weight: 700; color: var(--ft-kraft-ink); }
+.ft-blurb { display: grid; grid-template-columns: 1fr 5.5rem; gap: 0.5rem; align-items: start; }
+.ft-blurb p { margin: 0; font-family: var(--ft-font-body); font-size: 0.68rem; line-height: 1.3; }
+/* the cartoon box: put an <img> or an emoji in it */
+.ft-toon {
+  display: grid;
+  place-items: center;
+  min-height: 4.5rem;
+  background: var(--ft-paper);
+  color: var(--ft-ink);
+  border: 2px solid var(--ft-kraft-ink);
+  font-size: 2rem;
+  line-height: 1;
+}
+.ft-toon img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.ft-fine { margin: auto 0 0; font-size: 0.45rem; line-height: 1.25; letter-spacing: 0.03em; text-transform: uppercase; color: var(--ft-kraft-muted); }
+.ft-fine span { float: right; margin-left: 0.5rem; padding: 0.1rem 0.35rem; background: var(--ft-maroon); color: var(--ft-on-maroon); font-family: var(--ft-font-display); font-weight: 900; font-size: 0.55rem; letter-spacing: 0.06em; }
+
+/* ---- stat table: a black bar over ruled rows ----------------------------- */
+
+.ft-table-wrap { overflow-x: auto; }
+.ft-table { width: 100%; border-collapse: collapse; font-family: var(--ft-font-narrow); font-size: 0.62rem; font-variant-numeric: tabular-nums; color: inherit; }
+.ft-table caption {
+  padding: 0.2rem 0.4rem;
+  background: var(--ft-ink);
+  color: var(--ft-paper);
+  font-family: var(--ft-font-display);
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  caption-side: top;
+}
+.ft-table th, .ft-table td { padding: 0.1rem 0.15rem; text-align: right; white-space: nowrap; }
+.ft-table th:first-child, .ft-table td:first-child,
+.ft-table th:nth-child(2), .ft-table td:nth-child(2) { text-align: left; }
+.ft-table thead th { font-weight: 800; border-bottom: 2px solid currentColor; }
+.ft-table tbody tr + tr td { border-top: 1px solid #2B1C1033; }
+.ft-table tfoot td { font-weight: 800; border-top: 2px solid currentColor; }
+/* the same table on the page instead of on a card: ruled in the page ink */
+.ft-table--page { background: var(--ft-paper); color: var(--ft-ink); border: 2px solid var(--ft-ink); font-size: 0.85rem; }
+.ft-table--page th, .ft-table--page td { padding: 0.4rem 0.7rem; }
+
+/* ---- sleeve and binder page: nine pockets of clear plastic --------------- */
+
+.ft-binder {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.5rem;
+  max-width: 48rem;
+  padding: 0.75rem;
+  background: var(--ft-bg);
+  border: 2px solid var(--ft-line);
+  border-radius: 0.4rem;
+}
+.ft-sleeve {
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  border: 1px solid var(--ft-line);
+  border-radius: 0.2rem;
+  background: linear-gradient(135deg, #FFFFFF26 0%, #FFFFFF00 40%, #FFFFFF14 100%);
+}
+.ft-sleeve .ft-card, .ft-sleeve .ft-back { width: 100%; }
+
+/* ---- controls ------------------------------------------------------------- */
+
+.ft-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.4rem 1.1rem;
+  background: var(--ft-brand);
+  color: var(--ft-on-brand);
+  border: 2px solid var(--ft-ink);
+  border-radius: var(--ft-radius);
+  box-shadow: 0 3px 0 var(--ft-ink);
+  font: 900 0.8rem/1 var(--ft-font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ft-button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ft-ink); }
+.ft-button:disabled { opacity: 0.55; cursor: not-allowed; }
+.ft-button--paper { background: var(--ft-paper); color: var(--ft-ink); }
+.ft-button--ghost { background: transparent; color: var(--ft-text); border-color: var(--ft-line); box-shadow: none; }
+.ft-button--ghost:active { transform: none; }
+
+.ft-field { display: grid; gap: 0.3rem; }
+.ft-input, .ft-select {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.7rem;
+  background: var(--ft-paper);
+  color: var(--ft-ink);
+  border: 2px solid var(--ft-ink);
+  border-radius: var(--ft-radius);
+  font: 1rem var(--ft-font-body);
+}
+.ft-input::placeholder { color: var(--ft-ink-muted); }
+
+/* ---- badge, divider ------------------------------------------------------- */
+
+.ft-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--ft-line);
+  border-radius: 999px;
+  color: var(--ft-text);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: var(--ft-track);
+  text-transform: uppercase;
+}
+.ft-badge--solid { background: var(--ft-brand); color: var(--ft-on-brand); border-color: var(--ft-ink); }
+/* a thin rule over a thick one, like the border between card and field */
+.ft-divider { border: 0; height: 6px; border-block: 1px solid var(--ft-line); background: linear-gradient(var(--ft-line), var(--ft-line)) center / 100% 3px no-repeat; margin: 1.5rem 0; }
