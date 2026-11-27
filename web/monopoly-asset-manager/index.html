@@ -78,6 +78,7 @@
     .pick label.off { color: var(--fg2); }
     #tradeDlg { width: min(40rem, calc(100vw - 32px)); }
     #preview { background: var(--mon-bill-1); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; }
+    #repairPreview { background: var(--mon-bill-1); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; white-space: pre-wrap; }
     #preview.err { color: var(--bad); font-weight: 700; }
     small#version { display: block; margin-top: 2rem; color: var(--fg2); }
   </style>
@@ -134,6 +135,23 @@
     </form>
   </dialog>
 
+  <dialog id="repairsDlg">
+    <form id="repairsForm">
+      <h2>Repairs</h2>
+      <p class="muted" style="margin:0">A repairs card charges you for every house, hotel, skyscraper and train depot you own. Each property's share is added to its cost basis.</p>
+      <fieldset class="editions">
+        <legend>Card drawn</legend>
+        <label class="opt"><input type="radio" name="rcard" value="chance" checked> <span><b>Chance</b><br><span class="muted" id="rateChance"></span></span></label>
+        <label class="opt"><input type="radio" name="rcard" value="chest"> <span><b>Community Chest</b><br><span class="muted" id="rateChest"></span></span></label>
+      </fieldset>
+      <div id="repairPreview" role="status"></div>
+      <div class="row">
+        <button class="mon-button" id="repairGo" value="go">Pay</button>
+        <button type="button" id="repairCancel" class="mon-button mon-button--paper">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
   <div id="main" hidden>
     <div class="summary" id="summary"></div>
 
@@ -148,6 +166,7 @@
 
     <div class="row"><h2 style="margin:0">Properties</h2>
       <button id="trade" class="mon-button mon-button--paper">Trade</button>
+      <button id="repairs" class="mon-button mon-button--paper">Repairs</button>
       <select id="sort" class="mon-select" aria-label="Sort"><option value="added">in order bought</option><option value="remaining">most left to break even</option><option value="profit">best profit</option><option value="group">by group</option></select>
     </div>
     <div id="list"></div>
@@ -173,6 +192,7 @@
       <li><b>Returned</b>: rent collected plus improvements sold back (at half cost).</li>
       <li><b>Break even</b> when returned reaches invested. <b>ROI</b> is (returned − invested) ÷ invested.</li>
       <li>A mortgage is a loan: the cash is not counted as income, only the interest is a cost. Outstanding loans are shown separately.</li>
+      <li><b>Repairs:</b> the Repairs button charges a Chance or Community Chest repairs card for every house, hotel, skyscraper and train depot you own. A hotel replaces its houses and a skyscraper replaces its hotel, as on the board. Each property's share goes in its history and adds to its cost basis, so it counts toward what you need to break even.</li>
       <li><b>Trades:</b> the cost basis of what you give (price paid, less improvements sold back) plus cash you pay, less cash you receive, becomes the cost basis of what you receive, split evenly. Properties traded away stay in your totals, and basis moved between them is not counted twice.</li>
       <li><b>Rent</b> is taken from the card and your game: improvement level, set bonuses (standard: double for a full unimproved set; Mega: one shy of the full set pays double the site rent, and the full set pays triple), railroads and utilities by number owned. You only enter the dice total for a utility.</li>
       <li><b>Rents to break even</b> uses your average rent collected so far, or what the card pays now.</li>
@@ -180,10 +200,10 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T19:09:04Z</small>
+  <small id="version">2026-11-27T19:14:26Z</small>
 
   <script type="module">
-    import { CARDS, GROUPS, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+    import { CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
@@ -488,6 +508,34 @@
       const err = executeTrade(game(), tradeInput());
       if (err) { $('preview').classList.add('err'); $('preview').textContent = err; return; }
       tdlg.close(); say('Trade recorded.'); save(); render();
+    });
+
+    // --- repairs (Chance / Community Chest) ---
+    const rdlg = $('repairsDlg');
+    const rateText = (g, r) => '$' + r.house + ' per house, $' + r.hotel + ' per hotel' + (g.edition === 'mega' ? ', $' + r.skyscraper + ' per skyscraper, $' + r.depot + ' per train depot' : '');
+    const repairCard = () => $('repairsForm').elements.rcard.value;
+    function previewRepairs() {
+      const g = game(), plan = planRepairs(g, repairCard());
+      $('repairGo').disabled = !plan.lines.length;
+      $('repairGo').textContent = plan.lines.length ? 'Pay ' + money(plan.total) : 'Nothing to pay';
+      $('repairPreview').textContent = plan.lines.length
+        ? plan.lines.map((l) => l.property.name + ': ' + l.text + ' = ' + money(l.cost)).join('\n') + '\nTotal ' + money(plan.total) + ', added to each property\'s cost basis.'
+        : 'You have no improvements.';
+    }
+    $('repairs').addEventListener('click', () => {
+      const g = game(); if (!g) return;
+      $('rateChance').textContent = rateText(g, REPAIR_RATES.chance);
+      $('rateChest').textContent = rateText(g, REPAIR_RATES.chest);
+      previewRepairs(); rdlg.showModal();
+    });
+    $('repairsForm').addEventListener('change', previewRepairs);
+    $('repairCancel').addEventListener('click', () => rdlg.close());
+    $('repairsForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const g = game(), plan = planRepairs(g, repairCard());
+      const err = payRepairs(g, repairCard());
+      if (err) { $('repairPreview').textContent = err; return; }
+      rdlg.close(); say(plan.card + ' repairs paid: ' + money(plan.total) + ' across ' + plan.lines.length + (plan.lines.length === 1 ? ' property.' : ' properties.')); save(); render();
     });
 
     $('export').addEventListener('click', () => {

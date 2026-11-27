@@ -1,7 +1,7 @@
 // Tests for the Monopoly asset manager logic (web/monopoly-asset-manager/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CARDS, CLASSIC, MEGA, basisOf, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
+import { CARDS, CLASSIC, MEGA, REPAIR_RATES, basisOf, payRepairs, pieces, planRepairs, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -457,4 +457,60 @@ test("delete history: trade entries can't be deleted, and a traded-away property
   assert.equal(deleteEntry(g, old, entryOf(old, "rent")[0].id, true), null);
   assert.equal(stats(old).rent, 0);
   assert.equal(canDeleteEntry(g.properties[0], g.properties[0].entries[0]), false); // the traded-in purchase
+});
+
+const build = (p, n, max = 6) => { for (let i = 0; i < n; i++) assert.equal(improve(p, max), null); };
+
+test("repairs: the Mega card rates from the photo", () => {
+  assert.deepEqual({ ...REPAIR_RATES.chance, name: 0 }, { name: 0, house: 25, hotel: 100, skyscraper: 100, depot: 25 });
+  assert.deepEqual({ ...REPAIR_RATES.chest, name: 0 }, { name: 0, house: 40, hotel: 115, skyscraper: 100, depot: 25 });
+});
+
+test("repairs: houses, a hotel replacing its houses, a skyscraper replacing its hotel, and a depot", () => {
+  const g = megaGame();
+  const med = mega("Mediterranean Avenue"), bal = mega("Baltic Avenue"), arc = mega("Arctic Avenue"), rr = mega("Reading Railroad"), idle = mega("Boardwalk");
+  g.properties.push(med, bal, arc, rr, idle);
+  build(med, 3);  // 3 houses
+  build(bal, 5);  // a hotel, not 4 houses and a hotel
+  build(arc, 6);  // a skyscraper
+  build(rr, 1, 1); // a train depot
+  assert.deepEqual(pieces(bal), { houses: 0, hotels: 1, skyscrapers: 0, depots: 0 });
+  assert.deepEqual(pieces(arc), { houses: 0, hotels: 0, skyscrapers: 1, depots: 0 });
+  assert.deepEqual(pieces(rr), { houses: 0, hotels: 0, skyscrapers: 0, depots: 1 });
+  const chance = planRepairs(g, "chance");
+  assert.deepEqual(chance.lines.map((l) => [l.property.name, l.cost]), [["Mediterranean Avenue", 75], ["Baltic Avenue", 100], ["Arctic Avenue", 100], ["Reading Railroad", 25]]);
+  assert.equal(chance.total, 300);
+  const chest = planRepairs(g, "chest");
+  assert.deepEqual(chest.lines.map((l) => l.cost), [120, 115, 100, 25]);
+  assert.equal(chest.total, 360);
+});
+
+test("repairs: paying adds each share to that property's cost basis and history", () => {
+  const g = megaGame();
+  const med = mega("Mediterranean Avenue"), bal = mega("Baltic Avenue"), idle = mega("Boardwalk");
+  g.properties.push(med, bal, idle);
+  build(med, 2); build(bal, 4);
+  const before = [med, bal, idle].map((p) => stats(p).invested);
+  assert.equal(payRepairs(g, "chest"), null);
+  assert.deepEqual([med, bal, idle].map((p) => stats(p).invested), [before[0] + 80, before[1] + 160, before[2]]);
+  assert.equal(basisOf(med), before[0] + 80); // a cost, so it is part of the basis
+  assert.equal(entryOf(med, "repairs").length, 1);
+  assert.equal(entryOf(med, "repairs")[0].amount, -80);
+  assert.match(entryOf(med, "repairs")[0].note, /Community Chest repairs: 2 houses/);
+  assert.equal(entryOf(idle, "repairs").length, 0); // nothing built, nothing owed
+  assert.equal(gameStats(g).invested, before.reduce((a, b) => a + b, 0) + 240);
+  // a mistaken entry can be removed from history like any other, without disturbing the build
+  assert.equal(deleteEntry(g, med, entryOf(med, "repairs")[0].id), null);
+  assert.equal(med.level, 2);
+  assert.equal(stats(med).invested, before[0]);
+});
+
+test("repairs: the original game uses the same house and hotel amounts, and nothing built means nothing to pay", () => {
+  const g = game();
+  const pp = own(g, "Park Place", 350);
+  assert.match(payRepairs(g, "chance"), /nothing to pay/);
+  assert.equal(entryOf(pp, "repairs").length, 0);
+  build(pp, 5, 5); // a hotel
+  assert.equal(planRepairs(g, "chance").total, 100);
+  assert.equal(planRepairs(g, "chest").total, 115);
 });

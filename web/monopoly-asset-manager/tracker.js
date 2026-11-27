@@ -1,7 +1,7 @@
 // Pure logic for the Monopoly asset manager. No DOM; tested by api/monopoly-asset-manager.test.mjs.
 
 /**
- * @typedef {{ id: string, type: "buy"|"rent"|"improve"|"sell"|"mortgage"|"unmortgage"|"trade-out"|"trade-cash"|"other", amount: number, note?: string, at: number, carried?: number }} Entry
+ * @typedef {{ id: string, type: "buy"|"rent"|"improve"|"sell"|"mortgage"|"unmortgage"|"repairs"|"trade-out"|"trade-cash"|"other", amount: number, note?: string, at: number, carried?: number }} Entry
  *   amount is the cash flow to you: negative when you pay, positive when you receive. Trades: a property received
  *   is a "buy" whose `carried` part is cost basis moved over from what you gave (not new cash); a property given
  *   away gets a "trade-out" for the basis it passed on and a "trade-cash" for cash received.
@@ -51,7 +51,7 @@ export function stats(p, g) {
   for (const e of p.entries) {
     switch (e.type) {
       case "buy": invested -= e.amount; transferIn += e.carried ?? 0; break;
-      case "improve": invested -= e.amount; break;
+      case "improve": case "repairs": invested -= e.amount; break;
       case "trade-out": transferOut += e.amount; break;
       case "trade-cash": tradeCash += e.amount; break;
       case "rent": rent += e.amount; rentCount++; break;
@@ -409,6 +409,62 @@ export function migrateGames(games) {
 export function buyProperty(g, card, paid) {
   if (g.properties.some((p) => p.name === card.name)) return `You already own ${card.name}.`;
   g.properties.push(newProperty({ ...card, paid }));
+  return null;
+}
+
+/**
+ * Property repairs from a Chance or Community Chest card, per piece on the board (the Mega cards, which match the
+ * original's house and hotel amounts and add skyscrapers and train depots).
+ */
+export const REPAIR_RATES = {
+  chance: { name: "Chance", house: 25, hotel: 100, skyscraper: 100, depot: 25 },
+  chest: { name: "Community Chest", house: 40, hotel: 115, skyscraper: 100, depot: 25 },
+};
+
+/**
+ * What is built on a property. Level 1-4 is that many houses, 5 is a hotel (it replaces the houses), 6 is a
+ * skyscraper (it replaces the hotel); a railroad's depot is its one improvement.
+ * @param {Property} p
+ */
+export function pieces(p) {
+  if (p.kind === "railroad") return { houses: 0, hotels: 0, skyscrapers: 0, depots: p.level >= 1 ? 1 : 0 };
+  return { houses: p.level >= 1 && p.level <= 4 ? p.level : 0, hotels: p.level === 5 ? 1 : 0, skyscrapers: p.level >= 6 ? 1 : 0, depots: 0 };
+}
+
+/** @param {{houses: number, hotels: number, skyscrapers: number, depots: number}} n */
+function describePieces(n) {
+  const out = [];
+  if (n.houses) out.push(`${n.houses} ${n.houses === 1 ? "house" : "houses"}`);
+  if (n.hotels) out.push(`${n.hotels} ${n.hotels === 1 ? "hotel" : "hotels"}`);
+  if (n.skyscrapers) out.push(`${n.skyscrapers} ${n.skyscrapers === 1 ? "skyscraper" : "skyscrapers"}`);
+  if (n.depots) out.push(`${n.depots} train ${n.depots === 1 ? "depot" : "depots"}`);
+  return out.join(", ");
+}
+
+/**
+ * What a repairs card costs you, property by property. Only properties with something built on them pay.
+ * @param {Game} g @param {"chance"|"chest"} card
+ */
+export function planRepairs(g, card) {
+  const r = REPAIR_RATES[card];
+  const lines = [];
+  for (const p of g.properties) {
+    const n = pieces(p);
+    const cost = n.houses * r.house + n.hotels * r.hotel + n.skyscrapers * r.skyscraper + n.depots * r.depot;
+    if (cost > 0) lines.push({ property: p, text: describePieces(n), cost });
+  }
+  return { card: r.name, lines, total: lines.reduce((a, l) => a + l.cost, 0) };
+}
+
+/**
+ * Pay a repairs card: each property's share goes on its own history and is added to its cost basis.
+ * Returns an error string if there is nothing to pay.
+ * @param {Game} g @param {"chance"|"chest"} card @returns {string | null}
+ */
+export function payRepairs(g, card) {
+  const plan = planRepairs(g, card);
+  if (!plan.lines.length) return "You have no improvements, so there is nothing to pay.";
+  for (const l of plan.lines) addEntry(l.property, "repairs", -l.cost, `${plan.card} repairs: ${l.text}`);
   return null;
 }
 
