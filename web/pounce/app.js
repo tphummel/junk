@@ -126,6 +126,7 @@ function gamesListView(games) {
   return `<section><h2>Games</h2><ul class="list">${games.map((g, i) => `
     <li><b>Game ${i + 1}</b>
       <span>${gameTotals(g).sort((a, b) => b.total - a.total).map((t) => `<span class="${gameWinners(g).includes(t.playerId) ? 'win' : ''}">${esc(nameOf(t.playerId))} ${t.total}${t.pounced ? ' ⚡' : ''}</span>`).join(' · ')}</span>
+      ${g.updatedAt ? `<span class="muted" title="${esc(new Date(g.updatedAt).toLocaleString())}">edited ${esc(new Date(g.updatedAt).toLocaleString())}</span>` : ''}
       <button class="link" data-act="edit-game" data-id="${g.id}">edit</button>
       <button class="link" data-act="del-game" data-id="${g.id}">delete</button></li>`).join('')}</ul></section>`;
 }
@@ -529,9 +530,11 @@ function openGameModal(s, gameId) {
     const results = read();
     const errors = validateResults(results);
     if (errors.length) { err.textContent = errors.join(' '); return; }
-    game.results = results;
     const notes = String(new FormData(form).get('notes') ?? '').trim();
+    const changed = JSON.stringify(results) !== JSON.stringify(game.results) || notes !== (game.notes ?? '');
+    game.results = results;
     if (notes) game.notes = notes; else delete game.notes;
+    if (changed) game.updatedAt = Date.now();
     save();
     dlg.close();
     render();

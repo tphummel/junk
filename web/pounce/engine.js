@@ -225,6 +225,7 @@ export function sessionReportHtml(exp) {
       return `<td class="${winners(g).includes(id) ? 'win' : ''}">${t.total}${t.pounced ? ' ⚡' : ''}</td>`;
     }).join('')}<td>${g.durationMs > 0 ? formatDuration(g.durationMs) : '–'}</td></tr>`;
   }).join('');
+  const edited = games.map((g, i) => (g.updatedAt ? `<li>Game ${i + 1} edited ${escHtml(new Date(g.updatedAt).toISOString())}</li>` : '')).join('');
   const notes = games.map((g, i) => (g.notes ? `<li><b>Game ${i + 1}</b> ${escHtml(g.notes)}</li>` : '')).join('');
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -260,6 +261,7 @@ ${h2h.map((r) => {
 <p class="muted">Totals include the pounce bonus. ⚡ pounced, bold won.</p>
 <table><thead><tr><th>#</th>${players.map((id) => `<th>${escHtml(name(id))}</th>`).join('')}<th>Length</th></tr></thead><tbody>${rows}</tbody></table>
 ${notes ? `<h2>Game notes</h2><ul>${notes}</ul>` : ''}
+${edited ? `<h2>Edits</h2><ul class="muted">${edited}</ul>` : ''}
 </body></html>
 `;
 }

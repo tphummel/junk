@@ -112,6 +112,9 @@ test("session html report is standalone and escapes names", () => {
   const html = sessionReportHtml(sessionExport(session, [{ id: "a", name: "A&B" }, { id: "b", name: "Bo" }]));
   assert.ok(html.startsWith("<!doctype html>"));
   assert.ok(!html.includes("<script"));
+  assert.ok(!html.includes("Edits"));
+  const edited = sessionReportHtml(sessionExport({ ...session, games: [{ ...session.games[0], updatedAt: 86400000 }] }, [{ id: "a", name: "A" }, { id: "b", name: "B" }]));
+  assert.ok(edited.includes("Game 1 edited 1970-01-02T00:00:00.000Z"));
   assert.ok(html.includes("Head to head") && html.includes("A&amp;B vs Bo"));
   assert.ok(html.includes("A&amp;B") && html.includes("&lt;Cafe&gt;") && html.includes("&lt;b&gt;x"));
 });
