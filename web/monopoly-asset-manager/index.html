@@ -4,133 +4,109 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>Monopoly property tracker</title>
+  <title>Monopoly asset manager</title>
+  <link rel="stylesheet" href="/styles/monopoly/monopoly.css">
   <style>
-    :root {
-      color-scheme: light dark;
-      /* golden-angle seed: #2D45D2 cw */
-      /* >= 4.5:1 on #FFFFFF (light) and #111111 (dark) */
-      --primary: #2D45D2;
-      --support: #5F68A1;
-      --accent:  #D2452D;
-      --bg: #FFFFFF;
-      --surface: #F4F5FB;
-      --line: #D3D6EA;
-      --text: #12142A;
-      --muted: #4F5470;
-      --good: #0B7A3B;
-      --bad: #B3261E;
-      --on-primary: #FFFFFF;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --primary: #6173DD;
-        --support: #7079AB;
-        --accent:  #D54F39;
-        --bg: #111111;
-        --surface: #1B1D2B;
-        --line: #2E3250;
-        --text: #EEEFF8;
-        --muted: #A3A8C6;
-        --good: #4CC27F;
-        --bad: #FF8A80;
-        --on-primary: #111111;
-      }
-    }
-    * { box-sizing: border-box; }
+    /* style sheet: monopoly */
+    /* Page layout only; colors, type and controls come from /styles/monopoly/monopoly.css (ADR 0009).
+       Surfaces that are printed paper (stats, cards, panels, dialogs) read ink colors in both modes. */
+    body { max-width: 56rem; margin: 0 auto; padding: 1rem 16px 3rem; }
+    .mon { --fg: var(--mon-text); --fg2: var(--mon-muted); --bad: var(--mon-red-ink); --good: var(--mon-text); }
+    .paper, .stat, .card, details.panel, dialog { --fg: var(--mon-ink); --fg2: var(--mon-ink-muted); --bad: var(--mon-red); --good: #0B6B33; color: var(--fg); }
     [hidden] { display: none !important; }
-    body { margin: 0 auto; max-width: 56rem; padding: 1rem 16px 3rem; background: var(--bg); color: var(--text); font: 1rem/1.45 system-ui, sans-serif; }
-    h1, h2 { color: var(--primary); margin: 0 0 .5rem; }
-    h1 { font-size: 1.5rem; }
-    h2 { font-size: 1.1rem; }
-    a { color: var(--primary); }
-    .muted { color: var(--muted); }
+    .mon h1.mon-title { margin: 0 0 .25rem; }
+    .mon .paper h1, .mon .paper h2, .mon .paper h3, .mon .stat h3, .mon .card h3, .mon dialog h2, .mon details.panel h2 { color: var(--fg); }
+    .mon-label, label { font-size: .72rem; font-weight: 700; line-height: 1.3; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg2); }
+    label { display: grid; gap: .15rem; }
+    .muted { color: var(--fg2); }
     .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
     .bar { margin: .75rem 0; }
-    input, select, button { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--support); border-radius: .4rem; padding: .35rem .55rem; min-height: 2.25rem; }
-    input[type=number] { width: 6.5rem; }
-    button { cursor: pointer; }
-    button.primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
-    button.danger { color: var(--bad); }
-    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .5rem; margin: .75rem 0; }
-    .stat { background: var(--surface); border: 1px solid var(--line); border-radius: .5rem; padding: .5rem .7rem; }
-    .stat b { display: block; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
-    .stat span { font-size: .8rem; color: var(--muted); }
+    .mon-input, .mon-select { min-height: 2.5rem; width: auto; }
+    input[type=number].mon-input { width: 6.5rem; }
+    .mon-button.danger { color: var(--mon-red); }
+    .mon :focus-visible { outline-color: var(--mon-focus); }
+    .mon .paper :focus-visible, .mon .stat :focus-visible, .mon .card :focus-visible, .mon details.panel :focus-visible, .mon dialog :focus-visible { outline-color: var(--mon-red); }
     .good { color: var(--good); } .bad { color: var(--bad); }
-    details.panel { background: var(--surface); border: 1px solid var(--line); border-radius: .5rem; padding: .5rem .75rem; margin: .75rem 0; }
-    details.panel > summary { cursor: pointer; color: var(--primary); font-weight: 600; }
-    .card { border: 1px solid var(--line); border-left: 6px solid var(--swatch, var(--support)); border-radius: .5rem; padding: .6rem .8rem; margin: .6rem 0; background: var(--surface); }
-    .card.mortgaged { opacity: .8; border-style: dashed; border-left-style: solid; }
-    .card h3 { margin: 0; font-size: 1.05rem; }
-    .card { padding: .4rem .8rem; }
-    .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem .75rem; }
-    .toggle { flex: 1 1 11rem; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem; min-height: 2.5rem; padding: .1rem 0; border: 0; background: none; color: var(--text); text-align: left; cursor: pointer; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .5rem; margin: .75rem 0; }
+    .stat { background: var(--mon-paper); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .7rem; box-shadow: var(--mon-shadow); }
+    .stat b { display: block; font: 800 1.25rem/1.2 var(--mon-font-display); font-variant-numeric: tabular-nums; }
+    .stat span { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg2); }
+    details.panel { background: var(--mon-paper); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; margin: .75rem 0; box-shadow: var(--mon-shadow); }
+    details.panel > summary { cursor: pointer; font: 800 .8rem/1.4 var(--mon-font-display); text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg); }
+    form.grid { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; margin-top: .4rem; }
+    #msg { min-height: 1.4rem; color: var(--mon-red-ink); font-weight: 700; }
+
+    /* property cards: a deed, with the group's color down the left edge */
+    .card:not([class*="mon-g-"]) { --mon-bar: var(--mon-ink-muted); } /* railroads and utilities have no color group */
+    .card { background: var(--mon-paper); border: 1px solid var(--mon-ink); border-left: 10px solid var(--mon-bar); border-radius: var(--mon-radius); padding: .4rem .8rem; margin: .6rem 0; box-shadow: var(--mon-shadow); }
+    .card.mortgaged { background-image: repeating-linear-gradient(135deg, #12171214 0 6px, transparent 6px 12px); }
+    .card h3 { margin: 0; font-size: 1rem; }
+    .head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .25rem .75rem; }
+    .head.stack { grid-template-columns: minmax(0, 1fr); } /* a card that needs a dice or rent field puts its rent row on its own line */
+    .toggle { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem; min-height: 2.5rem; padding: .1rem 0; border: 0; background: none; color: var(--fg); text-align: left; cursor: pointer; font: inherit; }
     .title { display: flex; align-items: center; gap: .3rem; }
-    .chev { color: var(--muted); width: 1rem; flex: none; }
+    .chev { color: var(--fg2); width: 1rem; flex: none; }
     .quick { margin: 0; flex-wrap: nowrap; }
-    .quick input { width: 6rem; }
+    .card .mon-button { min-height: 2.25rem; padding: .25rem .8rem; font-size: .72rem; }
+    .card .mon-input { min-height: 2.25rem; width: 5.5rem; }
     .more { margin: .25rem 0 .35rem; }
-    .tag { font-size: .75rem; border: 1px solid var(--support); border-radius: 1rem; padding: 0 .5rem; color: var(--muted); }
-    .tag.warn { color: var(--accent); border-color: var(--accent); }
-    .tag.ok { color: var(--good); border-color: var(--good); }
     .nums { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: .4rem 0; font-size: .9rem; font-variant-numeric: tabular-nums; }
-    .nums span b { font-weight: 600; }
-    progress { width: 100%; height: .6rem; accent-color: var(--primary); }
-    .hist { font-size: .85rem; margin: .4rem 0 0; padding: 0; list-style: none; max-height: 12rem; overflow: auto; font-variant-numeric: tabular-nums; }
-    .hist li { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding: .15rem 0; }
-    label { font-size: .85rem; color: var(--muted); display: grid; gap: .15rem; }
-    form.grid { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; }
-    #msg { min-height: 1.4rem; color: var(--accent); }
-    dialog { border: 1px solid var(--support); border-radius: .6rem; background: var(--bg); color: var(--text); padding: 1rem 1.25rem; width: min(26rem, calc(100vw - 32px)); }
-    dialog::backdrop { background: #0009; }
-    dialog form { display: grid; gap: .75rem; }
-    fieldset.editions { border: 1px solid var(--line); border-radius: .5rem; display: grid; gap: .5rem; margin: 0; }
-    fieldset.editions legend { color: var(--muted); font-size: .85rem; }
-    label.opt { display: flex; gap: .6rem; align-items: start; color: var(--text); font-size: 1rem; }
-    label.opt input { margin-top: .3rem; min-height: 0; }
+    .nums span b { font-weight: 700; }
+    progress { width: 100%; height: .6rem; accent-color: var(--mon-green); }
     table.rents { border-collapse: collapse; font-size: .85rem; font-variant-numeric: tabular-nums; margin: .4rem 0 0; }
-    table.rents td { border-top: 1px solid var(--line); padding: .1rem .75rem .1rem 0; }
-    table.rents tr.now td { color: var(--primary); font-weight: 700; }
+    table.rents td { border-top: 1px solid #12171233; padding: .1rem .75rem .1rem .25rem; }
+    table.rents tr.now td { background: var(--mon-chest); font-weight: 800; }
+    .hist { font-size: .85rem; margin: .4rem 0 0; padding: 0; list-style: none; max-height: 12rem; overflow: auto; font-variant-numeric: tabular-nums; }
+    .hist li { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid #12171233; padding: .15rem 0; }
+    details summary.muted { cursor: pointer; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); }
+
+    /* dialogs */
+    dialog { background: var(--mon-paper); border: 2px solid var(--mon-ink); border-radius: var(--mon-radius); padding: 1rem 1.25rem; width: min(26rem, calc(100vw - 32px)); box-shadow: var(--mon-shadow); }
+    dialog::backdrop { background: #000A; }
+    dialog form { display: grid; gap: .75rem; }
+    dialog h2 { margin: 0; }
+    fieldset.editions { border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); display: grid; gap: .5rem; margin: 0; }
+    fieldset.editions legend { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg2); }
+    label.opt { display: flex; gap: .6rem; align-items: start; color: var(--fg); font-size: 1rem; text-transform: none; letter-spacing: 0; font-weight: 400; }
+    label.opt input { margin-top: .3rem; }
     .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .75rem; }
-    .pick { border: 1px solid var(--line); border-radius: .5rem; padding: .35rem .6rem; max-height: 14rem; overflow: auto; display: grid; gap: .1rem; align-content: start; }
-    .pick label { display: flex; gap: .5rem; align-items: center; color: var(--text); font-size: .95rem; min-height: 1.9rem; }
-    .pick label.off { color: var(--muted); }
-    .pick input { min-height: 0; }
+    .pick { border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .35rem .6rem; max-height: 14rem; overflow: auto; display: grid; gap: .1rem; align-content: start; }
+    .pick label { display: flex; gap: .5rem; align-items: center; color: var(--fg); font-size: .95rem; font-weight: 400; text-transform: none; letter-spacing: 0; min-height: 1.9rem; }
+    .pick label.off { color: var(--fg2); }
     #tradeDlg { width: min(40rem, calc(100vw - 32px)); }
-    #preview { background: var(--surface); border: 1px solid var(--line); border-radius: .5rem; padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; }
-    #preview.err { color: var(--bad); }
-    small#version { display: block; margin-top: 2rem; color: var(--muted); }
+    #preview { background: var(--mon-bill-1); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; }
+    #preview.err { color: var(--bad); font-weight: 700; }
+    small#version { display: block; margin-top: 2rem; color: var(--fg2); }
   </style>
-  <meta name="theme-color" content="#111111">
-  <link rel="icon" href="/monopoly-tracker/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/monopoly-tracker/apple-touch-icon.png">
-  <link rel="manifest" href="/monopoly-tracker/manifest.webmanifest">
+  <meta name="theme-color" content="#10241A">
+  <link rel="icon" href="/monopoly-asset-manager/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/monopoly-asset-manager/apple-touch-icon.png">
+  <link rel="manifest" href="/monopoly-asset-manager/manifest.webmanifest">
 </head>
-<body>
-  <h1>Monopoly property tracker</h1>
+<body class="mon">
+  <h1 class="mon-title mon-title--lg">Monopoly asset manager</h1>
   <p class="muted">Track what you own in Monopoly or Monopoly Mega: rent collected, mortgages, improvements, ROI and break-even. Saved in this browser.</p>
 
   <div class="row bar">
-    <label>Game <select id="game"></select></label>
-    <button id="newGame" class="primary">New game</button>
-    <button id="renameGame">Rename</button>
-    <button id="deleteGame" class="danger">Delete</button>
+    <label>Game <select id="game" class="mon-select"></select></label>
+    <button id="newGame" class="mon-button">New game</button>
+    <button id="renameGame" class="mon-button mon-button--paper">Rename</button>
+    <button id="deleteGame" class="mon-button mon-button--paper danger">Delete</button>
   </div>
   <div id="msg" role="status"></div>
 
   <dialog id="newGameDlg">
     <form id="newGameForm" method="dialog">
       <h2>New game</h2>
-      <label>Name <input name="name" required maxlength="40" autocomplete="off"></label>
+      <label>Name <input class="mon-input" name="name" required maxlength="40" autocomplete="off"></label>
       <fieldset class="editions">
         <legend>Edition</legend>
         <label class="opt"><input type="radio" name="edition" value="classic" checked> <span><b>Standard Monopoly</b><br><span class="muted">40 spaces. Improvements: 4 houses, then a hotel.</span></span></label>
         <label class="opt"><input type="radio" name="edition" value="mega"> <span><b>Monopoly Mega</b><br><span class="muted">Adds 9 deeds (8 streets and the Gas Company), train depots, and a skyscraper above the hotel.</span></span></label>
       </fieldset>
       <div class="row">
-        <button class="primary" value="create">Create game</button>
-        <button value="cancel" formnovalidate>Cancel</button>
+        <button class="mon-button" value="create">Create game</button>
+        <button class="mon-button mon-button--paper" value="cancel" formnovalidate>Cancel</button>
       </div>
     </form>
   </dialog>
@@ -144,13 +120,13 @@
         <div><b>You receive</b><div class="pick" id="getList"></div></div>
       </div>
       <div class="row">
-        <label>Cash <select id="cashSide"><option value="none">none</option><option value="paid">I pay</option><option value="got">I receive</option></select></label>
-        <label>Amount <input id="cashAmt" type="number" min="0" step="1" disabled></label>
+        <label>Cash <select id="cashSide" class="mon-select"><option value="none">none</option><option value="paid">I pay</option><option value="got">I receive</option></select></label>
+        <label>Amount <input id="cashAmt" class="mon-input" type="number" min="0" step="1" disabled></label>
       </div>
       <div id="preview" role="status"></div>
       <div class="row">
-        <button class="primary" id="tradeGo" value="go">Make trade</button>
-        <button type="button" id="tradeCancel">Cancel</button>
+        <button class="mon-button" id="tradeGo" value="go">Make trade</button>
+        <button type="button" id="tradeCancel" class="mon-button mon-button--paper">Cancel</button>
       </div>
     </form>
   </dialog>
@@ -161,15 +137,15 @@
     <details class="panel" id="addPanel" open>
       <summary>Buy a property</summary>
       <form id="quick" class="grid">
-        <label>Title deed <select id="deed"></select></label>
-        <label>Price paid <input id="paid" type="number" min="0" step="1" placeholder="list price"></label>
-        <button class="primary">Buy</button>
+        <label>Title deed <select id="deed" class="mon-select"></select></label>
+        <label>Price paid <input id="paid" class="mon-input" type="number" min="0" step="1" placeholder="list price"></label>
+        <button class="mon-button">Buy</button>
       </form>
     </details>
 
     <div class="row"><h2 style="margin:0">Properties</h2>
-      <button id="trade">Trade</button>
-      <select id="sort" aria-label="Sort"><option value="added">in order bought</option><option value="remaining">most left to break even</option><option value="profit">best profit</option><option value="group">by group</option></select>
+      <button id="trade" class="mon-button mon-button--paper">Trade</button>
+      <select id="sort" class="mon-select" aria-label="Sort"><option value="added">in order bought</option><option value="remaining">most left to break even</option><option value="profit">best profit</option><option value="group">by group</option></select>
     </div>
     <div id="list"></div>
     <details class="panel" id="archivedPanel" hidden>
@@ -180,8 +156,8 @@
     <details class="panel">
       <summary>Backup</summary>
       <div class="row">
-        <button id="export">Export JSON</button>
-        <label>Import JSON <input id="import" type="file" accept="application/json,.json"></label>
+        <button id="export" class="mon-button mon-button--paper">Export JSON</button>
+        <label>Import JSON <input id="import" class="mon-input" type="file" accept="application/json,.json"></label>
       </div>
       <p class="muted">Import replaces all games in this browser.</p>
     </details>
@@ -201,13 +177,15 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T18:28:09Z</small>
+  <small id="version">2026-11-27T18:36:43Z</small>
 
   <script type="module">
     import { CARDS, GROUPS, buyProperty, collectAutoRent, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
+    // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
-    const SWATCH = { brown: '#955436', lightblue: '#7fc6e8', pink: '#d93a96', orange: '#f7941d', red: '#ed1b24', yellow: '#fef200', green: '#1fb25a', darkblue: '#0072bb', railroad: '#444', utility: '#9aa', other: '#888' };
+    // The monopoly sheet's color groups (its names for them), by this page's group names.
+    const MON_GROUP = { brown: 'purple', lightblue: 'lblue', pink: 'magenta', orange: 'orange', red: 'red', yellow: 'yellow', green: 'green', darkblue: 'blue' };
     const $ = (id) => document.getElementById(id);
     const money = (n) => (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n * 100) / 100).toLocaleString();
     const pct = (r) => (r * 100).toFixed(0) + '%';
@@ -287,8 +265,8 @@
     function archivedCard(g, p) {
       const s = stats(p, g);
       const c = h('div', { class: 'card', 'data-id': p.id });
-      c.style.setProperty('--swatch', SWATCH[p.group] || SWATCH.other);
-      c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), h('span', { class: 'tag', text: 'traded away' })));
+      if (MON_GROUP[p.group]) c.classList.add('mon-g-' + MON_GROUP[p.group]);
+      c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), h('span', { class: 'mon-badge', text: 'traded away' })));
       c.append(h('div', { class: 'nums' }, h('span', { text: 'invested ' }, h('b', { text: money(s.invested) })),
         h('span', { text: 'rent ' }, h('b', { text: money(s.rent) })), h('span', { text: 'profit ' }, h('b', { class: cls(s.profit), text: money(s.profit) }))));
       c.append(h('details', {}, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
@@ -302,23 +280,23 @@
       const max = maxLevel(g, p);
       const open = expanded.has(p.id);
       const c = h('div', { class: 'card' + (p.mortgaged ? ' mortgaged' : '') + (open ? ' open' : ''), 'data-id': p.id });
-      c.style.setProperty('--swatch', SWATCH[p.group] || SWATCH.other);
-      const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: extra, text });
+      if (MON_GROUP[p.group]) c.classList.add('mon-g-' + MON_GROUP[p.group]);
+      const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: 'mon-button' + (extra === 'primary' ? '' : ' mon-button--paper' + (extra ? ' ' + extra : '')), text });
 
       // Collapsed view: name, pills and the rent button.
-      const tags = h('span', { class: 'row' }, h('span', { class: 'tag', text: p.group }));
-      if (p.houseCost > 0) tags.append(h('span', { class: 'tag', text: levelName(p) }));
-      if (p.mortgaged) tags.append(h('span', { class: 'tag warn', text: 'mortgaged' }));
-      if (s.broken) tags.append(h('span', { class: 'tag ok', text: 'broke even' }));
+      const tags = h('span', { class: 'row' }, h('span', { class: 'mon-badge', text: p.group }));
+      if (p.houseCost > 0) tags.append(h('span', { class: 'mon-badge', text: levelName(p) }));
+      if (p.mortgaged) tags.append(h('span', { class: 'mon-badge mon-badge--solid', text: 'mortgaged' }));
+      if (s.broken) tags.append(h('span', { class: 'mon-badge', text: '✓ broke even' }));
       const toggle = h('button', { class: 'toggle', 'data-action': 'toggle', 'aria-expanded': String(open), 'aria-label': (open ? 'Collapse ' : 'Expand ') + p.name },
         h('span', { class: 'title' }, h('span', { class: 'chev', text: open ? '▾' : '▸', 'aria-hidden': 'true' }), h('h3', { text: p.name })), tags);
       const due = rentFor(g, p);
       // The card and game state say what is owed; ask only for what they cannot know.
       const ask = p.mortgaged ? null : p.kind === 'utility' ? 'dice total' : due == null ? 'rent' : null;
       const quick = h('div', { class: 'row quick' });
-      if (ask) quick.append(h('input', { type: 'number', min: '0', step: '1', 'aria-label': ask, placeholder: ask === 'dice total' ? 'dice' : ask, 'data-rent': '' }));
+      if (ask) quick.append(h('input', { class: 'mon-input', type: 'number', min: '0', step: '1', 'aria-label': ask, placeholder: ask === 'dice total' ? 'dice' : ask, 'data-rent': '' }));
       quick.append(btn('rent', 'Collect rent' + (!p.mortgaged && due != null && !ask ? ' (' + money(due) + ')' : ''), 'primary'));
-      c.append(h('div', { class: 'head' }, toggle, quick));
+      c.append(h('div', { class: 'head' + (ask ? ' stack' : '') }, toggle, quick));
 
       // Expanded view: numbers, the other actions, the rent card and history.
       const more = h('div', { class: 'more' });
@@ -475,7 +453,7 @@
     });
 
     $('export').addEventListener('click', () => {
-      const a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify({ games }, null, 2)], { type: 'application/json' })), download: 'monopoly-tracker.json' });
+      const a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify({ games }, null, 2)], { type: 'application/json' })), download: 'monopoly-asset-manager.json' });
       a.click(); URL.revokeObjectURL(a.href);
     });
     $('import').addEventListener('change', async (e) => {
@@ -491,7 +469,7 @@
 
     load(); render();
     if ('serviceWorker' in navigator) {
-      addEventListener('load', () => { navigator.serviceWorker.register('/monopoly-tracker/sw.js', { scope: '/monopoly-tracker/' }).catch(() => {}); });
+      addEventListener('load', () => { navigator.serviceWorker.register('/monopoly-asset-manager/sw.js', { scope: '/monopoly-asset-manager/' }).catch(() => {}); });
     }
   </script>
 </body>

@@ -1,4 +1,4 @@
-// Pure logic for the Monopoly property tracker. No DOM; tested by api/monopoly-tracker.test.mjs.
+// Pure logic for the Monopoly asset manager. No DOM; tested by api/monopoly-asset-manager.test.mjs.
 
 /**
  * @typedef {{ id: string, type: "buy"|"rent"|"improve"|"sell"|"mortgage"|"unmortgage"|"trade-out"|"trade-cash"|"other", amount: number, note?: string, at: number, carried?: number }} Entry
