@@ -12,7 +12,7 @@
        Surfaces that are printed paper (stats, cards, panels, dialogs) read ink colors in both modes. */
     body { max-width: 56rem; margin: 0 auto; padding: 1rem 16px 3rem; }
     .mon { --fg: var(--mon-text); --fg2: var(--mon-muted); --bad: var(--mon-red-ink); --good: var(--mon-text); }
-    .paper, .stat, .card, details.panel, dialog { --fg: var(--mon-ink); --fg2: var(--mon-ink-muted); --bad: var(--mon-red); --good: #0B6B33; color: var(--fg); }
+    .paper, .stat, .card, .gamecard, details.panel, dialog { --fg: var(--mon-ink); --fg2: var(--mon-ink-muted); --bad: var(--mon-red); --good: #0B6B33; color: var(--fg); }
     [hidden] { display: none !important; }
     .mon h1.mon-title { margin: 0 0 .25rem; }
     .mon .paper h1, .mon .paper h2, .mon .paper h3, .mon .stat h3, .mon .card h3, .mon dialog h2, .mon details.panel h2 { color: var(--fg); }
@@ -80,6 +80,16 @@
     #preview { background: var(--mon-bill-1); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; }
     #repairPreview { background: var(--mon-bill-1); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; white-space: pre-wrap; }
     #preview.err { color: var(--bad); font-weight: 700; }
+    .crumb { margin: .25rem 0; }
+    .gametitle, #gameTitle { overflow-wrap: anywhere; }
+    .mon a.gamecard { color: var(--mon-ink); }
+    .gamecard { display: block; margin: .6rem 0; padding: .6rem .8rem; background: var(--mon-paper); color: var(--mon-ink); text-decoration: none; border: 1px solid var(--mon-ink); border-left: 10px solid var(--mon-ink-muted); border-radius: var(--mon-radius); box-shadow: var(--mon-shadow); }
+    .gamecard:hover { outline: 2px solid var(--mon-ink); }
+    .gamecard .gc-head { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .6rem; }
+    .gamecard .gc-name { font: 800 1.05rem/1.2 var(--mon-font-display); text-transform: uppercase; letter-spacing: .04em; overflow-wrap: anywhere; }
+    .gamecard .gc-meta { margin: .1rem 0 .3rem; font-size: .85rem; color: var(--mon-ink-muted); }
+    .gamecard .nums { margin: 0; }
+    .mon a.gamecard:focus-visible { outline: 3px solid var(--mon-red); outline-offset: 2px; }
     small#version { display: block; margin-top: 2rem; color: var(--fg2); }
   </style>
   <meta name="theme-color" content="#10241A">
@@ -91,12 +101,6 @@
   <h1 class="mon-title mon-title--lg">Monopoly asset manager</h1>
   <p class="muted">Track what you own in Monopoly or Monopoly Mega: rent collected, mortgages, improvements, ROI and break-even. Saved in this browser.</p>
 
-  <div class="row bar">
-    <label>Game <select id="game" class="mon-select"></select></label>
-    <button id="newGame" class="mon-button">New game</button>
-    <button id="renameGame" class="mon-button mon-button--paper">Rename</button>
-    <button id="deleteGame" class="mon-button mon-button--paper danger">Delete</button>
-  </div>
   <div id="msg" role="status"></div>
 
   <dialog id="newGameDlg">
@@ -152,7 +156,33 @@
     </form>
   </dialog>
 
-  <div id="main" hidden>
+  <!-- Games list: the home screen (#/) -->
+  <div id="listView" hidden>
+    <div class="row bar"><h2 style="margin:0">Games</h2>
+      <button id="newGame" class="mon-button">New game</button>
+    </div>
+    <div id="games"></div>
+    <details class="panel" id="backupPanel">
+      <summary>Backup</summary>
+      <div class="row">
+        <button id="exportAll" class="mon-button mon-button--paper">Export all games</button>
+        <label>Import JSON <input id="import" class="mon-input" type="file" accept="application/json,.json"></label>
+      </div>
+      <p class="muted">Export all games writes every game to one file. Import adds the games in a file to this browser; a game with the same ID is replaced and your other games are kept. Open a game to export just that game, or a report you can print.</p>
+    </details>
+  </div>
+
+  <!-- One game (#/game/<id>) -->
+  <div id="gameView" hidden>
+  <p class="crumb"><a href="#/">&larr; All games</a></p>
+  <div class="row bar">
+    <h2 id="gameTitle" style="margin:0"></h2>
+    <button id="renameGame" class="mon-button mon-button--paper">Rename</button>
+    <button id="deleteGame" class="mon-button mon-button--paper danger">Delete</button>
+  </div>
+  <p class="muted" id="gameMeta" style="margin:0 0 .5rem"></p>
+
+  <div id="main">
     <div class="summary" id="summary"></div>
     <p class="muted" id="summaryNote" style="margin:.25rem 0 .75rem;font-size:.85rem"></p>
 
@@ -177,14 +207,12 @@
     </details>
 
     <details class="panel">
-      <summary>Backup</summary>
+      <summary>Export this game</summary>
       <div class="row">
-        <button id="export" class="mon-button mon-button--paper">Export this game</button>
+        <button id="export" class="mon-button mon-button--paper">Export game (JSON)</button>
         <button id="exportReport" class="mon-button mon-button--paper">Export report (HTML)</button>
-        <button id="exportAll" class="mon-button mon-button--paper">Export all games</button>
-        <label>Import JSON <input id="import" class="mon-input" type="file" accept="application/json,.json"></label>
       </div>
-      <p class="muted">The report is a single page you can open anywhere or print. Import adds the games in a file to this browser. A game with the same ID is replaced; your other games are kept.</p>
+      <p class="muted">The JSON file is a backup of this game that you can import later. The report is a single page you can open anywhere or print. Both are named with the day the game was created and its name.</p>
     </details>
   </div>
 
@@ -203,12 +231,13 @@
       <li>Improvement levels: 1–4 houses, 5 hotel, and in Mega 6 skyscraper (Mega: 1–4 houses, hotel, skyscraper; a railroad takes one train depot, which doubles its rent).</li>
     </ul>
   </details>
+  </div>
 
-  <small id="version">2026-11-27T19:50:09Z</small>
+  <small id="version">2026-11-27T20:13:55Z</small>
 
   <script type="module">
     import { reportFileName, reportHtml } from './report.js';
-    import { CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, exportFileName, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+    import { gameCreated, ymd, CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, exportFileName, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
@@ -229,9 +258,16 @@
       try {
         const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
         const g = raw && parseGames(raw.games);
-        if (g) { games = migrateGames(g); currentId = raw.current; }
+        if (g) games = migrateGames(g);
       } catch {}
-      if (!games.some((g) => g.id === currentId)) currentId = games[0]?.id || '';
+    }
+    // The address picks the screen: #/ is the games list, #/game/<id> is one game. A bad id goes back to the list.
+    function route() {
+      const m = location.hash.match(/^#\/game\/(.+)$/);
+      const id = m ? decodeURIComponent(m[1]) : '';
+      const next = games.some((g) => g.id === id) ? id : '';
+      if (next !== currentId) { currentId = next; say(''); window.scrollTo(0, 0); }
+      if (m && !next) location.replace('#/');
     }
     function save() {
       try { localStorage.setItem(KEY, JSON.stringify({ games, current: currentId })); } catch { say('Could not save to this browser.'); }
@@ -245,13 +281,29 @@
       return e;
     }
 
+    // The games list: newest first, each a link to its game with the figures that matter.
+    function renderList() {
+      const made = (g) => gameCreated(g)?.getTime() ?? 0;
+      const sorted = [...games].sort((a, b) => made(b) - made(a));
+      $('games').replaceChildren(...(sorted.length ? sorted.map((g) => {
+        const t = gameStats(g), d = gameCreated(g);
+        const a = h('a', { class: 'gamecard', href: '#/game/' + encodeURIComponent(g.id) },
+          h('div', { class: 'gc-head' }, h('span', { class: 'gc-name', text: g.name }), h('span', { class: 'mon-badge', text: g.edition === 'mega' ? 'Mega' : 'Original' })),
+          h('div', { class: 'gc-meta', text: (d ? 'Created ' + ymd(d) + ' · ' : '') + t.count + (t.count === 1 ? ' property owned' : ' properties owned') }),
+          h('div', { class: 'nums' }, h('span', { text: 'invested ' }, h('b', { text: money(t.invested) })), h('span', { text: 'rent ' }, h('b', { text: money(t.rent) })),
+            h('span', { text: 'profit ' }, h('b', { class: cls(t.profit), text: money(t.profit) })), h('span', { text: 'ROI ' }, h('b', { class: cls(t.profit), text: t.invested ? pct(t.roi) : '–' }))));
+        return a;
+      }) : [h('p', { class: 'muted', text: 'No games yet. Start one with New game, or import a backup.' })]));
+    }
+
     function render() {
-      const sel = $('game');
-      sel.replaceChildren(...games.map((g) => { const o = h('option', { value: g.id, text: g.name + (g.edition === 'mega' ? ' (Mega)' : '') }); o.selected = g.id === currentId; return o; }));
       const g = game();
-      $('main').hidden = !g;
-      for (const id of ['renameGame', 'deleteGame']) $(id).disabled = !g;
-      if (!g) { say('Create a game to start tracking.'); return; }
+      $('listView').hidden = !!g; $('gameView').hidden = !g;
+      document.title = (g ? g.name + ' · ' : '') + 'Monopoly asset manager';
+      if (!g) { renderList(); return; }
+      const made = gameCreated(g);
+      $('gameTitle').textContent = g.name;
+      $('gameMeta').textContent = (g.edition === 'mega' ? 'Monopoly Mega' : 'Monopoly (original)') + (made ? ' · created ' + ymd(made) : '');
       fillDeeds(g);
       const t = gameStats(g);
       const stat = (label, value, c = '') => h('div', { class: 'stat' }, h('b', { class: c, text: value }), h('span', { text: label }));
@@ -380,7 +432,6 @@
     }
 
     // --- events ---
-    $('game').addEventListener('change', (e) => { currentId = e.target.value; save(); say(); render(); });
     $('sort').addEventListener('change', (e) => { sort = e.target.value; render(); });
     const dlg = $('newGameDlg');
     $('newGame').addEventListener('click', () => {
@@ -395,7 +446,7 @@
       const name = f.name.value.trim().slice(0, 40);
       if (!name) return;
       const g = { id: uid(), name, edition: f.edition.value, properties: [], created: new Date().toISOString() };
-      games.push(g); currentId = g.id; save(); say(); render();
+      games.push(g); currentId = g.id; location.hash = '#/game/' + encodeURIComponent(g.id); save(); say(); render(); window.scrollTo(0, 0);
     });
     $('renameGame').addEventListener('click', () => {
       const g = game(); const name = g && prompt('Game name', g.name);
@@ -403,7 +454,7 @@
     });
     $('deleteGame').addEventListener('click', () => {
       const g = game();
-      if (g && confirm('Delete "' + g.name + '" and all its properties?')) { games = games.filter((x) => x !== g); currentId = games[0]?.id || ''; save(); say(); render(); }
+      if (g && confirm('Delete "' + g.name + '" and all its properties?')) { games = games.filter((x) => x !== g); currentId = ''; location.hash = '#/'; save(); say(); render(); }
     });
 
     // Only deeds you do not own are offered; the picker is rebuilt on every render so it stays current.
@@ -578,12 +629,13 @@
         const ids = new Set(incoming.map((g) => g.id));
         const same = games.filter((g) => ids.has(g.id)).length;
         if (!confirm('Add ' + incoming.length + ' game(s) from this file?' + (same ? '\n\n' + same + ' with the same ID will be replaced.' : ''))) { e.target.value = ''; return; }
-        games = [...games.filter((g) => !ids.has(g.id)), ...incoming]; currentId = incoming[0].id; save(); say('Imported.'); render();
+        games = [...games.filter((g) => !ids.has(g.id)), ...incoming]; currentId = ''; location.hash = '#/'; save(); render(); say('Imported ' + incoming.length + (incoming.length === 1 ? ' game.' : ' games.'));
       } catch { say('That file is not a valid Monopoly asset manager export.'); }
       e.target.value = '';
     });
 
-    load(); render();
+    load(); route(); render();
+    addEventListener('hashchange', () => { route(); render(); });
     if ('serviceWorker' in navigator) {
       addEventListener('load', () => { navigator.serviceWorker.register('/monopoly-asset-manager/sw.js', { scope: '/monopoly-asset-manager/' }).catch(() => {}); });
     }
