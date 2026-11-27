@@ -9,8 +9,12 @@ const PAGE = 50
 
 const OPS = {
   add: { label: 'Addition', symbol: '+', start: 0, defaults: { min: 0, max: 500, quantity: 2 } },
-  multiply: { label: 'Multiplication', symbol: '×', start: 1, defaults: { min: 0, max: 12, quantity: 2 } }
+  multiply: { label: 'Multiplication', symbol: '×', start: 1, defaults: { min: 0, max: 12, quantity: 2 } },
+  // Clock quiz: a random analog time; minutes are a multiple of `step`.
+  clock: { label: 'Clock', symbol: '', start: 0, defaults: { step: 5 } }
 }
+const STEPS = [1, 5, 15, 30]
+const NS = 'http://www.w3.org/2000/svg'
 
 const $ = id => document.getElementById(id)
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2))
@@ -18,7 +22,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 // ---------- state and storage ----------
 
 function defaultSettings () {
-  return { op: 'add', add: { ...OPS.add.defaults }, multiply: { ...OPS.multiply.defaults } }
+  return { op: 'add', add: { ...OPS.add.defaults }, multiply: { ...OPS.multiply.defaults }, clock: { ...OPS.clock.defaults } }
 }
 
 function freshState () {
@@ -36,9 +40,14 @@ function cleanRange (r, op) {
   return { min, max, quantity }
 }
 
+function cleanStep (c) {
+  const step = int(c && c.step, OPS.clock.defaults.step)
+  return { step: STEPS.includes(step) ? step : OPS.clock.defaults.step }
+}
+
 function cleanSettings (s) {
   s = s && typeof s === 'object' ? s : {}
-  return { op: s.op === 'multiply' ? 'multiply' : 'add', add: cleanRange(s.add, 'add'), multiply: cleanRange(s.multiply, 'multiply') }
+  return { op: OPS[s.op] ? s.op : 'add', add: cleanRange(s.add, 'add'), multiply: cleanRange(s.multiply, 'multiply'), clock: cleanStep(s.clock) }
 }
 
 // Returns a clean attempt, or null if the record is unusable.
@@ -46,6 +55,7 @@ function cleanAttempt (a) {
   if (!a || typeof a !== 'object' || !OPS[a.op]) return null
   const numbers = Array.isArray(a.numbers) ? a.numbers.map(Number) : []
   if (numbers.length < 2 || numbers.some(n => !Number.isFinite(n))) return null
+  if (a.op === 'clock' && (numbers.length !== 2 || !(numbers[0] >= 1 && numbers[0] <= 12) || !(numbers[1] >= 0 && numbers[1] <= 59))) return null
   const t = Number(a.t)
   const answer = Number(a.answer)
   const expected = Number(a.expected)
@@ -103,8 +113,19 @@ let state = load()
 
 // ---------- problems ----------
 
+// A clock answer is minutes past 12:00, so 3:05 is 185 and 12:00 is 0.
+const clockValue = (h, m) => (h % 12) * 60 + m
+const clockText = (h, m) => `${h}:${String(m).padStart(2, '0')}`
+const clockFromValue = v => clockText(Math.floor(v / 60) || 12, v % 60)
+
 function makeProblem () {
   const op = state.settings.op
+  if (op === 'clock') {
+    const { step } = state.settings.clock
+    const hour = Math.floor(Math.random() * 12) + 1
+    const minute = Math.floor(Math.random() * (60 / step)) * step
+    return { op, numbers: [hour, minute], expected: clockValue(hour, minute), shownAt: Date.now() }
+  }
   const { min, max, quantity } = state.settings[op]
   const range = max - min + 1
   const numbers = []
@@ -113,7 +134,47 @@ function makeProblem () {
   return { op, numbers, expected, shownAt: Date.now() }
 }
 
-const promptText = (op, numbers) => numbers.join(` ${OPS[op].symbol} `)
+const promptText = (op, numbers) => (op === 'clock' ? clockText(numbers[0], numbers[1]) : numbers.join(` ${OPS[op].symbol} `))
+const resultText = a => (a.op === 'clock' ? `Clock showing ${promptText(a.op, a.numbers)}` : promptText(a.op, a.numbers) + ' = ' + a.expected)
+const valueText = (op, v) => (op === 'clock' ? clockFromValue(v) : String(v))
+const pointsOf = a => (a.op === 'clock' ? 1 : a.expected)
+
+// Accepts 3:05, 3.05, 305 or 0305; the hour is 1 to 12.
+function parseClock (text) {
+  const m = /^(\d{1,2})[:.]?(\d{2})$/.exec(text.trim())
+  if (!m) return null
+  const h = Number(m[1])
+  const min = Number(m[2])
+  return h >= 1 && h <= 12 && min <= 59 ? clockValue(h, min) : null
+}
+
+function clockSvg (hour, minute) {
+  const svg = document.createElementNS(NS, 'svg')
+  svg.setAttribute('viewBox', '-100 -100 200 200')
+  svg.setAttribute('class', 'clock')
+  svg.setAttribute('role', 'img')
+  svg.setAttribute('aria-label', 'Analog clock. What time does it show?')
+  const add = (tag, attrs) => {
+    const e = document.createElementNS(NS, tag)
+    for (const k of Object.keys(attrs)) e.setAttribute(k, attrs[k])
+    svg.appendChild(e)
+    return e
+  }
+  add('circle', { r: 96, class: 'face' })
+  for (let i = 0; i < 60; i++) {
+    const big = i % 5 === 0
+    add('line', { x1: 0, y1: big ? -82 : -88, x2: 0, y2: -92, transform: `rotate(${i * 6})`, class: big ? 'tick big' : 'tick' })
+  }
+  for (let n = 1; n <= 12; n++) {
+    const a = (n * 30 * Math.PI) / 180
+    const t = add('text', { x: (Math.sin(a) * 68).toFixed(1), y: (-Math.cos(a) * 68).toFixed(1), class: 'num', 'text-anchor': 'middle', 'dominant-baseline': 'central' })
+    t.textContent = String(n)
+  }
+  add('line', { x1: 0, y1: 8, x2: 0, y2: -50, transform: `rotate(${((hour % 12) + minute / 60) * 30})`, class: 'hand hour' })
+  add('line', { x1: 0, y1: 10, x2: 0, y2: -78, transform: `rotate(${minute * 6})`, class: 'hand minute' })
+  add('circle', { r: 4, class: 'pin' })
+  return svg
+}
 
 let problem = makeProblem()
 
@@ -140,7 +201,7 @@ function summarize (list) {
     attempts: list.length,
     correct: right.length,
     accuracy: pct(right.length, list.length),
-    points: right.reduce((s, a) => s + a.expected, 0),
+    points: right.reduce((s, a) => s + pointsOf(a), 0),
     avgMs: avg(right.map(a => a.ms)),
     bestStreak: best,
     streak: run
@@ -215,9 +276,22 @@ function fillCards (container, s) {
 // ---------- play ----------
 
 function showProblem () {
-  $('prompt').textContent = promptText(problem.op, problem.numbers)
-  const { min, max, quantity } = state.settings[state.settings.op]
-  $('mode-label').textContent = `${OPS[state.settings.op].label}: ${quantity} numbers from ${min} to ${max}`
+  const op = state.settings.op
+  const input = $('actual')
+  if (problem.op === 'clock') {
+    $('prompt').replaceChildren(clockSvg(problem.numbers[0], problem.numbers[1]))
+    input.setAttribute('inputmode', 'text')
+    input.setAttribute('pattern', '[0-9]{1,2}[:.]?[0-9]{2}')
+    input.setAttribute('placeholder', 'h:mm')
+    $('mode-label').textContent = `Clock: what time is it? Type it like 3:05 (minutes in steps of ${state.settings.clock.step}).`
+  } else {
+    $('prompt').textContent = promptText(problem.op, problem.numbers)
+    input.setAttribute('inputmode', 'numeric')
+    input.setAttribute('pattern', '-?[0-9]*')
+    input.removeAttribute('placeholder')
+    const { min, max, quantity } = state.settings[op]
+    $('mode-label').textContent = `${OPS[op].label}: ${quantity} numbers from ${min} to ${max}`
+  }
 }
 
 function newProblem () {
@@ -245,14 +319,24 @@ function record (answer, correct) {
 function submitAnswer (e) {
   e.preventDefault()
   const text = $('actual').value.trim()
-  if (!/^-?\d+$/.test(text)) return
-  const answer = parseInt(text, 10)
+  let answer
+  if (problem.op === 'clock') {
+    answer = parseClock(text)
+    if (answer === null) {
+      $('feedback').className = 'bad'
+      $('feedback').textContent = 'Type the time like 3:05 (hour 1 to 12, minutes 00 to 59).'
+      return
+    }
+  } else {
+    if (!/^-?\d+$/.test(text)) return
+    answer = parseInt(text, 10)
+  }
   const correct = answer === problem.expected
   const fb = $('feedback')
   record(answer, correct)
   if (correct) {
     fb.className = 'ok'
-    fb.textContent = `🎉 Correct! ${promptText(problem.op, problem.numbers)} = ${problem.expected}`
+    fb.textContent = `🎉 Correct! ${resultText(problem)}`
     newProblem()
   } else {
     fb.className = 'bad'
@@ -265,7 +349,7 @@ function submitAnswer (e) {
 function skipProblem () {
   const fb = $('feedback')
   fb.className = ''
-  fb.textContent = `Skipped: ${promptText(problem.op, problem.numbers)} = ${problem.expected}`
+  fb.textContent = `Skipped: ${resultText(problem)}`
   newProblem()
   $('actual').focus()
 }
@@ -303,7 +387,7 @@ function problemTable (table, list, sortFn) {
     .filter(sortFn.keep)
     .sort(sortFn.cmp)
     .slice(0, 10)
-    .map(({ g, misses, avgMs }) => [promptText(g[0].op, g[0].numbers) + ' = ' + g[0].expected, g.length, misses, secs(avgMs)])
+    .map(({ g, misses, avgMs }) => [resultText(g[0]), g.length, misses, secs(avgMs)])
   fillTable(table, ['Problem', { text: 'Tries', num: true }, { text: 'Misses', num: true }, { text: 'Avg time', num: true }], rows, 'Nothing yet.')
 }
 
@@ -364,7 +448,7 @@ function renderHistory () {
   const page = list.slice(0, shown)
   fillTable($('h-table'),
     ['When', 'Problem', { text: 'Answer', num: true }, 'Result', { text: 'Time', num: true }],
-    page.map(a => [when(a.t), promptText(a.op, a.numbers) + ' = ' + a.expected, a.answer, a.correct ? '✅ Correct' : '❌ Wrong', secs(a.ms)]),
+    page.map(a => [when(a.t), resultText(a), valueText(a.op, a.answer), a.correct ? '✅ Correct' : '❌ Wrong', secs(a.ms)]),
     'No history yet. Play a few problems.')
   $('h-count').textContent = `Showing ${page.length} of ${list.length}`
   $('h-more').hidden = page.length >= list.length
@@ -375,6 +459,9 @@ function renderHistory () {
 function fillSettingsForm () {
   const op = $('s-op').value
   const r = state.settings[op]
+  $('range-fields').hidden = op === 'clock'
+  $('step-field').hidden = op !== 'clock'
+  if (op === 'clock') { $('s-step').value = String(r.step); return }
   $('s-min').value = r.min
   $('s-max').value = r.max
   $('s-quantity').value = r.quantity
@@ -401,10 +488,21 @@ function renderSettings () {
 function saveSettings (e) {
   e.preventDefault()
   const op = $('s-op').value
+  const err = $('s-error')
+  if (op === 'clock') {
+    state.settings.op = op
+    state.settings.clock = cleanStep({ step: $('s-step').value })
+    save()
+    err.textContent = ''
+    newProblem()
+    $('feedback').className = ''
+    $('feedback').textContent = ''
+    $('s-note').textContent = 'Saved.'
+    return
+  }
   const min = parseInt($('s-min').value, 10)
   const max = parseInt($('s-max').value, 10)
   const quantity = parseInt($('s-quantity').value, 10)
-  const err = $('s-error')
   if (![min, max, quantity].every(Number.isInteger)) { err.textContent = 'Enter whole numbers.'; return }
   if (min > max) { err.textContent = 'Smallest number must not be larger than the largest.'; return }
   if (quantity < 2 || quantity > 10) { err.textContent = 'Numbers per problem must be 2 to 10.'; return }
@@ -446,7 +544,7 @@ function exportJson () {
 function exportCsv () {
   const rows = [['time', 'session', 'operation', 'problem', 'expected', 'answer', 'correct', 'seconds']]
   for (const a of state.attempts) {
-    rows.push([new Date(a.t).toISOString(), a.session, a.op, promptText(a.op, a.numbers), a.expected, a.answer, a.correct, (a.ms / 1000).toFixed(1)])
+    rows.push([new Date(a.t).toISOString(), a.session, a.op, promptText(a.op, a.numbers), valueText(a.op, a.expected), valueText(a.op, a.answer), a.correct, (a.ms / 1000).toFixed(1)])
   }
   download(`math-game-history-${stamp()}.csv`, 'text/csv', rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n') + '\n')
 }
@@ -515,9 +613,15 @@ function route () {
 // A link like ?op=multiply&min=2&max=12 presets the settings once, then is removed from the URL.
 function applyQuery () {
   const p = new URLSearchParams(location.search)
-  if (!p.has('op') && !p.has('min') && !p.has('max') && !p.has('quantity')) return
-  const op = p.get('op') === 'multiply' ? 'multiply' : 'add'
+  if (!p.has('op') && !p.has('min') && !p.has('max') && !p.has('quantity') && !p.has('step')) return
+  const op = OPS[p.get('op')] ? p.get('op') : 'add'
   state.settings.op = op
+  if (op === 'clock') {
+    state.settings.clock = cleanStep({ step: p.has('step') ? p.get('step') : state.settings.clock.step })
+    save()
+    history.replaceState(null, '', location.pathname + location.hash)
+    return
+  }
   state.settings[op] = cleanRange({
     min: p.has('min') ? p.get('min') : state.settings[op].min,
     max: p.has('max') ? p.get('max') : state.settings[op].max,
@@ -529,6 +633,7 @@ function applyQuery () {
 
 function init () {
   applyQuery()
+  problem = makeProblem() // the link may have changed the settings
   save() // writes the initial state and sets the storage warning
   $('answer-form').addEventListener('submit', submitAnswer)
   $('skip').addEventListener('click', skipProblem)

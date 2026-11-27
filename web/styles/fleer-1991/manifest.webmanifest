@@ -1,0 +1,14 @@
+{
+  "name": "fleer 1991 style sheet",
+  "short_name": "fleer 1991",
+  "description": "A bright yellow baseball card style sheet inspired by the 1991 Fleer set, with a storybook.",
+  "start_url": "/styles/fleer-1991/",
+  "scope": "/styles/fleer-1991/",
+  "display": "standalone",
+  "background_color": "#12110B",
+  "theme_color": "#12110B",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

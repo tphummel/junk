@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>topps 1989 style sheet</title>
+  <link rel="stylesheet" href="topps-1989.css">
+  <style>
+    /* storybook chrome only; the components below come from topps-1989.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { display: grid; gap: 0.9rem; justify-items: center; text-align: center; padding-block: clamp(2rem, 6vw, 3.5rem); background: var(--tp-red); color: var(--tp-on-red); border-radius: var(--tp-radius); }
+    .hero .tp-title, .hero .tp-label { color: var(--tp-on-red); }
+    .hero .tp-copy { margin: 0; padding-inline: 1rem; }
+    .sb nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb nav a { display: block; padding: 0.35rem 0.6rem; border-left: 3px solid var(--tp-line); color: var(--tp-text); text-decoration: none; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: var(--tp-track); }
+    .sb nav a:hover { color: var(--tp-red-ink); border-color: var(--tp-red-ink); }
+    .theme { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .theme button { font-size: 0.72rem; min-height: 2.25rem; padding: 0.3rem 0.9rem; }
+    .theme button[aria-pressed="true"] { background: var(--tp-red); color: var(--tp-on-red); border-color: var(--tp-ink); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); border: 1px dashed var(--tp-line); border-radius: var(--tp-radius); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+    .teams { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 1rem; }
+    .teams .tp-card { width: 100%; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: var(--tp-track); color: var(--tp-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--tp-stock); color: var(--tp-ink); border: 1px solid var(--tp-ink); border-radius: var(--tp-radius); font: 0.8rem/1.5 var(--tp-font-mono); tab-size: 2; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; }
+    .sw { border: 1px solid var(--tp-ink); border-radius: var(--tp-radius); overflow: hidden; background: var(--tp-stock); color: var(--tp-ink); }
+    .sw i { display: block; height: 3rem; border-bottom: 1px solid var(--tp-ink); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--tp-ink-muted); }
+    footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--tp-muted); }
+  </style>
+  <meta name="theme-color" content="#17120E">
+  <link rel="icon" href="/styles/topps-1989/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/topps-1989/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/topps-1989/manifest.webmanifest">
+</head>
+<body class="tp">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="tp-label"><a href="/">junk</a> / style sheets / topps 1989</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="hero">
+      <span class="tp-label">Style sheet</span>
+      <h1 class="tp-title tp-title--xl">Topps 1989</h1>
+      <p class="tp-copy">White card stock, team-color frames, script team names and name ribbons on the front; pink panels, stat lines and a monthly scoreboard on the back. Plain CSS, no fonts or scripts to load, light and dark.</p>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#front">Card front</a></li>
+      <li><a href="#teams">Teams</a></li>
+      <li><a href="#sheet">Binder page</a></li>
+      <li><a href="#back">Card back</a></li>
+      <li><a href="#table">Table</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge, divider</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="tp"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>tp-</code> and every custom property <code>--tp-</code>. Plain element selectors only apply under <code>.tp</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/topps-1989/topps-1989.css"&gt;
+&lt;body class="tp"&gt;
+  &lt;div class="tp-card tp-t-reds"&gt;
+    &lt;div class="tp-card-frame"&gt;
+      &lt;img class="tp-card-photo" src="player.jpg" alt=""&gt;
+      &lt;span class="tp-card-team"&gt;Reds&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;span class="tp-card-name"&gt;Frank Williams&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/body&gt;</pre>
+      <p>The page is the desk the cards sit on, and it changes with light and dark. Cards are printed cardboard: they keep their white stock, pink and ink in both modes. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>; the switch above does that for this page.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values are read from the live sheet and follow the theme switch. Ratios are WCAG contrast against the stated background; text needs 4.5, lines 3.</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type</h2>
+      <p>Headings and ribbons are heavy sans caps (Arial Black or Helvetica). Team names use a bold italic script, and the back of the card sets the player's name in a serif with small caps. Fonts are system stacks, so the look varies a little by device.</p>
+      <div class="demo stack">
+        <h1 class="tp-title tp-title--lg">Ozzie Virgil</h1>
+        <h2 class="tp-title tp-title--md">Catcher, Braves</h2>
+        <span class="tp-label">Complete major league batting record</span>
+        <p class="tp-copy">Ozzie earned Carolina League MVP and All-Star honors for leading league with 234 total bases during 1978.</p>
+        <span class="tp-script" style="font-size: 3rem; --tp-script: #C8102E; --tp-edge: #FFFFFF">Braves</span>
+      </div>
+    </section>
+
+    <section id="front">
+      <h2>Card front</h2>
+      <p>A 5:7 card sized by its width, so everything inside scales with it. Inside <code>tp-card-frame</code> go the photo (<code>tp-card-photo</code>, an <code>&lt;img&gt;</code> or empty for the stand-in field), the <code>tp-card-logo</code> and the <code>tp-card-team</code> script. The <code>tp-card-name</code> ribbon overlaps the frame. <code>tp-card-flag</code> is the "#1 Draft Pick" style corner flag. Team classes (next section) set the colors.</p>
+      <div class="demo row">
+        <div class="tp-card tp-t-rangers"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Rangers</span><span class="tp-card-flag">#1 Draft Pick</span></div><span class="tp-card-name">Monty Fariss</span></div>
+        <div class="tp-card tp-t-athletics"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Athletics</span></div><span class="tp-card-name">Todd Burns</span></div>
+      </div>
+    </section>
+
+    <section id="teams">
+      <h2>Teams</h2>
+      <p>One class per club: <code>tp-t-orioles</code>, <code>red-sox</code>, <code>angels</code>, <code>white-sox</code>, <code>indians</code>, <code>tigers</code>, <code>royals</code>, <code>brewers</code>, <code>twins</code>, <code>yankees</code>, <code>athletics</code>, <code>mariners</code>, <code>rangers</code>, <code>blue-jays</code>, <code>cubs</code>, <code>expos</code>, <code>mets</code>, <code>phillies</code>, <code>pirates</code>, <code>cardinals</code>, <code>braves</code>, <code>reds</code>, <code>astros</code>, <code>dodgers</code>, <code>giants</code>, <code>padres</code>. Each sets the frame, the script fill and edge, and the ribbon with a text color that reads on it. The colors are approximations by eye. Put one on a card, badge, chip or table row.</p>
+      <div class="demo teams">
+        <div><div class="tp-card tp-t-orioles"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Orioles</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-red-sox"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Red Sox</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-angels"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Angels</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-white-sox"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">White Sox</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-indians"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Indians</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-tigers"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Tigers</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-royals"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Royals</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-brewers"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Brewers</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-twins"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Twins</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-yankees"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Yankees</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-athletics"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Athletics</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-mariners"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Mariners</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-rangers"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Rangers</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-blue-jays"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Blue Jays</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-cubs"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Cubs</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-expos"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Expos</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-mets"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Mets</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-phillies"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Phillies</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-pirates"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Pirates</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-cardinals"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Cardinals</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-braves"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Braves</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-reds"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Reds</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-astros"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Astros</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-dodgers"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Dodgers</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-giants"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Giants</span></div><span class="tp-card-name">Player Name</span></div></div>
+        <div><div class="tp-card tp-t-padres"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Padres</span></div><span class="tp-card-name">Player Name</span></div></div>
+      </div>
+    </section>
+
+    <section id="sheet">
+      <h2>Binder page</h2>
+      <p><code>tp-sheet</code> is a plastic page and <code>tp-pocket</code> one slot. It fills as many columns as fit; <code>tp-sheet--3</code> forces three across, like a nine-pocket page, and <code>tp-sheet--back</code> makes columns wide enough for card backs.</p>
+      <div class="demo">
+      <div class="tp-sheet tp-sheet--3">
+        <div class="tp-pocket"><div class="tp-card tp-t-reds"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Reds</span></div><span class="tp-card-name">Frank Williams</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-indians"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Indians</span></div><span class="tp-card-name">Mel Hall</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-athletics"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Athletics</span></div><span class="tp-card-name">Todd Burns</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-dodgers"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Dodgers</span></div><span class="tp-card-name">John Shelby</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-expos"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Expos</span></div><span class="tp-card-name">Jeff Parrett</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-rangers"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Rangers</span><span class="tp-card-flag">#1 Draft Pick</span></div><span class="tp-card-name">Monty Fariss</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-padres"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Padres</span></div><span class="tp-card-name">Mark Grant</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-braves"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Braves</span></div><span class="tp-card-name">Ozzie Virgil</span></div></div>
+        <div class="tp-pocket"><div class="tp-card tp-t-astros"><div class="tp-card-frame"><span class="tp-card-photo"></span><span class="tp-card-logo">topps</span><span class="tp-card-team">Astros</span></div><span class="tp-card-name">Mike Scott</span></div></div>
+      </div>
+      </div>
+    </section>
+
+    <section id="back">
+      <h2>Card back</h2>
+      <p>Landscape, black border, pink panels. The head holds the numbered circle (<code>tp-back-num</code>), the name and position (<code>tp-back-name</code>) and the ball logo (<code>tp-back-logo</code>), then <code>tp-back-bio</code> and a <code>tp-back-title</code> over the <code>tp-back-stats</code> table (<code>tp-stats</code>, a <code>tp-total</code> row for career totals and <code>&lt;em&gt;</code> for league leaders). <code>tp-back-trivia</code> is the deeper pink strip, <code>tp-scoreboard</code> the monthly box and <code>tp-back-fine</code> the copyright line. The stats table scrolls sideways on a phone.</p>
+      <div class="demo">
+        <div class="tp-back">
+          <div class="tp-back-head">
+            <span class="tp-back-num">178</span>
+            <div class="tp-back-name"><b>Mark Grant</b><span>Pitcher</span></div>
+            <span class="tp-back-logo" aria-hidden="true">topps</span>
+          </div>
+          <p class="tp-back-bio">6'2" 210 lb. &nbsp; Throws: Right &nbsp; Bats: Right &nbsp; Drft: Giants #1-June 1981<br>Acq: Trade, 7-4-87 &nbsp; Born: 10-24-63, Aurora, Illinois &nbsp; Home: Encinitas, Cal.</p>
+          <h3 class="tp-back-title">Complete major league pitching record</h3>
+          <div class="tp-back-stats">
+            <table class="tp-stats">
+              <thead><tr><th scope="col">Yr Club</th><th scope="col">G</th><th scope="col">IP</th><th scope="col">W</th><th scope="col">L</th><th scope="col">R</th><th scope="col">ER</th><th scope="col">SO</th><th scope="col">BB</th><th scope="col">ERA</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">84 Giants</th><td>11</td><td>53.2</td><td>1</td><td>4</td><td>40</td><td>38</td><td>32</td><td>19</td><td>6.37</td></tr>
+                <tr><th scope="row">86 Giants</th><td>16</td><td>61</td><td>1</td><td>2</td><td>29</td><td>24</td><td>32</td><td>21</td><td>3.54</td></tr>
+                <tr><th scope="row">87 Padres</th><td>59</td><td>53</td><td>6</td><td>7</td><td>59</td><td>53</td><td>58</td><td>52</td><td>4.66</td></tr>
+                <tr><th scope="row">88 Padres</th><td>33</td><td>97.2</td><td><em>2</em></td><td>8</td><td>41</td><td>40</td><td>61</td><td>36</td><td>3.89</td></tr>
+                <tr class="tp-total"><th scope="row">Mai. Lea. Totals</th><td>81</td><td>324.2</td><td>10</td><td>22</td><td>173</td><td>159</td><td>188</td><td>133</td><td>4.41</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="tp-back-trivia">Mark had 20-2 record as junior and senior at Joliet (Ill.) Catholic HS with 294 strikeouts in 161 innings.</p>
+          <div class="tp-scoreboard">
+            <span class="tp-scoreboard-label">1988 Monthly<br>Scoreboard</span>
+            <div class="tp-scoreboard-wrap">
+              <table class="tp-stats">
+                <thead><tr><td></td><th scope="col">Apr</th><th scope="col">May</th><th scope="col">Jun</th><th scope="col">Jul</th><th scope="col">Aug</th><th scope="col">Sep</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Games</th><td>4</td><td>7</td><td>8</td><td>6</td><td>3</td><td>5</td></tr>
+                  <tr><th scope="row">Strikeouts</th><td>7</td><td>24</td><td>18</td><td>6</td><td>2</td><td>4</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p class="tp-back-fine">&copy; 1989 The Topps Company, Inc. (demo)</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="table">
+      <h2>Table</h2>
+      <p>A ruled checklist on stock for pages. Wrap it in <code>tp-table-wrap</code> if it can overflow a phone. Numbers right-align with <code>tp-num</code>; <code>tp-chip</code> in a <code>tp-t-*</code> row shows the team's frame color.</p>
+      <div class="demo">
+        <div class="tp-table-wrap">
+          <table class="tp-table">
+            <caption>Checklist</caption>
+            <thead><tr><th scope="col">Player</th><th scope="col" class="tp-num">No.</th><th scope="col">Team</th></tr></thead>
+            <tbody>
+              <tr class="tp-t-reds"><th scope="row">Frank Williams</th><td class="tp-num">172</td><td><span class="tp-chip"></span>Reds</td></tr>
+              <tr class="tp-t-indians"><th scope="row">Mel Hall</th><td class="tp-num">173</td><td><span class="tp-chip"></span>Indians</td></tr>
+              <tr class="tp-t-athletics"><th scope="row">Todd Burns</th><td class="tp-num">174</td><td><span class="tp-chip"></span>Athletics</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are Topps-red pills with a hard ink edge; <code>tp-button--paper</code> and <code>tp-button--ghost</code> step down in weight. Inputs are 44px tall on card stock.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="tp-button" type="button">Add card</button>
+          <button class="tp-button tp-button--paper" type="button">Trade</button>
+          <button class="tp-button tp-button--ghost" type="button">Skip</button>
+          <button class="tp-button" type="button" disabled>Disabled</button>
+        </div>
+        <div class="row">
+          <div class="tp-field"><label class="tp-label" for="sb-name">Player</label><input class="tp-input" id="sb-name" placeholder="Name" autocomplete="off"></div>
+          <div class="tp-field"><label class="tp-label" for="sb-team">Team</label><select class="tp-select" id="sb-team"><option>Reds</option><option>Indians</option><option>Athletics</option><option>Padres</option></select></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge, divider</h2>
+      <p>Badges are small caps in a pill, ringed in the team's frame color. The divider is a double rule in the same color.</p>
+      <div class="demo tp-t-padres">
+        <div class="row"><span class="tp-badge">Have</span><span class="tp-badge tp-badge--solid">Need</span></div>
+        <hr class="tp-divider">
+        <span class="tp-label">Set 1 to 792</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/topps-1989/topps-1989.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009. Not affiliated with Topps; the look is inspired by 1989 baseball cards and team colors are approximated.</footer>
+  <small id="version">2026-11-27T17:27:55Z</small>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('tp-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('tp-theme') : localStorage.setItem('tp-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tp-button tp-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Palette swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const tokens = [
+    ['--tp-bg', 'desk (page)'], ['--tp-text', 'text', '--tp-bg'], ['--tp-muted', 'muted text', '--tp-bg'],
+    ['--tp-red-ink', 'red text', '--tp-bg'], ['--tp-line', 'lines', '--tp-bg'],
+    ['--tp-stock', 'card stock'], ['--tp-ink', 'ink', '--tp-stock'], ['--tp-ink-muted', 'muted ink', '--tp-stock'],
+    ['--tp-pink', 'back pink', '--tp-ink', 'ink on it'], ['--tp-pink-deep', 'deep pink', '--tp-ink', 'ink on it'],
+    ['--tp-red', 'topps red', '--tp-on-red', 'white on it'], ['--tp-yellow', 'flag yellow', '--tp-ink', 'ink on it'],
+  ];
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    const out = document.getElementById('swatches'); out.replaceChildren();
+    for (const [name, use, vs, note] of tokens) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = `var(${name})`;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      if (vs && /^#[0-9A-F]{6}$/.test(hex)) {
+        const r = ratio(hex, val(vs));
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 ${note || 'vs ' + vs.replace('--tp-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/topps-1989/sw.js', { scope: '/styles/topps-1989/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

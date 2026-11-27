@@ -1,0 +1,511 @@
+/*
+ * topps-1989: a style sheet inspired by 1989 Topps baseball cards.
+ * Fronts: white card stock, a team-colored frame around the photo, a bold
+ * script team name and a rounded name ribbon. Backs: black border, pink
+ * panels, a numbered circle, serif name, stat table, trivia strip and the
+ * monthly scoreboard. The page around them is the binder table.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/topps-1989/topps-1989.css">
+ * Docs and live examples: /styles/topps-1989/
+ *
+ * Everything is prefixed: classes `tp-`, custom properties `--tp-`. The only
+ * element rules are under the opt-in `.tp` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one.
+ *
+ * Cards are printed cardboard: they keep their white stock, pink and ink in
+ * both modes, like cards on a dark desk. Only the page (the table) changes.
+ * Team colors are approximated by eye from the cards, not sampled.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, topps-1989-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* the table, light. Contrast on bg: text 15.2, muted 6.8, red-ink 6.1, line 3.4 */
+  --tp-bg: #EFE6D4;
+  --tp-text: #1A1511;
+  --tp-muted: #55483B;
+  --tp-red-ink: #B01227;
+  --tp-line: #7C6C58;
+  --tp-focus: #B01227;
+  --tp-sheet: #FFFFFF59;
+  --tp-shadow: 0 1px 2px #1A151126, 0 8px 18px -10px #1A151199;
+
+  /* printed cardboard, the same in both modes */
+  --tp-stock: #FFFFFF;          /* card border */
+  --tp-ink: #17120E;            /* ink on stock and on pink; 18.3 on stock */
+  --tp-ink-muted: #4A3C33;      /* 9.5 on stock */
+  --tp-pink: #F0A3B0;           /* back panels; ink on it 10.1 */
+  --tp-pink-deep: #E4728A;      /* trivia strip, number ring; ink on it 7.1 */
+  --tp-red: #C8102E;            /* topps red; white on it 5.9 */
+  --tp-on-red: #FFFFFF;
+  --tp-yellow: #FFD92B;         /* flags; ink on it 14.1 */
+
+  /* type */
+  --tp-font-display: "Arial Black", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --tp-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --tp-font-script: "Segoe Script", "Bradley Hand", "Snell Roundhand", "Brush Script MT", "Comic Sans MS", cursive;
+  --tp-font-serif: "Times New Roman", Times, Georgia, serif;
+  --tp-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --tp-track: 0.08em;
+  --tp-radius: 0.3rem;
+
+  /* team in context: set by .tp-t-* classes (default: Reds-like red) */
+  --tp-frame: #C8102E;
+  --tp-script: #C8102E;
+  --tp-edge: #FFFFFF;
+  --tp-ribbon: #C8102E;
+  --tp-on-ribbon: #FFFFFF;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast on bg: text 16.1, muted 9.6, red-ink 7.2, line 3.9 */
+  :root:not([data-theme="light"]) {
+    --tp-bg: #17120E;
+    --tp-text: #F4ECDD;
+    --tp-muted: #C9BAA4;
+    --tp-red-ink: #FF8D86;
+    --tp-line: #8E7C66;
+    --tp-focus: #FFD92B;
+    --tp-sheet: #FFFFFF14;
+    --tp-shadow: 0 1px 2px #000A, 0 8px 18px -10px #000;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --tp-bg: #17120E;
+  --tp-text: #F4ECDD;
+  --tp-muted: #C9BAA4;
+  --tp-red-ink: #FF8D86;
+  --tp-line: #8E7C66;
+  --tp-focus: #FFD92B;
+  --tp-sheet: #FFFFFF14;
+  --tp-shadow: 0 1px 2px #000A, 0 8px 18px -10px #000;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- teams: add one to a .tp-card; sets the frame, script and ribbon ---- */
+/* frame / script fill / script edge / ribbon / text on ribbon. Script fill
+   against its edge is at least 3:1; ribbon text on ribbon at least 4.5:1. */
+
+.tp-t-orioles    { --tp-frame: #F26522; --tp-script: #F26522; --tp-edge: #1A1A1A; --tp-ribbon: #1A1A1A; --tp-on-ribbon: #FFFFFF; }
+.tp-t-red-sox    { --tp-frame: #C8102E; --tp-script: #FFFFFF; --tp-edge: #0C2340; --tp-ribbon: #0C2340; --tp-on-ribbon: #FFFFFF; }
+.tp-t-angels     { --tp-frame: #BA0021; --tp-script: #FFFFFF; --tp-edge: #BA0021; --tp-ribbon: #FFFFFF; --tp-on-ribbon: #BA0021; }
+.tp-t-white-sox  { --tp-frame: #27251F; --tp-script: #FFFFFF; --tp-edge: #27251F; --tp-ribbon: #C4CED4; --tp-on-ribbon: #17120E; }
+.tp-t-indians    { --tp-frame: #1F3F8F; --tp-script: #E0338F; --tp-edge: #FFFFFF; --tp-ribbon: #E0338F; --tp-on-ribbon: #000000; }
+.tp-t-tigers     { --tp-frame: #0C2340; --tp-script: #F26522; --tp-edge: #0C2340; --tp-ribbon: #FFFFFF; --tp-on-ribbon: #0C2340; }
+.tp-t-royals     { --tp-frame: #1D5FC4; --tp-script: #FFFFFF; --tp-edge: #1D5FC4; --tp-ribbon: #1D5FC4; --tp-on-ribbon: #FFFFFF; }
+.tp-t-brewers    { --tp-frame: #1B3F94; --tp-script: #FFD92B; --tp-edge: #1B3F94; --tp-ribbon: #FFD92B; --tp-on-ribbon: #1B3F94; }
+.tp-t-twins      { --tp-frame: #B5122B; --tp-script: #FFFFFF; --tp-edge: #14284B; --tp-ribbon: #14284B; --tp-on-ribbon: #FFFFFF; }
+.tp-t-yankees    { --tp-frame: #14284B; --tp-script: #FFFFFF; --tp-edge: #14284B; --tp-ribbon: #FFFFFF; --tp-on-ribbon: #14284B; }
+.tp-t-athletics  { --tp-frame: #2E8B43; --tp-script: #FFD92B; --tp-edge: #14452A; --tp-ribbon: #FFD92B; --tp-on-ribbon: #14452A; }
+.tp-t-mariners   { --tp-frame: #0C6E78; --tp-script: #FFFFFF; --tp-edge: #0C2C5C; --tp-ribbon: #0C2C5C; --tp-on-ribbon: #FFFFFF; }
+.tp-t-rangers    { --tp-frame: #C8102E; --tp-script: #FFFFFF; --tp-edge: #15387E; --tp-ribbon: #15387E; --tp-on-ribbon: #FFFFFF; }
+.tp-t-blue-jays  { --tp-frame: #1E6FD0; --tp-script: #FFFFFF; --tp-edge: #0D2D6B; --tp-ribbon: #0D2D6B; --tp-on-ribbon: #FFFFFF; }
+.tp-t-cubs       { --tp-frame: #1B4CA6; --tp-script: #FFFFFF; --tp-edge: #C8102E; --tp-ribbon: #C8102E; --tp-on-ribbon: #FFFFFF; }
+.tp-t-expos      { --tp-frame: #1F3F8F; --tp-script: #E4322F; --tp-edge: #FFFFFF; --tp-ribbon: #E4322F; --tp-on-ribbon: #000000; }
+.tp-t-mets       { --tp-frame: #1E57B8; --tp-script: #FF7A1F; --tp-edge: #0F2E66; --tp-ribbon: #FF7A1F; --tp-on-ribbon: #17120E; }
+.tp-t-phillies   { --tp-frame: #C8102E; --tp-script: #FFFFFF; --tp-edge: #1B3F94; --tp-ribbon: #1B3F94; --tp-on-ribbon: #FFFFFF; }
+.tp-t-pirates    { --tp-frame: #17120E; --tp-script: #FFD92B; --tp-edge: #17120E; --tp-ribbon: #FFD92B; --tp-on-ribbon: #17120E; }
+.tp-t-cardinals  { --tp-frame: #C8102E; --tp-script: #FFFFFF; --tp-edge: #C8102E; --tp-ribbon: #FFFFFF; --tp-on-ribbon: #A00E26; }
+.tp-t-braves     { --tp-frame: #F0C419; --tp-script: #C8102E; --tp-edge: #FFFFFF; --tp-ribbon: #FFFFFF; --tp-on-ribbon: #1B3F94; }
+.tp-t-reds       { --tp-frame: #C8102E; --tp-script: #C8102E; --tp-edge: #FFFFFF; --tp-ribbon: #C8102E; --tp-on-ribbon: #FFFFFF; }
+.tp-t-astros     { --tp-frame: #F2A016; --tp-script: #E8581A; --tp-edge: #FFFFFF; --tp-ribbon: #FFFFFF; --tp-on-ribbon: #7A2E0C; }
+.tp-t-dodgers    { --tp-frame: #2F5DB5; --tp-script: #FFFFFF; --tp-edge: #123B8C; --tp-ribbon: #FFFFFF; --tp-on-ribbon: #123B8C; }
+.tp-t-giants     { --tp-frame: #F26522; --tp-script: #17120E; --tp-edge: #FFFFFF; --tp-ribbon: #17120E; --tp-on-ribbon: #FFFFFF; }
+.tp-t-padres     { --tp-frame: #C8102E; --tp-script: #F0B323; --tp-edge: #4A2A12; --tp-ribbon: #F0B323; --tp-on-ribbon: #4A2A12; }
+
+/* ---- page: opt in with class="tp" on <body> ---------------------------- */
+
+.tp {
+  margin: 0;
+  background: var(--tp-bg);
+  color: var(--tp-text);
+  font: 1rem/1.55 var(--tp-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.tp *, .tp *::before, .tp *::after { box-sizing: border-box; }
+.tp h1, .tp h2, .tp h3, .tp h4 {
+  font-family: var(--tp-font-display);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--tp-text);
+  margin: 0 0 0.5em;
+}
+.tp h1 { font-size: clamp(2.2rem, 8vw, 4rem); }
+.tp h2 { font-size: clamp(1.3rem, 4vw, 1.9rem); }
+.tp h3 { font-size: 1.05rem; }
+.tp h4 { font-size: 0.85rem; letter-spacing: var(--tp-track); }
+.tp a { color: var(--tp-red-ink); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.tp a:hover { text-decoration-thickness: 2px; }
+.tp :focus-visible { outline: 3px solid var(--tp-focus); outline-offset: 2px; }
+.tp hr { border: 0; border-top: 2px solid var(--tp-line); margin: 2rem 0; }
+.tp code, .tp kbd { font-family: var(--tp-font-mono); font-size: 0.9em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* big heavy page title, with the red topps underline */
+.tp-title {
+  font-family: var(--tp-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--tp-text);
+  margin: 0;
+}
+.tp-title--xl { font-size: clamp(2.6rem, 11vw, 5.5rem); }
+.tp-title--lg { font-size: clamp(2rem, 6vw, 3.25rem); }
+.tp-title--md { font-size: clamp(1.3rem, 4vw, 1.8rem); }
+
+/* small spaced caps */
+.tp-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--tp-track);
+  color: var(--tp-muted);
+}
+.tp-copy { font-size: 0.95rem; line-height: 1.5; max-width: 38rem; }
+
+/* the script used for team names, on its own */
+.tp-script {
+  font-family: var(--tp-font-script);
+  font-style: italic;
+  font-weight: 800;
+  color: var(--tp-script);
+  -webkit-text-stroke: 0.06em var(--tp-edge);
+  paint-order: stroke fill;
+}
+
+/* ---- sheet: a binder page of nine pockets ------------------------------- */
+
+.tp-sheet {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: var(--tp-sheet);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius);
+}
+.tp-sheet--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tp-sheet--back { grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
+.tp-pocket {
+  display: grid;
+  place-items: center;
+  padding: 0.3rem;
+  border: 1px solid var(--tp-line);
+  border-radius: 0.15rem;
+}
+
+/* ---- card front --------------------------------------------------------- */
+
+/* sized by its width: everything inside scales with it (cqw) */
+.tp-card {
+  position: relative;
+  container-type: inline-size;
+  width: min(100%, 15rem);
+  aspect-ratio: 5 / 7;
+  background: var(--tp-stock);
+  color: var(--tp-ink);
+  padding: 5% 5% 7%;   /* % not cqw: a container's own units resolve against its parent */
+  border-radius: 0.4rem;
+  box-shadow: var(--tp-shadow);
+  font-family: var(--tp-font-display);
+}
+.tp-card-frame {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border: 3.4cqw solid var(--tp-frame);
+  border-radius: 2.5cqw;
+  background: linear-gradient(#8CBBE8 0 46%, #3F8B3F 46% 100%);
+}
+/* the photo slot: put an <img> in it, or leave the stand-in field */
+.tp-card-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.tp-card-logo {
+  position: absolute;
+  left: 3cqw;
+  top: 2.5cqw;
+  font-family: var(--tp-font-body);
+  font-size: 5.5cqw;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: lowercase;
+  color: #FFFFFF;
+  text-shadow: 0 0 1.5cqw #000, 0 0 1.5cqw #000;
+}
+.tp-card-team {
+  position: absolute;
+  right: 4cqw;
+  bottom: 10.5cqw;
+  font-family: var(--tp-font-script);
+  font-style: italic;
+  font-weight: 800;
+  font-size: 15cqw;
+  line-height: 1;
+  color: var(--tp-script);
+  -webkit-text-stroke: 1.4cqw var(--tp-edge);
+  paint-order: stroke fill;
+  transform: rotate(-4deg);
+  transform-origin: right bottom;
+}
+.tp-card-name {
+  position: absolute;
+  left: 12cqw;
+  right: 4cqw;
+  bottom: 2.5cqw;
+  padding: 1.4cqw 3cqw;
+  background: var(--tp-ribbon);
+  color: var(--tp-on-ribbon);
+  border: 0.8cqw solid var(--tp-stock);
+  border-radius: 99cqw;
+  font-size: 5.2cqw;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* "#1 Draft Pick" and similar corner flags */
+.tp-card-flag {
+  position: absolute;
+  left: 3cqw;
+  bottom: 13cqw;
+  display: grid;
+  place-items: center;
+  width: 17cqw;
+  aspect-ratio: 1;
+  padding: 1cqw;
+  background: var(--tp-yellow);
+  color: var(--tp-ink);
+  border: 0.8cqw solid var(--tp-red);
+  border-radius: 2cqw;
+  transform: rotate(-6deg);
+  font-size: 4cqw;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ---- card back ---------------------------------------------------------- */
+
+/* landscape, like the back turned sideways in the binder */
+.tp-back {
+  container-type: inline-size;
+  width: min(100%, 40rem);
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.55rem;
+  background: var(--tp-ink);
+  color: var(--tp-ink);
+  border-radius: 0.35rem;
+  box-shadow: var(--tp-shadow);
+  font-family: var(--tp-font-body);
+}
+.tp-back-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--tp-pink);
+  border-radius: 0.3rem;
+}
+.tp-back-num {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  background: var(--tp-stock);
+  color: var(--tp-ink);
+  border: 3px solid var(--tp-pink-deep);
+  border-radius: 50%;
+  font-family: var(--tp-font-display);
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.tp-back-name { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 0.9rem; min-width: 0; }
+.tp-back-name b {
+  font-family: var(--tp-font-serif);
+  font-size: clamp(1.15rem, 4.6cqw, 1.7rem);
+  font-weight: 700;
+  font-variant: small-caps;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+.tp-back-name span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: var(--tp-track);
+  text-transform: uppercase;
+}
+.tp-back-name span::before { content: "\25C6\00a0"; font-size: 0.7em; }
+.tp-back-logo {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  background: var(--tp-stock);
+  border: 2px solid var(--tp-red);
+  border-radius: 50%;
+  color: #A00E26;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+.tp-back-bio {
+  margin: 0;
+  padding: 0 0.5rem;
+  background: var(--tp-pink);
+  border-radius: 0.2rem;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.tp-back .tp-back-title {
+  margin: 0;
+  color: var(--tp-ink);
+  background: var(--tp-pink);
+  border-radius: 0.2rem 0.2rem 0 0;
+  padding: 0.2rem 0.5rem 0;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: var(--tp-track);
+  text-align: center;
+  text-transform: uppercase;
+}
+.tp-back-stats { overflow-x: auto; background: var(--tp-pink); border-radius: 0 0 0.3rem 0.3rem; padding: 0 0.4rem 0.4rem; margin-top: -0.45rem; }
+.tp-back-trivia {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--tp-pink-deep);
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.tp-back-fine { margin: 0; text-align: right; font-size: 0.55rem; letter-spacing: 0.04em; color: var(--tp-stock); }
+
+/* stat line table: tight, tabular, a rule under the head and over the totals */
+.tp-stats {
+  width: 100%;
+  min-width: 28rem;
+  border-collapse: collapse;
+  color: var(--tp-ink);
+  font: 0.7rem/1.35 var(--tp-font-body);
+  font-variant-numeric: tabular-nums;
+}
+.tp-stats th, .tp-stats td { padding: 0.08rem 0.3rem; text-align: right; font-weight: 500; white-space: nowrap; }
+.tp-stats th:first-child, .tp-stats td:first-child { text-align: left; }
+.tp-stats thead th { border-bottom: 1px solid var(--tp-ink); font-weight: 800; text-transform: uppercase; }
+.tp-stats tbody th { font-weight: 600; text-align: left; text-transform: uppercase; }
+.tp-stats .tp-total th, .tp-stats .tp-total td { border-top: 1px solid var(--tp-ink); font-weight: 800; }
+.tp-stats em { font-style: italic; font-weight: 800; }   /* league leader */
+
+/* "1988 monthly scoreboard" box */
+.tp-scoreboard {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--tp-pink-deep);
+  border-radius: 0.3rem;
+}
+.tp-scoreboard-label {
+  display: grid;
+  place-items: center;
+  padding: 0.2rem 0.6rem;
+  border: 2px solid var(--tp-ink);
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+}
+.tp-scoreboard .tp-stats { min-width: 0; font-size: 0.68rem; }
+.tp-scoreboard-wrap { overflow-x: auto; }
+.tp-scoreboard .tp-stats thead th { border-bottom-color: var(--tp-ink); }
+.tp-scoreboard .tp-stats td, .tp-scoreboard .tp-stats th { border: 1px solid var(--tp-ink); text-align: center; }
+
+/* ---- table: a plain ruled list for pages (checklists, standings) -------- */
+
+.tp-table-wrap { overflow-x: auto; }
+.tp-table { width: 100%; border-collapse: collapse; background: var(--tp-stock); color: var(--tp-ink); font-size: 0.9rem; border: 2px solid var(--tp-ink); }
+.tp-table caption { text-align: left; padding: 0.4rem 0.6rem; background: var(--tp-ink); color: var(--tp-stock); font-size: 0.75rem; font-weight: 800; letter-spacing: var(--tp-track); text-transform: uppercase; }
+.tp-table th, .tp-table td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid #17120E40; }
+.tp-table thead th { background: var(--tp-pink); border-bottom: 2px solid var(--tp-ink); font-size: 0.72rem; letter-spacing: var(--tp-track); text-transform: uppercase; }
+.tp-table tbody th { font-weight: 700; }
+.tp-table .tp-num { text-align: right; font-variant-numeric: tabular-nums; }
+/* team chip in a row: set a .tp-t-* class on the row */
+.tp-chip { display: inline-block; width: 0.8rem; height: 0.8rem; margin-right: 0.5rem; vertical-align: -0.05rem; background: var(--tp-frame); border: 1px solid var(--tp-ink); border-radius: 0.15rem; }
+
+/* ---- controls ----------------------------------------------------------- */
+
+.tp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.4rem 1.4rem;
+  background: var(--tp-red);
+  color: var(--tp-on-red);
+  border: 2px solid var(--tp-ink);
+  border-radius: 99rem;
+  box-shadow: 0 2px 0 var(--tp-ink);
+  font: 900 0.85rem/1 var(--tp-font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.tp-button:active { transform: translateY(2px); box-shadow: none; }
+.tp-button:disabled { opacity: 0.55; cursor: not-allowed; }
+.tp-button--paper { background: var(--tp-stock); color: var(--tp-ink); }
+.tp-button--ghost { background: transparent; color: var(--tp-text); border-color: var(--tp-line); box-shadow: none; }
+
+.tp-field { display: grid; gap: 0.3rem; min-width: 12rem; }
+.tp-input, .tp-select {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--tp-stock);
+  color: var(--tp-ink);
+  border: 2px solid var(--tp-ink);
+  border-radius: var(--tp-radius);
+  font: 1rem var(--tp-font-body);
+}
+
+/* ---- badge, divider ----------------------------------------------------- */
+
+.tp-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  background: var(--tp-stock);
+  color: var(--tp-ink);
+  border: 2px solid var(--tp-frame);
+  border-radius: 99rem;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: var(--tp-track);
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+.tp-badge--solid { background: var(--tp-ribbon); color: var(--tp-on-ribbon); border-color: var(--tp-stock); }
+.tp-divider { border: 0; height: 0.5rem; margin: 1.5rem 0; background: linear-gradient(var(--tp-frame) 0 0.18rem, transparent 0.18rem 0.32rem, var(--tp-frame) 0.32rem); }
