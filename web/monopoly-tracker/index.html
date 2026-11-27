@@ -63,6 +63,14 @@
     .card { border: 1px solid var(--line); border-left: 6px solid var(--swatch, var(--support)); border-radius: .5rem; padding: .6rem .8rem; margin: .6rem 0; background: var(--surface); }
     .card.mortgaged { opacity: .8; border-style: dashed; border-left-style: solid; }
     .card h3 { margin: 0; font-size: 1.05rem; }
+    .card { padding: .4rem .8rem; }
+    .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem .75rem; }
+    .toggle { flex: 1 1 11rem; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem; min-height: 2.5rem; padding: .1rem 0; border: 0; background: none; color: var(--text); text-align: left; cursor: pointer; }
+    .title { display: flex; align-items: center; gap: .3rem; }
+    .chev { color: var(--muted); width: 1rem; flex: none; }
+    .quick { margin: 0; flex-wrap: nowrap; }
+    .quick input { width: 6rem; }
+    .more { margin: .25rem 0 .35rem; }
     .tag { font-size: .75rem; border: 1px solid var(--support); border-radius: 1rem; padding: 0 .5rem; color: var(--muted); }
     .tag.warn { color: var(--accent); border-color: var(--accent); }
     .tag.ok { color: var(--good); border-color: var(--good); }
@@ -193,7 +201,7 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T18:01:27Z</small>
+  <small id="version">2026-11-27T18:09:32Z</small>
 
   <script type="module">
     import { CARDS, GROUPS, collectAutoRent, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
@@ -288,40 +296,51 @@
       return c;
     }
 
+    const expanded = new Set(); // property ids whose card is open; survives re-renders
+
     function card(g, p, s) {
       const max = maxLevel(g, p);
-      const c = h('div', { class: 'card' + (p.mortgaged ? ' mortgaged' : ''), 'data-id': p.id });
+      const open = expanded.has(p.id);
+      const c = h('div', { class: 'card' + (p.mortgaged ? ' mortgaged' : '') + (open ? ' open' : ''), 'data-id': p.id });
       c.style.setProperty('--swatch', SWATCH[p.group] || SWATCH.other);
+      const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: extra, text });
+
+      // Collapsed view: name, pills and the rent button.
       const tags = h('span', { class: 'row' }, h('span', { class: 'tag', text: p.group }));
       if (p.houseCost > 0) tags.append(h('span', { class: 'tag', text: levelName(p) }));
       if (p.mortgaged) tags.append(h('span', { class: 'tag warn', text: 'mortgaged' }));
       if (s.broken) tags.append(h('span', { class: 'tag ok', text: 'broke even' }));
-      c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), tags));
+      const toggle = h('button', { class: 'toggle', 'data-action': 'toggle', 'aria-expanded': String(open), 'aria-label': (open ? 'Collapse ' : 'Expand ') + p.name },
+        h('span', { class: 'title' }, h('span', { class: 'chev', text: open ? '▾' : '▸', 'aria-hidden': 'true' }), h('h3', { text: p.name })), tags);
+      const due = rentFor(g, p);
+      // The card and game state say what is owed; ask only for what they cannot know.
+      const ask = p.mortgaged ? null : p.kind === 'utility' ? 'dice total' : due == null ? 'rent' : null;
+      const quick = h('div', { class: 'row quick' });
+      if (ask) quick.append(h('input', { type: 'number', min: '0', step: '1', 'aria-label': ask, placeholder: ask === 'dice total' ? 'dice' : ask, 'data-rent': '' }));
+      quick.append(btn('rent', 'Collect rent' + (!p.mortgaged && due != null && !ask ? ' (' + money(due) + ')' : ''), 'primary'));
+      c.append(h('div', { class: 'head' }, toggle, quick));
+
+      // Expanded view: numbers, the other actions, the rent card and history.
+      const more = h('div', { class: 'more' });
+      if (!open) more.hidden = true;
       const n = (label, value, k = '') => h('span', { text: label + ' ' }, h('b', { class: k, text: value }));
       const hits = s.remaining === 0 ? '' : s.hitsToBreakEven == null ? 'no rent data to estimate' : '≈ ' + s.hitsToBreakEven + (s.hitsToBreakEven === 1 ? ' rent' : ' rents');
-      c.append(h('div', { class: 'nums' },
+      more.append(h('div', { class: 'nums' },
         n('invested', money(s.invested)), ...(p.entries[0]?.carried != null ? [n('cost basis (traded)', money(pricePaid(p)) + ' (list ' + money(p.price) + ')')] : pricePaid(p) !== p.price ? [n('paid', money(pricePaid(p)) + ' (list ' + money(p.price) + ')', pricePaid(p) < p.price ? 'good' : 'bad')] : []), n('rent', money(s.rent) + (s.rentCount ? ' (' + s.rentCount + '×)' : '')),
         n('profit', money(s.profit), cls(s.profit)), n('ROI', s.invested ? pct(s.roi) : '–', cls(s.profit)),
         n('to break even', money(s.remaining) + (hits ? ', ' + hits : '')),
         ...(s.loan ? [n('mortgage loan', money(s.loan), 'bad')] : [])));
-      const prog = h('progress', { max: String(s.invested || 1), value: String(Math.min(s.returned, s.invested)), 'aria-label': 'Progress to break even' });
-      c.append(prog);
-      const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: extra, text });
-      const due = rentFor(g, p);
-      // The card and game state say what is owed; ask only for what they cannot know.
-      const ask = p.mortgaged ? null : p.kind === 'utility' ? 'dice total' : due == null ? 'rent' : null;
+      more.append(h('progress', { max: String(s.invested || 1), value: String(Math.min(s.returned, s.invested)), 'aria-label': 'Progress to break even' }));
       const actions = h('div', { class: 'row bar' });
-      if (ask) actions.append(h('input', { type: 'number', min: '0', step: '1', 'aria-label': ask, placeholder: ask, 'data-rent': '' }));
-      actions.append(btn('rent', p.mortgaged ? 'Collect rent' : 'Collect rent' + (due != null && !ask ? ' (' + money(due) + ')' : ''), 'primary'));
       if (p.houseCost > 0) actions.append(btn('build', (p.kind === 'railroad' ? '+ depot (' : '+ build (') + money(p.houseCost) + ')'), btn('sell', '− sell back'));
       actions.append(btn('mortgage', p.mortgaged ? 'Lift mortgage (' + money(Math.ceil(p.mortgageValue * 1.1)) + ')' : 'Mortgage (+' + money(p.mortgageValue) + ')'), btn('edit', 'Edit'), btn('remove', 'Remove', 'danger'));
       if (p.level >= max) actions.querySelector('[data-action=build]')?.setAttribute('disabled', '');
-      c.append(actions);
-      if (p.rents && p.rents.length) c.append(rentTable(g, p, due));
-      const hist = h('details', {}, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
+      more.append(actions);
+      if (p.rents && p.rents.length) more.append(rentTable(g, p, due));
+      more.append(h('details', {}, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
         h('ul', { class: 'hist' }, ...[...p.entries].reverse().map((e) =>
-          h('li', {}, h('span', { text: e.type + (e.note ? ': ' + e.note : '') }), h('span', { class: cls(e.amount), text: money(e.amount) })))));
-      c.append(hist);
+          h('li', {}, h('span', { text: e.type + (e.note ? ': ' + e.note : '') }), h('span', { class: cls(e.amount), text: money(e.amount) }))))));
+      c.append(more);
       return c;
     }
 
@@ -374,6 +393,7 @@
       const b = e.target.closest('button[data-action]'); if (!b) return;
       const c = b.closest('.card'); const g = game(); const p = g.properties.find((x) => x.id === c.dataset.id);
       const a = b.dataset.action;
+      if (a === 'toggle') { expanded.has(p.id) ? expanded.delete(p.id) : expanded.add(p.id); render(); return; }
       let err = null;
       if (a === 'rent') {
         const input = c.querySelector('[data-rent]');
