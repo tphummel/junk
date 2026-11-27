@@ -1,0 +1,14 @@
+{
+  "name": "Super Mario 64 journal",
+  "short_name": "Super Mario 64 journal",
+  "description": "Log stars from Super Mario 64 in any order, with coins, difficulty and attempts.",
+  "start_url": "/mario-64-journal/",
+  "scope": "/mario-64-journal/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

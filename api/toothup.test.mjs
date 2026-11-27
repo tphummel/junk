@@ -3,8 +3,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEFAULT_SETTINGS, GOALS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
-  formatClock, groupByDay, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
+  DEFAULT_SETTINGS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
+  formatClock, groupByDay, versionOf, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
   parseImport, rangeStats, reminderStatus,
 } from "../web/toothup/logic.js";
 
@@ -37,17 +37,27 @@ test("routine: 8 facial/lingual steps of 15s per quadrant, then 5s of tongue", (
 });
 
 test("makeEvent: ids come from type and time, a taken id moves the start by 1 ms, only brushes carry seconds and steps", () => {
-  assert.deepEqual(makeEvent([], "floss", 2000, { offset: 60 }), { id: "f2000", type: "floss", start: 2000, offset: 60 });
-  assert.deepEqual(makeEvent([], "brush", 1000, { seconds: 90, steps: 8, offset: 0 }), { id: "s1000", type: "brush", start: 1000, offset: 0, seconds: 90, steps: 8 });
+  assert.deepEqual(makeEvent([], "floss", 2000, { offset: 60 }), { id: "f2000", type: "floss", start: 2000, offset: 60, lat: null, lon: null, acc: null });
+  assert.deepEqual(makeEvent([], "brush", 1000, { seconds: 90, steps: 8, offset: 0 }), { id: "s1000", type: "brush", start: 1000, offset: 0, lat: null, lon: null, acc: null, seconds: 90, steps: 8 });
+  assert.deepEqual(makeEvent([], "floss", 3000, { offset: 0, lat: 40.7128004, lon: -74.006, acc: 12.4 }), { id: "f3000", type: "floss", start: 3000, offset: 0, lat: 40.7128, lon: -74.006, acc: 12 });
   const taken = [makeEvent([], "floss", 1000, { offset: 0 })];
   assert.equal(makeEvent(taken, "floss", 1000, { offset: 0 }).start, 1001);
   assert.equal(makeEvent(taken, "mouthwash", 1000, { offset: 0 }).start, 1000);
 });
 
 test("normalizeEvent keeps well-formed events and rejects everything else", () => {
-  const good = { id: "s1", type: "brush", start: 1000, offset: -300, seconds: 125, steps: 9 };
+  const good = { id: "s1", type: "brush", start: 1000, offset: -300, lat: null, lon: null, acc: null, seconds: 125, steps: 9 };
   assert.deepEqual(normalizeEvent(good), good);
-  assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, offset: 0, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5, offset: 0 });
+  assert.deepEqual(normalizeEvent({ id: "f1", type: "floss", start: 5, offset: 0, seconds: 9, steps: 3 }), { id: "f1", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  // an old event without location gains null fields; a bad or partial location is dropped whole
+  assert.deepEqual(normalizeEvent({ id: "f2", type: "floss", start: 5, offset: 0 }), { id: "f2", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  for (const loc of [{ lat: 91, lon: 0, acc: 5 }, { lat: 0, lon: 181, acc: 5 }, { lat: "x", lon: 1, acc: 5 }])
+    assert.deepEqual(normalizeEvent({ id: "f3", type: "floss", start: 5, offset: 0, ...loc }), { id: "f3", type: "floss", start: 5, offset: 0, lat: null, lon: null, acc: null });
+  // a good place without a usable accuracy keeps lat and lon
+  for (const acc of [undefined, null, -1, "x"])
+    assert.deepEqual(normalizeEvent({ id: "f5", type: "floss", start: 5, offset: 0, lat: 1, lon: 2, acc }), { id: "f5", type: "floss", start: 5, offset: 0, lat: 1, lon: 2, acc: null });
+  const placed = { id: "f4", type: "floss", start: 5, offset: 0, lat: 51.5, lon: -0.12, acc: 30 };
+  assert.deepEqual(normalizeEvent(placed), placed);
   for (const bad of [
     null, {}, { ...good, id: "" }, { ...good, type: "gargle" }, { ...good, start: "x" }, { ...good, start: 0 },
     { ...good, offset: undefined }, { ...good, offset: 900 }, { ...good, seconds: -1 }, { ...good, steps: 10 }, { ...good, steps: undefined },
@@ -75,7 +85,7 @@ test("the day rolls over at 4am, not midnight: a 12:30am routine belongs to the 
   assert.equal(eventDay(ev("floss", "2026-11-21", 3), S), "2026-11-20");
   assert.equal(eventDay(ev("floss", "2026-11-21", 4), S), "2026-11-21");
   // The late brush completes the previous day instead of starting a new one.
-  const g = dayGoals(groupByDay([brush("2026-11-20", 7), brushed], S).get("2026-11-20"));
+  const g = dayGoals(groupByDay([brush("2026-11-20", 7), brushed], S).get("2026-11-20"), S.goals);
   assert.ok(g.complete);
 });
 
@@ -86,21 +96,21 @@ test("the cutoff applies in the local clock of wherever you were", () => {
 });
 
 test("a day is complete with two full brushes; floss and mouthwash are tracked on top", () => {
-  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21)]);
+  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21)], S.goals);
   assert.ok(g.complete);
   assert.deepEqual(g.done, { brush: 2, floss: 0, mouthwash: 0 });
   assert.equal(g.extras, 0);
   const all = dayGoals([
-    ev("mouthwash", "2026-11-18", 7), brush("2026-11-18", 7), ev("floss", "2026-11-18", 20), brush("2026-11-18", 21), ev("mouthwash", "2026-11-18", 21),
-  ]);
-  assert.deepEqual(all.done, { brush: GOALS.brush, floss: GOALS.floss, mouthwash: GOALS.mouthwash });
+    ev("mouthwash", "2026-11-18", 7), brush("2026-11-18", 7), ev("floss", "2026-11-18", 20), brush("2026-11-18", 21),
+  ], S.goals);
+  assert.deepEqual(all.done, S.goals);
   assert.equal(all.extras, 0);
 });
 
 test("anything beyond a goal, and partial brushes, are extras and do not break completion", () => {
   const partial = brush("2026-11-18", 8, { steps: 4 });
   const midday = brush("2026-11-18", 13);
-  const g = dayGoals([brush("2026-11-18", 7), midday, brush("2026-11-18", 21), partial, ev("floss", "2026-11-18"), ev("floss", "2026-11-18", 13)]);
+  const g = dayGoals([brush("2026-11-18", 7), midday, brush("2026-11-18", 21), partial, ev("floss", "2026-11-18"), ev("floss", "2026-11-18", 13)], S.goals);
   assert.ok(g.complete);
   assert.equal(g.extras, 3); // third brush, partial brush, second floss
   assert.equal(g.roles.get(partial.id), "extra");
@@ -109,7 +119,7 @@ test("anything beyond a goal, and partial brushes, are extras and do not break c
 });
 
 test("a partial brush does not count toward the key goal", () => {
-  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21, { steps: 8 })]);
+  const g = dayGoals([brush("2026-11-18", 7), brush("2026-11-18", 21, { steps: 8 })], S.goals);
   assert.ok(!g.complete);
   assert.equal(g.done.brush, 1);
 });
@@ -135,7 +145,7 @@ test("rangeStats: counts from the first event, ignores an unfinished today, trac
   assert.equal(r.brushPct, 100);
   assert.equal(r.flossDays, 2);
   assert.equal(r.mouthwashDays, 1);
-  assert.equal(r.extras, 1); // the second floss on the 19th (the first one meets the goal)
+  assert.equal(r.extras, 2); // the second floss on the 19th and the second mouthwash on the 18th (the first of each meets the goal)
   assert.equal(r.avgSeconds, 125);
   assert.equal(rangeStats(events, "2026-11-20", 1, S).days, 0);
   assert.equal(rangeStats([], "2026-11-20", 7, S).brushPct, null);
@@ -159,6 +169,7 @@ test("monthGrid pads to whole Sunday-first weeks", () => {
 
 const custom = {
   dayStartsAt: 2,
+  goals: { brush: 3, floss: 2, mouthwash: 4 },
   reminders: { dentist: { everyMonths: 4, last: "2026-09-01" }, head: { everyMonths: 2, last: null } },
 };
 
@@ -196,7 +207,31 @@ test("normalizeSettings accepts valid settings and rejects everything else", () 
     { ...S, reminders: undefined }, { ...S, reminders: { dentist: S.reminders.dentist } },
     withHead({ everyMonths: 0, last: null }), withHead({ everyMonths: 37, last: null }), withHead({ everyMonths: 1.5, last: null }),
     withHead({ everyMonths: 3 }), withHead({ everyMonths: 3, last: "2026-02-30" }), withHead({ everyMonths: 3, last: "11/21/2026" }),
+    { ...S, goals: { brush: 0, floss: 1, mouthwash: 1 } }, { ...S, goals: { brush: 7, floss: 1, mouthwash: 1 } },
+    { ...S, goals: { brush: 2, floss: 1.5, mouthwash: 1 } }, { ...S, goals: { brush: 2, floss: 1 } }, { ...S, goals: null },
+    { ...S, goals: { brush: "2", floss: 1, mouthwash: 1 } },
   ]) assert.equal(normalizeSettings(bad), null);
+  // Settings saved before goals existed get the defaults; goals round-trip.
+  const { goals, ...old } = S;
+  assert.deepEqual(normalizeSettings(old), S);
+  assert.deepEqual(normalizeSettings({ ...S, goals: { brush: 6, floss: 1, mouthwash: 3, extra: 9 } }).goals, { brush: 6, floss: 1, mouthwash: 3 });
+});
+
+test("goals: defaults are 2 brushes, 1 floss, 1 mouthwash, and custom goals change completion, extras and stats", () => {
+  assert.deepEqual(S.goals, { brush: 2, floss: 1, mouthwash: 1 });
+  const day = [brush("2026-11-18", 7), brush("2026-11-18", 21), ev("floss", "2026-11-18", 8), ev("floss", "2026-11-18", 20), ev("mouthwash", "2026-11-18", 8)];
+  const one = dayGoals(day, { brush: 3, floss: 2, mouthwash: 2 });
+  assert.ok(!one.complete); // two brushes is short of three
+  assert.equal(one.extras, 0);
+  const lax = dayGoals(day, { brush: 1, floss: 1, mouthwash: 1 });
+  assert.ok(lax.complete);
+  assert.equal(lax.extras, 2); // second brush and second floss are extras
+  const events = [...day, brush("2026-11-19", 7), brush("2026-11-19", 21), brush("2026-11-19", 22)];
+  const strict = { ...S, goals: { brush: 3, floss: 2, mouthwash: 2 } };
+  assert.equal(periodStats(events, "2026-11-18", "2026-11-19", "2026-11-20", strict).fullDays, 1); // only the 19th has three brushes
+  assert.equal(periodStats(events, "2026-11-18", "2026-11-19", "2026-11-20", strict).flossDays, 1);
+  assert.equal(periodStats(events, "2026-11-18", "2026-11-19", "2026-11-20", S).fullDays, 2);
+  assert.equal(longestStreak(events, strict), 1);
 });
 
 test("addMonths clamps to the end of shorter months and crosses years", () => {
@@ -235,7 +270,7 @@ test("dayStartsAt moves the cutoff: at 0 the day is midnight to midnight, at 6 a
   // Changing the setting regroups the same events, and streaks and stats follow.
   const events = [brush("2026-11-20", 7), brush("2026-11-21", 1)];
   assert.equal(longestStreak(events, S), 1); // both on the 20th
-  assert.equal(longestStreak(events, { dayStartsAt: 0 }), 0); // one brush on each day
+  assert.equal(longestStreak(events, { ...S, dayStartsAt: 0 }), 0); // one brush on each day
 });
 
 test("formatClock rounds up", () => {
@@ -261,7 +296,7 @@ test("parseHealthDate: keeps the UTC offset where the brush happened", () => {
 });
 
 test("brushFromRecord: 60s or more is a full brush, shorter is a partial one, bad dates are rejected", () => {
-  assert.deepEqual(brushFromRecord(R1), { id: `s${Date.UTC(2024, 2, 5, 12, 31, 2)}`, type: "brush", start: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300, seconds: 130, steps: 9 });
+  assert.deepEqual(brushFromRecord(R1), { id: `s${Date.UTC(2024, 2, 5, 12, 31, 2)}`, type: "brush", start: Date.UTC(2024, 2, 5, 12, 31, 2), offset: -300, lat: null, lon: null, acc: null, seconds: 130, steps: 9 });
   assert.equal(brushFromRecord(R2).steps, 4);
   assert.equal(brushFromRecord(rec("2024-03-05 07:31:02 -0500", "2024-03-05 07:30:00 -0500")), null);
   assert.equal(normalizeEvent(brushFromRecord(R1))?.id, brushFromRecord(R1).id);
@@ -318,10 +353,17 @@ test("parseNomie: tags become floss and mouthwash events, with the offset flippe
   const { events, skipped } = parseNomie(nomie("#floss_teeth", "#mouthwash ", "#sneeze"));
   assert.equal(skipped, 0);
   assert.deepEqual(events, [
-    { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480 },
-    { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480 },
+    { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: null, lon: null, acc: null },
+    { id: "m1700000001000", type: "mouthwash", start: 1700000001000, offset: -480, lat: null, lon: null, acc: null },
   ]);
   assert.ok(events.every((e) => normalizeEvent(e)));
+});
+
+test("parseNomie: lat and lng become lat and lon, with no accuracy; missing or null coordinates stay unknown", () => {
+  const raw = (lat, lng) => JSON.stringify({ nomie: { number: "5.6.4" }, events: [{ _id: "a", note: "#floss_teeth", start: 1700000000000, offset: 480, lat, lng }] });
+  assert.deepEqual(parseNomie(raw(34.02122522110962, -118.42036528542205)).events[0], { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: 34.021225, lon: -118.420365, acc: null });
+  for (const [lat, lng] of [[null, null], [undefined, undefined], [34, null]])
+    assert.deepEqual(parseNomie(raw(lat, lng)).events[0], { id: "f1700000000000", type: "floss", start: 1700000000000, offset: -480, lat: null, lon: null, acc: null });
 });
 
 test("parseNomie: one note can hold both, a (0) value is not done, other tags and look-alike tags are ignored", () => {
@@ -404,4 +446,11 @@ test("annualReportHtml: standalone page with no scripts or external files, and a
   assert.doesNotMatch(html, /<script|<link|src=|https?:\/\//);
   assert.equal((heatmapSvg(yearReport(events, 2026, "2026-04-01", S)).match(/<rect/g) || []).length, 365);
   assert.match(annualReportHtml(yearReport(events, 2024, "2026-04-01", S)), /Nothing to show for 2024/);
+});
+
+test("versionOf: reads the #version element's text from a page, null when there is none", () => {
+  assert.equal(versionOf('<p class="muted"><small id="version">2026-11-25T04:50:38Z</small></p>'), "2026-11-25T04:50:38Z");
+  assert.equal(versionOf('<small class="x" id="version" title="v"> 2026-11-25T04:50:38Z </small>'), "2026-11-25T04:50:38Z");
+  assert.equal(versionOf("<small>no version here</small>"), null);
+  assert.equal(versionOf('<small id="version"></small>'), null);
 });

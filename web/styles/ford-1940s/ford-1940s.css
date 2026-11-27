@@ -1,0 +1,439 @@
+/*
+ * ford-1940s: a style sheet inspired by a 1940s Ford Motor Company printed
+ * piece, the kind of plant-tour souvenir map of the Rouge in Dearborn. Black
+ * ink on white paper and nothing else: a reversed stencil title bar, heavy
+ * road lines and thin property lines, hatched fills for building areas, a
+ * boxed legend, numbered gates, and small spaced caps for labels.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/ford-1940s/ford-1940s.css">
+ * Docs and live examples: /styles/ford-1940s/
+ *
+ * Everything is prefixed: classes `fd-`, custom properties `--fd-`. The only
+ * element rules are under the opt-in `.fd` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one. Light is the printed
+ * original: black ink on white paper. Dark swaps the two (white ink on black
+ * stock, like a photographic negative of the page). The look is only ever
+ * ink and paper, so there are two tokens and everything else derives from them.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, ford-1940s-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* palette, light. Contrast: ink/paper 21.0, muted/paper 10.4, rule/paper 21.0,
+     paper/ink 21.0 (reversed bar), muted/ink-field n/a */
+  --fd-paper: #FFFFFF;
+  --fd-ink: #000000;
+  --fd-muted: #404040;      /* secondary text, fine print */
+  --fd-rule: #000000;       /* lines and controls */
+  --fd-focus: #000000;
+
+  /* type */
+  --fd-font-display: Stencil, "Stencil Std", "Rockwell Extra Bold", "Rockwell", "Roboto Slab", "Courier New", Georgia, serif;   /* the plant-map sign painter's caps */
+  --fd-font-label: "Franklin Gothic Medium", "Franklin Gothic Book", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --fd-font-body: "Century Schoolbook", "New Century Schoolbook", "Iowan Old Style", Charter, Georgia, serif;
+  --fd-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fd-track-label: 0.18em;    /* small caps labels */
+  --fd-track-display: 0.08em;  /* display caps */
+
+  /* line weights: roads are heavy, property lines thin */
+  --fd-road: 0.5rem;
+  --fd-frame: 3px;
+  --fd-hair: 1px;
+
+  /* space */
+  --fd-radius: 0;              /* printed rectangles have square corners */
+
+  /* context: components read these, so the same markup works on the page
+     background and inside a reversed .fd-bar or .fd-reverse block */
+  --fd-fg: var(--fd-ink);
+  --fd-fg-muted: var(--fd-muted);
+  --fd-line: var(--fd-rule);
+  --fd-heading: var(--fd-ink);
+  --fd-accent: var(--fd-ink);
+  --fd-field: var(--fd-paper);   /* what sits under cards and inputs */
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast: ink/paper 18.1, muted/paper 10.7, rule/paper 18.1 */
+  :root:not([data-theme="light"]) {
+    --fd-paper: #0B0B0B;
+    --fd-ink: #F5F5F5;
+    --fd-muted: #BFBFBF;
+    --fd-rule: #F5F5F5;
+    --fd-focus: #F5F5F5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fd-paper: #0B0B0B;
+  --fd-ink: #F5F5F5;
+  --fd-muted: #BFBFBF;
+  --fd-rule: #F5F5F5;
+  --fd-focus: #F5F5F5;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- page: opt in with class="fd" on <body> ---------------------------- */
+
+.fd {
+  margin: 0;
+  background: var(--fd-paper);
+  color: var(--fd-fg);
+  font: 1rem/1.6 var(--fd-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.fd *, .fd *::before, .fd *::after { box-sizing: border-box; }
+.fd h1, .fd h2, .fd h3, .fd h4 {
+  font-family: var(--fd-font-display);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: var(--fd-track-display);
+  color: var(--fd-heading);
+  margin: 0 0 0.6em;
+}
+.fd h1 { font-size: clamp(2.2rem, 8vw, 4rem); }
+.fd h2 { font-size: clamp(1.5rem, 4.5vw, 2.2rem); }
+.fd h3 { font-size: 1.3rem; }
+.fd h4 { font-family: var(--fd-font-label); font-size: 0.9rem; letter-spacing: var(--fd-track-label); }
+.fd a { color: var(--fd-fg); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.fd a:hover { text-decoration-thickness: 3px; }
+.fd :focus-visible { outline: 3px solid var(--fd-focus); outline-offset: 2px; }
+.fd hr:not([class]) { border: 0; height: var(--fd-road); margin: 2rem 0; background: var(--fd-ink); }
+.fd code, .fd kbd { font-family: var(--fd-font-mono); font-size: 0.88em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* sign-painted display caps */
+.fd-title {
+  font-family: var(--fd-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: var(--fd-track-display);
+  color: var(--fd-heading);
+  margin: 0;
+}
+.fd-title--xl { font-size: clamp(2.4rem, 10vw, 5.25rem); }
+.fd-title--lg { font-size: clamp(1.9rem, 6vw, 3.1rem); }
+.fd-title--md { font-size: clamp(1.3rem, 4vw, 1.8rem); }
+
+/* small spaced caps, the map's place names */
+.fd-label {
+  font-family: var(--fd-font-label);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--fd-track-label);
+  color: var(--fd-fg-muted);
+}
+
+/* running copy */
+.fd-copy { font-size: 0.98rem; line-height: 1.6; color: var(--fd-fg); max-width: 38rem; }
+.fd-copy--center { text-align: center; margin-inline: auto; }
+
+/* the caption under a figure: italic, with the source after it */
+.fd-caption { font-size: 0.82rem; font-style: italic; line-height: 1.45; color: var(--fd-fg-muted); }
+.fd-caption cite { font-style: italic; color: var(--fd-fg); }
+
+/* ---- bar: the reversed title strip ("AN INDUSTRIAL CITY") ---------------- */
+
+/* Solid ink with paper-colored stencil caps. A second line in .fd-bar__sub
+   is the lighter subtitle that sits under it. It sizes to the full width. */
+.fd-bar {
+  --fd-fg: var(--fd-paper);
+  --fd-fg-muted: var(--fd-paper);
+  --fd-line: var(--fd-paper);
+  --fd-heading: var(--fd-paper);
+  --fd-accent: var(--fd-paper);
+  --fd-field: var(--fd-ink);
+  display: block;
+  padding: 0.55em 1rem 0.5em;
+  background: var(--fd-ink);
+  color: var(--fd-paper);
+  font-family: var(--fd-font-display);
+  font-weight: 900;
+  font-size: clamp(1.4rem, 5vw, 2.4rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+.fd-bar__sub {
+  display: block;
+  margin-top: 0.35em;
+  font-family: var(--fd-font-label);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: var(--fd-track-label);
+}
+.fd-bar--sm { font-size: 1rem; padding: 0.4em 0.9rem; letter-spacing: 0.12em; }
+.fd-bar--left { text-align: left; }
+.fd-bar--inline { display: inline-block; }
+
+/* reversed block: the same swap for any region */
+.fd-reverse {
+  --fd-fg: var(--fd-paper);
+  --fd-fg-muted: var(--fd-paper);
+  --fd-line: var(--fd-paper);
+  --fd-heading: var(--fd-paper);
+  --fd-accent: var(--fd-paper);
+  --fd-field: var(--fd-ink);
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: var(--fd-ink);
+  color: var(--fd-paper);
+}
+.fd-reverse a { color: var(--fd-paper); }
+
+/* ---- plate: the framed map ---------------------------------------------- */
+
+/* Heavy outer rule with a thin keyline inside it, like the printed map's
+   border. Put an .fd-bar first for the title strip. */
+.fd-plate {
+  position: relative;
+  background: var(--fd-field);
+  color: var(--fd-fg);
+  border: var(--fd-frame) solid var(--fd-line);
+  outline: var(--fd-hair) solid var(--fd-line);
+  outline-offset: 3px;
+  margin: 4px;
+}
+.fd-plate__body { padding: clamp(1rem, 3vw, 1.75rem); }
+.fd-plate > .fd-bar { margin: -1px -1px 0; }
+.fd-plate__foot {
+  padding: 0.5rem 1rem;
+  border-top: var(--fd-frame) solid var(--fd-line);
+  font-family: var(--fd-font-label);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: var(--fd-track-label);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* quiet version for content on the page: one thin rule and a heavy top */
+.fd-card {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: var(--fd-field);
+  color: var(--fd-fg);
+  border: var(--fd-hair) solid var(--fd-line);
+  border-top: var(--fd-road) solid var(--fd-line);
+}
+
+/* ---- lines: roads, rails, property lines, routes ------------------------ */
+
+/* heavy road */
+.fd-road { height: var(--fd-road); margin: 1.75rem 0; border: 0; background: var(--fd-line); }
+.fd-road--thin { height: 0.2rem; }
+
+/* property line: a hairline pair */
+.fd-rule {
+  height: 0; margin: 1.5rem 0; border: 0;
+  border-top: var(--fd-hair) solid var(--fd-line);
+  border-bottom: var(--fd-hair) solid var(--fd-line);
+  padding-top: 3px;
+}
+
+/* railroad: a line with ties across it */
+.fd-rail {
+  height: 0.7rem; margin: 1.5rem 0; border: 0;
+  background:
+    linear-gradient(var(--fd-line), var(--fd-line)) 0 50% / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, var(--fd-line) 0 2px, transparent 2px 0.6rem);
+}
+
+/* route through the plant: a dashed line that ends in an arrowhead */
+.fd-route {
+  position: relative; height: 0; margin: 1.5rem 1rem 1.5rem 0; border: 0;
+  border-top: 3px dashed var(--fd-line);
+}
+.fd-route::after {
+  content: ""; position: absolute; right: -0.9rem; top: -0.55rem;
+  border: 0.5rem solid transparent; border-left: 0.9rem solid var(--fd-line); border-right: 0;
+}
+
+/* ---- fills: building areas, parking, storage ---------------------------- */
+
+/* Hatching in line color on the field. Put text in an .fd-tag, which sits on
+   plain paper so the lettering stays legible. */
+.fd-hatch {
+  min-height: 4rem; padding: 0.75rem;
+  color: var(--fd-fg);
+  background:
+    repeating-linear-gradient(135deg, var(--fd-line) 0 1px, transparent 1px 6px),
+    var(--fd-field);
+  border: var(--fd-hair) solid var(--fd-line);
+}
+.fd-hatch--dense { background: repeating-linear-gradient(135deg, var(--fd-line) 0 2px, transparent 2px 5px), var(--fd-field); }
+.fd-hatch--cross {
+  background:
+    repeating-linear-gradient(45deg, var(--fd-line) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(135deg, var(--fd-line) 0 1px, transparent 1px 7px),
+    var(--fd-field);
+}
+.fd-hatch--dots { background: radial-gradient(circle, var(--fd-line) 0 1px, transparent 1.4px) 0 0 / 7px 7px, var(--fd-field); }
+.fd-hatch--solid { background: var(--fd-line); }
+
+/* a name on the map: spaced caps on a paper chip */
+.fd-tag {
+  display: inline-block; padding: 0.15rem 0.5rem;
+  background: var(--fd-field);
+  color: var(--fd-fg);
+  border: var(--fd-hair) solid var(--fd-line);
+  font-family: var(--fd-font-label);
+  font-size: 0.7rem; font-weight: 700; line-height: 1.3;
+  text-transform: uppercase; letter-spacing: var(--fd-track-label);
+}
+
+/* ---- gate: the numbered entrances ---------------------------------------- */
+
+.fd-gate {
+  display: inline-grid; place-items: center;
+  min-width: 2rem; height: 2rem; padding: 0 0.4rem;
+  font-family: var(--fd-font-display); font-weight: 900; font-size: 0.95rem; line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--fd-fg);
+  background: var(--fd-field);
+  border: 2px solid var(--fd-line);
+}
+.fd-gate--round { border-radius: 50%; width: 2rem; padding: 0; }
+.fd-gate--solid { background: var(--fd-line); color: var(--fd-field); }
+
+/* ---- legend: the boxed key ------------------------------------------------ */
+
+.fd-legend {
+  display: grid; gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  background: var(--fd-field);
+  color: var(--fd-fg);
+  border: 2px solid var(--fd-line);
+}
+.fd-legend__title { margin: 0; font: 700 0.72rem/1.3 var(--fd-font-label); text-transform: uppercase; letter-spacing: var(--fd-track-label); }
+.fd-key { display: grid; grid-template-columns: 3rem 1fr; align-items: center; gap: 0.75rem; font-size: 0.85rem; line-height: 1.3; }
+.fd-key > i { display: block; height: 1.1rem; font-style: normal; }
+.fd-key--route > i { height: 0; border-top: 3px dashed var(--fd-line); }
+.fd-key--building > i { border: 1px solid var(--fd-line); background: repeating-linear-gradient(135deg, var(--fd-line) 0 1px, transparent 1px 4px); }
+.fd-key--road > i { height: 0.4rem; background: var(--fd-line); }
+.fd-key--rail > i { height: 0.7rem; background: linear-gradient(var(--fd-line), var(--fd-line)) 0 50% / 100% 2px no-repeat, repeating-linear-gradient(90deg, var(--fd-line) 0 2px, transparent 2px 0.5rem); }
+
+/* ---- facts: the fine-print banner and its columns --------------------- */
+
+.fd-facts { color: var(--fd-fg); background: var(--fd-field); border: var(--fd-frame) solid var(--fd-line); }
+.fd-facts > .fd-bar { text-align: left; font-size: clamp(1rem, 3.5vw, 1.35rem); letter-spacing: 0.1em; }
+.fd-facts__cols { columns: 15rem; column-gap: 1.5rem; column-rule: 1px solid var(--fd-line); padding: 1rem; font-size: 0.82rem; line-height: 1.5; }
+.fd-facts__cols p { margin: 0 0 0.75rem; break-inside: avoid; }
+
+/* ---- grid: ruled cells like the plant fact sheet ----------------------- */
+
+.fd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--fd-cell-min, 9.5rem), 1fr));
+  border-top: var(--fd-hair) solid var(--fd-line);
+  border-left: var(--fd-hair) solid var(--fd-line);
+  color: var(--fd-fg);
+}
+.fd-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.fd-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.fd-grid--4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 34rem) {
+  .fd-grid--3, .fd-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+.fd-cell {
+  display: flex; flex-direction: column; justify-content: center; gap: 0.2rem;
+  min-width: 0;
+  padding: var(--fd-cell-pad, 0.75rem 1rem);
+  text-align: center;
+  background: var(--fd-field);
+  border-right: var(--fd-hair) solid var(--fd-line);
+  border-bottom: var(--fd-hair) solid var(--fd-line);
+}
+.fd-cell--wide { grid-column: 1 / -1; }
+.fd-cell--left { text-align: left; }
+.fd-cell--tall { padding-block: 1.3rem; }
+.fd-value {
+  font-family: var(--fd-font-label);
+  font-size: 0.95rem; font-weight: 700; line-height: 1.25;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fd-accent);
+}
+.fd-value--plain { color: var(--fd-fg); }
+.fd-value--lg { font-size: 1.25rem; }
+.fd-value--xl { font-family: var(--fd-font-display); font-weight: 900; font-size: clamp(2rem, 6vw, 3rem); line-height: 1; letter-spacing: 0.04em; }
+.fd-cell > .fd-label { color: var(--fd-fg-muted); }
+
+/* ---- table: ledger rules ------------------------------------------------- */
+
+.fd-table { width: 100%; border-collapse: collapse; color: var(--fd-fg); border-top: 3px solid var(--fd-line); border-bottom: 3px solid var(--fd-line); }
+.fd-table caption {
+  caption-side: top; padding: 0 0 0.6rem; text-align: left;
+  font: 700 0.72rem/1.3 var(--fd-font-label); text-transform: uppercase; letter-spacing: var(--fd-track-label); color: var(--fd-fg-muted);
+}
+.fd-table th, .fd-table td { padding: 0.5rem 0.9rem; text-align: left; border-bottom: var(--fd-hair) solid var(--fd-line); }
+.fd-table thead th {
+  background: var(--fd-line); color: var(--fd-field);
+  font: 700 0.72rem/1.3 var(--fd-font-label); text-transform: uppercase; letter-spacing: var(--fd-track-label);
+}
+.fd-table tbody th { font: 700 0.75rem/1.3 var(--fd-font-label); text-transform: uppercase; letter-spacing: var(--fd-track-label); }
+.fd-table tbody tr:last-child th, .fd-table tbody tr:last-child td { border-bottom: 0; }
+.fd-table td { font-variant-numeric: tabular-nums; }
+.fd-table .fd-num { text-align: right; }
+.fd-table-wrap { overflow-x: auto; }
+
+/* ---- controls ------------------------------------------------------------ */
+
+.fd-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5em;
+  min-height: 2.75rem; padding: 0.55rem 1.4rem;
+  font: 900 0.95rem/1 var(--fd-font-display);
+  text-transform: uppercase; letter-spacing: 0.12em; text-decoration: none;
+  cursor: pointer;
+  color: var(--fd-field);
+  background: var(--fd-line);
+  border: 2px solid var(--fd-line);
+  border-radius: var(--fd-radius);
+  box-shadow: 3px 3px 0 var(--fd-field), 3px 3px 0 1px var(--fd-line);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.fd-button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--fd-field), 1px 1px 0 1px var(--fd-line); }
+.fd-button:focus-visible { outline: 3px solid var(--fd-focus); outline-offset: 4px; }
+.fd-button[disabled], .fd-button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
+.fd-button--outline { color: var(--fd-fg); background: var(--fd-field); }
+.fd-button--ghost { color: var(--fd-fg); background: transparent; box-shadow: none; border-style: dashed; }
+.fd-button--ghost:active { transform: none; }
+.fd-button--block { display: flex; width: 100%; }
+
+.fd-field { display: grid; gap: 0.35rem; }
+.fd-input, .fd-select {
+  width: 100%; min-height: 2.75rem; padding: 0.5rem 0.8rem;
+  font: 1rem/1.3 var(--fd-font-body);
+  color: var(--fd-fg); background: var(--fd-field);
+  border: 2px solid var(--fd-line); border-radius: var(--fd-radius);
+}
+.fd-input::placeholder { color: var(--fd-fg-muted); opacity: 1; }
+.fd-input:focus-visible, .fd-select:focus-visible { outline: 3px solid var(--fd-focus); outline-offset: 2px; }
+.fd-input[aria-invalid="true"] { border-style: dashed; box-shadow: inset 6px 0 0 var(--fd-line); }
+
+/* ---- badge --------------------------------------------------------------- */
+
+.fd-badge {
+  display: inline-block; padding: 0.1rem 0.6rem;
+  font: 700 0.7rem/1.5 var(--fd-font-label);
+  text-transform: uppercase; letter-spacing: var(--fd-track-label);
+  color: var(--fd-fg); border: 1px solid var(--fd-line); border-radius: var(--fd-radius);
+}
+.fd-badge--solid { color: var(--fd-field); background: var(--fd-line); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fd-button { transition: none; }
+}
+@media print {
+  .fd-bar, .fd-reverse, .fd-hatch, .fd-table thead th, .fd-button, .fd-gate--solid, .fd-badge--solid, .fd-road, .fd-rail { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
