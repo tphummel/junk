@@ -214,6 +214,7 @@ export function sessionReportHtml(exp) {
   const winners = (/** @type {Game} */ g) => gameWinners(g);
   const st = standings(games);
   const ps = pounceStats(games);
+  const h2h = headToHeadAll(games);
   const f1 = (/** @type {number | null} */ n) => (n === null ? '–' : n.toFixed(1));
   const players = [...new Set([...s.present, ...games.flatMap((g) => g.results.map((r) => r.playerId))])];
   const rows = games.map((g, i) => {
@@ -247,6 +248,14 @@ ${st.map((r, i) => `<tr><td>${i + 1}</td><td>${escHtml(name(r.playerId))}</td><t
 <table><thead><tr><th>Player</th><th>Pounces</th><th>Rate</th><th>Avg score pouncing</th><th>Otherwise</th></tr></thead><tbody>
 ${ps.map((r) => `<tr><td>${escHtml(name(r.playerId))}</td><td>${r.pounces}/${r.played}</td><td>${Math.round(r.rate * 100)}%</td><td>${f1(r.avgScorePounced)}</td><td>${f1(r.avgScoreOther)}</td></tr>`).join('')}
 </tbody></table>
+${h2h.length ? `<h2>Head to head</h2>
+<p class="muted">Only games both players were in.</p>
+<table><thead><tr><th>Matchup</th><th>Shared</th><th>Record</th><th>Avg margin</th></tr></thead><tbody>
+${h2h.map((r) => {
+  const lead = r.avgDiff >= 0 ? r.a : r.b;
+  return `<tr><td>${escHtml(name(r.a))} vs ${escHtml(name(r.b))}</td><td>${r.shared}</td><td>${r.aWins}–${r.bWins}${r.ties ? `–${r.ties}` : ''}</td><td>${r.avgDiff === 0 ? 'even' : `${escHtml(name(lead))} +${Math.abs(r.avgDiff).toFixed(1)}`}</td></tr>`;
+}).join('')}
+</tbody></table>` : ''}
 <h2>Games</h2>
 <p class="muted">Totals include the pounce bonus. ⚡ pounced, bold won.</p>
 <table><thead><tr><th>#</th>${players.map((id) => `<th>${escHtml(name(id))}</th>`).join('')}<th>Length</th></tr></thead><tbody>${rows}</tbody></table>

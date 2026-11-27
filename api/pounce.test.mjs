@@ -112,5 +112,6 @@ test("session html report is standalone and escapes names", () => {
   const html = sessionReportHtml(sessionExport(session, [{ id: "a", name: "A&B" }, { id: "b", name: "Bo" }]));
   assert.ok(html.startsWith("<!doctype html>"));
   assert.ok(!html.includes("<script"));
+  assert.ok(html.includes("Head to head") && html.includes("A&amp;B vs Bo"));
   assert.ok(html.includes("A&amp;B") && html.includes("&lt;Cafe&gt;") && html.includes("&lt;b&gt;x"));
 });
