@@ -101,7 +101,10 @@ export function gameStats(g) {
     if (s.broken) t.broken++;
   }
   for (const k of ["invested", "rent", "returned", "profit", "loan", "remaining"]) t[k] = round(t[k]);
-  return { ...t, roi: t.invested > 0 ? t.profit / t.invested : 0 };
+  // `remaining` adds up what each property you own still owes (never below zero per property), so a property that
+  // has paid off does not offset the others. `gameRemaining` nets everything, including traded-away properties.
+  const gameRemaining = Math.max(0, round(-t.profit));
+  return { ...t, gameRemaining, offset: round(t.remaining - gameRemaining), roi: t.invested > 0 ? t.profit / t.invested : 0 };
 }
 
 let seq = 0;
@@ -525,8 +528,9 @@ export function planTrade(g, t) {
   const giveBasis = round(bases.reduce((a, b) => a + b, 0));
   // Cash received soaks up basis first; anything beyond the basis is a gain, booked as cash on the properties given.
   const cashParts = !gives.length ? [] : giveBasis > 0 ? splitProportional(got, bases) : gives.map((_, i) => (i === 0 ? got : 0));
-  const out = gives.map((_, i) => round(Math.max(0, bases[i] - cashParts[i])));
   const n = t.receive.length;
+  // With nothing received there is nowhere for basis to go: a cash-only trade is a sale and realizes the gain or loss.
+  const out = gives.map((_, i) => (n ? round(Math.max(0, bases[i] - cashParts[i])) : 0));
   const carried = n ? round(out.reduce((a, b) => a + b, 0)) : 0;
   const carriedShares = n ? splitEvenly(carried, n) : [];
   const cashShares = n ? splitEvenly(paid, n) : [];

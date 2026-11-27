@@ -514,3 +514,32 @@ test("repairs: the original game uses the same house and hotel amounts, and noth
   assert.equal(planRepairs(g, "chance").total, 100);
   assert.equal(planRepairs(g, "chest").total, 115);
 });
+
+test("game totals: left to break even nets the whole game, unpaid properties are summed on their own", () => {
+  const g = game();
+  const bw = own(g, "Boardwalk", 400), pp = own(g, "Park Place", 350);
+  collectRent(bw, 670); // Boardwalk is 270 ahead
+  const t = gameStats(g);
+  assert.equal(t.profit, -80);
+  assert.equal(t.gameRemaining, 80);
+  assert.equal(t.remaining, 350);
+  assert.equal(t.offset, 270); // the profit on the property that has paid off
+  assert.equal(t.broken, 1);
+  assert.equal(t.count, 2);
+  collectRent(pp, 500); // now everything has paid off
+  const done = gameStats(g);
+  assert.equal(done.gameRemaining, 0);
+  assert.equal(done.remaining, 0);
+  assert.equal(done.offset, 0);
+});
+
+test("game totals: a traded-away loss is in the game number but not in what owned properties owe", () => {
+  const g = game();
+  const med = own(g, "Mediterranean Avenue", 60);
+  assert.equal(executeTrade(g, { giveIds: [med.id], receive: [], cashReceived: 10 }), null);
+  const t = gameStats(g);
+  assert.equal(t.profit, -50);
+  assert.equal(t.gameRemaining, 50);
+  assert.equal(t.remaining, 0);
+  assert.equal(t.offset, -50);
+});

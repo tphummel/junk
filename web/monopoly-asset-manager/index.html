@@ -154,6 +154,7 @@
 
   <div id="main" hidden>
     <div class="summary" id="summary"></div>
+    <p class="muted" id="summaryNote" style="margin:.25rem 0 .75rem;font-size:.85rem"></p>
 
     <details class="panel" id="addPanel" open>
       <summary>Buy a property</summary>
@@ -190,6 +191,7 @@
     <ul>
       <li><b>Invested</b>: purchase price, every house, and the 10% interest when you lift a mortgage.</li>
       <li><b>Returned</b>: rent collected plus improvements sold back (at half cost).</li>
+      <li><b>Game left to break even</b> is your net loss across the whole game (invested less returned, never below zero). <b>Owed by unpaid properties</b> adds up what each property you own that hasn't paid back still owes, so a property that has paid off doesn't offset the others. They differ by the profit on paid-off properties, net of any loss on traded-away ones.</li>
       <li><b>Break even</b> when returned reaches invested. <b>ROI</b> is (returned − invested) ÷ invested.</li>
       <li>A mortgage is a loan: the cash is not counted as income, only the interest is a cost. Outstanding loans are shown separately.</li>
       <li><b>Repairs:</b> the Repairs button charges a Chance or Community Chest repairs card for every house, hotel, skyscraper and train depot you own. A hotel replaces its houses and a skyscraper replaces its hotel, as on the board. Each property's share goes in its history and adds to its cost basis, so it counts toward what you need to break even.</li>
@@ -200,7 +202,7 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T19:19:08Z</small>
+  <small id="version">2026-11-27T19:31:47Z</small>
 
   <script type="module">
     import { CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
@@ -253,8 +255,12 @@
       $('summary').replaceChildren(
         stat('Invested', money(t.invested)), stat('Rent collected', money(t.rent)),
         stat('Net profit', money(t.profit), cls(t.profit)), stat('ROI', t.invested ? pct(t.roi) : '–', cls(t.profit)),
-        stat('Left to break even', money(t.remaining)), stat('Broken even', t.count + ' owned: ' + t.broken),
-        stat('Mortgage loans out', money(t.loan), t.loan ? 'bad' : ''));
+        stat('Game left to break even', money(t.gameRemaining)), stat('Owed by unpaid properties', money(t.remaining)),
+        stat('Properties broken even', t.broken + ' of ' + t.count), stat('Mortgage loans out', money(t.loan), t.loan ? 'bad' : ''));
+      // The two break-even numbers differ when something has paid off, or been traded away, at a different rate.
+      $('summaryNote').textContent = !t.offset ? '' : t.offset > 0
+        ? 'Game left to break even is ' + money(t.offset) + ' less than what unpaid properties owe: properties that have paid off are ahead (net of any loss on traded-away ones), and that profit counts for the game as a whole.'
+        : 'Game left to break even is ' + money(-t.offset) + ' more than what the properties you own owe: traded-away properties lost money, which the game total still carries.';
       const props = g.properties.map((p) => ({ p, s: stats(p, g) }));
       if (sort === 'remaining') props.sort((a, b) => b.s.remaining - a.s.remaining);
       else if (sort === 'profit') props.sort((a, b) => b.s.profit - a.s.profit);
