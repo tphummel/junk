@@ -371,3 +371,26 @@ test("mega partial rent starts at all but one: 2 of 3 in a group of three, 3 of 
   const fl = mega("Florida Avenue"), pp = mega("Park Place");
   assert.equal(rentFor(megaGame(fl, pp), fl), 70);
 });
+
+test("mega unimproved rent: site, double one shy of the full set, triple with the full set, for every street", () => {
+  for (const c of MEGA.filter((x) => x.kind === "street")) {
+    assert.deepEqual(c.tiers, [c.rents[0] * 2, c.rents[0] * 3], c.name);
+    const props = MEGA.filter((x) => x.group === c.group).map((x) => newProperty(x));
+    const me = props.find((p) => p.name === c.name);
+    const others = props.filter((p) => p !== me);
+    const size = props.length;
+    assert.equal(rentFor(megaGame(me), me), c.rents[0], c.name + " alone");
+    assert.equal(rentFor(megaGame(me, ...others.slice(0, size - 2)), me), c.rents[0] * 2, c.name + " one shy");
+    if (size === 4) assert.equal(rentFor(megaGame(me, others[0]), me), c.rents[0], c.name + " two of four");
+    assert.equal(rentFor(megaGame(me, ...others), me), c.rents[0] * 3, c.name + " full set");
+  }
+});
+
+test("mega Marvin Gardens and California Avenue triple to 72", () => {
+  const props = ["Atlantic Avenue", "Ventnor Avenue", "Marvin Gardens", "California Avenue"].map(mega);
+  const g = megaGame(...props);
+  assert.equal(rentFor(g, props[2]), 72);
+  assert.equal(rentFor(g, props[3]), 72);
+  assert.equal(rentFor(g, props[0]), 66);
+  assert.equal(rentFor(megaGame(props[0], props[1], props[2]), props[2]), 48); // one shy: double
+});

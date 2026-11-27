@@ -233,51 +233,51 @@ export const CLASSIC = [
 
 /**
  * Monopoly Mega (US names, board order). Each street is
- * [name, group, price, [site, partial set, full set, 1 house, 2, 3, 4, hotel, skyscraper]].
- * "Partial set" applies when you own all but one of the group (see partialAt).
+ * [name, group, price, [site rent, 1 house, 2, 3, 4, hotel, skyscraper]].
+ * Unimproved rent steps up with how much of the group you own: the site rent, double it when you are one
+ * shy of the full set (see partialAt), triple it with the full set.
  * Not on the printed table, so assumed: mortgage value = half the price, building cost = the standard
  * cost for the color group, a skyscraper costs the same as a house, train depots cost $100 and sell for half.
  */
 const MEGA_ROWS = [
-  ["Mediterranean Avenue", "brown", 60, [2, 4, 6, 10, 30, 90, 160, 250, 750]],
-  ["Baltic Avenue", "brown", 60, [4, 8, 12, 20, 60, 180, 320, 450, 950]],
-  // Skyscraper rent is missing from the source for this US row; hotel + 500 matches every other brown, light blue and pink deed.
-  ["Arctic Avenue", "brown", 80, [5, 10, 15, 30, 80, 240, 360, 500, 1000]],
+  ["Mediterranean Avenue", "brown", 60, [2, 10, 30, 90, 160, 250, 750]],
+  ["Baltic Avenue", "brown", 60, [4, 20, 60, 180, 320, 450, 950]],
+  // The skyscraper rent is missing from the source for this US row; hotel + 500 matches every other brown, light blue and pink deed.
+  ["Arctic Avenue", "brown", 80, [5, 30, 80, 240, 360, 500, 1000]],
   ["Reading Railroad"],
-  ["Massachusetts Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
-  ["Ornamental Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
+  ["Massachusetts Avenue", "lightblue", 100, [6, 30, 90, 270, 400, 550, 1050]],
+  ["Ornamental Avenue", "lightblue", 100, [6, 30, 90, 270, 400, 550, 1050]],
   ["Gas Company"],
-  ["Vermont Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
-  ["Connecticut Avenue", "lightblue", 120, [8, 16, 24, 40, 100, 300, 450, 600, 1100]],
-  ["Maryland Avenue", "pink", 140, [10, 20, 30, 50, 150, 450, 625, 750, 1250]],
-  ["St. Charles Place", "pink", 140, [10, 20, 30, 50, 150, 450, 625, 750, 1250]],
+  ["Vermont Avenue", "lightblue", 100, [6, 30, 90, 270, 400, 550, 1050]],
+  ["Connecticut Avenue", "lightblue", 120, [8, 40, 100, 300, 450, 600, 1100]],
+  ["Maryland Avenue", "pink", 140, [10, 50, 150, 450, 625, 750, 1250]],
+  ["St. Charles Place", "pink", 140, [10, 50, 150, 450, 625, 750, 1250]],
   ["Electric Company"],
-  ["States Avenue", "pink", 140, [10, 20, 30, 50, 150, 450, 625, 750, 1250]],
-  ["Virginia Avenue", "pink", 160, [12, 24, 36, 60, 180, 500, 700, 900, 1400]],
+  ["States Avenue", "pink", 140, [10, 50, 150, 450, 625, 750, 1250]],
+  ["Virginia Avenue", "pink", 160, [12, 60, 180, 500, 700, 900, 1400]],
   ["Pennsylvania Railroad"],
-  ["St. James Place", "orange", 180, [14, 28, 42, 70, 200, 550, 750, 950, 1450]],
-  ["Tennessee Avenue", "orange", 180, [14, 28, 42, 70, 200, 550, 750, 950, 1450]],
-  ["New York Avenue", "orange", 200, [16, 32, 48, 80, 220, 600, 800, 1000, 1500]],
-  ["New Jersey Avenue", "orange", 200, [16, 32, 48, 80, 220, 600, 800, 1000, 1500]],
-  ["Kentucky Avenue", "red", 220, [18, 36, 54, 90, 250, 700, 875, 1050, 2050]],
-  ["Indiana Avenue", "red", 220, [18, 36, 54, 90, 250, 700, 875, 1050, 2050]],
-  ["Illinois Avenue", "red", 240, [20, 40, 60, 100, 300, 750, 925, 1100, 2100]],
-  ["Michigan Avenue", "red", 240, [20, 40, 60, 100, 300, 750, 925, 1100, 2100]],
+  ["St. James Place", "orange", 180, [14, 70, 200, 550, 750, 950, 1450]],
+  ["Tennessee Avenue", "orange", 180, [14, 70, 200, 550, 750, 950, 1450]],
+  ["New York Avenue", "orange", 200, [16, 80, 220, 600, 800, 1000, 1500]],
+  ["New Jersey Avenue", "orange", 200, [16, 80, 220, 600, 800, 1000, 1500]],
+  ["Kentucky Avenue", "red", 220, [18, 90, 250, 700, 875, 1050, 2050]],
+  ["Indiana Avenue", "red", 220, [18, 90, 250, 700, 875, 1050, 2050]],
+  ["Illinois Avenue", "red", 240, [20, 100, 300, 750, 925, 1100, 2100]],
+  ["Michigan Avenue", "red", 240, [20, 100, 300, 750, 925, 1100, 2100]],
   ["B. & O. Railroad"],
-  ["Atlantic Avenue", "yellow", 260, [22, 44, 66, 110, 330, 800, 975, 1150, 2150]],
-  ["Ventnor Avenue", "yellow", 260, [22, 44, 66, 110, 330, 800, 975, 1150, 2150]],
+  ["Atlantic Avenue", "yellow", 260, [22, 110, 330, 800, 975, 1150, 2150]],
+  ["Ventnor Avenue", "yellow", 260, [22, 110, 330, 800, 975, 1150, 2150]],
   ["Water Works"],
-  // Full-set rent is 60 as printed in the source table (every other deed's is 3x the site rent, which would be 72).
-  ["Marvin Gardens", "yellow", 280, [24, 48, 60, 120, 360, 850, 1025, 1200, 2200]],
-  ["California Avenue", "yellow", 280, [24, 48, 60, 120, 360, 850, 1025, 1200, 2200]],
-  ["Pacific Avenue", "green", 300, [26, 52, 78, 130, 390, 900, 1100, 1275, 2275]],
-  ["South Carolina Avenue", "green", 300, [26, 52, 78, 130, 390, 900, 1100, 1275, 2275]],
-  ["North Carolina Avenue", "green", 300, [26, 52, 78, 130, 390, 900, 1100, 1275, 2275]],
-  ["Pennsylvania Avenue", "green", 320, [28, 56, 84, 150, 450, 1000, 1200, 1400, 2400]],
+  ["Marvin Gardens", "yellow", 280, [24, 120, 360, 850, 1025, 1200, 2200]],
+  ["California Avenue", "yellow", 280, [24, 120, 360, 850, 1025, 1200, 2200]],
+  ["Pacific Avenue", "green", 300, [26, 130, 390, 900, 1100, 1275, 2275]],
+  ["South Carolina Avenue", "green", 300, [26, 130, 390, 900, 1100, 1275, 2275]],
+  ["North Carolina Avenue", "green", 300, [26, 130, 390, 900, 1100, 1275, 2275]],
+  ["Pennsylvania Avenue", "green", 320, [28, 150, 450, 1000, 1200, 1400, 2400]],
   ["Short Line"],
-  ["Florida Avenue", "darkblue", 350, [35, 70, 105, 175, 500, 1100, 1300, 1500, 2500]],
-  ["Park Place", "darkblue", 350, [35, 70, 105, 175, 500, 1100, 1300, 1500, 2500]],
-  ["Boardwalk", "darkblue", 400, [50, 100, 150, 200, 600, 1400, 1700, 2000, 3000]],
+  ["Florida Avenue", "darkblue", 350, [35, 175, 500, 1100, 1300, 1500, 2500]],
+  ["Park Place", "darkblue", 350, [35, 175, 500, 1100, 1300, 1500, 2500]],
+  ["Boardwalk", "darkblue", 400, [50, 200, 600, 1400, 1700, 2000, 3000]],
 ];
 const HOUSE_COST = { brown: 50, lightblue: 50, pink: 100, orange: 100, red: 150, yellow: 150, green: 200, darkblue: 200 };
 const MEGA_RAIL = ["Reading Railroad", "Pennsylvania Railroad", "B. & O. Railroad", "Short Line"];
@@ -294,7 +294,7 @@ export const MEGA = MEGA_ROWS.map((row) => {
       ? { name, group: "railroad", kind: /** @type {const} */ ("railroad"), price: 200, houseCost: 100, rents: [25, 50, 100, 200], groupSize: 4 }
       : { name, group: "utility", kind: /** @type {const} */ ("utility"), price: 150, houseCost: 0, rents: [4, 10, 20], groupSize: 3 };
   }
-  return { name, group, kind: /** @type {const} */ ("street"), price, houseCost: HOUSE_COST[group], rents: [t[0], ...t.slice(3)], tiers: [t[1], t[2]], groupSize: MEGA_GROUP_SIZE[group] };
+  return { name, group, kind: /** @type {const} */ ("street"), price, houseCost: HOUSE_COST[group], rents: t, tiers: [t[0] * 2, t[0] * 3], groupSize: MEGA_GROUP_SIZE[group] };
 });
 
 /** Title deeds for each edition's picker. */
@@ -328,7 +328,7 @@ export function rentFor(g, p, dice) {
   const base = r[p.level];
   if (!(base >= 0)) return null;
   if (p.level === 0 && p.tiers) {
-    // Mega: the partial rent starts when you own all but one of the group (2 of 3, 3 of 4); the full set pays more.
+    // Mega: one shy of the full set pays double the site rent (2 of 3, 3 of 4) and the full set triples it.
     // Owning fewer than that pays the plain site rent.
     const n = owned(g, p);
     if (p.groupSize > 0 && n >= p.groupSize) return p.tiers[1];
