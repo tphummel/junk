@@ -1,7 +1,7 @@
 // pounce UI: sessions, roster, game timer, result entry and reports. State lives in localStorage.
 import {
   cumulative, DEFAULT_BONUS, DEFAULT_PILE, formatDuration, gameTotals, gameWinners, headToHeadAll, pounceStats, paceStats,
-  SCORE_MAX, SCORE_MIN, standings, validateResults, venueStats,
+  SCORE_MAX, SCORE_MIN, sessionExport, sessionReportHtml, standings, validateResults, venueStats,
 } from './engine.js';
 
 const KEY = 'pounce:v1';
@@ -110,7 +110,25 @@ function sessionView(s) {
     ${rosterView(s)}
     ${gamePanel(s, cur)}
     ${games.length ? reportsView(games) : '<p class="muted">Reports appear after the first saved game.</p>'}
+    ${games.length ? gamesListView(games) : ''}
+    <section>
+      <h2>Export this session</h2>
+      <div class="row">
+        <button data-act="export-session-json">JSON</button>
+        <button data-act="export-session-html">HTML report</button>
+      </div>
+    </section>
     ${db.sessions.length > 1 ? `<section><h2>All-time</h2>${allTimeInner()}</section>` : ''}`;
+}
+
+/** Every saved game with edit and delete. @param {any[]} games */
+function gamesListView(games) {
+  return `<section><h2>Games</h2><ul class="list">${games.map((g, i) => `
+    <li><b>Game ${i + 1}</b>
+      <span>${gameTotals(g).sort((a, b) => b.total - a.total).map((t) => `<span class="${gameWinners(g).includes(t.playerId) ? 'win' : ''}">${esc(nameOf(t.playerId))} ${t.total}${t.pounced ? ' ⚡' : ''}</span>`).join(' · ')}</span>
+      ${g.updatedAt ? `<span class="muted" title="${esc(new Date(g.updatedAt).toLocaleString())}">edited ${esc(new Date(g.updatedAt).toLocaleString())}</span>` : ''}
+      <button class="link" data-act="edit-game" data-id="${g.id}">edit</button>
+      <button class="link" data-act="del-game" data-id="${g.id}">delete</button></li>`).join('')}</ul></section>`;
 }
 
 /** @param {Session} s */
@@ -302,6 +320,9 @@ app.addEventListener('click', (e) => {
   const id = /** @type {HTMLElement} */ (t).dataset.id ?? '';
   const s = currentSession();
   if (act === 'export') return exportData();
+  if (act === 'export-session-json' && s) return exportSession(s, 'json');
+  if (act === 'export-session-html' && s) return exportSession(s, 'html');
+  if (act === 'edit-game' && s) return openGameModal(s, id);
   if (act === 'edit-player') { const cs = currentSession(); if (cs) openPlayerModal(cs, /** @type {HTMLElement} */ (t).dataset.id ?? ''); return; }
   if (act === 'del-session') {
     if (confirm('Delete this session and its games?')) db.sessions = db.sessions.filter((x) => x.id !== id);
@@ -454,6 +475,71 @@ function openPlayerModal(s, id) {
   });
   dlg.showModal();
   /** @type {HTMLInputElement | null} */ (form.querySelector('[name=name]'))?.select();
+}
+
+/** Download one session as JSON or a standalone HTML report. @param {Session} s @param {'json' | 'html'} kind */
+function exportSession(s, kind) {
+  const exp = sessionExport(s, db.players);
+  const body = kind === 'json' ? JSON.stringify(exp, null, 2) : sessionReportHtml(exp);
+  const slug = (s.venue || 'session').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'session';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([body], { type: kind === 'json' ? 'application/json' : 'text/html' }));
+  a.download = `pounce-${slug}-${new Date(s.createdAt).toISOString().slice(0, 10)}.${kind}`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/** Fix scores, the pouncer or notes of a saved game. @param {Session} s @param {string} gameId */
+function openGameModal(s, gameId) {
+  const game = s.games.find((g) => g.id === gameId);
+  if (!game) return;
+  const n = s.games.indexOf(game) + 1;
+  const dlg = document.createElement('dialog');
+  dlg.innerHTML = `<form method="dialog" class="modal">
+    <h2>Edit game ${n}</h2>
+    ${game.results.map((/** @type {any} */ r) => `
+      <div class="entry">
+        <span class="who">${esc(nameOf(r.playerId))}</span>
+        <input data-edit-score="${r.playerId}" type="number" inputmode="numeric" min="${SCORE_MIN}" max="${SCORE_MAX}" step="1" value="${r.score}" aria-label="${esc(nameOf(r.playerId))} score">
+        <button type="button" class="sign" data-edit-neg="${r.playerId}" title="Flip sign">&plusmn;</button>
+        <label class="pounce"><input type="radio" name="pouncer" value="${r.playerId}" ${r.pounced ? 'checked' : ''}> Pounced</label>
+      </div>`).join('')}
+    <p class="muted">The pouncer gets +${game.bonus} (the bonus this game was played with).</p>
+    <label class="notes">Game notes <textarea name="notes" rows="2"></textarea></label>
+    <p class="error" data-modal-error></p>
+    <div class="row"><button class="primary" value="save">Save</button>
+      <button type="button" data-cancel class="link">Cancel</button></div></form>`;
+  document.body.append(dlg);
+  const form = /** @type {HTMLFormElement} */ (dlg.querySelector('form'));
+  /** @type {HTMLTextAreaElement} */ (form.elements.namedItem('notes')).value = game.notes ?? '';
+  const err = /** @type {HTMLElement} */ (form.querySelector('[data-modal-error]'));
+  const read = () => game.results.map((/** @type {any} */ r) => {
+    const el = /** @type {HTMLInputElement} */ (form.querySelector(`[data-edit-score="${r.playerId}"]`));
+    return { ...r, score: el.value === '' ? NaN : Number(el.value), pounced: form.querySelector(`input[name=pouncer][value="${r.playerId}"]`)?.matches(':checked') ?? false };
+  });
+  form.querySelector('[data-cancel]')?.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => dlg.remove());
+  form.addEventListener('click', (e) => {
+    const id = /** @type {HTMLElement} */ (e.target).closest('[data-edit-neg]')?.getAttribute('data-edit-neg');
+    const el = id && /** @type {HTMLInputElement | null} */ (form.querySelector(`[data-edit-score="${id}"]`));
+    if (el && el.value) el.value = el.value.startsWith('-') ? el.value.slice(1) : `-${el.value}`;
+  });
+  form.addEventListener('input', () => { err.textContent = ''; });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const results = read();
+    const errors = validateResults(results);
+    if (errors.length) { err.textContent = errors.join(' '); return; }
+    const notes = String(new FormData(form).get('notes') ?? '').trim();
+    const changed = JSON.stringify(results) !== JSON.stringify(game.results) || notes !== (game.notes ?? '');
+    game.results = results;
+    if (notes) game.notes = notes; else delete game.notes;
+    if (changed) game.updatedAt = Date.now();
+    save();
+    dlg.close();
+    render();
+  });
+  dlg.showModal();
 }
 
 function exportData() {
