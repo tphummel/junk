@@ -1,0 +1,580 @@
+/*
+ * fleer-1991: a style sheet inspired by the 1991 Fleer baseball cards.
+ * Front: the bright yellow border, triple black rules above the name and
+ * below the team line, a small first name over a big heavy serif last name,
+ * and the "FLEER '91" logo tucked in the photo corner. Back: the yellow card
+ * with a blue number bar, red name bars, a round portrait and team seal, a
+ * stat table with light blue and pink columns, and a white blurb box. Also a
+ * clear binder page of pockets to hold them.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/fleer-1991/fleer-1991.css">
+ * Docs and live examples: /styles/fleer-1991/
+ *
+ * Everything is prefixed: classes `fl-`, custom properties `--fl-`. The only
+ * element rules are under the opt-in `.fl` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one. Light is warm card-shop
+ * paper; dark is the binder at night. The cards, banner and stat tables look
+ * the same in both: a yellow card is yellow.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, fleer-1991-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* palette, light. Contrast: text/bg 16.7, muted/bg 8.2, blue-ink/bg 8.6,
+     red-ink/bg 5.9, rule/bg 5.0, edge/bg 16.7, ink/yellow 14.7,
+     white/blue 9.6, white/red 5.3, ink/ice 13.0, ink/pink 12.1,
+     blue/ice 6.6, muted-on-card/yellow 8.8 */
+  --fl-bg: #F6F2E4;
+  --fl-surface: #FFFFFF;
+  --fl-text: #14120A;
+  --fl-muted: #4A4838;
+  --fl-yellow: #FBE62B;        /* the card: fills, with ink on top */
+  --fl-ink: #14120A;           /* the card's black: type, rules, outlines */
+  --fl-blue: #1D3F94;          /* number bar, seal ring: fills, with white on top */
+  --fl-blue-ink: #1D3F94;      /* blue as text or lines on bg and surface */
+  --fl-on-blue: #FFFFFF;
+  --fl-red: #D01F3B;           /* name bars, seal: fills, with white on top */
+  --fl-red-ink: #B8152F;       /* red as text on bg and surface */
+  --fl-on-red: #FFFFFF;
+  --fl-ice: #B9DCEF;           /* stat table field, with ink on top */
+  --fl-pink: #F5C3CC;          /* stat table highlight columns, with ink on top */
+  --fl-rule: #6B6955;          /* lines on bg and surface */
+  --fl-edge: #14120A;          /* outline of buttons and inputs */
+  --fl-focus: #1D3F94;
+
+  /* type */
+  --fl-font-display: "Bodoni 72", "Bodoni MT", Didot, "Didot LT STD", "Playfair Display", "Hoefler Text", Georgia, "Times New Roman", serif;
+  --fl-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fl-font-stat: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+  --fl-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fl-track-label: 0.12em;    /* small caps labels */
+  --fl-track-display: 0.03em;  /* heavy serif caps */
+
+  /* space */
+  --fl-space: 0.5rem;
+  --fl-radius: 0.25rem;
+
+  /* context: components read these, so the same markup works on the page
+     background and inside a .fl-panel */
+  --fl-fg: var(--fl-text);
+  --fl-fg-muted: var(--fl-muted);
+  --fl-line: var(--fl-rule);
+  --fl-heading: var(--fl-text);
+  --fl-accent: var(--fl-blue-ink);
+  --fl-field: var(--fl-surface);   /* what sits under cards and inputs */
+  --fl-shadow: 0 1px 2px #14120A33, 0 10px 22px -12px #14120A73;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast: text/bg 17.4, muted/bg 10.8, blue-ink/bg 9.1, red-ink/bg 8.5,
+     rule/bg 5.5, edge/bg 17.4, focus/bg 14.8 */
+  :root:not([data-theme="light"]) {
+    --fl-bg: #12110B;
+    --fl-surface: #1F1D13;
+    --fl-text: #FBF6DA;
+    --fl-muted: #C9C5A8;
+    --fl-blue-ink: #92B3FF;
+    --fl-red-ink: #FF8C9C;
+    --fl-rule: #8E8C76;
+    --fl-edge: #FBF6DA;
+    --fl-focus: #FBE62B;
+    --fl-accent: var(--fl-yellow);
+    --fl-shadow: 0 1px 2px #000A, 0 10px 22px -12px #000;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fl-bg: #12110B;
+  --fl-surface: #1F1D13;
+  --fl-text: #FBF6DA;
+  --fl-muted: #C9C5A8;
+  --fl-blue-ink: #92B3FF;
+  --fl-red-ink: #FF8C9C;
+  --fl-rule: #8E8C76;
+  --fl-edge: #FBF6DA;
+  --fl-focus: #FBE62B;
+  --fl-accent: var(--fl-yellow);
+  --fl-shadow: 0 1px 2px #000A, 0 10px 22px -12px #000;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- page: opt in with class="fl" on <body> ---------------------------- */
+
+.fl {
+  margin: 0;
+  background: var(--fl-bg);
+  color: var(--fl-fg);
+  font: 1rem/1.55 var(--fl-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.fl *, .fl *::before, .fl *::after { box-sizing: border-box; }
+:where(.fl) :is(h1, h2, h3, h4) {
+  font-family: var(--fl-font-display);
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: var(--fl-track-display);
+  color: var(--fl-heading);
+  margin: 0 0 0.5em;
+}
+:where(.fl) h1 { font-size: clamp(2.4rem, 8vw, 4.25rem); }
+:where(.fl) h2 { font-size: clamp(1.7rem, 5vw, 2.5rem); }
+:where(.fl) h3 { font-size: 1.4rem; }
+:where(.fl) h4 { font-size: 1rem; letter-spacing: var(--fl-track-label); }
+:where(.fl) a { color: var(--fl-blue-ink); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+:where(.fl) a:hover { text-decoration-thickness: 2px; }
+:where(.fl) :focus-visible { outline: 3px solid var(--fl-focus); outline-offset: 2px; }
+:where(.fl) hr { border: 0; height: 9px; margin: 2rem 0; background: linear-gradient(var(--fl-line) 0 3px, #0000 3px 5px, var(--fl-line) 5px 6px, #0000 6px 8px, var(--fl-line) 8px 9px); }
+:where(.fl) :is(code, kbd) { font-family: var(--fl-font-mono); font-size: 0.9em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* heavy serif caps headline */
+.fl-title {
+  font-family: var(--fl-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 0.95;
+  letter-spacing: var(--fl-track-display);
+  color: var(--fl-heading);
+  margin: 0;
+}
+.fl-title--xl { font-size: clamp(2.6rem, 10vw, 5.5rem); }
+.fl-title--lg { font-size: clamp(2rem, 7vw, 3.25rem); }
+.fl-title--md { font-size: clamp(1.4rem, 4.5vw, 2rem); }
+
+/* the small first name above the big last name */
+.fl-kicker {
+  display: block;
+  font-family: var(--fl-font-display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--fl-fg);
+}
+
+/* small spaced caps */
+.fl-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--fl-track-label);
+  color: var(--fl-fg-muted);
+}
+
+/* running copy */
+.fl-copy { font-size: 0.95rem; line-height: 1.5; color: var(--fl-fg); max-width: 36rem; }
+.fl-copy--center { text-align: center; margin-inline: auto; }
+
+/* ---- logo: FLEER '91 -------------------------------------------------- */
+
+.fl-logo {
+  display: inline-block;
+  padding: 0.1em 0.45em 0.15em;
+  background: #FFFFFF;
+  color: var(--fl-ink);
+  font-family: var(--fl-font-stat);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 0.7rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fl-logo b { font-size: 1.2em; font-weight: 900; color: #B8152F; }
+.fl-logo--lg { font-size: clamp(1.4rem, 5vw, 2.4rem); padding: 0.15em 0.5em 0.2em; }
+
+/* ---- banner: a yellow header with the card's rules --------------------- */
+
+.fl-banner {
+  --fl-fg: var(--fl-ink);
+  --fl-fg-muted: #3F3C14;
+  --fl-line: var(--fl-ink);
+  --fl-heading: var(--fl-ink);
+  --fl-accent: var(--fl-blue);
+  --fl-field: var(--fl-yellow);
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem clamp(1rem, 4vw, 2rem);
+  background: var(--fl-yellow);
+  color: var(--fl-fg);
+}
+.fl-banner::before, .fl-banner::after, .fl-card__head::before, .fl-card__head::after, .fl-card__foot::before, .fl-card__foot::after {
+  content: "";
+  display: block;
+  height: 9px;
+  background: linear-gradient(var(--fl-ink) 0 3px, #0000 3px 5px, var(--fl-ink) 5px 6px, #0000 6px 8px, var(--fl-ink) 8px 9px);
+}
+.fl-banner a { color: var(--fl-blue); }
+.fl-banner--center { text-align: center; justify-items: center; }
+.fl-banner .fl-label { color: #3F3C14; }
+
+/* ---- card: the front of a card ----------------------------------------- */
+
+/* Yellow card, rules, name, photo, team line. The photo is any element with
+   class fl-photo or an <img>. Cards size to the width they are given. */
+.fl-card {
+  --fl-fg: var(--fl-ink);
+  --fl-fg-muted: #3F3C14;
+  --fl-line: var(--fl-ink);
+  --fl-heading: var(--fl-ink);
+  --fl-accent: var(--fl-blue);
+  --fl-field: var(--fl-yellow);
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.75rem 0.75rem 0.65rem;
+  background: var(--fl-yellow);
+  color: var(--fl-fg);
+  border-radius: 0.2rem;
+  box-shadow: var(--fl-shadow);
+}
+.fl-card__head { display: grid; gap: 0.15rem; text-align: center; }
+.fl-card__head::before { margin-bottom: 0.25rem; }
+.fl-card__head::after { margin-top: 0.1rem; }
+.fl-card__first {
+  font-family: var(--fl-font-display);
+  font-weight: 700;
+  font-size: 0.62rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.fl-card__last {
+  margin: 0;
+  font-family: var(--fl-font-display);
+  font-weight: 900;
+  font-size: clamp(1.15rem, 5.5vw, 1.7rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fl-ink);
+}
+.fl-card__photo { position: relative; border: 2px solid var(--fl-ink); background: var(--fl-ice); }
+.fl-card__photo > img, .fl-card__photo > .fl-photo { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border: 0; }
+.fl-card__photo .fl-logo { position: absolute; right: 0.4rem; bottom: 0.35rem; }
+.fl-card__foot { display: grid; gap: 0.15rem; }
+.fl-card__foot::before { margin-bottom: 0.1rem; }
+.fl-card__foot::after { height: 0; }
+/* "CUBS • P" with a rule running out each side */
+.fl-card__team {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--fl-font-display);
+  font-weight: 900;
+  font-size: 0.7rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.fl-card__team::before, .fl-card__team::after { content: ""; flex: 1; height: 2px; background: var(--fl-ink); }
+.fl-card__team::before { flex: 0 0 0.6rem; }
+
+/* photo placeholder: ivy wall, infield grass and dirt. Swap for an <img>. */
+.fl-photo {
+  display: block;
+  border: 2px solid var(--fl-ink);
+  background:
+    radial-gradient(ellipse 18% 9% at 50% 77%, #FFFFFF 0 55%, #0000 58%),
+    linear-gradient(180deg, #3B6B34 0 30%, #5E9B4B 30% 66%, #B97A45 66% 100%);
+}
+
+/* ---- back: the back of a card ------------------------------------------ */
+
+.fl-back {
+  --fl-fg: var(--fl-ink);
+  --fl-fg-muted: #3F3C14;
+  --fl-line: var(--fl-ink);
+  --fl-heading: var(--fl-ink);
+  --fl-accent: var(--fl-blue);
+  --fl-field: var(--fl-yellow);
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.7rem;
+  background: var(--fl-yellow);
+  color: var(--fl-fg);
+  border-radius: 0.2rem;
+  box-shadow: var(--fl-shadow);
+}
+.fl-back__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "pic no no" "pic name seal";
+  align-items: start;
+  align-content: start;
+  gap: 0.25rem 0.5rem;
+}
+.fl-back__portrait {
+  grid-area: pic;
+  width: clamp(4.2rem, 24vw, 5.6rem);
+  aspect-ratio: 1;
+  margin-top: -0.1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--fl-blue);
+  background: var(--fl-ice);
+}
+.fl-back__portrait > img, .fl-back__portrait > .fl-photo { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: 0; }
+.fl-back__no {
+  grid-area: no;
+  padding: 0.1rem 0.6rem 0.15rem;
+  background: var(--fl-blue);
+  color: var(--fl-on-blue);
+  border-bottom: 3px solid var(--fl-red);
+  font-family: var(--fl-font-stat);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.1;
+  text-align: right;
+}
+.fl-back__name { grid-area: name; display: grid; gap: 2px; justify-items: stretch; }
+.fl-back__name > * {
+  display: block;
+  padding: 0.12rem 0.55rem;
+  background: var(--fl-red);
+  color: var(--fl-on-red);
+  border-bottom: 2px solid var(--fl-blue);
+  font-family: var(--fl-font-stat);
+  font-weight: 900;
+  font-size: 0.78rem;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+.fl-back__name > :last-child { font-size: 0.9rem; }
+.fl-back__head > .fl-seal { grid-area: seal; align-self: center; }
+.fl-back__bio {
+  margin: 0;
+  font: 600 0.58rem/1.35 var(--fl-font-stat);
+  text-align: right;
+  color: var(--fl-ink);
+}
+
+/* round team seal */
+.fl-seal {
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--fl-red);
+  color: var(--fl-on-red);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 0 2px var(--fl-blue);
+  font-family: var(--fl-font-stat);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 0.62rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+/* the white blurb under the stats */
+.fl-blurb {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  background: #FFFFFF;
+  color: var(--fl-ink);
+  font: 0.72rem/1.4 var(--fl-font-stat);
+}
+
+/* ---- tables: stat lines ------------------------------------------------ */
+
+/* Light blue field, pink highlight columns, ink type. The same in both modes.
+   fl-stats is the small one for the back of a card; fl-table is the page size. */
+.fl-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.fl-table, .fl-stats {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--fl-ice);
+  color: var(--fl-ink);
+  font-family: var(--fl-font-stat);
+  font-variant-numeric: tabular-nums;
+}
+.fl-table { font-size: 0.9rem; line-height: 1.4; }
+.fl-stats { font-size: 0.56rem; line-height: 1.15; }
+.fl-table caption { padding: 0.4rem 0; font-family: var(--fl-font-display); font-weight: 900; font-size: 1.1rem; text-align: left; text-transform: uppercase; letter-spacing: var(--fl-track-display); color: var(--fl-heading); }
+.fl-table th, .fl-table td { padding: 0.45rem 0.7rem; text-align: left; }
+.fl-stats th, .fl-stats td { padding: 0.08rem 0.2rem; text-align: right; }
+.fl-stats th:first-child, .fl-stats td:first-child, .fl-stats th:nth-child(2), .fl-stats td:nth-child(2) { text-align: left; }
+.fl-table thead th, .fl-stats thead th {
+  background: var(--fl-ice);
+  color: var(--fl-blue);
+  font-weight: 800;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--fl-blue);
+}
+.fl-table thead th { font-size: 0.72rem; letter-spacing: var(--fl-track-label); }
+.fl-table tbody th { font-weight: 700; }
+.fl-table tbody tr + tr > *, .fl-stats tbody tr + tr > * { border-top: 1px solid #1D3F9440; }
+.fl-table tfoot th, .fl-table tfoot td, .fl-stats tfoot th, .fl-stats tfoot td { font-weight: 800; border-top: 2px solid var(--fl-blue); }
+.fl-num { text-align: right !important; }
+.fl-hl { background: var(--fl-pink); }
+
+/* ---- sheet: a binder page of pockets ----------------------------------- */
+
+/* Nine-pocket page: three across on a wide screen, two on a phone. Put a
+   fl-card or fl-back in each fl-pocket. fl-sheet--3 keeps three across. */
+.fl-sheet {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.6rem;
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-line);
+  border-radius: var(--fl-radius);
+}
+@media (min-width: 36rem) { .fl-sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.fl-sheet--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; }
+.fl-pocket {
+  padding: 0.35rem;
+  border: 1px solid var(--fl-line);
+  border-radius: 0.15rem;
+  background: linear-gradient(135deg, #FFFFFF22, #FFFFFF00 60%), var(--fl-field);
+}
+
+/* ---- panel, note ------------------------------------------------------- */
+
+/* blue field with a yellow band on top and the card's rules */
+.fl-panel {
+  --fl-fg: var(--fl-on-blue);
+  --fl-fg-muted: #D6E0FF;
+  --fl-line: var(--fl-yellow);
+  --fl-heading: var(--fl-on-blue);
+  --fl-accent: var(--fl-yellow);
+  --fl-field: var(--fl-blue);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: var(--fl-blue);
+  color: var(--fl-fg);
+  border-top: 0.45rem solid var(--fl-yellow);
+  border-radius: 0 0 var(--fl-radius) var(--fl-radius);
+  box-shadow: var(--fl-shadow);
+}
+.fl-panel a { color: var(--fl-yellow); }
+.fl-panel--center { text-align: center; }
+
+/* quiet paper for content on the page background */
+.fl-note {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: var(--fl-surface);
+  color: var(--fl-fg);
+  border: 1px solid var(--fl-line);
+  border-left: 0.4rem solid var(--fl-yellow);
+  border-radius: var(--fl-radius);
+}
+
+/* ---- grid: ruled stat boxes -------------------------------------------- */
+
+.fl-grid {
+  --fl-cell-pad: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 1px;
+  background: var(--fl-line);
+  border: 1px solid var(--fl-line);
+}
+.fl-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fl-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fl-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 36rem) {
+  .fl-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fl-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.fl-cell {
+  display: grid;
+  gap: 0.2rem;
+  align-content: center;
+  justify-items: center;
+  padding: var(--fl-cell-pad);
+  background: var(--fl-field);
+  text-align: center;
+}
+.fl-cell--wide { grid-column: 1 / -1; }
+.fl-cell--tall { min-height: 6rem; }
+.fl-cell--left { justify-items: stretch; text-align: left; }
+.fl-value { font-family: var(--fl-font-display); font-weight: 900; font-size: 1.1rem; line-height: 1.1; text-transform: uppercase; letter-spacing: var(--fl-track-display); color: var(--fl-fg); }
+.fl-value--xl { font-size: clamp(2rem, 7vw, 3rem); color: var(--fl-accent); }
+.fl-value--plain { text-transform: none; letter-spacing: 0; font-family: var(--fl-font-body); font-weight: 700; font-size: 1rem; }
+
+/* ---- controls ---------------------------------------------------------- */
+
+.fl-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 1.2rem;
+  font: 900 0.95rem/1 var(--fl-font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fl-ink);
+  background: var(--fl-yellow);
+  border: 2px solid var(--fl-edge);
+  border-radius: 0.2rem;
+  box-shadow: 0 3px 0 var(--fl-edge);
+  cursor: pointer;
+  transition: transform 80ms, box-shadow 80ms;
+}
+.fl-button:hover { transform: translateY(1px); box-shadow: 0 2px 0 var(--fl-edge); }
+.fl-button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--fl-edge); }
+.fl-button--blue { background: var(--fl-blue); color: var(--fl-on-blue); }
+.fl-button--red { background: var(--fl-red); color: var(--fl-on-red); }
+.fl-button--ghost { background: transparent; color: var(--fl-fg); box-shadow: none; }
+.fl-button--ghost:hover { background: var(--fl-surface); transform: none; box-shadow: none; }
+.fl-button--block { display: flex; width: 100%; }
+.fl-button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: 0 3px 0 var(--fl-edge); }
+
+.fl-field { display: grid; gap: 0.3rem; }
+.fl-input, .fl-select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.7rem;
+  font: 1rem/1.3 var(--fl-font-body);
+  color: var(--fl-fg);
+  background: var(--fl-field);
+  border: 2px solid var(--fl-edge);
+  border-radius: 0.2rem;
+}
+.fl-input::placeholder { color: var(--fl-fg-muted); opacity: 1; }
+
+/* ---- badge, divider ---------------------------------------------------- */
+
+.fl-badge {
+  display: inline-block;
+  padding: 0.12rem 0.65rem;
+  border: 1.5px solid var(--fl-fg);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: var(--fl-track-label);
+  color: var(--fl-fg);
+}
+.fl-badge--yellow { background: var(--fl-yellow); border-color: var(--fl-yellow); color: var(--fl-ink); }
+.fl-badge--blue { background: var(--fl-blue); border-color: var(--fl-blue); color: var(--fl-on-blue); }
+.fl-badge--red { background: var(--fl-red); border-color: var(--fl-red); color: var(--fl-on-red); }
+
+/* the card's triple rule, thick over two thin */
+.fl-divider {
+  display: block;
+  height: 9px;
+  margin: 1.5rem 0;
+  border: 0;
+  background: linear-gradient(var(--fl-line) 0 3px, #0000 3px 5px, var(--fl-line) 5px 6px, #0000 6px 8px, var(--fl-line) 8px 9px);
+}
