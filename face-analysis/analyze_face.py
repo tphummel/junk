@@ -46,8 +46,14 @@ def analyze_face(image_path):
         output_facial_transformation_matrixes=True
     )
 
-    # Read image
-    image = mp.Image.create_from_file(str(image_path))
+    # Read image once with cv2, which applies EXIF orientation (phone photos are often stored
+    # sideways with an orientation tag). Every analysis below must see the same upright pixels,
+    # so MediaPipe gets this array too rather than loading the file itself.
+    cv_image = cv2.imread(str(image_path))
+    if cv_image is None:
+        raise ValueError(f"Unable to read image: {image_path}")
+    rgb_image = np.ascontiguousarray(cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB))
+    image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
 
     # Detect faces
     with FaceLandmarker.create_from_options(options) as landmarker:
@@ -77,9 +83,6 @@ def analyze_face(image_path):
         }
 
     # Analyze image properties
-    cv_image = cv2.imread(str(image_path))
-    if cv_image is None:
-        raise ValueError(f"Unable to read image: {image_path}")
     image_props = analyze_image_properties(cv_image)
 
     # Analyze facial hair presence from blendshapes
