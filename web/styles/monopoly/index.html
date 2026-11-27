@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>monopoly style sheet</title>
+  <link rel="stylesheet" href="monopoly.css">
+  <style>
+    /* storybook chrome only; the components below come from monopoly.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { display: grid; gap: 0.9rem; justify-items: center; text-align: center; padding-block: clamp(2rem, 6vw, 3.5rem); }
+    .hero .mon-copy { margin: 0; }
+    .hero .mon-title { border-block: 3px solid var(--mon-line); padding: 0.2em 0.4em; }
+    .sb nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb nav a { display: block; padding: 0.35rem 0.6rem; border-left: 3px solid var(--mon-line); color: var(--mon-text); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); }
+    .sb nav a:hover { color: var(--mon-red-ink); border-color: var(--mon-red-ink); }
+    .theme { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .theme button { font-size: 0.72rem; min-height: 2.25rem; padding: 0.3rem 0.9rem; }
+    .theme button[aria-pressed="true"] { background: var(--mon-red); color: var(--mon-on-red); border-color: var(--mon-ink); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); border: 1px dashed var(--mon-line); border-radius: var(--mon-radius); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--mon-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--mon-paper); color: var(--mon-ink); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); font: 0.8rem/1.5 var(--mon-font-mono); tab-size: 2; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; }
+    .sw { border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); overflow: hidden; background: var(--mon-paper); color: var(--mon-ink); }
+    .sw i { display: block; height: 3rem; border-bottom: 1px solid var(--mon-ink); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--mon-ink-muted); }
+    .groups { display: grid; gap: 0.4rem; }
+    footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--mon-muted); }
+  </style>
+  <meta name="theme-color" content="#10241A">
+  <link rel="icon" href="/styles/monopoly/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/monopoly/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/monopoly/manifest.webmanifest">
+</head>
+<body class="mon">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="mon-label"><a href="/">junk</a> / style sheets / monopoly</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="mon-board hero">
+      <span class="mon-label">Style sheet</span>
+      <h1 class="mon-title mon-title--xl">Monopoly</h1>
+      <p class="mon-copy">A mint board, black ink, color-group bars and cream title deeds, inspired by a vintage Parker Brothers set. Plain CSS, no fonts or scripts to load, light and dark.</p>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#groups">Color groups</a></li>
+      <li><a href="#deed">Title deed</a></li>
+      <li><a href="#space">Board space</a></li>
+      <li><a href="#cards">Chance, Chest</a></li>
+      <li><a href="#money">Money</a></li>
+      <li><a href="#dice">Dice</a></li>
+      <li><a href="#table">Table</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge, divider</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="mon"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>mon-</code> and every custom property <code>--mon-</code>. Plain element selectors only apply under <code>.mon</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/monopoly/monopoly.css"&gt;
+&lt;body class="mon"&gt;
+  &lt;div class="mon-deed mon-g-blue"&gt;
+    &lt;div class="mon-deed-head"&gt;&lt;small&gt;Title deed&lt;/small&gt;&lt;b&gt;Park Place&lt;/b&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;</pre>
+      <p>The page is the board, and it changes with light and dark. Deeds, spaces, cards and bills are printed paper: they keep cream and ink in both modes, like pieces on a dark table. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>; the switch above does that for this page.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values are read from the live sheet and follow the theme switch. Ratios are WCAG contrast against the stated background; text needs 4.5, lines 3.</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type</h2>
+      <p>Headings and labels are geometric sans caps with wide tracking (Futura, Century Gothic or Trebuchet, whichever the device has). Deed text is a plain serif.</p>
+      <div class="demo stack">
+        <h1 class="mon-title mon-title--lg">Boardwalk</h1>
+        <span class="mon-label">Collect $200.00 salary as you pass</span>
+        <p class="mon-copy">If a player owns all the lots of any color group, the rent is doubled on unimproved lots in that group.</p>
+      </div>
+    </section>
+
+    <section id="groups">
+      <h2>Color groups</h2>
+      <p>Eight groups, from the vintage set: <code>mon-g-purple</code>, <code>lblue</code>, <code>magenta</code>, <code>orange</code>, <code>red</code>, <code>yellow</code>, <code>green</code>, <code>blue</code>. Add one to a <code>mon-bar</code>, <code>mon-deed</code>, <code>mon-space</code> or table chip and it sets the bar color and a text color that reads on it.</p>
+      <div class="demo groups">
+        <span class="mon-bar mon-g-purple">Purple: Mediterranean, Baltic</span>
+        <span class="mon-bar mon-g-lblue">Light blue: Oriental, Vermont, Connecticut</span>
+        <span class="mon-bar mon-g-magenta">Magenta: St. Charles, States, Virginia</span>
+        <span class="mon-bar mon-g-orange">Orange: St. James, Tennessee, New York</span>
+        <span class="mon-bar mon-g-red">Red: Kentucky, Indiana, Illinois</span>
+        <span class="mon-bar mon-g-yellow">Yellow: Atlantic, Ventnor, Marvin Gardens</span>
+        <span class="mon-bar mon-g-green">Green: Pacific, North Carolina, Pennsylvania</span>
+        <span class="mon-bar mon-g-blue">Blue: Park Place, Boardwalk</span>
+      </div>
+    </section>
+
+    <section id="deed">
+      <h2>Title deed</h2>
+      <p>A cream card with a double rule, a colored header and a rent table. <code>mon-deed--mark</code> drops the bar for railroads and utilities and adds a centered <code>mon-deed-mark</code>.</p>
+      <div class="demo row">
+        <div class="mon-deed mon-g-purple">
+          <div class="mon-deed-head"><small>Title deed</small><b>Baltic Ave.</b></div>
+          <p class="mon-deed-rent">Rent $4.</p>
+          <div class="mon-deed-rows">
+            <div class="mon-deed-row"><span>With 1 House</span><span>$ 20.</span></div>
+            <div class="mon-deed-row"><span>With 2 Houses</span><span>60.</span></div>
+            <div class="mon-deed-row"><span>With 3 Houses</span><span>180.</span></div>
+            <div class="mon-deed-row"><span>With 4 Houses</span><span>320.</span></div>
+          </div>
+          <div class="mon-deed-rows mon-deed-rows--hotel"><div class="mon-deed-row"><span>With HOTEL</span><span>$450.</span></div></div>
+          <p class="mon-deed-note">Mortgage Value $30.<br>Houses cost $50. each<br>Hotels, $50. plus 4 houses</p>
+          <p class="mon-deed-fine">If a player owns ALL the Lots of any Color-Group, the rent is Doubled on Unimproved Lots in that group.</p>
+        </div>
+        <div class="mon-deed mon-deed--mark">
+          <div class="mon-deed-head"><span class="mon-deed-mark" aria-hidden="true">🚂</span><b>Short Line R.R.</b></div>
+          <div class="mon-deed-rows">
+            <div class="mon-deed-row"><span>Rent</span><span>$25.</span></div>
+            <div class="mon-deed-row"><span>If 2 R.R.'s are owned</span><span>50.</span></div>
+            <div class="mon-deed-row"><span>If 3 &nbsp;" &nbsp;" &nbsp;"</span><span>100.</span></div>
+            <div class="mon-deed-row"><span>If 4 &nbsp;" &nbsp;" &nbsp;"</span><span>200.</span></div>
+          </div>
+          <p class="mon-deed-note">Mortgage Value $100.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="space">
+      <h2>Board space</h2>
+      <p>One square: bar, name, price. <code>mon-space--corner</code> is the red corner (Go, Jail, Free Parking).</p>
+      <div class="demo row">
+        <div class="mon-space mon-g-lblue"><span class="mon-bar"></span><span class="mon-space-name">Connecticut Avenue</span><span class="mon-space-price">Price $120</span></div>
+        <div class="mon-space mon-g-blue"><span class="mon-bar"></span><span class="mon-space-name">Park Place</span><span class="mon-space-price">Price $350</span></div>
+        <div class="mon-space"><span class="mon-space-name">Luxury Tax</span><span class="mon-space-price">Pay $75.00</span></div>
+        <div class="mon-space mon-space--corner"><span class="mon-space-name">Collect $200.00 salary as you pass</span></div>
+      </div>
+    </section>
+
+    <section id="cards">
+      <h2>Chance, Community Chest</h2>
+      <p>Orange Chance and yellow Community Chest, with a big mark and a line of text.</p>
+      <div class="demo row">
+        <div class="mon-card"><span class="mon-card-mark" aria-hidden="true">?</span><span class="mon-card-title">Chance</span><span class="mon-card-text">Advance to Go. Collect $200.</span></div>
+        <div class="mon-card mon-card--chest"><span class="mon-card-mark" aria-hidden="true">✓</span><span class="mon-card-title">Community Chest</span><span class="mon-card-text">Bank error in your favor. Collect $200.</span></div>
+      </div>
+    </section>
+
+    <section id="money">
+      <h2>Money</h2>
+      <p>Pastel paper bills in seven denominations: <code>mon-bill--1</code>, <code>5</code>, <code>10</code>, <code>20</code>, <code>50</code>, <code>100</code>, <code>500</code>.</p>
+      <div class="demo row">
+        <div class="mon-bill mon-bill--1"><span class="mon-bill-corner">1</span><span class="mon-bill-amount">1</span><span class="mon-bill-corner">1</span></div>
+        <div class="mon-bill mon-bill--5"><span class="mon-bill-corner">5</span><span class="mon-bill-amount">5</span><span class="mon-bill-corner">5</span></div>
+        <div class="mon-bill mon-bill--10"><span class="mon-bill-corner">10</span><span class="mon-bill-amount">10</span><span class="mon-bill-corner">10</span></div>
+        <div class="mon-bill mon-bill--20"><span class="mon-bill-corner">20</span><span class="mon-bill-amount">20</span><span class="mon-bill-corner">20</span></div>
+        <div class="mon-bill mon-bill--50"><span class="mon-bill-corner">50</span><span class="mon-bill-amount">50</span><span class="mon-bill-corner">50</span></div>
+        <div class="mon-bill mon-bill--100"><span class="mon-bill-corner">100</span><span class="mon-bill-amount">100</span><span class="mon-bill-corner">100</span></div>
+        <div class="mon-bill mon-bill--500"><span class="mon-bill-corner">500</span><span class="mon-bill-amount">500</span><span class="mon-bill-corner">500</span></div>
+      </div>
+    </section>
+
+    <section id="dice">
+      <h2>Dice</h2>
+      <p>Set <code>data-n</code> from 1 to 6 on a <code>mon-die</code> with nine empty <code>&lt;i&gt;</code> children; the sheet shows the right pips.</p>
+      <div class="demo row">
+        <span class="mon-die" data-n="1" role="img" aria-label="1"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="mon-die" data-n="2" role="img" aria-label="2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="mon-die" data-n="3" role="img" aria-label="3"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="mon-die" data-n="4" role="img" aria-label="4"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="mon-die" data-n="5" role="img" aria-label="5"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="mon-die" data-n="6" role="img" aria-label="6"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+    </section>
+
+    <section id="table">
+      <h2>Table</h2>
+      <p>A ruled property list on paper. Wrap it in <code>mon-table-wrap</code> if it can overflow a phone. Numbers right-align with <code>mon-num</code>; <code>mon-chip</code> inside a <code>mon-g-*</code> row cell shows the group color.</p>
+      <div class="demo">
+        <div class="mon-table-wrap">
+          <table class="mon-table">
+            <caption>Rents</caption>
+            <thead><tr><th scope="col">Property</th><th scope="col" class="mon-num">Price</th><th scope="col" class="mon-num">Rent</th><th scope="col" class="mon-num">Hotel</th></tr></thead>
+            <tbody>
+              <tr class="mon-g-purple"><th scope="row"><span class="mon-chip"></span>Baltic Ave.</th><td class="mon-num">$60</td><td class="mon-num">$4</td><td class="mon-num">$450</td></tr>
+              <tr class="mon-g-orange"><th scope="row"><span class="mon-chip"></span>Tennessee Ave.</th><td class="mon-num">$180</td><td class="mon-num">$14</td><td class="mon-num">$950</td></tr>
+              <tr class="mon-g-blue"><th scope="row"><span class="mon-chip"></span>Park Place</th><td class="mon-num">$350</td><td class="mon-num">$35</td><td class="mon-num">$1,500</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are Go-arrow red with a hard ink edge; <code>mon-button--paper</code> and <code>mon-button--ghost</code> step down in weight. Inputs are 44px tall on paper.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="mon-button" type="button">Roll</button>
+          <button class="mon-button mon-button--paper" type="button">Buy</button>
+          <button class="mon-button mon-button--ghost" type="button">Pass</button>
+          <button class="mon-button" type="button" disabled>Disabled</button>
+        </div>
+        <div class="row">
+          <div class="mon-field"><label class="mon-label" for="sb-name">Player</label><input class="mon-input" id="sb-name" placeholder="Your name" autocomplete="off"></div>
+          <div class="mon-field"><label class="mon-label" for="sb-token">Token</label><select class="mon-select" id="sb-token"><option>Top hat</option><option>Race car</option><option>Thimble</option><option>Battleship</option></select></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge, divider</h2>
+      <p>Badges are small caps in a pill. The divider is two hairlines, like the board's ruled edges.</p>
+      <div class="demo">
+        <div class="row"><span class="mon-badge">Owned</span><span class="mon-badge mon-badge--solid">Mortgaged</span></div>
+        <hr class="mon-divider">
+        <span class="mon-label">Do not pass go</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/monopoly/monopoly.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009. Not affiliated with Hasbro; the look is inspired by a vintage set.</footer>
+  <small id="version">2026-11-27T03:44:08Z</small>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('mon-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('mon-theme') : localStorage.setItem('mon-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'mon-button mon-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Palette swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const tokens = [
+    ['--mon-bg', 'board (page)'], ['--mon-text', 'text', '--mon-bg'], ['--mon-muted', 'muted text', '--mon-bg'],
+    ['--mon-red-ink', 'red text', '--mon-bg'], ['--mon-line', 'board lines', '--mon-bg'],
+    ['--mon-paper', 'cards, deeds'], ['--mon-ink', 'ink on paper', '--mon-paper'], ['--mon-ink-muted', 'muted on paper', '--mon-paper'],
+    ['--mon-red', 'Go red', '--mon-on-red', 'white on it'], ['--mon-chance', 'Chance', '--mon-ink', 'ink on it'], ['--mon-chest', 'Community Chest', '--mon-ink', 'ink on it'],
+    ['--mon-purple', 'purple', '--mon-on-purple', 'text on it'], ['--mon-lblue', 'light blue', '--mon-on-lblue', 'text on it'],
+    ['--mon-magenta', 'magenta', '--mon-on-magenta', 'text on it'], ['--mon-orange', 'orange', '--mon-on-orange', 'text on it'],
+    ['--mon-red-group', 'red group', '--mon-on-red-group', 'text on it'], ['--mon-yellow', 'yellow', '--mon-on-yellow', 'text on it'],
+    ['--mon-green', 'green', '--mon-on-green', 'text on it'], ['--mon-blue', 'blue', '--mon-on-blue', 'text on it'],
+    ['--mon-bill-500', '$500 bill', '--mon-ink', 'ink on it'],
+  ];
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    const out = document.getElementById('swatches'); out.replaceChildren();
+    for (const [name, use, vs, note] of tokens) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = `var(${name})`;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      if (vs && /^#[0-9A-F]{6}$/.test(hex)) {
+        const r = ratio(hex, val(vs));
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 ${note || 'vs ' + vs.replace('--mon-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/monopoly/sw.js', { scope: '/styles/monopoly/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

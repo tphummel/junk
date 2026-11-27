@@ -1,0 +1,405 @@
+/*
+ * monopoly: a style sheet inspired by a vintage Parker Brothers Monopoly set.
+ * Mint-green board, black ink, color-group bars, cream title deeds, orange
+ * Chance and yellow Community Chest cards, and pastel paper money.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/monopoly/monopoly.css">
+ * Docs and live examples: /styles/monopoly/
+ *
+ * Everything is prefixed: classes `mon-`, custom properties `--mon-`. The only
+ * element rules are under the opt-in `.mon` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one.
+ *
+ * Cards, deeds, spaces and bills are printed paper: they keep their cream and
+ * ink colors in both modes, like pieces on a dark table. Only the board (page)
+ * changes between modes.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, monopoly-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* board, light. Contrast on bg: text 14.1, muted 6.6, red-ink 5.9, line 14.1 */
+  --mon-bg: #CFE8D3;
+  --mon-text: #101612;
+  --mon-muted: #3B5142;
+  --mon-red-ink: #A8120E;
+  --mon-line: #101612;
+  --mon-focus: #A8120E;
+  --mon-shadow: 0 1px 2px #10161226, 0 8px 20px -12px #10161299;
+
+  /* printed paper, the same in both modes. ink/paper 17.8, muted/paper 7.2 */
+  --mon-paper: #FFFDF2;
+  --mon-ink: #121712;
+  --mon-ink-muted: #4A5A4E;
+  --mon-rule: #121712;
+  --mon-red: #C8201B;          /* the Go arrow; white on it 5.7 */
+  --mon-on-red: #FFFFFF;
+  --mon-chance: #F28C28;       /* Chance cards; ink on it 7.4 */
+  --mon-chest: #F7D84A;        /* Community Chest cards; ink on it 12.5 */
+
+  /* property color groups: the bar, and the text color that reads on it
+     (each pair is at least 4.5:1) */
+  --mon-purple: #7B3FA0;   --mon-on-purple: #FFFFFF;
+  --mon-lblue: #A9D8F0;    --mon-on-lblue: #121712;
+  --mon-magenta: #E252B3;  --mon-on-magenta: #121712;
+  --mon-orange: #F28C28;   --mon-on-orange: #121712;
+  --mon-red-group: #D81F1A; --mon-on-red-group: #FFFFFF;
+  --mon-yellow: #FCE62A;   --mon-on-yellow: #121712;
+  --mon-green: #2FA05A;    --mon-on-green: #121712;
+  --mon-blue: #1E5FBF;     --mon-on-blue: #FFFFFF;
+
+  /* paper money; ink on each >= 9.9 */
+  --mon-bill-1: #F4F1E2;
+  --mon-bill-5: #F2BDC0;
+  --mon-bill-10: #F7E27A;
+  --mon-bill-20: #A9D6A2;
+  --mon-bill-50: #9CC4E8;
+  --mon-bill-100: #E8D7A8;
+  --mon-bill-500: #F5B73C;
+
+  /* type: geometric sans in caps, like the board lettering */
+  --mon-font-display: Futura, "Century Gothic", "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
+  --mon-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mon-font-serif: "Times New Roman", Times, Georgia, serif;
+  --mon-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --mon-track: 0.12em;
+  --mon-radius: 0.15rem;
+
+  /* group in context: set by .mon-g-* classes */
+  --mon-bar: var(--mon-purple);
+  --mon-on-bar: var(--mon-on-purple);
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast on bg: text 14.7, muted 9.5, red-ink 7.4, line 7.3 */
+  :root:not([data-theme="light"]) {
+    --mon-bg: #10241A;
+    --mon-text: #EDF5EE;
+    --mon-muted: #B5CBB9;
+    --mon-red-ink: #FF8F86;
+    --mon-line: #8DB89A;
+    --mon-focus: #F7D84A;
+    --mon-shadow: 0 1px 2px #000A, 0 8px 20px -12px #000;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --mon-bg: #10241A;
+  --mon-text: #EDF5EE;
+  --mon-muted: #B5CBB9;
+  --mon-red-ink: #FF8F86;
+  --mon-line: #8DB89A;
+  --mon-focus: #F7D84A;
+  --mon-shadow: 0 1px 2px #000A, 0 8px 20px -12px #000;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- color groups: add to a bar, deed or space ------------------------- */
+
+.mon-g-purple  { --mon-bar: var(--mon-purple);      --mon-on-bar: var(--mon-on-purple); }
+.mon-g-lblue   { --mon-bar: var(--mon-lblue);       --mon-on-bar: var(--mon-on-lblue); }
+.mon-g-magenta { --mon-bar: var(--mon-magenta);     --mon-on-bar: var(--mon-on-magenta); }
+.mon-g-orange  { --mon-bar: var(--mon-orange);      --mon-on-bar: var(--mon-on-orange); }
+.mon-g-red     { --mon-bar: var(--mon-red-group);   --mon-on-bar: var(--mon-on-red-group); }
+.mon-g-yellow  { --mon-bar: var(--mon-yellow);      --mon-on-bar: var(--mon-on-yellow); }
+.mon-g-green   { --mon-bar: var(--mon-green);       --mon-on-bar: var(--mon-on-green); }
+.mon-g-blue    { --mon-bar: var(--mon-blue);        --mon-on-bar: var(--mon-on-blue); }
+
+/* ---- page: opt in with class="mon" on <body> --------------------------- */
+
+.mon {
+  margin: 0;
+  background: var(--mon-bg);
+  color: var(--mon-text);
+  font: 1rem/1.55 var(--mon-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.mon *, .mon *::before, .mon *::after { box-sizing: border-box; }
+.mon h1, .mon h2, .mon h3, .mon h4 {
+  font-family: var(--mon-font-display);
+  font-weight: 800;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mon-text);
+  margin: 0 0 0.5em;
+}
+.mon h1 { font-size: clamp(2.4rem, 8vw, 4.5rem); letter-spacing: 0.08em; }
+.mon h2 { font-size: clamp(1.4rem, 4vw, 2rem); }
+.mon h3 { font-size: 1.1rem; }
+.mon h4 { font-size: 0.9rem; letter-spacing: var(--mon-track); }
+.mon a { color: var(--mon-red-ink); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.mon a:hover { text-decoration-thickness: 2px; }
+.mon :focus-visible { outline: 3px solid var(--mon-focus); outline-offset: 2px; }
+.mon hr { border: 0; border-top: 2px solid var(--mon-line); margin: 2rem 0; }
+.mon code, .mon kbd { font-family: var(--mon-font-mono); font-size: 0.9em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* the big board wordmark: wide black caps with a ruled underline */
+.mon-title {
+  font-family: var(--mon-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: var(--mon-text);
+  margin: 0;
+}
+.mon-title--xl { font-size: clamp(2.6rem, 11vw, 5.5rem); }
+.mon-title--lg { font-size: clamp(2rem, 6vw, 3.25rem); }
+.mon-title--md { font-size: clamp(1.3rem, 4vw, 1.8rem); }
+
+/* small spaced caps */
+.mon-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--mon-track);
+  color: var(--mon-muted);
+}
+.mon-copy { font-size: 0.95rem; line-height: 1.5; max-width: 38rem; }
+
+/* ---- board: the mint playing surface with a black keyline -------------- */
+
+.mon-board {
+  position: relative;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: var(--mon-bg);
+  color: var(--mon-text);
+  border: 2px solid var(--mon-line);
+  outline: 1px solid var(--mon-line);
+  outline-offset: 3px;
+  border-radius: var(--mon-radius);
+}
+
+/* ---- bar: the color-group stripe ---------------------------------------- */
+
+.mon-bar {
+  display: block;
+  min-height: 1.6rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--mon-bar);
+  color: var(--mon-on-bar);
+  border: 1px solid var(--mon-ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: var(--mon-track);
+}
+
+/* ---- title deed --------------------------------------------------------- */
+
+.mon-deed {
+  width: min(100%, 17rem);
+  background: var(--mon-paper);
+  color: var(--mon-ink);
+  border: 1px solid var(--mon-rule);
+  outline: 1px solid var(--mon-rule);
+  outline-offset: -5px;
+  padding: 0.5rem;
+  text-align: center;
+  font-family: var(--mon-font-serif);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  box-shadow: var(--mon-shadow);
+}
+.mon-deed-head {
+  display: grid;
+  gap: 0.05rem;
+  padding: 0.35rem 0.5rem 0.4rem;
+  background: var(--mon-bar);
+  color: var(--mon-on-bar);
+  border: 1px solid var(--mon-rule);
+  font-family: var(--mon-font-display);
+  text-transform: uppercase;
+}
+.mon-deed-head small { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.2em; }
+.mon-deed-head b { font-size: 1rem; font-weight: 800; letter-spacing: 0.06em; line-height: 1.15; }
+.mon-deed-rent { margin: 0.55rem 0 0.4rem; font-size: 1.05rem; }
+.mon-deed-rows { margin: 0 auto; padding: 0 0.5rem; max-width: 12.5rem; }
+.mon-deed-row { display: flex; gap: 0.5rem; justify-content: space-between; text-align: left; }
+.mon-deed-row span:last-child { font-variant-numeric: tabular-nums; }
+.mon-deed-rows--hotel { margin-top: 0.1rem; }
+.mon-deed-note { margin: 0.5rem 0 0; }
+.mon-deed-fine { margin: 0.55rem 0 0.1rem; font-size: 0.62rem; line-height: 1.25; font-style: italic; color: var(--mon-ink-muted); }
+/* railroads and utilities: no color bar, a centered mark instead */
+.mon-deed--mark .mon-deed-head { background: var(--mon-paper); color: var(--mon-ink); border: 0; padding-bottom: 0; }
+.mon-deed--mark .mon-deed-head b { border-top: 1px solid var(--mon-rule); margin-top: 0.3rem; padding-top: 0.3rem; font-size: 0.9rem; }
+.mon-deed-mark { display: block; font-size: 2rem; line-height: 1; }
+
+/* ---- space: one square on the board ------------------------------------- */
+
+.mon-space {
+  display: flex;
+  flex-direction: column;
+  width: 7.5rem;
+  min-height: 9.5rem;
+  background: var(--mon-bg);
+  color: var(--mon-text);
+  border: 1px solid var(--mon-line);
+  text-align: center;
+  font-family: var(--mon-font-display);
+}
+.mon-space .mon-bar { min-height: 1.6rem; border: 0; border-bottom: 1px solid var(--mon-ink); padding: 0; }
+.mon-space-name { flex: 1; display: grid; place-items: center; padding: 0.4rem; font-size: 0.72rem; font-weight: 700; line-height: 1.15; text-transform: uppercase; letter-spacing: 0.06em; }
+.mon-space-price { padding: 0.35rem; font-size: 0.7rem; letter-spacing: 0.04em; }
+.mon-space--corner { width: 9.5rem; background: var(--mon-red); color: var(--mon-on-red); border-color: var(--mon-ink); }
+.mon-space--corner .mon-space-name { font-size: 0.9rem; letter-spacing: 0.1em; }
+
+/* ---- Chance and Community Chest cards ----------------------------------- */
+
+.mon-card {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+  width: min(100%, 15rem);
+  min-height: 8rem;
+  padding: 1rem;
+  background: var(--mon-chance);
+  color: var(--mon-ink);
+  border: 1px solid var(--mon-ink);
+  border-radius: 0.3rem;
+  text-align: center;
+  align-content: center;
+  box-shadow: var(--mon-shadow);
+}
+.mon-card--chest { background: var(--mon-chest); }
+.mon-card-mark { font-family: var(--mon-font-display); font-size: 2.6rem; font-weight: 800; line-height: 1; }
+.mon-card-title { font-family: var(--mon-font-display); font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.16em; }
+.mon-card-text { font-size: 0.9rem; line-height: 1.35; }
+
+/* ---- paper money --------------------------------------------------------- */
+
+.mon-bill {
+  --mon-bill: var(--mon-bill-1);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(100%, 15rem);
+  padding: 0.5rem 0.65rem;
+  background:
+    repeating-linear-gradient(135deg, #12171214 0 1px, transparent 1px 5px),
+    var(--mon-bill);
+  color: var(--mon-ink);
+  border: 2px double var(--mon-ink);
+  border-radius: 0.2rem;
+  font-family: var(--mon-font-display);
+  box-shadow: var(--mon-shadow);
+}
+.mon-bill-corner { font-size: 0.8rem; font-weight: 800; }
+.mon-bill-amount {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  min-width: 4.25rem;
+  height: 4.25rem;
+  padding: 0 0.35rem;
+  background: var(--mon-bill);
+  border: 2px solid var(--mon-ink);
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.mon-bill--1   { --mon-bill: var(--mon-bill-1); }
+.mon-bill--5   { --mon-bill: var(--mon-bill-5); }
+.mon-bill--10  { --mon-bill: var(--mon-bill-10); }
+.mon-bill--20  { --mon-bill: var(--mon-bill-20); }
+.mon-bill--50  { --mon-bill: var(--mon-bill-50); }
+.mon-bill--100 { --mon-bill: var(--mon-bill-100); }
+.mon-bill--500 { --mon-bill: var(--mon-bill-500); }
+
+/* ---- die: put data-n="1".."6" on it, with nine <i> children -------------- */
+
+.mon-die {
+  display: inline-grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  width: 3.25rem;
+  height: 3.25rem;
+  padding: 0.4rem;
+  background: var(--mon-paper);
+  border: 1px solid var(--mon-ink);
+  border-radius: 0.5rem;
+  box-shadow: inset 0 -2px 0 #12171226, var(--mon-shadow);
+}
+.mon-die i { place-self: center; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--mon-ink); opacity: 0; }
+.mon-die[data-n="1"] i:nth-child(5),
+.mon-die[data-n="2"] i:nth-child(1), .mon-die[data-n="2"] i:nth-child(9),
+.mon-die[data-n="3"] i:nth-child(1), .mon-die[data-n="3"] i:nth-child(5), .mon-die[data-n="3"] i:nth-child(9),
+.mon-die[data-n="4"] i:nth-child(1), .mon-die[data-n="4"] i:nth-child(3), .mon-die[data-n="4"] i:nth-child(7), .mon-die[data-n="4"] i:nth-child(9),
+.mon-die[data-n="5"] i:nth-child(1), .mon-die[data-n="5"] i:nth-child(3), .mon-die[data-n="5"] i:nth-child(5), .mon-die[data-n="5"] i:nth-child(7), .mon-die[data-n="5"] i:nth-child(9),
+.mon-die[data-n="6"] i:nth-child(1), .mon-die[data-n="6"] i:nth-child(3), .mon-die[data-n="6"] i:nth-child(4), .mon-die[data-n="6"] i:nth-child(6), .mon-die[data-n="6"] i:nth-child(7), .mon-die[data-n="6"] i:nth-child(9) { opacity: 1; }
+
+/* ---- table: a property list ruled in ink --------------------------------- */
+
+.mon-table-wrap { overflow-x: auto; }
+.mon-table { width: 100%; border-collapse: collapse; background: var(--mon-paper); color: var(--mon-ink); border: 2px solid var(--mon-ink); font-size: 0.9rem; }
+.mon-table caption { text-align: left; padding: 0 0 0.4rem; font-family: var(--mon-font-display); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--mon-text); caption-side: top; }
+.mon-table th, .mon-table td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--mon-ink); }
+.mon-table thead th { background: var(--mon-ink); color: var(--mon-paper); font-family: var(--mon-font-display); font-size: 0.72rem; text-transform: uppercase; letter-spacing: var(--mon-track); }
+.mon-table tbody th { font-weight: 700; }
+.mon-table .mon-num { text-align: right; font-variant-numeric: tabular-nums; }
+.mon-table tbody tr:last-child > * { border-bottom: 0; }
+/* a color chip before a property name */
+.mon-table .mon-chip { display: inline-block; width: 0.9rem; height: 0.9rem; margin-right: 0.5rem; vertical-align: -0.1rem; background: var(--mon-bar); border: 1px solid var(--mon-ink); }
+
+/* ---- controls ------------------------------------------------------------- */
+
+.mon-button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--mon-red);
+  color: var(--mon-on-red);
+  border: 2px solid var(--mon-ink);
+  border-radius: var(--mon-radius);
+  box-shadow: 0 3px 0 var(--mon-ink);
+  font: 800 0.85rem/1.1 var(--mon-font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--mon-track);
+  cursor: pointer;
+}
+.mon-button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--mon-ink); }
+.mon-button:disabled { opacity: 0.55; cursor: not-allowed; }
+.mon-button--paper { background: var(--mon-paper); color: var(--mon-ink); }
+.mon-button--ghost { background: transparent; color: var(--mon-text); border-color: var(--mon-line); box-shadow: none; }
+.mon-button--ghost:active { transform: none; }
+
+.mon-field { display: grid; gap: 0.3rem; }
+.mon-input, .mon-select {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--mon-paper);
+  color: var(--mon-ink);
+  border: 2px solid var(--mon-ink);
+  border-radius: var(--mon-radius);
+  font: 1rem/1.3 var(--mon-font-body);
+}
+.mon-input::placeholder { color: var(--mon-ink-muted); }
+
+/* ---- badge, divider ------------------------------------------------------- */
+
+.mon-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  background: var(--mon-paper);
+  color: var(--mon-ink);
+  border: 1px solid var(--mon-ink);
+  border-radius: 99rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--mon-track);
+}
+.mon-badge--solid { background: var(--mon-red); color: var(--mon-on-red); }
+.mon-divider { border: 0; height: 5px; border-block: 1px solid var(--mon-line); margin: 1.5rem 0; }
