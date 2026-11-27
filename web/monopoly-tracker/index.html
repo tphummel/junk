@@ -201,10 +201,10 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T18:09:32Z</small>
+  <small id="version">2026-11-27T18:11:59Z</small>
 
   <script type="module">
-    import { CARDS, GROUPS, collectAutoRent, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+    import { CARDS, GROUPS, buyProperty, collectAutoRent, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     const KEY = 'monopoly-tracker-v1';
     const SWATCH = { brown: '#955436', lightblue: '#7fc6e8', pink: '#d93a96', orange: '#f7941d', red: '#ed1b24', yellow: '#fef200', green: '#1fb25a', darkblue: '#0072bb', railroad: '#444', utility: '#9aa', other: '#888' };
@@ -371,22 +371,29 @@
       if (g && confirm('Delete "' + g.name + '" and all its properties?')) { games = games.filter((x) => x !== g); currentId = games[0]?.id || ''; save(); say(); render(); }
     });
 
+    // Only deeds you do not own are offered; the picker is rebuilt on every render so it stays current.
     function fillDeeds(g) {
-      const keep = $('deed').dataset.edition === g.edition;
-      if (keep) return;
-      $('deed').dataset.edition = g.edition;
-      $('deed').replaceChildren(...CARDS[g.edition].map((d, i) => h('option', { value: String(i), text: d.name + ' ($' + d.price + ')' })));
+      const own = new Set(g.properties.map((p) => p.name));
+      const before = $('deed').value;
+      const left = CARDS[g.edition].map((d, i) => ({ d, i })).filter(({ d }) => !own.has(d.name));
+      $('deed').replaceChildren(...left.map(({ d, i }) => h('option', { value: String(i), text: d.name + ' ($' + d.price + ')' })));
+      if (left.some(({ i }) => String(i) === before)) $('deed').value = before;
+      const none = !left.length;
+      $('deed').disabled = none; $('paid').disabled = none; $('quick').querySelector('button').disabled = none;
+      if (none) $('deed').replaceChildren(h('option', { text: 'You own every deed' }));
     }
-    function add(o) {
+    function add(card, paid) {
       const g = game(); if (!g) return;
-      g.properties.push(newProperty(o)); save(); say(); render();
+      const err = buyProperty(g, card, paid);
+      if (err) { say(err); render(); return; }
+      save(); say(); render();
     }
     $('quick').addEventListener('submit', (e) => {
       e.preventDefault();
       // Blank means list price; enter the bid for an auction or the agreed price.
       const raw = $('paid').value.trim();
       if (raw !== '' && !(Number(raw) >= 0)) { say('Price paid must be a number.'); return; }
-      add({ ...CARDS[game().edition][+$('deed').value], paid: raw === '' ? undefined : Number(raw) });
+      add(CARDS[game().edition][+$('deed').value], raw === '' ? undefined : Number(raw));
       $('paid').value = '';
     });
     $('list').addEventListener('click', (e) => {

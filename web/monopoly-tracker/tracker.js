@@ -348,6 +348,17 @@ export function migrateGames(games) {
   return games;
 }
 
+/**
+ * Buy a deed. You can only own a deed once; one you traded away can be bought back.
+ * Returns an error string if it is not allowed.
+ * @param {Game} g @param {Card} card @param {number} [paid] what you paid; defaults to the list price @returns {string | null}
+ */
+export function buyProperty(g, card, paid) {
+  if (g.properties.some((p) => p.name === card.name)) return `You already own ${card.name}.`;
+  g.properties.push(newProperty({ ...card, paid }));
+  return null;
+}
+
 /** Cost basis of an unimproved property: what you put in, less any improvements sold back. @param {Property} p */
 export function basisOf(p) {
   const s = stats(p);

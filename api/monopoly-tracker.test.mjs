@@ -1,7 +1,7 @@
 // Tests for the Monopoly tracker logic (web/monopoly-tracker/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CARDS, CLASSIC, MEGA, basisOf, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
+import { CARDS, CLASSIC, MEGA, basisOf, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -321,4 +321,15 @@ test("trade: basis ignores improvement spend that was sold back, and set counts 
   executeTrade(g, { giveIds: [med.id], receive: [card("Boardwalk")] });
   assert.equal(rentFor(g, bal), 4); // set broken
   assert.equal(planTrade(g, { giveIds: [bal.id], receive: [card("Park Place")] }).carried, 60);
+});
+
+test("a deed can only be bought once; a traded-away one can be bought back", () => {
+  const g = game();
+  assert.equal(buyProperty(g, card("Boardwalk")), null);
+  assert.match(buyProperty(g, card("Boardwalk"), 500), /already own Boardwalk/);
+  assert.equal(g.properties.length, 1);
+  assert.equal(stats(g.properties[0]).invested, 400); // the refused buy changed nothing
+  executeTrade(g, { giveIds: [g.properties[0].id], receive: [card("Park Place")] });
+  assert.equal(buyProperty(g, card("Boardwalk"), 450), null);
+  assert.deepEqual(g.properties.map((p) => p.name), ["Park Place", "Boardwalk"]);
 });
