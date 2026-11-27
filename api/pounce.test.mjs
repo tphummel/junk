@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   cumulative, formatDuration, gameTotals, gameWinners, headToHead, headToHeadAll, isValidScore, paceStats, pounceStats,
-  sessionExport, sessionReportHtml, standings, validateResults, venueStats,
+  endTimeLabel, sessionExport, sessionReportHtml, standings, validateResults, venueStats,
 } from "../web/pounce/engine.js";
 
 const g = (id, results, extra = {}) => ({ id, sessionId: "s", venue: "Home", startedAt: Number(id), durationMs: 60000, bonus: 5, results, ...extra });
@@ -117,4 +117,19 @@ test("session html report is standalone and escapes names", () => {
   assert.ok(edited.includes("Game 1 edited 1970-01-02T00:00:00.000Z"));
   assert.ok(html.includes("Head to head") && html.includes("A&amp;B vs Bo"));
   assert.ok(html.includes("A&amp;B") && html.includes("&lt;Cafe&gt;") && html.includes("&lt;b&gt;x"));
+});
+
+test("endTimeLabel gives the local time of day a game ended, in the zone it was played", () => {
+  const start = Date.UTC(2026, 0, 5, 3, 30); // 03:30 UTC
+  assert.equal(endTimeLabel({ startedAt: start, durationMs: 12 * 60000, offset: -420 }), "8:42 PM"); // UTC-7, previous evening
+  assert.equal(endTimeLabel({ startedAt: start, durationMs: 0, offset: 0 }), "3:30 AM");
+});
+
+test("html report grid starts with the end time, has no sequence number, and ends with the length", () => {
+  const start = Date.UTC(2026, 0, 5, 20, 0);
+  const g = { id: "g", startedAt: start, durationMs: 90000, offset: 0, bonus: 5, results: [{ playerId: "a", score: 10, pounced: false }, { playerId: "b", score: 3, pounced: true }] };
+  const html = sessionReportHtml(sessionExport({ id: "s", venue: "Home", bonus: 5, createdAt: 0, present: ["a", "b"], games: [g] }, [{ id: "a", name: "Ann" }, { id: "b", name: "Bo" }]));
+  assert.ok(html.includes("<th>Ended</th><th>Ann</th><th>Bo</th><th>Length</th>"));
+  assert.ok(html.includes("<tr><td>8:01 PM</td>") && html.includes("<td>1:30</td></tr>"));
+  assert.ok(!html.includes("<th>#</th><th>Ann"));
 });

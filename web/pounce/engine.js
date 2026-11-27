@@ -182,6 +182,18 @@ export function formatDuration(ms) {
   return `${m}:${String(s % 60).padStart(2, '0')}`;
 }
 
+/**
+ * Local time of day a game ended, like "7:42 PM". Uses the offset (minutes east of UTC) saved with the game so the
+ * time is where it was played; without one it falls back to the viewer's own time zone.
+ * @param {{ startedAt: number, durationMs?: number, offset?: number }} game
+ */
+export function endTimeLabel(game) {
+  const end = game.startedAt + (game.durationMs > 0 ? game.durationMs : 0);
+  const opts = /** @type {Intl.DateTimeFormatOptions} */ ({ hour: 'numeric', minute: '2-digit' });
+  if (typeof game.offset !== 'number') return new Date(end).toLocaleTimeString('en-US', opts);
+  return new Date(end + game.offset * 60000).toLocaleTimeString('en-US', { ...opts, timeZone: 'UTC' });
+}
+
 /** @param {unknown} s */
 const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
 
@@ -217,9 +229,9 @@ export function sessionReportHtml(exp) {
   const h2h = headToHeadAll(games);
   const f1 = (/** @type {number | null} */ n) => (n === null ? '–' : n.toFixed(1));
   const players = [...new Set([...s.present, ...games.flatMap((g) => g.results.map((r) => r.playerId))])];
-  const rows = games.map((g, i) => {
+  const rows = games.map((g) => {
     const totals = gameTotals(g);
-    return `<tr><td>${i + 1}</td>${players.map((id) => {
+    return `<tr><td>${endTimeLabel(g)}</td>${players.map((id) => {
       const t = totals.find((x) => x.playerId === id);
       if (!t) return '<td>–</td>';
       return `<td class="${winners(g).includes(id) ? 'win' : ''}">${t.total}${t.pounced ? ' ⚡' : ''}</td>`;
@@ -259,7 +271,7 @@ ${h2h.map((r) => {
 </tbody></table>` : ''}
 <h2>Games</h2>
 <p class="muted">Totals include the pounce bonus. ⚡ pounced, bold won.</p>
-<table><thead><tr><th>#</th>${players.map((id) => `<th>${escHtml(name(id))}</th>`).join('')}<th>Length</th></tr></thead><tbody>${rows}</tbody></table>
+<table><thead><tr><th>Ended</th>${players.map((id) => `<th>${escHtml(name(id))}</th>`).join('')}<th>Length</th></tr></thead><tbody>${rows}</tbody></table>
 ${notes ? `<h2>Game notes</h2><ul>${notes}</ul>` : ''}
 ${edited ? `<h2>Edits</h2><ul class="muted">${edited}</ul>` : ''}
 </body></html>
