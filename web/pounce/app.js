@@ -161,7 +161,7 @@ function gamePanel(s, cur) {
   const rows = s.present.map((id) => `
     <div class="entry">
       <button type="button" class="who namebtn" data-act="edit-player" data-id="${id}" title="Edit name or handicap">${esc(nameOf(id))}${startPile(s, id) < pileOf(s) ? ` <span class="badge">${startPile(s, id)} cards</span>` : ''}</button>
-      <input data-score="${id}" type="text" inputmode="numeric" pattern="-?[0-9]*" autocomplete="off" placeholder="0" aria-label="${esc(nameOf(id))} score">
+      <input data-score="${id}" type="number" inputmode="numeric" min="${SCORE_MIN}" max="${SCORE_MAX}" step="1" placeholder="0" aria-label="${esc(nameOf(id))} score">
       <button type="button" class="sign" data-act="neg" data-id="${id}" title="Flip sign">&plusmn;</button>
       <label class="pounce"><input type="radio" name="pouncer" value="${id}"> Pounced</label>
       <button type="button" class="link" data-act="drop" data-id="${id}">out</button>
@@ -499,7 +499,7 @@ function openGameModal(s, gameId) {
     ${game.results.map((/** @type {any} */ r) => `
       <div class="entry">
         <span class="who">${esc(nameOf(r.playerId))}</span>
-        <input data-edit-score="${r.playerId}" type="text" inputmode="numeric" pattern="-?[0-9]*" autocomplete="off" value="${r.score}" aria-label="${esc(nameOf(r.playerId))} score">
+        <input data-edit-score="${r.playerId}" type="number" inputmode="numeric" min="${SCORE_MIN}" max="${SCORE_MAX}" step="1" value="${r.score}" aria-label="${esc(nameOf(r.playerId))} score">
         <button type="button" class="sign" data-edit-neg="${r.playerId}" title="Flip sign">&plusmn;</button>
         <label class="pounce"><input type="radio" name="pouncer" value="${r.playerId}" ${r.pounced ? 'checked' : ''}> Pounced</label>
       </div>`).join('')}
