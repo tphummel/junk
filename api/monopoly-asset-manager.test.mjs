@@ -1,7 +1,7 @@
 // Tests for the Monopoly asset manager logic (web/monopoly-asset-manager/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CARDS, CLASSIC, MEGA, basisOf, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
+import { CARDS, CLASSIC, MEGA, basisOf, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -393,4 +393,68 @@ test("mega Marvin Gardens and California Avenue triple to 72", () => {
   assert.equal(rentFor(g, props[3]), 72);
   assert.equal(rentFor(g, props[0]), 66);
   assert.equal(rentFor(megaGame(props[0], props[1], props[2]), props[2]), 48); // one shy: double
+});
+
+const entryOf = (p, type) => p.entries.filter((e) => e.type === type);
+
+test("delete history: a rent entry comes out of the totals; the purchase can't be deleted", () => {
+  const g = game();
+  const bw = own(g, "Boardwalk", 400);
+  collectRent(bw, 50); collectRent(bw, 100);
+  assert.equal(deleteEntry(g, bw, entryOf(bw, "rent")[0].id), null);
+  const s = stats(bw);
+  assert.equal(s.rent, 100);
+  assert.equal(s.rentCount, 1);
+  assert.equal(s.invested, 400);
+  assert.match(deleteEntry(g, bw, bw.entries[0].id), /remove the property/);
+  assert.equal(bw.entries.length, 2);
+  assert.match(deleteEntry(g, bw, "nope"), /already gone/);
+});
+
+test("delete history: undoing a sell-back or a build changes the level; one that later entries depend on is refused", () => {
+  const g = game();
+  const pp = own(g, "Park Place", 350);
+  improve(pp, 5); improve(pp, 5); sellImprovement(pp);
+  assert.equal(pp.level, 1);
+  assert.equal(deleteEntry(g, pp, entryOf(pp, "sell")[0].id), null);
+  assert.equal(pp.level, 2); // the sell-back never happened
+  assert.equal(stats(pp).invested, 350 + 400);
+
+  const bw = own(g, "Boardwalk", 400);
+  improve(bw, 5); sellImprovement(bw);
+  assert.match(deleteEntry(g, bw, entryOf(bw, "improve")[0].id), /later history depends/);
+  assert.equal(bw.level, 0);
+  assert.equal(bw.entries.length, 3); // refused: nothing changed
+  assert.equal(deleteEntry(g, bw, entryOf(bw, "sell")[0].id), null);
+  assert.equal(deleteEntry(g, bw, entryOf(bw, "improve")[0].id), null);
+  assert.equal(bw.level, 0);
+  assert.equal(stats(bw).invested, 400);
+});
+
+test("delete history: mortgage and lift-mortgage entries keep the flag and the loan right", () => {
+  const g = game();
+  const pp = own(g, "Park Place", 350);
+  toggleMortgage(pp); toggleMortgage(pp);
+  assert.equal(pp.mortgaged, false);
+  assert.match(deleteEntry(g, pp, entryOf(pp, "mortgage")[0].id), /later history depends/);
+  assert.equal(deleteEntry(g, pp, entryOf(pp, "unmortgage")[0].id), null);
+  assert.equal(pp.mortgaged, true);
+  assert.equal(stats(pp).loan, 175);
+  assert.equal(deleteEntry(g, pp, entryOf(pp, "mortgage")[0].id), null);
+  assert.equal(pp.mortgaged, false);
+  assert.equal(stats(pp).loan, 0);
+  assert.equal(stats(pp).invested, 350);
+});
+
+test("delete history: trade entries can't be deleted, and a traded-away property only lets you fix its rent", () => {
+  const g = game();
+  const med = own(g, "Mediterranean Avenue", 60);
+  collectRent(med, 2);
+  executeTrade(g, { giveIds: [med.id], receive: [card("Boardwalk")] });
+  const [old] = g.archived;
+  for (const e of old.entries) assert.equal(canDeleteEntry(old, e, true), e.type === "rent", e.type);
+  assert.match(deleteEntry(g, old, entryOf(old, "trade-out")[0].id, true), /Trade entries/);
+  assert.equal(deleteEntry(g, old, entryOf(old, "rent")[0].id, true), null);
+  assert.equal(stats(old).rent, 0);
+  assert.equal(canDeleteEntry(g.properties[0], g.properties[0].entries[0]), false); // the traded-in purchase
 });

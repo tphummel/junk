@@ -165,6 +165,44 @@ export function improve(p, max) {
   return null;
 }
 
+/**
+ * Whether a history entry may be deleted. The purchase (including one that carries basis from a trade) can't be:
+ * delete the property instead. Trade entries tie two properties together. Once a property is traded away only its
+ * rent can be corrected, because its other state is closed.
+ * @param {Property} p @param {Entry} e @param {boolean} [archived]
+ */
+export function canDeleteEntry(p, e, archived = false) {
+  if (e.type === "buy" || e.type === "trade-out" || e.type === "trade-cash") return false;
+  if (archived) return e.type === "rent";
+  return true;
+}
+
+/**
+ * Delete one history entry and rebuild the property's level and mortgage from what is left. Refused, with nothing
+ * changed, if the remaining history would not make sense (for example, deleting a build that a later sell-back
+ * depends on): delete the later entries first.
+ * @param {Game} g @param {Property} p @param {string} entryId @param {boolean} [archived] @returns {string | null}
+ */
+export function deleteEntry(g, p, entryId, archived = false) {
+  const e = p.entries.find((x) => x.id === entryId);
+  if (!e) return "That entry is already gone.";
+  if (!canDeleteEntry(p, e, archived)) return e.type === "buy" ? "The purchase can't be deleted; remove the property instead." : "Trade entries can't be deleted.";
+  const left = p.entries.filter((x) => x !== e);
+  let level = 0, mortgaged = false;
+  if (!archived) {
+    const max = maxLevel(g, p);
+    for (const x of left) {
+      if (x.type === "improve") { if (mortgaged || level >= max) return "Can't delete this: later history depends on it. Delete the later entries first."; level++; }
+      else if (x.type === "sell") { if (level <= 0) return "Can't delete this: later history depends on it. Delete the later entries first."; level--; }
+      else if (x.type === "mortgage") { if (mortgaged || level > 0) return "Can't delete this: later history depends on it. Delete the later entries first."; mortgaged = true; }
+      else if (x.type === "unmortgage") { if (!mortgaged) return "Can't delete this: later history depends on it. Delete the later entries first."; mortgaged = false; }
+    }
+  }
+  p.entries = left;
+  if (!archived) { p.level = level; p.mortgaged = mortgaged; }
+  return null;
+}
+
 /** Sell one improvement level back to the bank at half cost. @param {Property} p @returns {string | null} */
 export function sellImprovement(p) {
   if (p.level <= 0) return "Nothing to sell.";

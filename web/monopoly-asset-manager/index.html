@@ -57,7 +57,9 @@
     table.rents td { border-top: 1px solid #12171233; padding: .1rem .75rem .1rem .25rem; }
     table.rents tr.now td { background: var(--mon-chest); font-weight: 800; }
     .hist { font-size: .85rem; margin: .4rem 0 0; padding: 0; list-style: none; max-height: 12rem; overflow: auto; font-variant-numeric: tabular-nums; }
-    .hist li { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid #12171233; padding: .15rem 0; }
+    .hist li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-top: 1px solid #12171233; padding: .15rem 0; }
+    .hist .amt { display: flex; align-items: center; gap: .5rem; flex: none; }
+    .card .hist .mon-button, details.panel .hist .mon-button { min-height: 1.75rem; min-width: 1.75rem; padding: 0 .4rem; font-size: .75rem; box-shadow: none; }
     details summary.muted { cursor: pointer; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); }
 
     /* dialogs */
@@ -177,10 +179,10 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T18:40:01Z</small>
+  <small id="version">2026-11-27T18:47:29Z</small>
 
   <script type="module">
-    import { CARDS, GROUPS, buyProperty, collectAutoRent, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+    import { CARDS, GROUPS, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
@@ -264,6 +266,22 @@
         ...(note ? [h('p', { class: 'muted', text: note })] : []));
     }
 
+    // History list. Each entry has a delete button unless it can't be deleted (the purchase, trade entries).
+    const historyOpen = new Set(); // property ids whose history is open; survives re-renders
+    function history(p, archived) {
+      const d = h('details', { 'data-hist': p.id }, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
+        h('ul', { class: 'hist' }, ...[...p.entries].reverse().map((e) => {
+          const label = e.type + (e.note ? ': ' + e.note : '');
+          const amt = h('span', { class: 'amt' }, h('span', { class: cls(e.amount), text: money(e.amount) }));
+          if (canDeleteEntry(p, e, archived)) {
+            amt.append(h('button', { class: 'mon-button mon-button--paper danger', 'data-action': 'delete-entry', 'data-entry': e.id, 'data-label': label + ' ' + money(e.amount), 'aria-label': 'Delete history entry: ' + label + ' ' + money(e.amount), text: '✕' }));
+          }
+          return h('li', {}, h('span', { text: label }), amt);
+        })));
+      if (historyOpen.has(p.id)) d.open = true;
+      return d;
+    }
+
     function archivedCard(g, p) {
       const s = stats(p, g);
       const c = h('div', { class: 'card', 'data-id': p.id });
@@ -271,8 +289,7 @@
       c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), h('span', { class: 'mon-badge', text: 'traded away' })));
       c.append(h('div', { class: 'nums' }, h('span', { text: 'invested ' }, h('b', { text: money(s.invested) })),
         h('span', { text: 'rent ' }, h('b', { text: money(s.rent) })), h('span', { text: 'profit ' }, h('b', { class: cls(s.profit), text: money(s.profit) }))));
-      c.append(h('details', {}, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
-        h('ul', { class: 'hist' }, ...[...p.entries].reverse().map((e) => h('li', {}, h('span', { text: e.type + (e.note ? ': ' + e.note : '') }), h('span', { class: cls(e.amount), text: money(e.amount) }))))));
+      c.append(history(p, true));
       return c;
     }
 
@@ -317,9 +334,7 @@
       if (p.level >= max) actions.querySelector('[data-action=build]')?.setAttribute('disabled', '');
       more.append(actions);
       if (p.rents && p.rents.length) more.append(rentTable(g, p, due));
-      more.append(h('details', {}, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
-        h('ul', { class: 'hist' }, ...[...p.entries].reverse().map((e) =>
-          h('li', {}, h('span', { text: e.type + (e.note ? ': ' + e.note : '') }), h('span', { class: cls(e.amount), text: money(e.amount) }))))));
+      more.append(history(p, false));
       c.append(more);
       return c;
     }
@@ -376,8 +391,22 @@
       add(CARDS[game().edition][+$('deed').value], raw === '' ? undefined : Number(raw));
       $('paid').value = '';
     });
+    // Remember which histories are open (the toggle event does not bubble, so listen in the capture phase).
+    $('main').addEventListener('toggle', (e) => {
+      const id = e.target.dataset?.hist; if (!id) return;
+      e.target.open ? historyOpen.add(id) : historyOpen.delete(id);
+    }, true);
+    $('main').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-action="delete-entry"]'); if (!b) return;
+      const g = game(); const c = b.closest('.card');
+      const live = g.properties.find((x) => x.id === c.dataset.id);
+      const p = live || (g.archived || []).find((x) => x.id === c.dataset.id);
+      if (!p || !confirm('Delete this history entry?\n\n' + b.dataset.label)) return;
+      const err = deleteEntry(g, p, b.dataset.entry, !live);
+      say(err); if (!err) save(); render();
+    });
     $('list').addEventListener('click', (e) => {
-      const b = e.target.closest('button[data-action]'); if (!b) return;
+      const b = e.target.closest('button[data-action]'); if (!b || b.dataset.action === 'delete-entry') return;
       const c = b.closest('.card'); const g = game(); const p = g.properties.find((x) => x.id === c.dataset.id);
       const a = b.dataset.action;
       if (a === 'toggle') { expanded.has(p.id) ? expanded.delete(p.id) : expanded.add(p.id); render(); return; }
