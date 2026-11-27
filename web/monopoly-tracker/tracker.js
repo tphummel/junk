@@ -4,12 +4,22 @@
  * @typedef {{ id: string, type: "buy"|"rent"|"improve"|"sell"|"mortgage"|"unmortgage"|"other", amount: number, note?: string, at: number }} Entry
  *   amount is the cash flow to you: negative when you pay, positive when you receive.
  * @typedef {{ id: string, name: string, group: string, kind: "street"|"railroad"|"utility"|"custom", rents: number[] | null,
- *   groupSize: number, price: number, mortgageValue: number, houseCost: number, rent: number, level: number, mortgaged: boolean, entries: Entry[] }} Property
+ *   tiers?: number[] | null, groupSize: number, price: number, mortgageValue: number, houseCost: number, rent: number, level: number, mortgaged: boolean, entries: Entry[] }} Property
  * @typedef {{ id: string, name: string, edition: "classic"|"mega", properties: Property[] }} Game
  */
 
 /** Highest improvement level per edition: 1-4 houses, 5 hotel, 6 skyscraper (Mega). */
 export const MAX_LEVEL = { classic: 5, mega: 6 };
+
+/** Name of a property's current improvement: a railroad has a train depot, not houses. @param {Property} p */
+export function levelName(p) {
+  return p.kind === "railroad" ? (p.level ? "train depot" : "no depot") : levelLabel(p.level);
+}
+
+/** Highest improvement level for this property: a railroad takes one depot. @param {Game} g @param {Property} p */
+export function maxLevel(g, p) {
+  return p.kind === "railroad" ? 1 : MAX_LEVEL[g.edition];
+}
 
 /** @param {number} level */
 export function levelLabel(level) {
@@ -84,11 +94,11 @@ let seq = 0;
 /** @returns {string} */
 export const uid = () => Date.now().toString(36) + (seq++).toString(36) + Math.random().toString(36).slice(2, 5);
 
-/** @param {{name: string, group: string, price: number, kind?: Property["kind"], rents?: number[] | null, groupSize?: number, houseCost?: number, rent?: number, mortgageValue?: number}} o @returns {Property} */
+/** @param {{name: string, group: string, price: number, kind?: Property["kind"], rents?: number[] | null, tiers?: number[] | null, groupSize?: number, houseCost?: number, rent?: number, mortgageValue?: number}} o @returns {Property} */
 export function newProperty(o) {
   return {
     id: uid(), name: o.name, group: o.group || "other", price: o.price,
-    kind: o.kind ?? "custom", rents: o.rents ?? null, groupSize: o.groupSize ?? 0,
+    kind: o.kind ?? "custom", rents: o.rents ?? null, tiers: o.tiers ?? null, groupSize: o.groupSize ?? 0,
     mortgageValue: o.mortgageValue ?? Math.floor(o.price / 2), houseCost: o.houseCost ?? 0, rent: o.rent ?? 0,
     level: 0, mortgaged: false,
     entries: [{ id: uid(), type: "buy", amount: -o.price, at: Date.now() }],
@@ -122,7 +132,7 @@ export function improve(p, max) {
   if (p.level >= max) return "Already fully built.";
   if (!(p.houseCost > 0)) return "Set a house cost first.";
   p.level++;
-  addEntry(p, "improve", -p.houseCost, `built → ${levelLabel(p.level)}`);
+  addEntry(p, "improve", -p.houseCost, `built → ${levelName(p)}`);
   return null;
 }
 
@@ -130,7 +140,7 @@ export function improve(p, max) {
 export function sellImprovement(p) {
   if (p.level <= 0) return "Nothing to sell.";
   p.level--;
-  addEntry(p, "sell", Math.floor(p.houseCost / 2), `sold → ${levelLabel(p.level)}`);
+  addEntry(p, "sell", Math.floor(p.houseCost / 2), `sold → ${levelName(p)}`);
   return null;
 }
 
@@ -138,7 +148,7 @@ export function sellImprovement(p) {
 export function collectRent(p, amount) {
   if (p.mortgaged) return "Mortgaged properties collect no rent.";
   if (!(amount > 0)) return "Enter a rent amount.";
-  addEntry(p, "rent", amount, levelLabel(p.level));
+  addEntry(p, "rent", amount, levelName(p));
   return null;
 }
 
@@ -184,13 +194,82 @@ const UTILITIES = ["Electric Company", "Water Works"];
 /** Properties per group on the classic board. */
 export const GROUP_SIZE = { brown: 2, lightblue: 3, pink: 3, orange: 3, red: 3, yellow: 3, green: 3, darkblue: 2, railroad: 4, utility: 2 };
 
-/** @typedef {{ name: string, group: string, kind: "street"|"railroad"|"utility", price: number, houseCost: number, rents: number[], groupSize: number }} Card */
+/** @typedef {{ name: string, group: string, kind: "street"|"railroad"|"utility", price: number, houseCost: number, rents: number[], tiers?: number[], groupSize: number }} Card */
 /** @type {Card[]} */
 export const CLASSIC = [
   ...STREETS.map(([name, group, price, houseCost, rents]) => ({ name, group, kind: /** @type {const} */ ("street"), price, houseCost, rents, groupSize: GROUP_SIZE[group] })),
   ...RAILROADS.map((name) => ({ name, group: "railroad", kind: /** @type {const} */ ("railroad"), price: 200, houseCost: 0, rents: [25, 50, 100, 200], groupSize: 4 })),
   ...UTILITIES.map((name) => ({ name, group: "utility", kind: /** @type {const} */ ("utility"), price: 150, houseCost: 0, rents: [4, 10], groupSize: 2 })),
 ];
+
+/**
+ * Monopoly Mega (US names, board order). Each street is
+ * [name, group, price, [site, partial set, full set, 1 house, 2, 3, 4, hotel, skyscraper]].
+ * "Partial set" is applied here when you own two or more of the group but not all of it.
+ * Not on the printed table, so assumed: mortgage value = half the price, building cost = the standard
+ * cost for the color group, a skyscraper costs the same as a house, train depots cost $100 and sell for half.
+ */
+const MEGA_ROWS = [
+  ["Mediterranean Avenue", "brown", 60, [2, 4, 6, 10, 30, 90, 160, 250, 750]],
+  ["Baltic Avenue", "brown", 60, [4, 8, 12, 20, 60, 180, 320, 450, 950]],
+  // Skyscraper rent is missing from the source for this US row; hotel + 500 matches every other brown, light blue and pink deed.
+  ["Arctic Avenue", "brown", 80, [5, 10, 15, 30, 80, 240, 360, 500, 1000]],
+  ["Reading Railroad"],
+  ["Massachusetts Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
+  ["Oriental Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
+  ["Gas Company"],
+  ["Vermont Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
+  ["Connecticut Avenue", "lightblue", 120, [8, 16, 24, 40, 100, 300, 450, 600, 1100]],
+  ["Maryland Avenue", "pink", 140, [10, 20, 30, 50, 150, 450, 625, 750, 1250]],
+  ["St. Charles Place", "pink", 140, [10, 20, 30, 50, 150, 450, 625, 750, 1250]],
+  ["Electric Company"],
+  ["States Avenue", "pink", 140, [10, 20, 30, 50, 150, 450, 625, 750, 1250]],
+  ["Virginia Avenue", "pink", 160, [12, 24, 36, 60, 180, 500, 700, 900, 1400]],
+  ["Pennsylvania Railroad"],
+  ["St. James Place", "orange", 180, [14, 28, 42, 70, 200, 550, 750, 950, 1450]],
+  ["Tennessee Avenue", "orange", 180, [14, 28, 42, 70, 200, 550, 750, 950, 1450]],
+  ["New York Avenue", "orange", 200, [16, 32, 48, 80, 220, 600, 800, 1000, 1500]],
+  ["New Jersey Avenue", "orange", 200, [16, 32, 48, 80, 220, 600, 800, 1000, 1500]],
+  ["Kentucky Avenue", "red", 220, [18, 36, 54, 90, 250, 700, 875, 1050, 2050]],
+  ["Indiana Avenue", "red", 220, [18, 36, 54, 90, 250, 700, 875, 1050, 2050]],
+  ["Illinois Avenue", "red", 240, [20, 40, 60, 100, 300, 750, 925, 1100, 2100]],
+  ["Michigan Avenue", "red", 240, [20, 40, 60, 100, 300, 750, 925, 1100, 2100]],
+  ["B. & O. Railroad"],
+  ["Atlantic Avenue", "yellow", 260, [22, 44, 66, 110, 330, 800, 975, 1150, 2150]],
+  ["Ventnor Avenue", "yellow", 260, [22, 44, 66, 110, 330, 800, 975, 1150, 2150]],
+  ["Water Works"],
+  // Full-set rent is 60 as printed in the source table (every other deed's is 3x the site rent, which would be 72).
+  ["Marvin Gardens", "yellow", 280, [24, 48, 60, 120, 360, 850, 1025, 1200, 2200]],
+  ["California Avenue", "yellow", 280, [24, 48, 60, 120, 360, 850, 1025, 1200, 2200]],
+  ["Pacific Avenue", "green", 300, [26, 52, 78, 130, 390, 900, 1100, 1275, 2275]],
+  ["South Carolina Avenue", "green", 300, [26, 52, 78, 130, 390, 900, 1100, 1275, 2275]],
+  ["North Carolina Avenue", "green", 300, [26, 52, 78, 130, 390, 900, 1100, 1275, 2275]],
+  ["Pennsylvania Avenue", "green", 320, [28, 56, 84, 150, 450, 1000, 1200, 1400, 2400]],
+  ["Short Line"],
+  ["Florida Avenue", "darkblue", 350, [35, 70, 105, 175, 500, 1100, 1300, 1500, 2500]],
+  ["Park Place", "darkblue", 350, [35, 70, 105, 175, 500, 1100, 1300, 1500, 2500]],
+  ["Boardwalk", "darkblue", 400, [50, 100, 150, 200, 600, 1400, 1700, 2000, 3000]],
+];
+const HOUSE_COST = { brown: 50, lightblue: 50, pink: 100, orange: 100, red: 150, yellow: 150, green: 200, darkblue: 200 };
+const MEGA_RAIL = ["Reading Railroad", "Pennsylvania Railroad", "B. & O. Railroad", "Short Line"];
+
+/** Properties per group in Mega. */
+export const MEGA_GROUP_SIZE = { brown: 3, lightblue: 4, pink: 4, orange: 4, red: 4, yellow: 4, green: 4, darkblue: 3, railroad: 4, utility: 3 };
+
+/** @type {Card[]} */
+export const MEGA = MEGA_ROWS.map((row) => {
+  const [name, group, price, t] = row;
+  if (!group) {
+    const rail = MEGA_RAIL.includes(name);
+    return rail
+      ? { name, group: "railroad", kind: /** @type {const} */ ("railroad"), price: 200, houseCost: 100, rents: [25, 50, 100, 200], groupSize: 4 }
+      : { name, group: "utility", kind: /** @type {const} */ ("utility"), price: 150, houseCost: 0, rents: [4, 10, 20], groupSize: 3 };
+  }
+  return { name, group, kind: /** @type {const} */ ("street"), price, houseCost: HOUSE_COST[group], rents: [t[0], ...t.slice(3)], tiers: [t[1], t[2]], groupSize: MEGA_GROUP_SIZE[group] };
+});
+
+/** Title deeds for each edition's picker. */
+export const CARDS = { classic: CLASSIC, mega: MEGA };
 
 /** @param {Game} g @param {Property} p */
 const owned = (g, p) => g.properties.filter((x) => x.group === p.group).length;
@@ -206,13 +285,22 @@ export function rentFor(g, p, dice) {
   if (p.mortgaged) return 0;
   const r = p.rents;
   if (!r || !r.length) return null;
-  if (p.kind === "railroad") return r[Math.min(owned(g, p), r.length) - 1] ?? null;
+  if (p.kind === "railroad") {
+    const rent = r[Math.min(owned(g, p), r.length) - 1];
+    return rent == null ? null : p.level >= 1 ? rent * 2 : rent; // a train depot doubles it
+  }
   if (p.kind === "utility") {
     const mult = r[Math.min(owned(g, p), r.length) - 1];
     return dice > 0 && mult ? mult * dice : null;
   }
   const base = r[p.level];
   if (!(base >= 0)) return null;
+  if (p.level === 0 && p.tiers) {
+    // Mega: rent steps up with the number owned, with a bigger step for the full set.
+    const n = owned(g, p);
+    if (p.groupSize > 0 && n >= p.groupSize) return p.tiers[1];
+    return n >= 2 ? p.tiers[0] : base;
+  }
   const set = p.level === 0 && p.groupSize > 0 && owned(g, p) >= p.groupSize;
   return set ? base * 2 : base;
 }

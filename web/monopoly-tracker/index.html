@@ -110,7 +110,7 @@
       <fieldset class="editions">
         <legend>Edition</legend>
         <label class="opt"><input type="radio" name="edition" value="classic" checked> <span><b>Standard Monopoly</b><br><span class="muted">40 spaces. Improvements: 4 houses, then a hotel.</span></span></label>
-        <label class="opt"><input type="radio" name="edition" value="mega"> <span><b>Monopoly Mega</b><br><span class="muted">Adds a skyscraper level above the hotel.</span></span></label>
+        <label class="opt"><input type="radio" name="edition" value="mega"> <span><b>Monopoly Mega</b><br><span class="muted">Adds 9 deeds (8 streets and the Gas Company), train depots, and a skyscraper above the hotel.</span></span></label>
       </fieldset>
       <div class="row">
         <button class="primary" value="create">Create game</button>
@@ -128,7 +128,7 @@
         <label>Title deed <select id="deed"></select></label>
         <button class="primary">Buy</button>
       </form>
-      <p class="muted">Standard deeds come with their full rent table, house cost and mortgage value. For anything else (Mega-only deeds, house rules), enter the card:</p>
+      <p class="muted">Deeds for this edition come with their full rent table, building cost and mortgage value. For house rules or anything else, enter the card:</p>
       <form id="custom" class="grid">
         <label>Name <input name="name" required maxlength="60"></label>
         <label>Group <select name="group"></select></label>
@@ -163,16 +163,16 @@
       <li><b>Returned</b>: rent collected plus improvements sold back (at half cost).</li>
       <li><b>Break even</b> when returned reaches invested. <b>ROI</b> is (returned − invested) ÷ invested.</li>
       <li>A mortgage is a loan: the cash is not counted as income, only the interest is a cost. Outstanding loans are shown separately.</li>
-      <li><b>Rent</b> is taken from the card and your game: improvement level, double rent for a full unimproved set, railroads and utilities by number owned. You only enter the dice total for a utility.</li>
+      <li><b>Rent</b> is taken from the card and your game: improvement level, set bonuses (standard: double for a full unimproved set; Mega: 2+ owned and full set have their own rents), railroads and utilities by number owned. You only enter the dice total for a utility.</li>
       <li><b>Rents to break even</b> uses your average rent collected so far, or what the card pays now.</li>
-      <li>Improvement levels: 1–4 houses, 5 hotel, and in Mega 6 skyscraper (its rent isn't preloaded; the page asks for it).</li>
+      <li>Improvement levels: 1–4 houses, 5 hotel, and in Mega 6 skyscraper (Mega: 1–4 houses, hotel, skyscraper; a railroad takes one train depot, which doubles its rent).</li>
     </ul>
   </details>
 
-  <small id="version">2026-11-27T07:30:43Z</small>
+  <small id="version">2026-11-27T17:09:54Z</small>
 
   <script type="module">
-    import { CLASSIC, GROUPS, GROUP_SIZE, MAX_LEVEL, collectAutoRent, gameStats, improve, levelLabel, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
+    import { CARDS, GROUPS, GROUP_SIZE, collectAutoRent, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
 
     const KEY = 'monopoly-tracker-v1';
     const SWATCH = { brown: '#955436', lightblue: '#7fc6e8', pink: '#d93a96', orange: '#f7941d', red: '#ed1b24', yellow: '#fef200', green: '#1fb25a', darkblue: '#0072bb', railroad: '#444', utility: '#9aa', other: '#888' };
@@ -212,6 +212,7 @@
       $('main').hidden = !g;
       for (const id of ['renameGame', 'deleteGame']) $(id).disabled = !g;
       if (!g) { say('Create a game to start tracking.'); return; }
+      fillDeeds(g);
       const t = gameStats(g);
       const stat = (label, value, c = '') => h('div', { class: 'stat' }, h('b', { class: c, text: value }), h('span', { text: label }));
       $('summary').replaceChildren(
@@ -228,22 +229,31 @@
 
     const LABELS = ['rent', '1 house', '2 houses', '3 houses', '4 houses', 'hotel', 'skyscraper'];
     function rentTable(g, p, due) {
+      const n = g.properties.filter((x) => x.group === p.group).length;
       const rows = [];
-      if (p.kind === 'railroad') p.rents.forEach((r, i) => rows.push([(i + 1) + ' owned', money(r), i + 1 === Math.min(g.properties.filter((x) => x.group === p.group).length, p.rents.length)]));
-      else if (p.kind === 'utility') p.rents.forEach((r, i) => rows.push([(i + 1) + ' owned', r + '× dice', i + 1 === Math.min(g.properties.filter((x) => x.group === p.group).length, p.rents.length)]));
-      else p.rents.forEach((r, i) => rows.push([LABELS[i] || 'level ' + i, money(r), i === p.level]));
-      const note = p.kind === 'street' && p.groupSize ? 'Unimproved rent doubles with the full set (' + g.properties.filter((x) => x.group === p.group).length + ' of ' + p.groupSize + ' owned).' : '';
+      if (p.kind === 'railroad' || p.kind === 'utility') {
+        const cur = Math.min(n, p.rents.length);
+        p.rents.forEach((r, i) => rows.push([(i + 1) + ' owned', p.kind === 'utility' ? r + '× dice' : money(r) + (p.houseCost > 0 ? ' · ' + money(r * 2) + ' with depot' : ''), i + 1 === cur]));
+      } else {
+        const full = p.groupSize > 0 && n >= p.groupSize;
+        if (p.tiers) {
+          rows.push(['1 owned', money(p.rents[0]), p.level === 0 && n < 2], ['2+ owned', money(p.tiers[0]), p.level === 0 && n >= 2 && !full], ['full set', money(p.tiers[1]), p.level === 0 && full]);
+          p.rents.slice(1).forEach((r, i) => rows.push([LABELS[i + 1], money(r), i + 1 === p.level]));
+        } else p.rents.forEach((r, i) => rows.push([i === 0 ? 'unimproved' : LABELS[i] || 'level ' + i, money(r), i === p.level]));
+      }
+      const note = p.kind === 'street' && p.groupSize && !p.tiers ? 'Unimproved rent doubles with the full set (' + n + ' of ' + p.groupSize + ' owned).'
+        : p.kind === 'street' && p.groupSize ? n + ' of ' + p.groupSize + ' owned in this group.' : '';
       return h('details', {}, h('summary', { class: 'muted', text: 'Rent card' + (due != null && p.kind !== 'utility' ? ' · pays ' + money(due) + ' now' : '') }),
         h('table', { class: 'rents' }, ...rows.map(([a, b, now]) => h('tr', { class: now ? 'now' : '' }, h('td', { text: a }), h('td', { text: b })))),
         ...(note ? [h('p', { class: 'muted', text: note })] : []));
     }
 
     function card(g, p, s) {
-      const max = MAX_LEVEL[g.edition];
+      const max = maxLevel(g, p);
       const c = h('div', { class: 'card' + (p.mortgaged ? ' mortgaged' : ''), 'data-id': p.id });
       c.style.setProperty('--swatch', SWATCH[p.group] || SWATCH.other);
       const tags = h('span', { class: 'row' }, h('span', { class: 'tag', text: p.group }));
-      if (p.houseCost > 0) tags.append(h('span', { class: 'tag', text: levelLabel(p.level) }));
+      if (p.houseCost > 0) tags.append(h('span', { class: 'tag', text: levelName(p) }));
       if (p.mortgaged) tags.append(h('span', { class: 'tag warn', text: 'mortgaged' }));
       if (s.broken) tags.append(h('span', { class: 'tag ok', text: 'broke even' }));
       c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), tags));
@@ -263,7 +273,7 @@
       const actions = h('div', { class: 'row bar' });
       if (ask) actions.append(h('input', { type: 'number', min: '0', step: '1', 'aria-label': ask, placeholder: ask, 'data-rent': '' }));
       actions.append(btn('rent', p.mortgaged ? 'Collect rent' : 'Collect rent' + (due != null && !ask ? ' (' + money(due) + ')' : ''), 'primary'));
-      if (p.houseCost > 0) actions.append(btn('build', '+ build (' + money(p.houseCost) + ')'), btn('sell', '− sell back'));
+      if (p.houseCost > 0) actions.append(btn('build', (p.kind === 'railroad' ? '+ depot (' : '+ build (') + money(p.houseCost) + ')'), btn('sell', '− sell back'));
       actions.append(btn('mortgage', p.mortgaged ? 'Lift mortgage (' + money(Math.ceil(p.mortgageValue * 1.1)) + ')' : 'Mortgage (+' + money(p.mortgageValue) + ')'), btn('edit', 'Edit'), btn('remove', 'Remove', 'danger'));
       if (p.level >= max) actions.querySelector('[data-action=build]')?.setAttribute('disabled', '');
       c.append(actions);
@@ -302,13 +312,18 @@
       if (g && confirm('Delete "' + g.name + '" and all its properties?')) { games = games.filter((x) => x !== g); currentId = games[0]?.id || ''; save(); say(); render(); }
     });
 
-    $('deed').replaceChildren(...CLASSIC.map((d, i) => h('option', { value: String(i), text: d.name + ' ($' + d.price + ')' })));
+    function fillDeeds(g) {
+      const keep = $('deed').dataset.edition === g.edition;
+      if (keep) return;
+      $('deed').dataset.edition = g.edition;
+      $('deed').replaceChildren(...CARDS[g.edition].map((d, i) => h('option', { value: String(i), text: d.name + ' ($' + d.price + ')' })));
+    }
     document.querySelector('#custom [name=group]').replaceChildren(...GROUPS.map((x) => h('option', { value: x, text: x })));
     function add(o) {
       const g = game(); if (!g) return;
       g.properties.push(newProperty(o)); save(); say(); render();
     }
-    $('quick').addEventListener('submit', (e) => { e.preventDefault(); add(CLASSIC[+$('deed').value]); });
+    $('quick').addEventListener('submit', (e) => { e.preventDefault(); add(CARDS[game().edition][+$('deed').value]); });
     $('custom').addEventListener('submit', (e) => {
       e.preventDefault();
       const f = new FormData(e.target);
@@ -329,7 +344,7 @@
         const input = c.querySelector('[data-rent]');
         err = collectAutoRent(g, p, input && input.value !== '' ? Number(input.value) : undefined);
         if (err && input) input.focus();
-      } else if (a === 'build') err = improve(p, MAX_LEVEL[g.edition]);
+      } else if (a === 'build') err = improve(p, maxLevel(g, p));
       else if (a === 'sell') err = sellImprovement(p);
       else if (a === 'mortgage') err = toggleMortgage(p);
       else if (a === 'remove') { if (!confirm('Remove ' + p.name + ' and its history?')) return; g.properties = g.properties.filter((x) => x !== p); }

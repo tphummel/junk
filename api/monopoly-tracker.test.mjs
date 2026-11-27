@@ -1,7 +1,7 @@
 // Tests for the Monopoly tracker logic (web/monopoly-tracker/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CLASSIC, collectAutoRent, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
+import { CARDS, CLASSIC, MEGA, collectAutoRent, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage } from "../web/monopoly-tracker/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -145,4 +145,62 @@ test("migrateGames backfills card data on older saves", () => {
   assert.equal(old.kind, "street");
   assert.equal(old.houseCost, 200);
   assert.equal(rentFor(g, old), 50);
+});
+
+const mega = (name) => newProperty(MEGA.find((c) => c.name === name));
+const megaGame = (...props) => ({ id: "m", name: "m", edition: "mega", properties: props });
+
+test("mega card data: 37 deeds, group sizes add up", () => {
+  assert.equal(CARDS.mega, MEGA);
+  assert.equal(MEGA.length, 37);
+  const count = {};
+  for (const c of MEGA) count[c.group] = (count[c.group] || 0) + 1;
+  for (const c of MEGA) assert.equal(count[c.group], c.groupSize, c.name);
+  for (const c of MEGA.filter((x) => x.kind === "street")) {
+    assert.equal(c.rents.length, 7, c.name); // site, 4 houses, hotel, skyscraper
+    assert.equal(c.tiers.length, 2, c.name);
+    assert.ok(c.rents[6] > c.rents[5] && c.rents[1] > c.tiers[1], c.name);
+  }
+  assert.equal(new Set(MEGA.map((c) => c.name)).size, 37);
+});
+
+test("mega street rent: 1 owned, 2+ owned, full set, then improvements", () => {
+  const med = mega("Mediterranean Avenue"), bal = mega("Baltic Avenue"), arc = mega("Arctic Avenue");
+  const g = megaGame(med);
+  assert.equal(rentFor(g, med), 2);
+  g.properties.push(bal);
+  assert.equal(rentFor(g, med), 4); // partial
+  g.properties.push(arc);
+  assert.equal(rentFor(g, med), 6); // full set of three
+  for (let i = 0; i < 6; i++) assert.equal(improve(med, 6), null);
+  assert.equal(rentFor(g, med), 750); // skyscraper
+  assert.match(improve(med, 6), /fully built/);
+});
+
+test("mega group of four needs all four for the full-set rent", () => {
+  const props = ["Kentucky Avenue", "Indiana Avenue", "Illinois Avenue"].map(mega);
+  const g = megaGame(...props);
+  assert.equal(rentFor(g, props[0]), 36);
+  g.properties.push(mega("Michigan Avenue"));
+  assert.equal(rentFor(g, props[0]), 54);
+});
+
+test("mega railroad depot doubles rent, capped at one", () => {
+  const rr = ["Reading Railroad", "Pennsylvania Railroad"].map(mega);
+  const g = megaGame(...rr);
+  assert.equal(rentFor(g, rr[0]), 50);
+  assert.equal(improve(rr[0], 1), null);
+  assert.equal(rentFor(g, rr[0]), 100);
+  assert.match(improve(rr[0], 1), /fully built/);
+  assert.equal(stats(rr[0], g).invested, 300);
+});
+
+test("mega has three utilities with 4x, 10x, 20x", () => {
+  const util = ["Gas Company", "Electric Company", "Water Works"].map(mega);
+  const g = megaGame(util[0]);
+  assert.equal(rentFor(g, util[0], 5), 20);
+  g.properties.push(util[1]);
+  assert.equal(rentFor(g, util[0], 5), 50);
+  g.properties.push(util[2]);
+  assert.equal(rentFor(g, util[0], 5), 100);
 });
