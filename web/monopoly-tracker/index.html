@@ -123,20 +123,9 @@
     <div class="summary" id="summary"></div>
 
     <details class="panel" id="addPanel" open>
-      <summary>Add a property</summary>
+      <summary>Buy a property</summary>
       <form id="quick" class="grid">
         <label>Title deed <select id="deed"></select></label>
-        <button class="primary">Buy</button>
-      </form>
-      <p class="muted">Deeds for this edition come with their full rent table, building cost and mortgage value. For house rules or anything else, enter the card:</p>
-      <form id="custom" class="grid">
-        <label>Name <input name="name" required maxlength="60"></label>
-        <label>Group <select name="group"></select></label>
-        <label>Price <input name="price" type="number" min="0" step="1" required></label>
-        <label>Mortgage value <input name="mv" type="number" min="0" step="1" placeholder="half price"></label>
-        <label>Cost per house <input name="house" type="number" min="0" step="1"></label>
-        <label>Properties in group <input name="size" type="number" min="1" step="1" placeholder="for set rent"></label>
-        <label>Rents: base, 1–4 houses, hotel[, skyscraper] <input name="rents" placeholder="2,10,30,90,160,250"></label>
         <button class="primary">Buy</button>
       </form>
     </details>
@@ -169,10 +158,10 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T17:09:54Z</small>
+  <small id="version">2026-11-27T17:40:22Z</small>
 
   <script type="module">
-    import { CARDS, GROUPS, GROUP_SIZE, collectAutoRent, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
+    import { CARDS, GROUPS, collectAutoRent, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, rentFor, sellImprovement, stats, toggleMortgage, uid } from './tracker.js';
 
     const KEY = 'monopoly-tracker-v1';
     const SWATCH = { brown: '#955436', lightblue: '#7fc6e8', pink: '#d93a96', orange: '#f7941d', red: '#ed1b24', yellow: '#fef200', green: '#1fb25a', darkblue: '#0072bb', railroad: '#444', utility: '#9aa', other: '#888' };
@@ -318,23 +307,11 @@
       $('deed').dataset.edition = g.edition;
       $('deed').replaceChildren(...CARDS[g.edition].map((d, i) => h('option', { value: String(i), text: d.name + ' ($' + d.price + ')' })));
     }
-    document.querySelector('#custom [name=group]').replaceChildren(...GROUPS.map((x) => h('option', { value: x, text: x })));
     function add(o) {
       const g = game(); if (!g) return;
       g.properties.push(newProperty(o)); save(); say(); render();
     }
     $('quick').addEventListener('submit', (e) => { e.preventDefault(); add(CARDS[game().edition][+$('deed').value]); });
-    $('custom').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const f = new FormData(e.target);
-      const num = (k) => (f.get(k) === '' ? undefined : Number(f.get(k)));
-      const rents = String(f.get('rents')).split(',').map((x) => x.trim()).filter(Boolean).map(Number);
-      if (rents.some((r) => !(r >= 0))) { say('Rents must be numbers separated by commas.'); return; }
-      add({ name: String(f.get('name')).trim(), group: String(f.get('group')), price: Number(f.get('price')), mortgageValue: num('mv'), houseCost: num('house'),
-        kind: rents.length ? 'street' : 'custom', rents: rents.length ? rents : null, groupSize: num('size') ?? GROUP_SIZE[String(f.get('group'))] ?? 0 });
-      e.target.reset();
-    });
-
     $('list').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-action]'); if (!b) return;
       const c = b.closest('.card'); const g = game(); const p = g.properties.find((x) => x.id === c.dataset.id);
