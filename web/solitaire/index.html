@@ -92,6 +92,7 @@ a{color:#fff}
 <div class="board" id="board"></div>
 <p class="hint" id="hint">Drag a card to where it goes, or tap it and then tap the destination. Tap a selected card again to send it to a foundation. Once every tableau card is face up, Auto-solve can finish the game. Once you have played the daily puzzle you can start random ones. Your progress and stats are saved in this browser only.</p>
 <div id="toast"></div>
+<script src="/solitaire/efficiency.js"></script>
 <script>
 'use strict';
 // ---------- cards ----------
@@ -462,7 +463,8 @@ function liveStats(){
 }
 function renderLive(){
   const t=liveStats();
-  const item=(l,v)=>`<span>${l} <b>${v}</b></span>`;
+  const item=(l,v,tip)=>`<span${tip?` title="${tip}"`:''}>${l} <b>${v}</b></span>`;
+  const eff=solitaireEfficiency(g.log,elapsed());
   $('live').innerHTML=[
     item('Foundation',`${t.fc}/52`),
     item('Suits',t.suits.map((n,i)=>`${SUITS[i]}${n}`).join(' ')),
@@ -470,6 +472,7 @@ function renderLive(){
     item('Empty cols',t.empty),
     item('Stock',t.stock),item('Waste',t.waste),
     item('Draws',t.draws),item('Recycles',t.recycles),
+    item('Wasted draws',eff.wastedDraws,'Draws in a repeat trip through the stock where no waste card was played'),
     item('To foundation',t.toFound),
     t.fromFound?item('Back from foundation',t.fromFound):'',
     t.auto?item('Auto moves',t.auto):'',
@@ -484,7 +487,8 @@ function tick(){
   const pace=$('pace');if(!pace)return;
   const ms=elapsed(),n=g.log.length;
   const last=n&&!ended()&&!paused()?Date.now()-new Date(g.log[n-1].at).getTime():0;
-  pace.innerHTML=(paused()?'<b>Paused</b> · ':'')+`Pace <b>${ms>=10000&&n?(n*60000/ms).toFixed(1):'–'}</b> moves/min`+(last>=10000?` · Idle <b>${fmtTime(last)}</b>`:'');
+  const longest=solitaireEfficiency(g.log,ms).longestIdleMs;
+  pace.innerHTML=(paused()?'<b>Paused</b> · ':'')+`Pace <b>${ms>=10000&&n?(n*60000/ms).toFixed(1):'–'}</b> moves/min`+(last>=10000?` · Idle <b>${fmtTime(last)}</b>`:'')+(longest>=10000?` · Longest idle <b>${fmtTime(longest)}</b>`:'');
 }
 setInterval(()=>{if(!ended())tick()},1000);
 
@@ -501,6 +505,7 @@ function renderPanel(){
   p.hidden=false;
   p.innerHTML=`<h2>${won?'You won! 🎉':'Game over — surrendered'}</h2>
     <div>${summary()}</div>
+    <div>${efficiencyLine()}</div>
     <div class="row">
       ${dailyPlayed()?'<button id="again">Play a random puzzle</button>':''}
       ${isRandom()?'':'<button id="share" class="accent">Copy emoji result</button>'}
@@ -525,6 +530,11 @@ async function copyCard(card,msg){
   catch{return copy(card.text,msg)}
   toast(msg);
 }
+const efficiencyLine=()=>{
+  const e=solitaireEfficiency(g.log,elapsed());
+  const draws=e.wastedDraws?`${e.wastedDraws} wasted draw${e.wastedDraws>1?'s':''} (${e.fruitlessPasses} repeat pass${e.fruitlessPasses>1?'es':''} with no waste play)`:'no wasted draws';
+  return `${draws} · ${e.backFromFoundation} back from foundation · longest idle ${fmtTime(e.longestIdleMs)}`;
+};
 const summary=()=>`${gameLabel()} · ${S.d} · ${foundCount(g)}/52 on foundations · ${g.log.length} moves · ${fmtTime(elapsed())}`;
 
 // ---------- export ----------
@@ -538,6 +548,7 @@ function exportData(){
     endedAt:S.e&&S.s!=null?iso(S.s+S.e[0]):null,
     durationMs:elapsed(),
     moveCount:g.log.length,foundationCount:foundCount(g),
+    efficiency:solitaireEfficiency(g.log,elapsed()),
     initialDeck:g.deck.map(cardName),
     initialTableau:g.initialTableau,
     initialStock:g.deck.slice(28).map(cardName),
@@ -558,7 +569,8 @@ const place=a=>a==='w'?'waste':a==='s'?'stock':a[0]==='f'?`foundation ${SUITS[+a
 function gameText(){
   const lines=[`Klondike Solitaire (draw ${DRAW}) — ${gameLabel().toLowerCase()}, ${S.d}`,
     `Result: ${S.e[1]==='win'?'Won':'Surrendered'}`,summary(),`Seed: ${seedString(dealOf())}`,
-    'Foundations: '+SUITS.map((s,i)=>s+g.found[i].length).join(' '),'',
+    'Foundations: '+SUITS.map((s,i)=>s+g.found[i].length).join(' '),
+    'Efficiency: '+efficiencyLine(),'',
     ...g.log.map(m=>{
       const body=m.type==='draw'?`Draw → ${m.cards.join(' ')}`:m.type==='recycle'?'Recycle waste to stock'
         :`${m.cards.join(' ')}: ${place(m.from)} → ${place(m.to)}${m.flipped?` (flipped ${m.flipped})`:''}`;
