@@ -1,14 +1,14 @@
 // pounce UI: sessions, roster, game timer, result entry and reports. State lives in localStorage.
 import {
   cumulative, DEFAULT_BONUS, DEFAULT_PILE, formatDuration, gameTotals, gameWinners, headToHeadAll, pounceStats, paceStats,
-  SCORE_MAX, SCORE_MIN, standings, validateResults, venueStats,
+  SCORE_MAX, SCORE_MIN, sessionExport, sessionReportHtml, standings, validateResults, venueStats,
 } from './engine.js';
 
 const KEY = 'pounce:v1';
 const app = /** @type {HTMLElement} */ (document.getElementById('app'));
 
 /** @typedef {{ id: string, name: string }} Player */
-/** @typedef {{ startedAt: number, endedAt: number | null, scores: Record<string, string>, pouncer: string | null, notes?: string }} Current */
+/** @typedef {{ startedAt: number, endedAt: number | null, lat?: number, lon?: number, acc?: number | null, scores: Record<string, string>, pouncer: string | null, notes?: string }} Current */
 /** @typedef {{ id: string, venue: string, bonus: number, pile?: number, handicaps?: Record<string, number>, createdAt: number, present: string[], games: any[], current: Current | null }} Session */
 
 /** @type {{ players: Player[], sessions: Session[] }} */
@@ -21,8 +21,35 @@ function load() {
   } catch {}
   return { players: [], sessions: [] };
 }
+let persistAsked = false;
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {}
+  try {
+    localStorage.setItem(KEY, JSON.stringify(db));
+    showSaveError(false);
+    requestPersistence();
+  } catch {
+    showSaveError(true);
+  }
+}
+
+/** Ask the browser to keep this site's storage once there is real data (ADR 0011 item 1); a refusal is ignored. */
+function requestPersistence() {
+  if (persistAsked || !hasData()) return;
+  persistAsked = true;
+  try { navigator.storage?.persisted?.().then((yes) => yes || navigator.storage.persist()).catch(() => {}); } catch {}
+}
+
+/** A write failed (storage full or blocked): say so, because the data is not being kept. @param {boolean} on */
+function showSaveError(on) {
+  let el = document.getElementById('save-error');
+  if (!on) { el?.remove(); return; }
+  if (el) return;
+  el = document.createElement('div');
+  el.id = 'save-error';
+  el.setAttribute('role', 'alert');
+  el.innerHTML = 'Could not save: this browser\'s storage is full or blocked, so recent changes are not kept. <button type="button">Export a backup now</button>';
+  el.querySelector('button')?.addEventListener('click', () => exportData());
+  document.body.prepend(el);
 }
 const uid = () => Math.random().toString(36).slice(2, 10);
 /** @param {string} s */
@@ -65,6 +92,7 @@ function homeView() {
   const last = sessions[0];
   return `
     <h1>pounce</h1>
+    ${backupBanner()}
     <section>
       <h2>New session</h2>
       <form data-form="new-session" class="row">
@@ -89,6 +117,8 @@ function homeView() {
         <button data-act="export">Export JSON</button>
         <label class="btn">Import JSON<input type="file" accept="application/json" data-act="import" hidden></label>
       </div>
+      <p class="muted">Last backup: ${backupLabel()}</p>
+      <p class="muted">Each game saves where it started when your browser allows location. Backups include it.</p>
     </section>`;
 }
 
@@ -110,7 +140,25 @@ function sessionView(s) {
     ${rosterView(s)}
     ${gamePanel(s, cur)}
     ${games.length ? reportsView(games) : '<p class="muted">Reports appear after the first saved game.</p>'}
+    ${games.length ? gamesListView(games) : ''}
+    <section>
+      <h2>Export this session</h2>
+      <div class="row">
+        <button data-act="export-session-json">JSON</button>
+        <button data-act="export-session-html">HTML report</button>
+      </div>
+    </section>
     ${db.sessions.length > 1 ? `<section><h2>All-time</h2>${allTimeInner()}</section>` : ''}`;
+}
+
+/** Every saved game with edit and delete. @param {any[]} games */
+function gamesListView(games) {
+  return `<section><h2>Games</h2><ul class="list">${games.map((g, i) => `
+    <li><b>Game ${i + 1}</b>
+      <span>${gameTotals(g).sort((a, b) => b.total - a.total).map((t) => `<span class="${gameWinners(g).includes(t.playerId) ? 'win' : ''}">${esc(nameOf(t.playerId))} ${t.total}${t.pounced ? ' ⚡' : ''}</span>`).join(' · ')}</span>
+      ${g.updatedAt ? `<span class="muted" title="${esc(new Date(g.updatedAt).toLocaleString())}">edited ${esc(new Date(g.updatedAt).toLocaleString())}</span>` : ''}
+      <button class="link" data-act="edit-game" data-id="${g.id}">edit</button>
+      <button class="link" data-act="del-game" data-id="${g.id}">delete</button></li>`).join('')}</ul></section>`;
 }
 
 /** @param {Session} s */
@@ -301,7 +349,11 @@ app.addEventListener('click', (e) => {
   const act = /** @type {HTMLElement} */ (t).dataset.act;
   const id = /** @type {HTMLElement} */ (t).dataset.id ?? '';
   const s = currentSession();
-  if (act === 'export') return exportData();
+  if (act === 'export') return void exportData();
+  if (act === 'snooze') { setLS(REMIND_AFTER, new Date(Date.now() + 864e5).toISOString()); return render(); }
+  if (act === 'export-session-json' && s) return exportSession(s, 'json');
+  if (act === 'export-session-html' && s) return exportSession(s, 'html');
+  if (act === 'edit-game' && s) return openGameModal(s, id);
   if (act === 'edit-player') { const cs = currentSession(); if (cs) openPlayerModal(cs, /** @type {HTMLElement} */ (t).dataset.id ?? ''); return; }
   if (act === 'del-session') {
     if (confirm('Delete this session and its games?')) db.sessions = db.sessions.filter((x) => x.id !== id);
@@ -317,6 +369,7 @@ app.addEventListener('click', (e) => {
     }
   } else if (act === 'start') {
     s.current = { startedAt: Date.now(), endedAt: null, scores: {}, pouncer: null };
+    captureLocation(s.current);
   } else if (act === 'end' && s.current) {
     s.current.endedAt = Date.now();
   } else if (act === 'cancel') {
@@ -394,7 +447,8 @@ app.addEventListener('submit', (e) => {
     if (validateResults(results).length) return;
     const notes = (s.current.notes ?? '').trim();
     s.games.push({
-      id: uid(), startedAt: s.current.startedAt, durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, pile: pileOf(s),
+      id: uid(), startedAt: s.current.startedAt, offset: -new Date(s.current.startedAt).getTimezoneOffset(),
+      ...place(s.current), durationMs: s.current.endedAt - s.current.startedAt, bonus: s.bonus, pile: pileOf(s),
       results: results.map((r) => ({ ...r, ...(startPile(s, r.playerId) < pileOf(s) ? { pile: startPile(s, r.playerId) } : {}) })),
       ...(notes ? { notes } : {}),
     });
@@ -456,26 +510,207 @@ function openPlayerModal(s, id) {
   /** @type {HTMLInputElement | null} */ (form.querySelector('[name=name]'))?.select();
 }
 
-function exportData() {
+/** Download one session as JSON or a standalone HTML report. @param {Session} s @param {'json' | 'html'} kind */
+function exportSession(s, kind) {
+  const exp = sessionExport(s, db.players);
+  const body = kind === 'json' ? JSON.stringify(exp, null, 2) : sessionReportHtml(exp);
+  const slug = (s.venue || 'session').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'session';
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }));
-  a.download = `pounce-${new Date().toISOString().slice(0, 10)}.json`;
+  a.href = URL.createObjectURL(new Blob([body], { type: kind === 'json' ? 'application/json' : 'text/html' }));
+  a.download = `pounce-${slug}-${new Date(s.createdAt).toISOString().slice(0, 10)}.${kind}`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+/** Fix scores, the pouncer or notes of a saved game. @param {Session} s @param {string} gameId */
+function openGameModal(s, gameId) {
+  const game = s.games.find((g) => g.id === gameId);
+  if (!game) return;
+  const n = s.games.indexOf(game) + 1;
+  const dlg = document.createElement('dialog');
+  dlg.innerHTML = `<form method="dialog" class="modal">
+    <h2>Edit game ${n}</h2>
+    ${game.results.map((/** @type {any} */ r) => `
+      <div class="entry">
+        <span class="who">${esc(nameOf(r.playerId))}</span>
+        <input data-edit-score="${r.playerId}" type="number" inputmode="numeric" min="${SCORE_MIN}" max="${SCORE_MAX}" step="1" value="${r.score}" aria-label="${esc(nameOf(r.playerId))} score">
+        <button type="button" class="sign" data-edit-neg="${r.playerId}" title="Flip sign">&plusmn;</button>
+        <label class="pounce"><input type="radio" name="pouncer" value="${r.playerId}" ${r.pounced ? 'checked' : ''}> Pounced</label>
+      </div>`).join('')}
+    <p class="muted">The pouncer gets +${game.bonus} (the bonus this game was played with).</p>
+    <label class="notes">Game notes <textarea name="notes" rows="2"></textarea></label>
+    <p class="error" data-modal-error></p>
+    <div class="row"><button class="primary" value="save">Save</button>
+      <button type="button" data-cancel class="link">Cancel</button></div></form>`;
+  document.body.append(dlg);
+  const form = /** @type {HTMLFormElement} */ (dlg.querySelector('form'));
+  /** @type {HTMLTextAreaElement} */ (form.elements.namedItem('notes')).value = game.notes ?? '';
+  const err = /** @type {HTMLElement} */ (form.querySelector('[data-modal-error]'));
+  const read = () => game.results.map((/** @type {any} */ r) => {
+    const el = /** @type {HTMLInputElement} */ (form.querySelector(`[data-edit-score="${r.playerId}"]`));
+    return { ...r, score: el.value === '' ? NaN : Number(el.value), pounced: form.querySelector(`input[name=pouncer][value="${r.playerId}"]`)?.matches(':checked') ?? false };
+  });
+  form.querySelector('[data-cancel]')?.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => dlg.remove());
+  form.addEventListener('click', (e) => {
+    const id = /** @type {HTMLElement} */ (e.target).closest('[data-edit-neg]')?.getAttribute('data-edit-neg');
+    const el = id && /** @type {HTMLInputElement | null} */ (form.querySelector(`[data-edit-score="${id}"]`));
+    if (el && el.value) el.value = el.value.startsWith('-') ? el.value.slice(1) : `-${el.value}`;
+  });
+  form.addEventListener('input', () => { err.textContent = ''; });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const results = read();
+    const errors = validateResults(results);
+    if (errors.length) { err.textContent = errors.join(' '); return; }
+    const notes = String(new FormData(form).get('notes') ?? '').trim();
+    const changed = JSON.stringify(results) !== JSON.stringify(game.results) || notes !== (game.notes ?? '');
+    game.results = results;
+    if (notes) game.notes = notes; else delete game.notes;
+    if (changed) game.updatedAt = Date.now();
+    save();
+    dlg.close();
+    render();
+  });
+  dlg.showModal();
+}
+
+// ---------- location: looked up when a game starts (browser prompt is the opt-in), saved only if available ----------
+
+/** Look up the position for a new game. The browser's own permission prompt is the opt-in: it appears the first time a game starts, and a refusal means no location from then on. Never blocks play; leaves the fields unset on any failure. @param {Current} cur */
+async function captureLocation(cur) {
+  try {
+    if (!navigator.geolocation) return;
+    if (navigator.permissions && (await navigator.permissions.query({ name: 'geolocation' })).state === 'denied') return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) return;
+      cur.lat = +latitude.toFixed(6);
+      cur.lon = +longitude.toFixed(6);
+      cur.acc = Number.isFinite(accuracy) && accuracy >= 0 ? Math.round(accuracy) : null;
+      save();
+    }, () => {}, { timeout: 8000, maximumAge: 0 });
+  } catch {}
+}
+
+/** lat, lon and acc for a saved game, or nothing when no position was found. @param {Current} cur */
+function place(cur) {
+  if (typeof cur.lat !== 'number' || typeof cur.lon !== 'number') return {};
+  return { lat: cur.lat, lon: cur.lon, ...(typeof cur.acc === 'number' ? { acc: cur.acc } : {}) };
+}
+
+/** Keep a game's location only if valid; otherwise drop the fields. @param {any} g */
+function cleanGame(g) {
+  const { lat, lon, acc, ...rest } = g;
+  const ok = Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+  return ok ? { ...rest, lat, lon, ...(Number.isFinite(acc) && acc >= 0 ? { acc: Math.round(acc) } : {}) } : rest;
+}
+
+// ---------- backup (ADR 0011) ----------
+
+const SCHEMA = 1;
+const LAST_BACKUP = 'pounce:lastBackupAt';
+const REMIND_AFTER = 'pounce:remindAfter';
+const WEEK = 7 * 864e5;
+const getLS = (/** @type {string} */ k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const setLS = (/** @type {string} */ k, /** @type {string} */ v) => { try { localStorage.setItem(k, v); } catch {} };
+const hasData = () => db.players.length > 0 || db.sessions.length > 0;
+
+/** @param {number} ms */
+function ago(ms) {
+  const d = Math.floor(ms / 864e5);
+  return d < 1 ? 'today' : d === 1 ? '1 day ago' : `${d} days ago`;
+}
+function backupLabel() {
+  const last = getLS(LAST_BACKUP);
+  const t = last ? Date.parse(last) : NaN;
+  return Number.isNaN(t) ? 'never' : `${new Date(t).toLocaleString()} (${ago(Date.now() - t)})`;
+}
+function backupBanner() {
+  if (!hasData()) return '';
+  const t = Date.parse(getLS(LAST_BACKUP) ?? '');
+  const stale = Number.isNaN(t) || Date.now() - t > WEEK;
+  const snoozed = Date.now() < Date.parse(getLS(REMIND_AFTER) ?? '');
+  if (!stale || snoozed) return '';
+  return `<section role="status"><p>Last backup: ${Number.isNaN(t) ? 'never' : ago(Date.now() - t)}. Export now.</p>
+    <div class="row"><button class="primary" data-act="export">Export</button><button data-act="snooze">Remind me tomorrow</button></div></section>`;
+}
+
+function backupJson() {
+  return JSON.stringify({ app: 'pounce', schema: SCHEMA, exportedAt: new Date().toISOString(), settings: {}, players: db.players, sessions: db.sessions }, null, 2);
+}
+
+async function exportData() {
+  const name = `pounce-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = new File([backupJson()], name, { type: 'application/json' });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: name });
+      setLS(LAST_BACKUP, new Date().toISOString());
+      return render();
+    } catch (err) {
+      if (/** @type {any} */ (err)?.name === 'AbortError') return;
+    }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  setLS(LAST_BACKUP, new Date().toISOString());
+  render();
+}
+
+/** Upgrade an older file to the current shape; throws on a file we cannot read. @param {any} raw */
+function upgradeBackup(raw) {
+  if (!raw || typeof raw !== 'object') throw new Error('shape');
+  // Files exported before ADR 0011 have no app or schema field.
+  if (raw.app === undefined && raw.schema === undefined) { /* legacy: players + sessions only */ }
+  else if (raw.app !== 'pounce') throw new Error('app');
+  else if (!Number.isInteger(raw.schema) || raw.schema > SCHEMA) throw new Error('schema');
+  if (!Array.isArray(raw.players) || !Array.isArray(raw.sessions)) throw new Error('shape');
+  const ok = (/** @type {any} */ x) => x && typeof x.id === 'string';
+  return {
+    players: raw.players.filter((p) => ok(p) && typeof p.name === 'string'),
+    sessions: raw.sessions.filter((x) => ok(x) && Array.isArray(x.games)).map((x) => ({ ...x, games: x.games.filter(ok).map(cleanGame) })),
+  };
+}
+
+/** Merge by id; importing the same file twice adds nothing. @param {{ players: Player[], sessions: Session[] }} inc */
+function mergeData(inc) {
+  const pids = new Set(db.players.map((p) => p.id));
+  for (const p of inc.players) if (!pids.has(p.id)) db.players.push(p);
+  for (const s of inc.sessions) {
+    const mine = db.sessions.find((x) => x.id === s.id);
+    if (!mine) { db.sessions.push(s); continue; }
+    // Same game id: keep the more recently edited copy (games can be edited after saving).
+    for (const g of s.games) {
+      const i = mine.games.findIndex((x) => x.id === g.id);
+      if (i < 0) mine.games.push(g);
+      else if ((g.updatedAt ?? 0) > (mine.games[i].updatedAt ?? 0)) mine.games[i] = g;
+    }
+    mine.games.sort((a, b) => a.startedAt - b.startedAt);
+  }
+}
+
 /** @param {File} file */
 async function importData(file) {
+  let inc;
   try {
-    const raw = JSON.parse(await file.text());
-    if (!Array.isArray(raw.players) || !Array.isArray(raw.sessions)) throw new Error('shape');
-    if (!confirm('Replace all pounce data on this device with the file?')) return;
-    db = raw;
-    save();
-    render();
-  } catch {
-    alert('That file is not a pounce export.');
+    inc = upgradeBackup(JSON.parse(await file.text()));
+  } catch (err) {
+    const m = /** @type {Error} */ (err).message;
+    alert(m === 'schema' ? 'That backup is from a newer version of pounce. Reload the page and try again.' : 'That file is not a pounce export.');
+    return;
   }
+  if (!hasData()) mergeData(inc);
+  else if (confirm('Merge the file into this device? (OK = merge, Cancel = more options)')) mergeData(inc);
+  else if (confirm('Replace ALL pounce data on this device with the file? Export first if you need the current data.')) {
+    db = { players: inc.players, sessions: inc.sessions };
+    setLS(LAST_BACKUP, new Date().toISOString());
+  } else return;
+  save();
+  render();
 }
 
 render();

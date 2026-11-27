@@ -1,0 +1,14 @@
+{
+  "name": "monopoly style sheet",
+  "short_name": "monopoly",
+  "description": "A mint-green, black-ink style sheet inspired by a vintage Monopoly set, with title deeds, cards, money and dice, plus a storybook.",
+  "start_url": "/styles/monopoly/",
+  "scope": "/styles/monopoly/",
+  "display": "standalone",
+  "background_color": "#10241A",
+  "theme_color": "#10241A",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
