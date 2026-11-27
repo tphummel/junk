@@ -179,10 +179,11 @@
     <details class="panel">
       <summary>Backup</summary>
       <div class="row">
-        <button id="export" class="mon-button mon-button--paper">Export JSON</button>
+        <button id="export" class="mon-button mon-button--paper">Export this game</button>
+        <button id="exportAll" class="mon-button mon-button--paper">Export all games</button>
         <label>Import JSON <input id="import" class="mon-input" type="file" accept="application/json,.json"></label>
       </div>
-      <p class="muted">Import replaces all games in this browser.</p>
+      <p class="muted">Import adds the games in a file to this browser. A game with the same ID is replaced; your other games are kept.</p>
     </details>
   </div>
 
@@ -202,10 +203,10 @@
     </ul>
   </details>
 
-  <small id="version">2026-11-27T19:31:47Z</small>
+  <small id="version">2026-11-27T19:47:59Z</small>
 
   <script type="module">
-    import { CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+    import { CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, exportFileName, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
@@ -391,7 +392,7 @@
       const f = e.target.elements;
       const name = f.name.value.trim().slice(0, 40);
       if (!name) return;
-      const g = { id: uid(), name, edition: f.edition.value, properties: [] };
+      const g = { id: uid(), name, edition: f.edition.value, properties: [], created: new Date().toISOString() };
       games.push(g); currentId = g.id; save(); say(); render();
     });
     $('renameGame').addEventListener('click', () => {
@@ -548,17 +549,28 @@
       rdlg.close(); say(plan.card + ' repairs paid: ' + money(plan.total) + ' across ' + plan.lines.length + (plan.lines.length === 1 ? ' property.' : ' properties.')); save(); render();
     });
 
-    $('export').addEventListener('click', () => {
-      const a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify({ games }, null, 2)], { type: 'application/json' })), download: 'monopoly-asset-manager.json' });
+    function download(name, data) {
+      const a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })), download: name });
       a.click(); URL.revokeObjectURL(a.href);
+    }
+    // One game per file, named with the day it was created and its name.
+    $('export').addEventListener('click', () => {
+      const g = game(); if (!g) return;
+      download(exportFileName(g), { exportedAt: new Date().toISOString(), games: [g] });
+    });
+    $('exportAll').addEventListener('click', () => {
+      download('monopoly-asset-manager-all-games-' + new Date().toISOString().slice(0, 10) + '.json', { exportedAt: new Date().toISOString(), games });
     });
     $('import').addEventListener('change', async (e) => {
       const file = e.target.files[0]; if (!file) return;
       try {
-        const g = parseGames(JSON.parse(await file.text()));
-        if (!g) throw new Error('bad file');
-        if (!confirm('Replace all games here with ' + g.length + ' imported game(s)?')) return;
-        games = migrateGames(g); currentId = g[0]?.id || ''; save(); say('Imported.'); render();
+        const incoming = parseGames(JSON.parse(await file.text()));
+        if (!incoming || !incoming.length) throw new Error('bad file');
+        migrateGames(incoming);
+        const ids = new Set(incoming.map((g) => g.id));
+        const same = games.filter((g) => ids.has(g.id)).length;
+        if (!confirm('Add ' + incoming.length + ' game(s) from this file?' + (same ? '\n\n' + same + ' with the same ID will be replaced.' : ''))) { e.target.value = ''; return; }
+        games = [...games.filter((g) => !ids.has(g.id)), ...incoming]; currentId = incoming[0].id; save(); say('Imported.'); render();
       } catch { say('That file is not a valid Monopoly asset manager export.'); }
       e.target.value = '';
     });

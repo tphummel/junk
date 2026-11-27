@@ -7,8 +7,8 @@
  *   away gets a "trade-out" for the basis it passed on and a "trade-cash" for cash received.
  * @typedef {{ id: string, name: string, group: string, kind: "street"|"railroad"|"utility"|"custom", rents: number[] | null,
  *   tiers?: number[] | null, groupSize: number, price: number, mortgageValue: number, houseCost: number, rent: number, level: number, mortgaged: boolean, entries: Entry[] }} Property
- * @typedef {{ id: string, name: string, edition: "classic"|"mega", properties: Property[], archived?: Property[] }} Game
- * `archived` holds properties traded away: out of your set counts and lists, still in the game's money totals.
+ * @typedef {{ id: string, name: string, edition: "classic"|"mega", properties: Property[], archived?: Property[], created?: string }} Game
+ * `created` is an ISO time, set when the game is made (older games get it from their id). `archived` holds properties traded away: out of your set counts and lists, still in the game's money totals.
  */
 
 /** Highest improvement level per edition: 1-4 houses, 5 hotel, 6 skyscraper (Mega). */
@@ -379,6 +379,34 @@ export function rentFor(g, p, dice) {
   return set ? base * 2 : base;
 }
 
+/**
+ * When a game was created, as a Date, or null if unknown. Games store `created`; older ones are recovered from the
+ * time at the front of their id (see uid).
+ * @param {Game} g @returns {Date | null}
+ */
+export function gameCreated(g) {
+  const fromField = g.created ? new Date(g.created) : null;
+  if (fromField && !Number.isNaN(+fromField)) return fromField;
+  const ms = parseInt(String(g.id).slice(0, 8), 36);
+  return ms > Date.UTC(2020, 0, 1) && ms < Date.UTC(2100, 0, 1) ? new Date(ms) : null;
+}
+
+/** Lowercase kebab-case for a file name; never empty. @param {string} text */
+export function slug(text) {
+  return String(text).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "game";
+}
+
+/** Local calendar date as YYYY-MM-DD. @param {Date} d */
+export function ymd(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** File name for exporting one game: the day it was created and its name. @param {Game} g */
+export function exportFileName(g) {
+  const made = gameCreated(g);
+  return `monopoly-asset-manager-${made ? ymd(made) : "undated"}-${slug(g.name)}.json`;
+}
+
 /** Deeds that were renamed; saved games get the new name, including in history notes. */
 const RENAMED = { "Oriental Avenue": "Ornamental Avenue" };
 
@@ -386,6 +414,7 @@ const RENAMED = { "Oriental Avenue": "Ornamental Avenue" };
 export function migrateGames(games) {
   for (const g of games) {
     g.archived ||= [];
+    g.created ||= gameCreated(g)?.toISOString();
     for (const p of [...g.properties, ...g.archived]) {
       for (const [from, to] of Object.entries(RENAMED)) {
         if (p.name === from) p.name = to;

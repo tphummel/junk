@@ -1,7 +1,7 @@
 // Tests for the Monopoly asset manager logic (web/monopoly-asset-manager/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CARDS, CLASSIC, MEGA, REPAIR_RATES, basisOf, payRepairs, pieces, planRepairs, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
+import { CARDS, CLASSIC, MEGA, REPAIR_RATES, exportFileName, gameCreated, slug, uid, basisOf, payRepairs, pieces, planRepairs, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -542,4 +542,34 @@ test("game totals: a traded-away loss is in the game number but not in what owne
   assert.equal(t.gameRemaining, 50);
   assert.equal(t.remaining, 0);
   assert.equal(t.offset, -50);
+});
+
+test("export file name: created date and game name", () => {
+  const made = new Date(2026, 10, 27, 12, 0); // local noon, so the local date is 2026-11-27 in any time zone
+  const g = { id: "x", name: "Tilden 11/27/2026", edition: "mega", properties: [], created: made.toISOString() };
+  assert.equal(exportFileName(g), "monopoly-asset-manager-2026-11-27-tilden-11-27-2026.json");
+  assert.equal(slug("  Game #1: The  Boardwalk!  "), "game-1-the-boardwalk");
+  assert.equal(slug("???"), "game");
+  assert.equal(slug("x".repeat(100)).length, 60);
+  assert.equal(exportFileName({ ...g, id: "x", created: undefined, name: "Old" }), "monopoly-asset-manager-undated-old.json");
+});
+
+test("a game's created time comes from its id when it was not stored", () => {
+  const before = Date.now();
+  const id = uid();
+  const t = gameCreated({ id, name: "n", edition: "classic", properties: [] });
+  assert.ok(t && Math.abs(+t - before) < 5000);
+  assert.equal(gameCreated({ id: "00000001x", name: "n", edition: "classic", properties: [] }), null); // 1970: not a plausible creation time
+  assert.equal(gameCreated({ id: "abc", name: "n", edition: "classic", properties: [] }), null);
+  const stored = new Date(2026, 0, 2).toISOString();
+  assert.equal(gameCreated({ id, created: stored, name: "n", edition: "classic", properties: [] }).toISOString(), stored);
+});
+
+test("migrateGames stamps created on older games", () => {
+  const g = { id: uid(), name: "old", edition: "classic", properties: [] };
+  migrateGames([g]);
+  assert.match(g.created, /^20\d\d-\d\d-\d\dT/);
+  const keep = { id: "x", name: "kept", edition: "classic", properties: [], created: "2026-01-02T03:04:05.000Z" };
+  migrateGames([keep]);
+  assert.equal(keep.created, "2026-01-02T03:04:05.000Z");
 });
