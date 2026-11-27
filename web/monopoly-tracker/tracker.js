@@ -203,7 +203,7 @@ export function collectAutoRent(g, p, input) {
  */
 const STREETS = [
   ["Mediterranean Avenue", "brown", 60, 50, [2, 10, 30, 90, 160, 250]], ["Baltic Avenue", "brown", 60, 50, [4, 20, 60, 180, 320, 450]],
-  ["Oriental Avenue", "lightblue", 100, 50, [6, 30, 90, 270, 400, 550]], ["Vermont Avenue", "lightblue", 100, 50, [6, 30, 90, 270, 400, 550]],
+  ["Ornamental Avenue", "lightblue", 100, 50, [6, 30, 90, 270, 400, 550]], ["Vermont Avenue", "lightblue", 100, 50, [6, 30, 90, 270, 400, 550]],
   ["Connecticut Avenue", "lightblue", 120, 50, [8, 40, 100, 300, 450, 600]],
   ["St. Charles Place", "pink", 140, 100, [10, 50, 150, 450, 625, 750]], ["States Avenue", "pink", 140, 100, [10, 50, 150, 450, 625, 750]],
   ["Virginia Avenue", "pink", 160, 100, [12, 60, 180, 500, 700, 900]],
@@ -245,7 +245,7 @@ const MEGA_ROWS = [
   ["Arctic Avenue", "brown", 80, [5, 10, 15, 30, 80, 240, 360, 500, 1000]],
   ["Reading Railroad"],
   ["Massachusetts Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
-  ["Oriental Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
+  ["Ornamental Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
   ["Gas Company"],
   ["Vermont Avenue", "lightblue", 100, [6, 12, 18, 30, 90, 270, 400, 550, 1050]],
   ["Connecticut Avenue", "lightblue", 120, [8, 16, 24, 40, 100, 300, 450, 600, 1100]],
@@ -334,9 +334,20 @@ export function rentFor(g, p, dice) {
   return set ? base * 2 : base;
 }
 
-/** Fill in card data on properties saved before cards were stored. @param {Game[]} games */
+/** Deeds that were renamed; saved games get the new name, including in history notes. */
+const RENAMED = { "Oriental Avenue": "Ornamental Avenue" };
+
+/** Fill in card data on properties saved before cards were stored, and apply deed renames. @param {Game[]} games */
 export function migrateGames(games) {
-  for (const g of games) g.archived ||= [];
+  for (const g of games) {
+    g.archived ||= [];
+    for (const p of [...g.properties, ...g.archived]) {
+      for (const [from, to] of Object.entries(RENAMED)) {
+        if (p.name === from) p.name = to;
+        for (const e of p.entries) if (e.note?.includes(from)) e.note = e.note.split(from).join(to);
+      }
+    }
+  }
   for (const g of games) for (const p of g.properties) {
     if (p.kind) continue;
     const c = CLASSIC.find((x) => x.name === p.name);

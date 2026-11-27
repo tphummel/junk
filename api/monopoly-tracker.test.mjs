@@ -235,11 +235,11 @@ const own = (g, name, paid) => { const p = newProperty({ ...card(name), paid });
 
 test("trade: two for one, cash on my side adds to the basis, totals are not double counted", () => {
   const g = game();
-  const ori = own(g, "Oriental Avenue", 150), ver = own(g, "Vermont Avenue", 100);
+  const ori = own(g, "Ornamental Avenue", 150), ver = own(g, "Vermont Avenue", 100);
   collectRent(ori, 30);
   assert.equal(executeTrade(g, { giveIds: [ori.id, ver.id], receive: [card("Boardwalk")], cashPaid: 50 }), null);
   assert.deepEqual(g.properties.map((p) => p.name), ["Boardwalk"]);
-  assert.deepEqual(g.archived.map((p) => p.name), ["Oriental Avenue", "Vermont Avenue"]);
+  assert.deepEqual(g.archived.map((p) => p.name), ["Ornamental Avenue", "Vermont Avenue"]);
   assert.equal(stats(g.properties[0]).invested, 300); // 150 + 100 carried, 50 cash
   const t = gameStats(g);
   assert.equal(t.invested, 300); // real money in: 150 + 100 + 50
@@ -332,4 +332,18 @@ test("a deed can only be bought once; a traded-away one can be bought back", () 
   executeTrade(g, { giveIds: [g.properties[0].id], receive: [card("Park Place")] });
   assert.equal(buyProperty(g, card("Boardwalk"), 450), null);
   assert.deepEqual(g.properties.map((p) => p.name), ["Park Place", "Boardwalk"]);
+});
+
+test("migrateGames renames Oriental Avenue to Ornamental Avenue, in lists and history notes", () => {
+  const old = own(game(), "Vermont Avenue", 100);
+  old.name = "Oriental Avenue";
+  old.entries[0].note = "traded for Oriental Avenue";
+  const gone = newProperty({ ...CLASSIC.find((c) => c.name === "Baltic Avenue") });
+  gone.name = "Oriental Avenue";
+  const g = { id: "g", name: "g", edition: "classic", properties: [old], archived: [gone] };
+  migrateGames([g]);
+  assert.equal(g.properties[0].name, "Ornamental Avenue");
+  assert.equal(g.archived[0].name, "Ornamental Avenue");
+  assert.equal(g.properties[0].entries[0].note, "traded for Ornamental Avenue");
+  assert.ok(![...CLASSIC, ...MEGA].some((c) => c.name.includes("Oriental")));
 });
