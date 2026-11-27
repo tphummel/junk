@@ -181,3 +181,76 @@ export function formatDuration(ms) {
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, '0')}`;
 }
+
+/** @param {unknown} s */
+const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
+
+/**
+ * One session as a standalone JSON-able object, with player names resolved. The unsaved in-progress game is left out.
+ * @param {{ id: string, venue: string, bonus: number, pile?: number, handicaps?: Record<string, number>, createdAt: number, present: string[], games: any[] }} session
+ * @param {{ id: string, name: string }[]} players
+ */
+export function sessionExport(session, players) {
+  const ids = new Set([...session.present, ...session.games.flatMap((g) => g.results.map((r) => r.playerId))]);
+  const { present, games, id, venue, bonus, pile, handicaps, createdAt } = session;
+  return {
+    format: 'pounce-session',
+    version: 1,
+    session: { id, venue, bonus, pile: pile ?? DEFAULT_PILE, handicaps: handicaps ?? {}, createdAt, present, games },
+    players: players.filter((p) => ids.has(p.id)),
+  };
+}
+
+/**
+ * A self-contained HTML report (no scripts, inline styles) for one session.
+ * @param {ReturnType<typeof sessionExport>} exp
+ */
+export function sessionReportHtml(exp) {
+  const name = (/** @type {string} */ id) => exp.players.find((p) => p.id === id)?.name ?? '?';
+  const s = exp.session;
+  const games = s.games.map((g) => ({ ...g, sessionId: s.id, venue: s.venue }));
+  const title = `${s.venue || 'No venue'} — ${new Date(s.createdAt).toLocaleDateString('en-US')}`;
+  const pace = paceStats(games);
+  const winners = (/** @type {Game} */ g) => gameWinners(g);
+  const st = standings(games);
+  const ps = pounceStats(games);
+  const f1 = (/** @type {number | null} */ n) => (n === null ? '–' : n.toFixed(1));
+  const players = [...new Set([...s.present, ...games.flatMap((g) => g.results.map((r) => r.playerId))])];
+  const rows = games.map((g, i) => {
+    const totals = gameTotals(g);
+    return `<tr><td>${i + 1}</td>${players.map((id) => {
+      const t = totals.find((x) => x.playerId === id);
+      if (!t) return '<td>–</td>';
+      return `<td class="${winners(g).includes(id) ? 'win' : ''}">${t.total}${t.pounced ? ' ⚡' : ''}</td>`;
+    }).join('')}<td>${g.durationMs > 0 ? formatDuration(g.durationMs) : '–'}</td></tr>`;
+  }).join('');
+  const notes = games.map((g, i) => (g.notes ? `<li><b>Game ${i + 1}</b> ${escHtml(g.notes)}</li>` : '')).join('');
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark"><title>pounce — ${escHtml(title)}</title>
+<style>
+:root{color-scheme:light dark;--primary:#1D856F;--support:#4B8074;--accent:#CB2CC0;--bg:#FFFFFF;--text:#111111}
+@media (prefers-color-scheme:dark){:root{--primary:#2DD2AE;--support:#5FA192;--accent:#D330C7;--bg:#111111;--text:#EEEEEE}}
+body{font:16px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0 auto;max-width:48rem;padding:1rem 16px 3rem}
+h1,h2{color:var(--primary)}h2{font-size:1.15rem;margin-top:1.5rem}
+table{border-collapse:collapse;width:100%;font-size:.9rem;display:block;overflow-x:auto}
+th,td{text-align:left;padding:.3rem .5rem;border-bottom:1px solid var(--support);white-space:nowrap}th{color:var(--support)}
+.win{font-weight:bold;color:var(--accent)}.muted{color:var(--support)}
+</style></head><body>
+<h1>${escHtml(title)}</h1>
+<p class="muted">${games.length} games · pounce bonus ${s.bonus} · pile ${s.pile}${pace.count ? ` · average game ${formatDuration(pace.avgMs)}` : ''}</p>
+<h2>Leaderboard</h2>
+<table><thead><tr><th>Rank</th><th>Name</th><th>Score avg</th><th>Total</th><th>Games</th><th>Wins</th><th>Best</th></tr></thead><tbody>
+${st.map((r, i) => `<tr><td>${i + 1}</td><td>${escHtml(name(r.playerId))}</td><td>${r.avg.toFixed(3)}</td><td>${r.total}</td><td>${r.played}</td><td>${r.wins}</td><td>${r.best}</td></tr>`).join('')}
+</tbody></table>
+<h2>Pounce stats</h2>
+<table><thead><tr><th>Player</th><th>Pounces</th><th>Rate</th><th>Avg score pouncing</th><th>Otherwise</th></tr></thead><tbody>
+${ps.map((r) => `<tr><td>${escHtml(name(r.playerId))}</td><td>${r.pounces}/${r.played}</td><td>${Math.round(r.rate * 100)}%</td><td>${f1(r.avgScorePounced)}</td><td>${f1(r.avgScoreOther)}</td></tr>`).join('')}
+</tbody></table>
+<h2>Games</h2>
+<p class="muted">Totals include the pounce bonus. ⚡ pounced, bold won.</p>
+<table><thead><tr><th>#</th>${players.map((id) => `<th>${escHtml(name(id))}</th>`).join('')}<th>Length</th></tr></thead><tbody>${rows}</tbody></table>
+${notes ? `<h2>Game notes</h2><ul>${notes}</ul>` : ''}
+</body></html>
+`;
+}

@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   cumulative, formatDuration, gameTotals, gameWinners, headToHead, headToHeadAll, isValidScore, paceStats, pounceStats,
-  standings, validateResults, venueStats,
+  sessionExport, sessionReportHtml, standings, validateResults, venueStats,
 } from "../web/pounce/engine.js";
 
 const g = (id, results, extra = {}) => ({ id, sessionId: "s", venue: "Home", startedAt: Number(id), durationMs: 60000, bonus: 5, results, ...extra });
@@ -95,4 +95,22 @@ test("service worker precaches files that exist", () => {
   const paths = [...sw.matchAll(/'\/pounce\/([^']*)'/g)].map((m) => m[1]).filter(Boolean);
   assert.ok(paths.length > 3);
   for (const p of paths) assert.ok(existsSync(`web/pounce/${p}`), p);
+});
+
+test("session export carries games and only the players involved", () => {
+  const session = { id: "s", venue: "Home", bonus: 5, createdAt: 0, present: ["a", "b"], games: games.slice(0, 2), current: { startedAt: 1 } };
+  const players = [{ id: "a", name: "Ann" }, { id: "b", name: "Bo" }, { id: "z", name: "Zed" }];
+  const exp = sessionExport(session, players);
+  assert.equal(exp.format, "pounce-session");
+  assert.deepEqual(exp.players.map((p) => p.id), ["a", "b"]);
+  assert.equal(exp.session.games.length, 2);
+  assert.ok(!("current" in exp.session));
+});
+
+test("session html report is standalone and escapes names", () => {
+  const session = { id: "s", venue: "<Cafe>", bonus: 5, createdAt: 0, present: ["a", "b"], games: [{ ...games[1], notes: "<b>x</b>" }] };
+  const html = sessionReportHtml(sessionExport(session, [{ id: "a", name: "A&B" }, { id: "b", name: "Bo" }]));
+  assert.ok(html.startsWith("<!doctype html>"));
+  assert.ok(!html.includes("<script"));
+  assert.ok(html.includes("A&amp;B") && html.includes("&lt;Cafe&gt;") && html.includes("&lt;b&gt;x"));
 });
