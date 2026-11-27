@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>topps 1991 style sheet</title>
+  <link rel="stylesheet" href="topps-1991.css">
+  <style>
+    /* storybook chrome only; the components below come from topps-1991.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem; align-items: center; justify-content: center; }
+    .hero-text { flex: 1 1 18rem; max-width: 34rem; display: grid; gap: 0.9rem; }
+    .hero-text .tp-copy { margin: 0; }
+    .hero-cards { display: flex; gap: 1rem; --tp-card-w: min(13rem, 42vw); }
+    .hero-cards .tp-card:last-child { margin-top: 1.5rem; }
+    .sb nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb nav a { display: block; padding: 0.35rem 0.6rem; border-left: 3px solid var(--tp-rule); color: var(--tp-fg); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .sb nav a:hover { border-color: var(--tp-red); color: var(--tp-red); }
+    .theme { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .theme button { font-size: 0.7rem; min-height: 2.25rem; padding: 0.3rem 0.9rem; }
+    .theme button[aria-pressed="true"] { background: var(--tp-ink); color: var(--tp-paper); border-style: solid; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); background: var(--tp-paper); border: 1px dashed var(--tp-rule); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 0.9rem; flex-wrap: wrap; align-items: center; }
+    .cards { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; --tp-card-w: 11rem; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--tp-fg-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--tp-paper); border: 1px solid var(--tp-rule); font: 0.8rem/1.5 var(--tp-font-mono); color: var(--tp-fg); tab-size: 2; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem; }
+    .sw { border: 1px solid var(--tp-rule); overflow: hidden; background: var(--tp-paper); }
+    .sw i { display: block; height: 3rem; border-bottom: 1px solid var(--tp-rule); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--tp-fg-muted); }
+    .spec-type { display: grid; gap: 1rem; }
+    footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--tp-fg-muted); }
+    #version { display: block; margin-top: 0.5rem; font-size: 0.7rem; color: var(--tp-fg-muted); }
+  </style>
+  <meta name="theme-color" content="#0E1130">
+  <link rel="icon" href="/styles/topps-1991/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/topps-1991/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/topps-1991/manifest.webmanifest">
+</head>
+<body class="tp">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="tp-label"><a href="/">junk</a> / style sheets / topps 1991</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="hero">
+      <div class="hero-text">
+        <span><span class="tp-ribbon">Style sheet</span></span>
+        <h1 class="tp-title tp-title--xl">Topps 1991</h1>
+        <p class="tp-copy">Inspired by a 1991-design baseball card: white stock around a colored team frame, a script team banner and gold anniversary seal on the front, orange-red cardstock with a cream stat plate on the back. Plain CSS with system fonts, no images or scripts.</p>
+      </div>
+      <div class="hero-cards">
+        <div class="tp-card tp-card--sky">
+          <span class="tp-logo">junk</span><span class="tp-seal"><b>75</b><i>Years</i></span>
+          <div class="tp-card__face">
+            <div class="tp-card__photo">⚾<span class="tp-card__team">Moles</span></div>
+            <div class="tp-card__foot"><span class="tp-card__pos">SS</span><span class="tp-card__name">Sam Slugger</span></div>
+          </div>
+        </div>
+        <div class="tp-card tp-card--steel">
+          <span class="tp-logo">junk</span><span class="tp-seal"><b>75</b><i>Years</i></span>
+          <div class="tp-card__face">
+            <div class="tp-card__photo">🧢<span class="tp-card__team">Owls</span></div>
+            <div class="tp-card__foot"><span class="tp-card__pos">OF</span><span class="tp-card__name">Ray Rookie</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#front">Card front</a></li>
+      <li><a href="#teams">Team frames</a></li>
+      <li><a href="#seal">Seal, logo</a></li>
+      <li><a href="#back">Card back</a></li>
+      <li><a href="#panel">Panel, reverse</a></li>
+      <li><a href="#ribbon">Ribbon, bar</a></li>
+      <li><a href="#binder">Binder</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="tp"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>tp-</code> and every custom property <code>--tp-</code>. Plain element selectors only apply under <code>.tp</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/topps-1991/topps-1991.css"&gt;
+&lt;body class="tp"&gt;
+  &lt;div class="tp-card tp-card--sky"&gt;
+    &lt;div class="tp-card__face"&gt;
+      &lt;div class="tp-card__photo"&gt;&lt;img src="..." alt="..."&gt;&lt;/div&gt;
+      &lt;div class="tp-card__foot"&gt;...&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;</pre>
+      <p>Components read context variables (<code>--tp-fg</code>, <code>--tp-edge</code>, <code>--tp-accent</code>, <code>--tp-heading</code>, <code>--tp-field</code>), so the same markup works on the page and inside a <code>.tp-reverse</code> block. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>; the switch above does that. Only the page changes with the theme: cards are printed objects and keep their colors.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values are read from the live sheet. Page colors follow the theme; card colors do not. Ratios are WCAG contrast against the stated background; text needs 4.5, lines and controls 3.</p>
+      <h3>Page</h3>
+      <div class="swatches" id="swatches"></div>
+      <h3>Card</h3>
+      <div class="swatches" id="swatches-card"></div>
+      <h3>Team script on halo</h3>
+      <div class="swatches" id="swatches-team"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type</h2>
+      <p>Names on the back are wide, heavy sans caps. The front's name strip is a roman serif in tracked caps, the team in italic script, labels and stats in condensed sans, and body copy in a plain sans.</p>
+      <div class="demo spec-type">
+        <h1 class="tp-title tp-title--lg">Sam Slugger</h1>
+        <span class="tp-name">Sam Slugger</span>
+        <span class="tp-script" style="font-size: 2.4rem">Moles</span>
+        <span class="tp-label">Complete major league batting record</span>
+        <p class="tp-blurb">An absurd first half continued to build the legend. "He's playing a different game."</p>
+        <p class="tp-copy">Running copy sits in the page's body sans at a comfortable measure.</p>
+        <p class="tp-caption">Figure 4. <cite>Series one</cite>, 1991 design.</p>
+      </div>
+    </section>
+
+    <section id="front">
+      <h2>Card front</h2>
+      <p>A <code>tp-card</code> is a 5:7 white card. Everything inside is sized from the card's own width, so set <code>--tp-card-w</code> (default 16rem) and it all scales. Inside: <code>tp-card__face</code> is the colored frame, <code>tp-card__photo</code> holds an <code>&lt;img&gt;</code> (or a placeholder), <code>tp-card__team</code> is the script banner, and <code>tp-card__foot</code> is the name strip with <code>tp-card__pos</code> and <code>tp-card__name</code>. <code>tp-logo</code> and <code>tp-seal</code> placed directly in the card sit at its top left.</p>
+      <div class="demo">
+        <div class="cards" style="--tp-card-w: 15rem">
+          <div class="tp-card tp-card--sky">
+            <span class="tp-logo">junk</span><span class="tp-seal"><b>75</b><i>Years of baseball</i></span>
+            <div class="tp-card__face">
+              <div class="tp-card__photo">⚾<span class="tp-card__team">Moles</span></div>
+              <div class="tp-card__foot"><span class="tp-card__pos">SS</span><span class="tp-card__name">Sam Slugger</span></div>
+            </div>
+          </div>
+          <div class="tp-card tp-card--sky" style="--tp-card-w: 8rem">
+            <div class="tp-card__face">
+              <div class="tp-card__photo"><span class="tp-card__team">Moles</span></div>
+              <div class="tp-card__foot"><span class="tp-card__pos">C</span><span class="tp-card__name">Small</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="teams">
+      <h2>Team frames</h2>
+      <p>The team modifier sets six tokens: <code>--tp-frame</code> (the band), <code>--tp-trim</code>, <code>--tp-line</code>, <code>--tp-banner</code>, <code>--tp-script</code> and <code>--tp-halo</code>. Seven ship: <code>--sky</code>, <code>--steel</code>, <code>--crimson</code>, <code>--forest</code>, <code>--purple</code>, <code>--gold</code> and <code>--navy</code>. Override the tokens on any card for another team.</p>
+      <div class="demo">
+        <div class="cards">
+          <div class="tp-card tp-card--steel"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Steel</span></div><div class="tp-card__foot"><span class="tp-card__pos">OF</span><span class="tp-card__name">Steel</span></div></div></div>
+          <div class="tp-card tp-card--crimson"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Crimson</span></div><div class="tp-card__foot"><span class="tp-card__pos">1B</span><span class="tp-card__name">Crimson</span></div></div></div>
+          <div class="tp-card tp-card--forest"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Forest</span></div><div class="tp-card__foot"><span class="tp-card__pos">P</span><span class="tp-card__name">Forest</span></div></div></div>
+          <div class="tp-card tp-card--purple"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Purple</span></div><div class="tp-card__foot"><span class="tp-card__pos">3B</span><span class="tp-card__name">Purple</span></div></div></div>
+          <div class="tp-card tp-card--gold"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Gold</span></div><div class="tp-card__foot"><span class="tp-card__pos">2B</span><span class="tp-card__name">Gold</span></div></div></div>
+          <div class="tp-card tp-card--navy"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Navy</span></div><div class="tp-card__foot"><span class="tp-card__pos">LF</span><span class="tp-card__name">Navy</span></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="seal">
+      <h2>Seal, logo</h2>
+      <p>The seal is a gold disc: a number in <code>&lt;b&gt;</code> and the ribbon text in <code>&lt;i&gt;</code>. Size it with <code>--tp-seal-size</code> or <code>tp-seal--sm</code> and <code>--lg</code>. The logo is heavy italic type outlined in white; it takes whatever text you give it.</p>
+      <div class="demo">
+        <div class="row">
+          <span class="tp-seal tp-seal--sm"><b>75</b><i>Years</i></span>
+          <span class="tp-seal"><b>75</b><i>Years of baseball</i></span>
+          <span class="tp-seal tp-seal--lg"><b>91</b><i>Series one</i></span>
+          <span class="tp-logo" style="font-size: 2.2rem; --tp-u: 1rem">junk</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="back">
+      <h2>Card back</h2>
+      <p>A landscape <code>tp-back</code> on orange-red cardstock, with a cream <code>tp-back__plate</code> inside it. <code>data-mark</code> on the plate sets the faint oversized mark behind the stats. The head strip holds a <code>tp-number</code>, the name and team; then <code>tp-back__bio</code>, a <code>tp-back__title</code>, a <code>tp-stats</code> table, and the <code>tp-back__blurb</code>. <code>tp-lead</code> marks a league leader in italics, and <code>tp-tie</code> adds the diamond. The back keeps a minimum width, so wrap it in <code>tp-back-wrap</code> and it scrolls on a phone.</p>
+      <div class="demo">
+        <div class="tp-back-wrap">
+          <div class="tp-back">
+            <div class="tp-back__plate" data-mark="91">
+              <div class="tp-back__head">
+                <span class="tp-number">T91-<br>34</span>
+                <h3 class="tp-back__name">Sam Slugger <span class="tp-pos">&#9670; SS</span></h3>
+                <span class="tp-back__team">Springfield Moles</span>
+              </div>
+              <p class="tp-back__bio"><span><b>Ht</b> 6'1"</span><span><b>Wt</b> 195</span><span><b>Bats</b> Right</span><span><b>Throws</b> Right</span><span><b>Drftd</b> Moles #1&ndash;June, 2013</span><span><b>Born</b> 4-26-92, Springfield</span></p>
+              <div class="tp-back__body">
+                <div class="tp-back__title"><span>Complete major league batting record</span><span>(League leader in italics, tie&#9670;)</span></div>
+                <table class="tp-stats">
+                  <thead><tr><th>Yr</th><th>Club</th><th>G</th><th>AB</th><th>R</th><th>H</th><th>HR</th><th>RBI</th><th>SB</th><th>AVG</th></tr></thead>
+                  <tbody>
+                    <tr><td>2023</td><td>Moles</td><td>155</td><td>542</td><td class="tp-lead">128</td><td>154</td><td>52</td><td>114</td><td>9</td><td>.284</td></tr>
+                    <tr><td>2024</td><td>Moles</td><td>112</td><td>413</td><td>77</td><td>115</td><td class="tp-lead tp-tie">62</td><td>67</td><td>6</td><td>.278</td></tr>
+                    <tr><td>2025</td><td>Moles</td><td>152</td><td>541</td><td class="tp-lead">137</td><td>179</td><td>53</td><td>114</td><td>12</td><td class="tp-lead">.331</td></tr>
+                  </tbody>
+                  <tfoot><tr><th></th><th>Major lea. totals</th><td>419</td><td>1496</td><td>342</td><td>448</td><td>167</td><td>295</td><td>27</td><td>.299</td></tr></tfoot>
+                </table>
+                <p class="tp-back__blurb">An absurd first half continued to build the legend. "He's playing a different game."</p>
+              </div>
+            </div>
+            <p class="tp-back__legal">Made-up player, made-up numbers. A style sheet demo, not a trading card.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel">
+      <h2>Panel, reverse</h2>
+      <p>For page content that is not a card: <code>tp-panel</code> is the cream plate with a navy edge and corner dots, with an optional <code>tp-panel__head</code> peach strip. <code>tp-reverse</code> swaps to navy stock with cream type, and links turn gold.</p>
+      <div class="demo stack">
+        <div class="tp-panel">
+          <div class="tp-panel__head"><span class="tp-number">T91-<br>1</span>Season notes</div>
+          <p class="tp-copy">Cream cardstock, navy edge. Anything goes inside.</p>
+        </div>
+        <div class="tp-reverse">
+          <h3 class="tp-title tp-title--md">Reversed block</h3>
+          <p class="tp-copy">Navy stock. <a href="#panel">Links</a> turn gold.</p>
+          <button class="tp-button tp-button--outline" type="button">Button</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="ribbon">
+      <h2>Ribbon, bar</h2>
+      <p>A <code>tp-ribbon</code> is a swallowtail title; <code>--gold</code> and <code>--red</code> are fixed fills. <code>tp-bar</code> is the stripe band from the foot of a card, as a divider (<code>tp-bar--thin</code> is narrower); it takes its color from <code>--tp-frame</code>, so set that on it or a wrapper to match a team.</p>
+      <div class="demo stack">
+        <div class="row"><span class="tp-ribbon">Standard</span><span class="tp-ribbon tp-ribbon--gold">Gold</span><span class="tp-ribbon tp-ribbon--red">Red</span></div>
+        <hr class="tp-bar">
+        <hr class="tp-bar tp-bar--thin" style="--tp-frame: #2A8CC8">
+      </div>
+    </section>
+
+    <section id="binder">
+      <h2>Binder</h2>
+      <p>A page of sleeves: <code>tp-binder</code> holds <code>tp-slot</code> pockets (fit as many as the width allows, or add <code>tp-binder--3</code> for three columns). Cards fill their slot. <code>tp-slot--empty</code> is a gap in the set, and <code>tp-slot__no</code> numbers it.</p>
+      <div class="demo">
+        <div class="tp-binder tp-binder--3">
+          <div class="tp-slot"><span class="tp-slot__no">1</span><div class="tp-card tp-card--sky"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Moles</span></div><div class="tp-card__foot"><span class="tp-card__pos">SS</span><span class="tp-card__name">Slugger</span></div></div></div></div>
+          <div class="tp-slot tp-slot--empty">No. 2</div>
+          <div class="tp-slot"><span class="tp-slot__no">3</span><div class="tp-card tp-card--crimson"><div class="tp-card__face"><div class="tp-card__photo"><span class="tp-card__team">Reds</span></div><div class="tp-card__foot"><span class="tp-card__pos">P</span><span class="tp-card__name">Arm</span></div></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are italic heavy caps with a hard shadow that closes when pressed; <code>--outline</code>, <code>--gold</code> and <code>--ghost</code> (dashed) vary it. Inputs are 44px tall with a heavy bottom edge.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="tp-button" type="button">Play ball</button>
+          <button class="tp-button tp-button--outline" type="button">Outline</button>
+          <button class="tp-button tp-button--gold" type="button">Gold</button>
+          <button class="tp-button tp-button--ghost" type="button">Cancel</button>
+          <button class="tp-button" type="button" disabled>Disabled</button>
+        </div>
+        <div class="row">
+          <div class="tp-field" style="flex: 1 1 12rem">
+            <label class="tp-label" for="sb-name">Name</label>
+            <input class="tp-input" id="sb-name" placeholder="Your name" autocomplete="off">
+          </div>
+          <div class="tp-field" style="flex: 1 1 12rem">
+            <label class="tp-label" for="sb-pos">Position</label>
+            <select class="tp-select" id="sb-pos"><option>Shortstop</option><option>Outfield</option><option>Pitcher</option></select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge</h2>
+      <p>Pill-shaped small caps; <code>--solid</code> fills with ink and <code>--gold</code> with gold.</p>
+      <div class="demo">
+        <div class="row"><span class="tp-badge">Rookie</span><span class="tp-badge tp-badge--solid">All-star</span><span class="tp-badge tp-badge--gold">MVP</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/topps-1991/topps-1991.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009.
+    <small id="version">2026-11-27T03:47:26Z</small>
+  </footer>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('tp-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('tp-theme') : localStorage.setItem('tp-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tp-button tp-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const page = [
+    ['--tp-paper', 'page'], ['--tp-plate', 'panels, inputs'], ['--tp-ink', 'text, lines', '--tp-paper'], ['--tp-muted', 'secondary text', '--tp-paper'],
+    ['--tp-red', 'links, emphasis', '--tp-paper'], ['--tp-rule', 'lines, controls', '--tp-paper'], ['--tp-focus', 'focus ring', '--tp-paper'], ['--tp-gold', 'seal, highlight'],
+  ];
+  const card = [
+    ['--tp-card-white', 'card border stock'], ['--tp-card-navy', 'card ink', '--tp-card-foot'], ['--tp-card-foot', 'front name strip'], ['--tp-card-sun', 'gold', null, '--tp-card-navy'],
+    ['--tp-card-red', 'script logo, seal ribbon'], ['--tp-back-stock', 'back cardstock', null, '--tp-card-white'], ['--tp-back-plate', 'back plate', '--tp-card-navy'], ['--tp-back-strip', 'back name strip', '--tp-card-navy'],
+  ];
+  const teams = ['sky', 'steel', 'crimson', 'forest', 'purple', 'gold', 'navy'];
+  function fill(id, rows, val) {
+    const out = document.getElementById(id); out.replaceChildren();
+    for (const [name, use, vs, on] of rows) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = hex;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      const against = vs || on;
+      if (against && /^#[0-9A-F]{6}$/.test(hex)) {
+        const other = val(against), r = ratio(hex, other);
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 vs ${against.replace('--tp-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    fill('swatches', page, val); fill('swatches-card', card, val);
+    const out = document.getElementById('swatches-team'); out.replaceChildren();
+    for (const t of teams) {
+      const probe = document.createElement('div'); probe.className = `tp-card tp-card--${t}`; probe.style.cssText = 'position:absolute;visibility:hidden'; document.body.append(probe);
+      const pc = getComputedStyle(probe), v = n => pc.getPropertyValue(n).trim().toUpperCase();
+      const [s, h, f] = [v('--tp-script'), v('--tp-halo'), v('--tp-frame')]; probe.remove();
+      const el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.cssText = `background:${h};color:${s};font:italic 700 1.7rem/3rem var(--tp-font-script);text-align:center;border-left:1.2rem solid ${f}`; chip.textContent = t;
+      const meta = document.createElement('div'); const code = document.createElement('code'); code.textContent = `tp-card--${t}`;
+      const p = document.createElement('div'); p.className = 'pass'; p.textContent = `script ${s} on halo ${h}: ${ratio(s, h).toFixed(1)}:1`;
+      meta.append(code, p); el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/topps-1991/sw.js', { scope: '/styles/topps-1991/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

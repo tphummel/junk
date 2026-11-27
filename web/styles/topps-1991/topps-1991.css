@@ -1,0 +1,543 @@
+/*
+ * topps-1991: a style sheet inspired by a 1991-design baseball card set, front
+ * and back. The front is a white card stock border around a colored team frame
+ * with thin trim lines, a full-bleed photo, a script team banner across the
+ * bottom corner, a gold anniversary seal and a pale name strip. The back is
+ * orange-red cardstock with a cream plate, navy corner dots, a peach name
+ * strip with a round card-number badge, a ruled stat table with italic league
+ * leaders, and a bold blurb.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/topps-1991/topps-1991.css">
+ * Docs and live examples: /styles/topps-1991/
+ *
+ * Everything is prefixed: classes `tp-`, custom properties `--tp-`. The only
+ * element rules are under the opt-in `.tp` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one. Light is a cream table
+ * under a desk lamp; dark is a navy binder page. Only the page tokens change
+ * with the mode: cards are printed objects, so their colors are fixed.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, topps-1991-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* page palette, light. Contrast: ink/paper 15.3, muted/paper 7.2,
+     accent/paper 5.8, ink/plate 13.4, muted/plate 6.3, accent/plate 5.1,
+     paper/ink 15.3 (reversed). Lines and controls use ink: 15.3 */
+  --tp-paper: #FBF7EE;      /* page */
+  --tp-plate: #EFE8D6;      /* cream cardstock: panels, inputs */
+  --tp-ink: #161A4A;        /* navy: text, lines */
+  --tp-muted: #4B507A;      /* secondary text */
+  --tp-red: #B52E18;        /* accent: links, emphasis, shadows */
+  --tp-rule: #161A4A;       /* lines and controls */
+  --tp-focus: #161A4A;
+  --tp-gold: #F2BE22;       /* seal and highlight fills; always with navy text, 8.5 */
+
+  /* card palette, the same in light and dark. Contrast: navy/foot 13.1,
+     navy/back-plate 11.9, navy/back-strip 8.6, white/back-stock 5.8,
+     navy/gold 8.5 */
+  --tp-card-white: #FFFFFF;     /* the border stock */
+  --tp-card-navy: #1C1F63;      /* card ink */
+  --tp-card-foot: #F4F1EA;      /* name strip on a front */
+  --tp-card-sun: #F2BE22;       /* gold */
+  --tp-card-red: #B52E18;       /* script logo red, seal ribbon */
+  --tp-back-stock: #B63A1B;     /* back cardstock */
+  --tp-back-plate: #EEE6D3;     /* back plate */
+  --tp-back-strip: #F2B9A0;     /* back name strip */
+
+  /* team frame, front (default is the sky team). Each team sets these six.
+     Contrast: script/halo is recorded next to each team below */
+  --tp-frame: #2A8CC8;      /* the thick band */
+  --tp-trim: #E6772E;       /* thin line just inside the band */
+  --tp-line: #1D2A66;       /* hairline outside and inside the band */
+  --tp-banner: #3E56A8;     /* ribbon under the script */
+  --tp-script: #26357E;     /* team name */
+  --tp-halo: #FFD9B8;       /* outline behind the script so it reads on any photo */
+
+  /* type */
+  --tp-font-display: "Arial Black", "Helvetica Neue", "Franklin Gothic Heavy", Impact, Arial, sans-serif;   /* back-of-card name, wide and heavy */
+  --tp-font-name: Optima, Candara, "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;           /* front name strip */
+  --tp-font-label: "Franklin Gothic Medium", "Franklin Gothic Book", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --tp-font-body: "Helvetica Neue", Helvetica, Arial, "Segoe UI", system-ui, sans-serif;
+  --tp-font-script: "Snell Roundhand", "Segoe Script", "Brush Script MT", "Lucida Handwriting", cursive;
+  --tp-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --tp-track-label: 0.08em;
+  --tp-track-name: 0.12em;
+
+  /* shape */
+  --tp-radius: 0.3rem;      /* card stock has barely rounded corners */
+  --tp-hair: 1px;
+
+  /* context: components read these, so the same markup works on the page and
+     inside a reversed .tp-reverse block */
+  --tp-fg: var(--tp-ink);
+  --tp-fg-muted: var(--tp-muted);
+  --tp-edge: var(--tp-rule);
+  --tp-heading: var(--tp-ink);
+  --tp-accent: var(--tp-red);
+  --tp-field: var(--tp-plate);   /* what sits under panels and inputs */
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast: ink/paper 15.6, muted/paper 10.3, accent/paper 8.3,
+     ink/plate 13.2, muted/plate 8.7, accent/plate 7.0 */
+  :root:not([data-theme="light"]) {
+    --tp-paper: #0E1130;
+    --tp-plate: #1A1E52;
+    --tp-ink: #F4ECDA;
+    --tp-muted: #BCC0E0;
+    --tp-red: #FF8F70;
+    --tp-rule: #F4ECDA;
+    --tp-focus: #F4ECDA;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --tp-paper: #0E1130;
+  --tp-plate: #1A1E52;
+  --tp-ink: #F4ECDA;
+  --tp-muted: #BCC0E0;
+  --tp-red: #FF8F70;
+  --tp-rule: #F4ECDA;
+  --tp-focus: #F4ECDA;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- page: opt in with class="tp" on <body> ---------------------------- */
+
+.tp {
+  margin: 0;
+  background: var(--tp-paper);
+  color: var(--tp-fg);
+  font: 1rem/1.55 var(--tp-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.tp *, .tp *::before, .tp *::after { box-sizing: border-box; }
+.tp h1, .tp h2, .tp h3, .tp h4 {
+  font-family: var(--tp-font-display);
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tp-heading);
+  margin: 0 0 0.6em;
+}
+.tp h1 { font-size: clamp(2rem, 7vw, 3.4rem); }
+.tp h2 { font-size: clamp(1.35rem, 4vw, 1.9rem); }
+.tp h3 { font-size: 1.15rem; }
+.tp h4 { font-family: var(--tp-font-label); font-size: 0.85rem; letter-spacing: 0.14em; }
+.tp a { color: var(--tp-accent); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.tp a:hover { text-decoration-thickness: 3px; }
+.tp :focus-visible { outline: 3px solid var(--tp-focus); outline-offset: 2px; }
+.tp hr:not([class]) { border: 0; height: 0.45rem; margin: 2rem 0; background: var(--tp-ink); }
+.tp code, .tp kbd { font-family: var(--tp-font-mono); font-size: 0.88em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* the back-of-card name: wide, heavy caps */
+.tp-title {
+  margin: 0;
+  font-family: var(--tp-font-display);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tp-heading);
+}
+.tp-title--xl { font-size: clamp(2.2rem, 9vw, 4.5rem); }
+.tp-title--lg { font-size: clamp(1.7rem, 6vw, 2.8rem); }
+.tp-title--md { font-size: clamp(1.15rem, 3.5vw, 1.6rem); }
+
+/* the front's name strip: roman caps with wide tracking */
+.tp-name {
+  font-family: var(--tp-font-name);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tp-track-name);
+  color: var(--tp-fg);
+}
+
+/* the team name in script, on a page */
+.tp-script {
+  font-family: var(--tp-font-script);
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tp-accent);
+}
+
+/* small caps for labels and bio lines */
+.tp-label {
+  font-family: var(--tp-font-label);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--tp-track-label);
+  color: var(--tp-fg-muted);
+}
+
+.tp-copy { font-size: 1rem; line-height: 1.55; color: var(--tp-fg); max-width: 38rem; }
+.tp-copy--center { text-align: center; margin-inline: auto; }
+
+/* the blurb: bold sans, as on the back of a card */
+.tp-blurb { font-weight: 700; font-size: 1.05rem; line-height: 1.35; color: var(--tp-fg); max-width: 38rem; }
+.tp-caption { font-size: 0.82rem; font-style: italic; line-height: 1.45; color: var(--tp-fg-muted); }
+
+/* ---- front: the card ----------------------------------------------------- */
+
+/* Size it with --tp-card-w (default 16rem, never wider than its box). All the
+   insides scale from the card's own width, so a card looks the same at any
+   size. The card is a container so its parts can use cqw. Choose a team by
+   adding a modifier: --sky, --steel, --crimson, --forest, --purple, --gold or
+   --navy. */
+.tp-card {
+  --tp-u: 5cqw;             /* one twentieth of the card's width */
+  container-type: inline-size;
+  position: relative;
+  display: block;
+  width: var(--tp-card-w, 16rem);
+  max-width: 100%;
+  aspect-ratio: 5 / 7;
+  background: var(--tp-card-white);
+  color: var(--tp-card-navy);
+  border-radius: 1.4cqw;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), 0 0.7rem 1.1rem -0.7rem rgba(0, 0, 0, 0.55);
+}
+.tp-card__face {
+  position: absolute; inset: calc(var(--tp-u) * 0.9);
+  display: grid; grid-template-rows: minmax(0, 1fr) auto;
+  padding: calc(var(--tp-u) * 0.9) calc(var(--tp-u) * 0.9) 0;
+  background: var(--tp-frame);
+  box-shadow: 0 0 0 calc(var(--tp-u) * 0.14) var(--tp-line);
+  overflow: hidden;
+}
+
+/* the photo, with the thin trim line and hairline around it. Put an <img> in
+   it (object-fit: cover is applied) or leave it as a placeholder. */
+.tp-card__photo {
+  position: relative; min-height: 0; overflow: hidden;
+  background:
+    radial-gradient(120% 70% at 50% 108%, rgba(255, 255, 255, 0.22), transparent 60%),
+    linear-gradient(165deg, #2B3A66 0%, #15193F 55%, #3A2A46 100%);
+  box-shadow: 0 0 0 calc(var(--tp-u) * 0.16) var(--tp-trim), 0 0 0 calc(var(--tp-u) * 0.32) var(--tp-line);
+  display: grid; place-items: center;
+  color: #FFFFFF; font-size: calc(var(--tp-u) * 5);
+}
+.tp-card__photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* the brand mark: heavy italic caps outlined in white, top left of the card */
+.tp-logo {
+  display: inline-block;
+  font: italic 900 calc(var(--tp-u, 1rem) * 1.9) / 1 var(--tp-font-display);
+  letter-spacing: -0.02em; text-transform: lowercase;
+  color: var(--tp-card-red);
+  -webkit-text-stroke: calc(var(--tp-u, 1rem) * 0.34) #FFFFFF;
+  paint-order: stroke fill;
+  transform: rotate(-4deg);
+}
+.tp-card > .tp-logo { position: absolute; z-index: 2; top: calc(var(--tp-u) * 1.5); left: calc(var(--tp-u) * 1.9); }
+
+/* the anniversary seal: a gold disc with a big number and a red ribbon */
+.tp-seal {
+  --tp-seal-size: 3.6rem;
+  position: relative;
+  display: inline-grid; place-items: center;
+  width: var(--tp-seal-size); height: var(--tp-seal-size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFE27A, var(--tp-card-sun) 70%);
+  border: calc(var(--tp-seal-size) * 0.05) solid var(--tp-card-white);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  color: var(--tp-card-navy);
+}
+.tp-seal > b {
+  margin-top: calc(var(--tp-seal-size) * -0.12);
+  font: 900 calc(var(--tp-seal-size) * 0.46) / 1 var(--tp-font-display);
+  letter-spacing: -0.04em;
+}
+.tp-seal > i {
+  position: absolute; left: -9%; right: -9%; bottom: 3%;
+  padding: 0.12em 0; text-align: center;
+  font: normal 700 calc(var(--tp-seal-size) * 0.13) / 1.15 var(--tp-font-label);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  color: #FFFFFF; background: var(--tp-card-red);
+  clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+}
+.tp-seal--lg { --tp-seal-size: 5.5rem; }
+.tp-seal--sm { --tp-seal-size: 2.6rem; }
+.tp-card > .tp-seal {
+  --tp-seal-size: calc(var(--tp-u) * 4.1);
+  position: absolute; z-index: 2; top: calc(var(--tp-u) * 3.4); left: calc(var(--tp-u) * 1.2);
+}
+
+/* the team banner: a ribbon along the foot of the photo with the name in
+   script over it. The script has a light halo, so it reads on any photo. */
+.tp-card__team {
+  position: absolute; z-index: 1; right: calc(var(--tp-u) * 0.4); bottom: calc(var(--tp-u) * 0.9);
+  padding: calc(var(--tp-u) * 1.7) calc(var(--tp-u) * 1.2) calc(var(--tp-u) * 0.15) calc(var(--tp-u) * 5);
+  font: italic 700 calc(var(--tp-u) * 3.6) / 0.95 var(--tp-font-script);
+  color: var(--tp-script);
+  -webkit-text-stroke: calc(var(--tp-u) * 0.3) var(--tp-halo);
+  paint-order: stroke fill;
+  background: linear-gradient(var(--tp-banner), var(--tp-banner)) 0 100% / 100% calc(var(--tp-u) * 1.6) no-repeat;
+  white-space: nowrap;
+}
+
+/* the name strip: position at the left, name at the right */
+.tp-card__foot {
+  display: flex; align-items: baseline; justify-content: space-between; gap: calc(var(--tp-u) * 1);
+  margin: calc(var(--tp-u) * 0.9) calc(var(--tp-u) * -0.9) 0;
+  padding: calc(var(--tp-u) * 0.55) calc(var(--tp-u) * 1.5);
+  background: var(--tp-card-foot);
+  color: var(--tp-card-navy);
+  border-top: calc(var(--tp-u) * 0.14) solid var(--tp-line);
+  font-family: var(--tp-font-name);
+  font-size: calc(var(--tp-u) * 0.95);
+  font-weight: 600; line-height: 1.2;
+  text-transform: uppercase; letter-spacing: var(--tp-track-name);
+  box-shadow: inset 0 calc(var(--tp-u) * -0.22) 0 var(--tp-frame);
+  padding-bottom: calc(var(--tp-u) * 0.9);
+}
+.tp-card__pos { font-weight: 500; }
+.tp-card__name { margin-left: auto; text-align: right; }
+
+/* team frames. Contrast of script on halo is noted for each. */
+.tp-card--sky     { --tp-frame: #2A8CC8; --tp-trim: #E6772E; --tp-line: #1D2A66; --tp-banner: #3E56A8; --tp-script: #26357E; --tp-halo: #FFD9B8; }   /* script/halo 8.4 */
+.tp-card--steel   { --tp-frame: #8F9399; --tp-trim: #8CC8EA; --tp-line: #1E3A8A; --tp-banner: #8CC8EA; --tp-script: #14308A; --tp-halo: #E6F3FB; }   /* 10.2 */
+.tp-card--crimson { --tp-frame: #C62A3A; --tp-trim: #F2BE22; --tp-line: #1C1F63; --tp-banner: #F2BE22; --tp-script: #9E1C2B; --tp-halo: #FFE9A8; }   /* 6.6 */
+.tp-card--forest  { --tp-frame: #1F7A4D; --tp-trim: #F2BE22; --tp-line: #123A26; --tp-banner: #BFE3CB; --tp-script: #14603A; --tp-halo: #E2F3E6; }   /* 6.6 */
+.tp-card--purple  { --tp-frame: #6B3FA0; --tp-trim: #F28C28; --tp-line: #2A1450; --tp-banner: #C9A8F0; --tp-script: #4F2A85; --tp-halo: #F0E3FF; }   /* 8.6 */
+.tp-card--gold    { --tp-frame: #F2B21A; --tp-trim: #C62A3A; --tp-line: #1C1F63; --tp-banner: #1C1F63; --tp-script: #1C1F63; --tp-halo: #F8D55C; }   /* 10.3 */
+.tp-card--navy    { --tp-frame: #1C2F6E; --tp-trim: #E04B2C; --tp-line: #0B1330; --tp-banner: #E04B2C; --tp-script: #FFFFFF; --tp-halo: #1C2F6E; }   /* 12.5 */
+
+/* ---- back: the stat card ------------------------------------------------- */
+
+/* A landscape card. The table inside needs room, so it keeps a minimum width:
+   wrap it in .tp-back-wrap on narrow screens and it scrolls instead of
+   shrinking. */
+.tp-back-wrap { overflow-x: auto; padding: 0.25rem 0.25rem 0.75rem; }
+.tp-back {
+  position: relative;
+  min-width: 34rem; max-width: 46rem;
+  padding: 0.8rem;
+  color: var(--tp-card-navy);
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.1) 0 1px, transparent 1.4px) 0 0 / 5px 5px,
+    var(--tp-back-stock);
+  border-radius: var(--tp-radius);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), 0 0.7rem 1.1rem -0.7rem rgba(0, 0, 0, 0.55);
+}
+.tp-back__plate {
+  position: relative; overflow: hidden;
+  background:
+    radial-gradient(circle at 0 0, var(--tp-card-navy) 0.3rem, transparent 0.34rem),
+    radial-gradient(circle at 100% 0, var(--tp-card-navy) 0.3rem, transparent 0.34rem),
+    radial-gradient(circle at 0 100%, var(--tp-card-navy) 0.3rem, transparent 0.34rem),
+    radial-gradient(circle at 100% 100%, var(--tp-card-navy) 0.3rem, transparent 0.34rem),
+    var(--tp-back-plate);
+  border: 2px solid var(--tp-card-navy);
+  color: var(--tp-card-navy);
+}
+/* the oversized anniversary mark behind the stats */
+.tp-back__plate::before {
+  content: attr(data-mark);
+  position: absolute; inset: 0; z-index: 0;
+  display: grid; place-items: center;
+  font: 900 12rem / 1 var(--tp-font-display);
+  letter-spacing: -0.06em;
+  color: var(--tp-back-stock); opacity: 0.16;
+  pointer-events: none;
+}
+.tp-back__plate > * { position: relative; z-index: 1; }
+
+/* peach strip: number badge, name and position, team */
+.tp-back__head {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.9rem;
+  padding: 0.5rem 1rem 0.5rem 0.6rem;
+  background: var(--tp-back-strip);
+}
+.tp-back__name {
+  margin: 0; text-align: center;
+  font: 900 clamp(1.2rem, 4.5vw, 1.9rem) / 1.1 var(--tp-font-display);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--tp-card-navy);
+}
+.tp-back__name .tp-pos { font-weight: 900; }
+.tp-back__team { font: italic 700 0.72rem / 1.2 var(--tp-font-label); text-transform: uppercase; letter-spacing: var(--tp-track-label); text-align: right; color: var(--tp-card-navy); }
+
+/* the round card-number badge */
+.tp-number {
+  display: inline-grid; place-items: center; align-content: center;
+  width: 3.4rem; height: 3.4rem; border-radius: 50%;
+  background: var(--tp-card-navy); color: var(--tp-back-plate);
+  font: 900 0.95rem / 1 var(--tp-font-display);
+  text-align: center; letter-spacing: 0.02em;
+  box-shadow: 0 0 0 2px var(--tp-back-plate), 0 0 0 4px var(--tp-card-navy);
+}
+
+/* height, weight, bats, throws, drafted, acquired, born, home */
+.tp-back__bio {
+  display: flex; flex-wrap: wrap; gap: 0.1rem 1.4rem;
+  margin: 0; padding: 0.4rem 1rem 0;
+  font: 700 0.64rem / 1.35 var(--tp-font-label);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--tp-card-navy);
+}
+.tp-back__bio b { font-weight: 700; opacity: 0.8; }
+.tp-back__bio b::after { content: ":"; }
+
+.tp-back__body { padding: 0.4rem 1rem 0.8rem; }
+.tp-back__title { margin: 0.4rem 0 0.2rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.2rem 1rem; font: 700 0.78rem / 1.3 var(--tp-font-label); text-transform: uppercase; letter-spacing: 0.06em; color: var(--tp-card-navy); }
+.tp-back__blurb { margin: 0.6rem 0 0; padding-top: 0.6rem; border-top: 2px double var(--tp-card-navy); font: 700 1.02rem / 1.35 var(--tp-font-body); color: var(--tp-card-navy); }
+.tp-back__legal { margin: 0.55rem 0.3rem 0; font: 500 0.62rem / 1.35 var(--tp-font-label); letter-spacing: 0.02em; color: var(--tp-card-white); }
+
+/* the stat table: use on a <table>. Put the italic .tp-lead on a league
+   leader and .tp-tie on a tie (it adds the diamond). */
+.tp-stats {
+  width: 100%; border-collapse: collapse;
+  font: 500 0.8rem / 1.4 var(--tp-font-label);
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+.tp-stats th, .tp-stats td { padding: 0.08rem 0.45rem; text-align: right; font-weight: 500; }
+.tp-stats thead th { font-weight: 700; border-bottom: 1px solid currentColor; }
+.tp-stats th:first-child, .tp-stats td:first-child, .tp-stats th:nth-child(2), .tp-stats td:nth-child(2) { text-align: left; }
+.tp-stats tbody th { font-weight: 500; }
+.tp-stats tfoot th, .tp-stats tfoot td { padding-top: 0.3rem; border-top: 1px solid currentColor; font-weight: 700; text-transform: uppercase; }
+.tp-lead { font-style: italic; font-weight: 700; }
+.tp-tie::after { content: "\25C6"; font-style: normal; font-size: 0.7em; margin-left: 0.15em; vertical-align: 0.1em; }
+
+/* ---- panel: card stock for page content ---------------------------------- */
+
+/* Cream plate with a navy edge and corner dots, for anything that is not a
+   card. A .tp-ribbon first makes a title. */
+.tp-panel {
+  position: relative;
+  padding: clamp(1rem, 3vw, 1.6rem);
+  background:
+    radial-gradient(circle at 0 0, var(--tp-edge) 0.3rem, transparent 0.34rem),
+    radial-gradient(circle at 100% 0, var(--tp-edge) 0.3rem, transparent 0.34rem),
+    radial-gradient(circle at 0 100%, var(--tp-edge) 0.3rem, transparent 0.34rem),
+    radial-gradient(circle at 100% 100%, var(--tp-edge) 0.3rem, transparent 0.34rem),
+    var(--tp-field);
+  border: 2px solid var(--tp-edge);
+  color: var(--tp-fg);
+}
+.tp-panel__head { margin: calc(-1 * clamp(1rem, 3vw, 1.6rem)) calc(-1 * clamp(1rem, 3vw, 1.6rem)) 1rem; padding: 0.5rem 1rem; background: var(--tp-back-strip); color: var(--tp-card-navy); font: 900 1rem / 1.2 var(--tp-font-display); text-transform: uppercase; letter-spacing: 0.08em; }
+.tp-panel__head .tp-number { margin: -0.2rem 0.6rem -0.2rem 0; width: 2.6rem; height: 2.6rem; font-size: 0.72rem; vertical-align: middle; }
+
+/* reversed block: navy stock with cream type */
+.tp-reverse {
+  --tp-fg: var(--tp-paper);
+  --tp-fg-muted: var(--tp-paper);
+  --tp-edge: var(--tp-paper);
+  --tp-heading: var(--tp-paper);
+  --tp-accent: var(--tp-gold);
+  --tp-field: var(--tp-ink);
+  padding: clamp(1rem, 3vw, 1.6rem);
+  background: var(--tp-ink);
+  color: var(--tp-paper);
+}
+.tp-reverse a { color: var(--tp-gold); }
+
+/* ---- ribbon, bar --------------------------------------------------------- */
+
+/* a swallowtail ribbon, for titles. Text and fill follow the context. */
+.tp-ribbon {
+  display: inline-block;
+  padding: 0.35em 1.8em;
+  font: italic 900 1rem / 1.2 var(--tp-font-display);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--tp-field); background: var(--tp-edge);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 0.7em) 50%, 100% 100%, 0 100%, 0.7em 50%);
+}
+.tp-ribbon--gold { color: var(--tp-card-navy); background: var(--tp-card-sun); }
+.tp-ribbon--red { color: #FFFFFF; background: var(--tp-card-red); }
+
+/* the stripe band along a card's foot, as a divider */
+.tp-bar {
+  display: block; height: 0.8rem; margin: 1.5rem 0; border: 0;
+  background: linear-gradient(var(--tp-frame) 0 0.5rem, transparent 0.5rem 0.62rem, var(--tp-edge) 0.62rem 0.72rem, transparent 0.72rem);
+}
+.tp-bar--thin { height: 0.4rem; background: linear-gradient(var(--tp-frame) 0 0.25rem, transparent 0.25rem 0.31rem, var(--tp-edge) 0.31rem 0.36rem, transparent 0.36rem); }
+
+/* ---- binder: cards in sleeves -------------------------------------------- */
+
+/* A page of nine-pocket sleeves. Cards inside take the width of the slot. */
+.tp-binder {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--tp-field);
+  border: 2px solid var(--tp-edge);
+  border-radius: var(--tp-radius);
+  color: var(--tp-fg);
+}
+.tp-binder--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tp-slot {
+  position: relative; display: grid; place-items: center; min-width: 0;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 40%, rgba(255, 255, 255, 0.1)), var(--tp-paper);
+  border: 1px solid var(--tp-edge);
+  border-radius: calc(var(--tp-radius) + 0.15rem);
+  --tp-card-w: 100%;
+}
+.tp-slot--empty { border-style: dashed; aspect-ratio: 5 / 7; color: var(--tp-fg-muted); font: 700 0.75rem / 1 var(--tp-font-label); text-transform: uppercase; letter-spacing: 0.1em; }
+.tp-slot__no { position: absolute; top: 0.3rem; left: 0.45rem; font: 700 0.65rem / 1 var(--tp-font-label); color: var(--tp-fg-muted); }
+
+/* ---- controls ------------------------------------------------------------ */
+
+.tp-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5em;
+  min-height: 2.75rem; padding: 0.55rem 1.3rem;
+  font: italic 900 0.9rem / 1 var(--tp-font-display);
+  text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none;
+  cursor: pointer;
+  color: var(--tp-field);
+  background: var(--tp-edge);
+  border: 2px solid var(--tp-edge);
+  border-radius: var(--tp-radius);
+  box-shadow: 0 0.22rem 0 var(--tp-accent);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.tp-button:active { transform: translateY(0.18rem); box-shadow: 0 0.04rem 0 var(--tp-accent); }
+.tp-button:focus-visible { outline: 3px solid var(--tp-focus); outline-offset: 4px; }
+.tp-button[disabled], .tp-button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
+.tp-button--outline { color: var(--tp-fg); background: var(--tp-field); }
+.tp-button--gold { color: var(--tp-card-navy); background: var(--tp-card-sun); border-color: var(--tp-card-navy); box-shadow: 0 0.22rem 0 var(--tp-card-navy); }
+.tp-button--ghost { color: var(--tp-fg); background: transparent; box-shadow: none; border-style: dashed; }
+.tp-button--ghost:active { transform: none; }
+.tp-button--block { display: flex; width: 100%; }
+
+.tp-field { display: grid; gap: 0.35rem; }
+.tp-input, .tp-select {
+  width: 100%; min-height: 2.75rem; padding: 0.5rem 0.8rem;
+  font: 1rem / 1.3 var(--tp-font-body);
+  color: var(--tp-fg); background: var(--tp-field);
+  border: 2px solid var(--tp-edge); border-bottom-width: 0.3rem; border-radius: var(--tp-radius);
+}
+.tp-input::placeholder { color: var(--tp-fg-muted); opacity: 1; }
+.tp-input:focus-visible, .tp-select:focus-visible { outline: 3px solid var(--tp-focus); outline-offset: 2px; }
+.tp-input[aria-invalid="true"] { border-style: dashed; border-bottom-style: solid; border-bottom-color: var(--tp-accent); }
+
+/* ---- badge --------------------------------------------------------------- */
+
+.tp-badge {
+  display: inline-block; padding: 0.1rem 0.65rem;
+  font: 700 0.7rem / 1.5 var(--tp-font-label);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--tp-fg); border: 1px solid var(--tp-edge); border-radius: 999px;
+}
+.tp-badge--solid { color: var(--tp-field); background: var(--tp-edge); }
+.tp-badge--gold { color: var(--tp-card-navy); background: var(--tp-card-sun); border-color: var(--tp-card-navy); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-button { transition: none; }
+}
+@media print {
+  .tp-card, .tp-card__face, .tp-card__team, .tp-card__foot, .tp-back, .tp-back__head, .tp-seal, .tp-number, .tp-ribbon, .tp-bar, .tp-reverse, .tp-button, .tp-badge--solid, .tp-badge--gold { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
