@@ -234,7 +234,7 @@ export const CLASSIC = [
 /**
  * Monopoly Mega (US names, board order). Each street is
  * [name, group, price, [site, partial set, full set, 1 house, 2, 3, 4, hotel, skyscraper]].
- * "Partial set" is applied here when you own two or more of the group but not all of it.
+ * "Partial set" applies when you own all but one of the group (see partialAt).
  * Not on the printed table, so assumed: mortgage value = half the price, building cost = the standard
  * cost for the color group, a skyscraper costs the same as a house, train depots cost $100 and sell for half.
  */
@@ -300,6 +300,9 @@ export const MEGA = MEGA_ROWS.map((row) => {
 /** Title deeds for each edition's picker. */
 export const CARDS = { classic: CLASSIC, mega: MEGA };
 
+/** How many of the group you must own for the partial-set rent: all but one. @param {Property} p */
+export const partialAt = (p) => (p.groupSize > 1 ? p.groupSize - 1 : 2);
+
 /** @param {Game} g @param {Property} p */
 const owned = (g, p) => g.properties.filter((x) => x.group === p.group).length;
 
@@ -325,10 +328,11 @@ export function rentFor(g, p, dice) {
   const base = r[p.level];
   if (!(base >= 0)) return null;
   if (p.level === 0 && p.tiers) {
-    // Mega: rent steps up with the number owned, with a bigger step for the full set.
+    // Mega: the partial rent starts when you own all but one of the group (2 of 3, 3 of 4); the full set pays more.
+    // Owning fewer than that pays the plain site rent.
     const n = owned(g, p);
     if (p.groupSize > 0 && n >= p.groupSize) return p.tiers[1];
-    return n >= 2 ? p.tiers[0] : base;
+    return n >= partialAt(p) ? p.tiers[0] : base;
   }
   const set = p.level === 0 && p.groupSize > 0 && owned(g, p) >= p.groupSize;
   return set ? base * 2 : base;

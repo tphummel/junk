@@ -171,16 +171,16 @@
       <li><b>Break even</b> when returned reaches invested. <b>ROI</b> is (returned − invested) ÷ invested.</li>
       <li>A mortgage is a loan: the cash is not counted as income, only the interest is a cost. Outstanding loans are shown separately.</li>
       <li><b>Trades:</b> the cost basis of what you give (price paid, less improvements sold back) plus cash you pay, less cash you receive, becomes the cost basis of what you receive, split evenly. Properties traded away stay in your totals, and basis moved between them is not counted twice.</li>
-      <li><b>Rent</b> is taken from the card and your game: improvement level, set bonuses (standard: double for a full unimproved set; Mega: 2+ owned and full set have their own rents), railroads and utilities by number owned. You only enter the dice total for a utility.</li>
+      <li><b>Rent</b> is taken from the card and your game: improvement level, set bonuses (standard: double for a full unimproved set; Mega: owning all but one of a group, and owning the full set, each have their own rents), railroads and utilities by number owned. You only enter the dice total for a utility.</li>
       <li><b>Rents to break even</b> uses your average rent collected so far, or what the card pays now.</li>
       <li>Improvement levels: 1–4 houses, 5 hotel, and in Mega 6 skyscraper (Mega: 1–4 houses, hotel, skyscraper; a railroad takes one train depot, which doubles its rent).</li>
     </ul>
   </details>
 
-  <small id="version">2026-11-27T18:36:43Z</small>
+  <small id="version">2026-11-27T18:37:39Z</small>
 
   <script type="module">
-    import { CARDS, GROUPS, buyProperty, collectAutoRent, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+    import { CARDS, GROUPS, buyProperty, collectAutoRent, executeTrade, gameStats, improve, levelName, maxLevel, migrateGames, newProperty, parseGames, partialAt, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
@@ -251,7 +251,9 @@
       } else {
         const full = p.groupSize > 0 && n >= p.groupSize;
         if (p.tiers) {
-          rows.push(['1 owned', money(p.rents[0]), p.level === 0 && n < 2], ['2+ owned', money(p.tiers[0]), p.level === 0 && n >= 2 && !full], ['full set', money(p.tiers[1]), p.level === 0 && full]);
+          const part = partialAt(p);
+          rows.push([part <= 2 ? '1 owned' : '1–' + (part - 1) + ' owned', money(p.rents[0]), p.level === 0 && n < part],
+            [part + ' owned', money(p.tiers[0]), p.level === 0 && n >= part && !full], ['all ' + p.groupSize + ' owned', money(p.tiers[1]), p.level === 0 && full]);
           p.rents.slice(1).forEach((r, i) => rows.push([LABELS[i + 1], money(r), i + 1 === p.level]));
         } else p.rents.forEach((r, i) => rows.push([i === 0 ? 'unimproved' : LABELS[i] || 'level ' + i, money(r), i === p.level]));
       }

@@ -1,7 +1,7 @@
 // Tests for the Monopoly asset manager logic (web/monopoly-asset-manager/tracker.js). Run with `npm test`.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CARDS, CLASSIC, MEGA, basisOf, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
+import { CARDS, CLASSIC, MEGA, basisOf, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -346,4 +346,28 @@ test("migrateGames renames Oriental Avenue to Ornamental Avenue, in lists and hi
   assert.equal(g.archived[0].name, "Ornamental Avenue");
   assert.equal(g.properties[0].entries[0].note, "traded for Ornamental Avenue");
   assert.ok(![...CLASSIC, ...MEGA].some((c) => c.name.includes("Oriental")));
+});
+
+test("mega pink group of four: the plain rent until three are owned (10, 10, 10, Virginia 12)", () => {
+  const names = ["Maryland Avenue", "St. Charles Place", "States Avenue", "Virginia Avenue"];
+  const props = names.map(mega);
+  const g = megaGame(props[0]);
+  assert.equal(rentFor(g, props[0]), 10);
+  g.properties.push(props[1]);
+  assert.equal(rentFor(g, props[0]), 10); // two of four is still the plain rent
+  assert.equal(rentFor(g, props[1]), 10);
+  g.properties.push(props[3]);
+  assert.equal(rentFor(g, props[3]), 24); // Virginia with three of four: partial
+  assert.equal(rentFor(g, props[0]), 20);
+  g.properties.push(props[2]);
+  assert.equal(rentFor(g, props[0]), 30); // all four
+  assert.equal(rentFor(megaGame(props[3]), props[3]), 12);
+});
+
+test("mega partial rent starts at all but one: 2 of 3 in a group of three, 3 of 4 in a group of four", () => {
+  assert.equal(partialAt(mega("Boardwalk")), 2);
+  assert.equal(partialAt(mega("Park Place")), 2);
+  assert.equal(partialAt(mega("Kentucky Avenue")), 3);
+  const fl = mega("Florida Avenue"), pp = mega("Park Place");
+  assert.equal(rentFor(megaGame(fl, pp), fl), 70);
 });
