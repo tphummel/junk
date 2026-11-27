@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>donruss 1992 style sheet</title>
+  <link rel="stylesheet" href="donruss-1992.css">
+  <style>
+    /* storybook chrome only; the components below come from donruss-1992.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { display: grid; gap: 0.9rem; justify-items: center; text-align: center; padding: clamp(1.5rem, 5vw, 3rem) 1rem; border: 1px solid var(--don-line); border-radius: var(--don-radius); }
+    .hero .don-copy { margin: 0; }
+    .hero .don-bar { width: min(100%, 22rem); }
+    .sb nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb nav a { display: block; padding: 0.35rem 0.6rem; border-left: 3px solid var(--don-line); color: var(--don-text); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--don-track); }
+    .sb nav a:hover { color: var(--don-blue-ink); border-color: var(--don-blue-ink); }
+    .theme { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .theme button { font-size: 0.72rem; min-height: 2.25rem; padding: 0.3rem 0.9rem; }
+    .theme button[aria-pressed="true"] { background: var(--don-bar); color: var(--don-ink); border-color: var(--don-ink); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); border: 1px dashed var(--don-line); border-radius: var(--don-radius); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--don-track); color: var(--don-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--don-paper); color: var(--don-ink); border: 1px solid var(--don-ink); border-radius: var(--don-radius); font: 0.8rem/1.5 var(--don-font-mono); tab-size: 2; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; }
+    .sw { border: 1px solid var(--don-ink); border-radius: var(--don-radius); overflow: hidden; background: var(--don-paper); color: var(--don-ink); }
+    .sw i { display: block; height: 3rem; border-bottom: 1px solid var(--don-ink); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--don-ink-muted); }
+    footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--don-muted); }
+  </style>
+  <meta name="theme-color" content="#09151F">
+  <link rel="icon" href="/styles/donruss-1992/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/donruss-1992/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/donruss-1992/manifest.webmanifest">
+</head>
+<body class="don">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="don-label"><a href="/">junk</a> / style sheets / donruss 1992</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="hero">
+      <span class="don-bar">Donruss 1992</span>
+      <h1 class="don-title don-title--xl">Donruss 1992</h1>
+      <p class="don-copy">White card stock, sky-blue gradient bars, a chiseled name plate and a red-and-blue stat back, inspired by 1992 Donruss baseball cards. Plain CSS, no fonts or scripts to load, light and dark.</p>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#bar">Bar</a></li>
+      <li><a href="#front">Card front</a></li>
+      <li><a href="#back">Card back</a></li>
+      <li><a href="#stats">Stats table</a></li>
+      <li><a href="#sheet">Binder sheet</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge, divider</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="don"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>don-</code> and every custom property <code>--don-</code>. Plain element selectors only apply under <code>.don</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/donruss-1992/donruss-1992.css"&gt;
+&lt;body class="don"&gt;
+  &lt;div class="don-card"&gt;
+    &lt;div class="don-card-head"&gt;Donruss 1992&lt;/div&gt;
+    &lt;div class="don-photo"&gt;&lt;img src="player.jpg" alt=""&gt;&lt;/div&gt;
+    &lt;div class="don-plate"&gt;&lt;b class="don-name"&gt;Jody Reed&lt;/b&gt;&lt;span class="don-sub"&gt;Red Sox • Second Base&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;</pre>
+      <p>The page is the binder, and it changes with light and dark. Cards are printed stock: they keep white, ink, sky blue and red in both modes, like cards on a dark table. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>; the switch above does that for this page.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values are read from the live sheet and follow the theme switch. Ratios are WCAG contrast against the stated background; text needs 4.5, lines 3 (the dark-mode line is a 4.3 divider, above that).</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type</h2>
+      <p>Names and headings are condensed bold caps (Arial Narrow, Roboto Condensed or Impact, whichever the device has). Small print is the plain system sans. Labels are tiny, widely tracked caps like the "D O N R U S S" strip.</p>
+      <div class="demo stack">
+        <h1 class="don-title don-title--lg">Rafael Palmeiro</h1>
+        <span class="don-label">Rangers • First base</span>
+        <p class="don-copy">Led Padres in ERA and was 3rd in strikeouts in '91 despite missing 2 months with elbow injury. Led Padres in appearances and ERA in '90.</p>
+      </div>
+    </section>
+
+    <section id="bar">
+      <h2>Bar</h2>
+      <p>The sky-blue gradient stripe, dark at the top and pale at the bottom, with spaced caps. Use it as a header or divider. The same gradient is the <code>--don-bar</code> token.</p>
+      <div class="demo stack">
+        <span class="don-bar">Donruss 1992</span>
+        <span class="don-bar">Series 1</span>
+      </div>
+    </section>
+
+    <section id="front">
+      <h2>Card front</h2>
+      <p>White stock with a <code>don-card-head</code> strip, a <code>don-photo</code> slot (put an <code>&lt;img&gt;</code> in it, or leave the placeholder) and a <code>don-plate</code> holding the chiseled <code>don-name</code> over <code>don-sub</code>. The card is 5:7.</p>
+      <div class="demo row">
+        <div class="don-card">
+          <div class="don-card-head">Donruss 1992</div>
+          <div class="don-photo"></div>
+          <div class="don-plate"><b class="don-name">Rafael Palmeiro</b><span class="don-sub">Rangers • First Base</span></div>
+        </div>
+        <div class="don-card">
+          <div class="don-card-head">Donruss 1992</div>
+          <div class="don-photo"></div>
+          <div class="don-plate"><b class="don-name">Jody Reed</b><span class="don-sub">Red Sox • Second Base</span></div>
+        </div>
+        <div class="don-card">
+          <div class="don-card-head">Donruss 1992</div>
+          <div class="don-photo"></div>
+          <div class="don-plate"><b class="don-name">Paul Molitor</b><span class="don-sub">Brewers • Designated Hitter</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="back">
+      <h2>Card back</h2>
+      <p>Landscape. <code>don-who</code> holds the red <code>don-back-name</code>, a <code>don-bio</code> and the <code>don-logos</code>; <code>don-hl</code> holds the blue <code>don-contract</code> and the red <code>don-hl-title</code> over <code>don-hl-text</code>; <code>don-back-no</code> is the card number. A blue stripe runs down the edge. The stats table slots in below the name (next section).</p>
+      <div class="demo">
+        <div class="don-back">
+          <div class="don-who">
+            <h3 class="don-back-name">Jody Eric Reed</h3>
+            <p class="don-bio">Born: July 26, 1962<br>Tampa, FL<br>Home: Tampa, FL<br>Ht: 5'9" Wt: 165<br>Bats: Right Throws: Right</p>
+            <div class="don-logos"><span class="don-logo">Donruss</span><span class="don-mark" aria-hidden="true">MLB</span></div>
+          </div>
+          <p class="don-back-no">47</p>
+          <div class="don-hl">
+            <p class="don-contract">Contract Status: 1 yr. thru '92. How acquired: 8th round June '84 amateur draft</p>
+            <h4 class="don-hl-title">Career Highlights</h4>
+            <p class="don-hl-text">Tied for AL lead in doubles in '90...Took over as Red Sox' 2B in '90 and finished 4th on club in batting...2nd on Red Sox in doubles in '89...Became Red Sox' SS in midseason '88.</p>
+          </div>
+          <div class="don-stats-wrap">
+            <table class="don-stats">
+              <caption><small>Series 1</small>Recent Major League Performance</caption>
+              <thead><tr><th scope="col">Year</th><th scope="col">Team</th><th scope="col">BA</th><th scope="col">G</th><th scope="col">HR</th><th scope="col">RBI</th></tr></thead>
+              <tbody>
+                <tr><td>1990</td><th scope="row">Red Sox</th><td>.289</td><td>155</td><td>5</td><td>51</td></tr>
+                <tr><td>1991</td><th scope="row">Red Sox</th><td>.283</td><td>153</td><td>5</td><td>60</td></tr>
+              </tbody>
+              <tfoot><tr><th scope="row" colspan="2">Career</th><td>.288</td><td>572</td><td>14</td><td>187</td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stats">
+      <h2>Stats table</h2>
+      <p>A small ruled table under a dark caption band. Put the series in a <code>&lt;small&gt;</code> inside the <code>&lt;caption&gt;</code>. The first two columns (year, team) align left, the rest right. Wrap it in <code>don-stats-wrap</code> so it can scroll on a phone; inside <code>don-back</code> that wrapper takes the stats grid area.</p>
+      <div class="demo">
+        <div class="don-stats-wrap" style="grid-area:auto">
+          <table class="don-stats">
+            <caption><small>Series 1</small>Recent Major League Performance</caption>
+            <thead><tr><th scope="col">Year</th><th scope="col">Team</th><th scope="col">BA</th><th scope="col">G</th><th scope="col">AB</th><th scope="col">H</th><th scope="col">R</th><th scope="col">2B</th><th scope="col">HR</th><th scope="col">RBI</th></tr></thead>
+            <tbody>
+              <tr><td>1989</td><th scope="row">Red Sox</th><td>.288</td><td>146</td><td>524</td><td>151</td><td>76</td><td>42</td><td>3</td><td>40</td></tr>
+              <tr><td>1990</td><th scope="row">Red Sox</th><td>.289</td><td>155</td><td>598</td><td>173</td><td>70</td><td>45</td><td>5</td><td>51</td></tr>
+              <tr><td>1991</td><th scope="row">Red Sox</th><td>.283</td><td>153</td><td>618</td><td>175</td><td>87</td><td>42</td><td>5</td><td>60</td></tr>
+            </tbody>
+            <tfoot><tr><th scope="row" colspan="2">Career</th><td>.288</td><td>572</td><td>2106</td><td>607</td><td>297</td><td>153</td><td>14</td><td>187</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="sheet">
+      <h2>Binder sheet</h2>
+      <p>Nine pockets in a 3-by-3 grid, like a binder page. Cards shrink to fit, so it holds on a phone. Use <code>don-sheet</code> as the parent of up to nine <code>don-card</code>s.</p>
+      <div class="demo">
+        <div class="don-sheet">
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Rafael Palmeiro</b><span class="don-sub">Rangers • First Base</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Jody Reed</b><span class="don-sub">Red Sox • Second Base</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Ivan Calderon</b><span class="don-sub">Expos • Left Field</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Greg Harris</b><span class="don-sub">Padres • Pitcher</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Chris Sabo</b><span class="don-sub">Reds • Third Base</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Paul Molitor</b><span class="don-sub">Brewers • Designated Hitter</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Robby Thompson</b><span class="don-sub">Giants • Second Base</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Dave Smith</b><span class="don-sub">Cubs • Pitcher</span></div></div>
+          <div class="don-card"><div class="don-card-head">Donruss 1992</div><div class="don-photo"></div><div class="don-plate"><b class="don-name">Mark Davis</b><span class="don-sub">Royals • Pitcher</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are the sky-blue gradient with a hard ink edge; <code>don-button--red</code>, <code>--paper</code> and <code>--ghost</code> vary it. Inputs are 44px tall on white stock.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="don-button" type="button">Add card</button>
+          <button class="don-button don-button--red" type="button">Trade</button>
+          <button class="don-button don-button--paper" type="button">Flip</button>
+          <button class="don-button don-button--ghost" type="button">Cancel</button>
+          <button class="don-button" type="button" disabled>Disabled</button>
+        </div>
+        <div class="row">
+          <div class="don-field"><label class="don-label" for="sb-name">Player</label><input class="don-input" id="sb-name" placeholder="Player name" autocomplete="off"></div>
+          <div class="don-field"><label class="don-label" for="sb-team">Team</label><select class="don-select" id="sb-team"><option>Rangers</option><option>Red Sox</option><option>Expos</option><option>Padres</option></select></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge, divider</h2>
+      <p>Badges are small caps in a pill, blue by default or <code>don-badge--red</code>. The divider is a thin gradient bar between two hairlines.</p>
+      <div class="demo">
+        <div class="row"><span class="don-badge">Series 1</span><span class="don-badge don-badge--red">Rookie</span></div>
+        <hr class="don-divider">
+        <span class="don-label">Printed in U.S.A.</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/donruss-1992/donruss-1992.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009. Not affiliated with Donruss, Leaf or MLB; the look is inspired by 1992 baseball cards.</footer>
+  <small id="version">2026-11-27T17:25:39Z</small>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('don-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('don-theme') : localStorage.setItem('don-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'don-button don-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Palette swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const tokens = [
+    ['--don-bg', 'binder (page)'], ['--don-text', 'text', '--don-bg'], ['--don-muted', 'muted text', '--don-bg'],
+    ['--don-blue-ink', 'blue text', '--don-bg'], ['--don-red-ink', 'red text', '--don-bg'], ['--don-line', 'page lines', '--don-bg'],
+    ['--don-paper', 'card stock'], ['--don-ink', 'ink on stock', '--don-paper'], ['--don-ink-muted', 'muted on stock', '--don-paper'],
+    ['--don-red', 'card red', '--don-paper', 'on stock'], ['--don-blue', 'contract blue', '--don-paper', 'on stock'],
+    ['--don-sky', 'sky blue (bar top)', '--don-ink', 'ink on it'], ['--don-sky-mid', 'sky mid', '--don-ink', 'ink on it'],
+    ['--don-sky-pale', 'sky pale (bar bottom)', '--don-ink', 'ink on it'],
+    ['--don-slate', 'stats band', '--don-on-slate', 'white on it'],
+    ['--don-chisel', 'chiseled name fill'], ['--don-chisel-edge', 'name outline', '--don-chisel', 'fill vs outline'],
+  ];
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    const out = document.getElementById('swatches'); out.replaceChildren();
+    for (const [name, use, vs, note] of tokens) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = `var(${name})`;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      if (vs && /^#[0-9A-F]{6}$/.test(hex)) {
+        const r = ratio(hex, val(vs));
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 ${note || 'vs ' + vs.replace('--don-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/donruss-1992/sw.js', { scope: '/styles/donruss-1992/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

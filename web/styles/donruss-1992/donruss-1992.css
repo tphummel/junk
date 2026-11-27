@@ -1,0 +1,409 @@
+/*
+ * donruss-1992: a style sheet inspired by 1992 Donruss baseball cards.
+ * White card stock, sky-blue gradient bars with spaced "DONRUSS 1992" caps,
+ * a chiseled gray name on a blue plate, and on the back a red condensed name,
+ * blue contract text, red CAREER HIGHLIGHTS and a dark-headed stats table.
+ *
+ * Use (ADR 0009):  <link rel="stylesheet" href="/styles/donruss-1992/donruss-1992.css">
+ * Docs and live examples: /styles/donruss-1992/
+ *
+ * Everything is prefixed: classes `don-`, custom properties `--don-`. The only
+ * element rules are under the opt-in `.don` class, so linking the sheet changes
+ * nothing until a page asks for it. Light and dark mode follow the OS; set
+ * data-theme="light" or "dark" on <html> to force one.
+ *
+ * Cards are printed card stock: they keep their white, ink and blue in both
+ * modes, like cards on a dark table. Only the page (the binder) changes.
+ *
+ * Breaking changes (renaming or removing a class or token, changing what one
+ * means) go in a new file, donruss-1992-2.css. Additive changes are fine here.
+ */
+
+/* ---- tokens ------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  /* page, light. Contrast on bg: text 16.1, muted 7.0, blue-ink 6.7, red-ink 6.5, line 3.6 */
+  --don-bg: #EEF6FB;
+  --don-text: #0C1A26;
+  --don-muted: #3D566B;
+  --don-blue-ink: #0A5A91;
+  --don-red-ink: #B01220;
+  --don-line: #5A86A8;
+  --don-focus: #B01220;
+  --don-shadow: 0 1px 2px #0C1A2626, 0 8px 18px -10px #0C1A2699;
+
+  /* card stock, the same in both modes. ink/paper 16.5, ink-muted/paper 7.0 */
+  --don-paper: #FFFFFF;
+  --don-ink: #14202B;
+  --don-ink-muted: #4A5B69;
+  --don-rule: #14202B;
+  --don-red: #C8202F;          /* back-of-card name; on paper 5.7, white on it 5.7 */
+  --don-on-red: #FFFFFF;
+  --don-blue: #0F6FA8;         /* contract text; on paper 5.4 */
+  --don-sky: #38A6E3;          /* top of the bar gradient; ink on it 6.1 */
+  --don-sky-mid: #7CC8EE;      /* ink on it 8.9 */
+  --don-sky-pale: #D3EEFB;     /* bottom of the bar; ink on it 13.7 */
+  --don-slate: #1B2530;        /* stats header; white on it 15.5 */
+  --don-on-slate: #FFFFFF;
+  --don-chisel: #E9EDF0;       /* name fill; the dark outline carries the contrast */
+  --don-chisel-edge: #20272D;
+
+  /* type: condensed bold caps like the name plate, plain sans for body */
+  --don-font-display: "Arial Narrow", "Helvetica Neue Condensed", "Roboto Condensed", Impact, "Franklin Gothic Medium", "Arial Black", sans-serif;
+  --don-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --don-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --don-track: 0.14em;
+  --don-radius: 0.2rem;
+  --don-bar: linear-gradient(to bottom, var(--don-sky) 0%, var(--don-sky-pale) 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Contrast on bg: text 16.5, muted 10.1, blue-ink 9.3, red-ink 8.3, line 4.3 */
+  :root:not([data-theme="light"]) {
+    --don-bg: #09151F;
+    --don-text: #EAF4FB;
+    --don-muted: #A9C3D6;
+    --don-blue-ink: #6EC1F5;
+    --don-red-ink: #FF8D93;
+    --don-line: #4F7FA3;
+    --don-focus: #FFD84A;
+    --don-shadow: 0 1px 2px #000A, 0 8px 18px -10px #000;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --don-bg: #09151F;
+  --don-text: #EAF4FB;
+  --don-muted: #A9C3D6;
+  --don-blue-ink: #6EC1F5;
+  --don-red-ink: #FF8D93;
+  --don-line: #4F7FA3;
+  --don-focus: #FFD84A;
+  --don-shadow: 0 1px 2px #000A, 0 8px 18px -10px #000;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- page: opt in with class="don" on <body> ---------------------------- */
+
+.don {
+  margin: 0;
+  background: var(--don-bg);
+  color: var(--don-text);
+  font: 1rem/1.55 var(--don-font-body);
+  -webkit-text-size-adjust: 100%;
+}
+.don *, .don *::before, .don *::after { box-sizing: border-box; }
+:where(.don) :is(h1, h2, h3, h4) {
+  font-family: var(--don-font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--don-text);
+  margin: 0 0 0.5em;
+}
+:where(.don) h1 { font-size: clamp(2.4rem, 8vw, 4.25rem); }
+:where(.don) h2 { font-size: clamp(1.5rem, 4vw, 2.1rem); }
+:where(.don) h3 { font-size: 1.15rem; }
+:where(.don) h4 { font-size: 0.9rem; letter-spacing: var(--don-track); }
+.don a { color: var(--don-blue-ink); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.don a:hover { text-decoration-thickness: 2px; }
+.don :focus-visible { outline: 3px solid var(--don-focus); outline-offset: 2px; }
+.don hr { border: 0; border-top: 2px solid var(--don-line); margin: 2rem 0; }
+.don code, .don kbd { font-family: var(--don-font-mono); font-size: 0.9em; }
+
+/* ---- type -------------------------------------------------------------- */
+
+/* a big wordmark: condensed caps with a gradient bar rule beneath */
+.don-title {
+  font-family: var(--don-font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--don-text);
+  margin: 0;
+}
+.don-title--xl { font-size: clamp(2.8rem, 12vw, 5.5rem); }
+.don-title--lg { font-size: clamp(2rem, 6vw, 3.25rem); }
+.don-title--md { font-size: clamp(1.3rem, 4vw, 1.8rem); }
+
+/* tiny spaced caps, like the "D O N R U S S  1 9 9 2" header */
+.don-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: var(--don-track);
+  color: var(--don-muted);
+}
+.don-copy { font-size: 0.95rem; line-height: 1.5; max-width: 38rem; }
+
+/* ---- bar: the sky-blue gradient stripe ---------------------------------- */
+
+.don-bar {
+  display: block;
+  padding: 0.25rem 0.75rem;
+  background: var(--don-bar);
+  color: var(--don-ink);
+  border: 1px solid var(--don-ink);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+}
+
+/* ---- front of a card ----------------------------------------------------- */
+
+/* white stock, a bar of spaced caps across the top, the photo, then the
+   plate with the chiseled name over TEAM • POSITION */
+.don-card {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 15rem);
+  aspect-ratio: 5 / 7;
+  padding: 0.5rem;
+  background: var(--don-paper);
+  color: var(--don-ink);
+  border: 1px solid #14202B33;
+  border-radius: 0.3rem;
+  box-shadow: var(--don-shadow);
+  overflow: hidden;
+}
+.don-card-head {
+  flex: none;
+  padding: 0.15rem 0;
+  background: var(--don-bar);
+  border-bottom: 1px solid var(--don-ink);
+  font-size: 0.5rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+}
+/* the photo slot: put an <img> (or any element) inside, or leave it as the
+   placeholder gradient */
+.don-photo {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  background: linear-gradient(to bottom, #6FA8D0 0%, #3E7DA8 55%, #4F8A4C 55%, #8C6B45 100%);
+  overflow: hidden;
+}
+.don-photo > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.don-plate {
+  flex: none;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.3rem 0.4rem 0.4rem;
+  background: var(--don-bar);
+  border-top: 1px solid var(--don-ink);
+  text-align: center;
+}
+/* chiseled name: light gray letters with a dark outline */
+.don-name {
+  font-family: var(--don-font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--don-chisel);
+  -webkit-text-stroke: 3px var(--don-chisel-edge);
+  paint-order: stroke fill;
+  text-shadow: 1px 2px 0 var(--don-chisel-edge);
+}
+.don-sub {
+  font-size: 0.55rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--don-ink);
+}
+
+/* ---- back of a card ------------------------------------------------------- */
+
+/* landscape: red name, bio and logos at left over the stats table, contract
+   and highlights at right, the number in the corner, a blue stripe at the edge */
+.don-back {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  grid-template-areas:
+    "who   no"
+    "who   hl"
+    "stats hl";
+  gap: 0.4rem 0.9rem;
+  width: min(100%, 34rem);
+  padding: 0.75rem 1.5rem 0.75rem 0.85rem;
+  background: var(--don-paper);
+  color: var(--don-ink);
+  border: 1px solid #14202B33;
+  border-radius: 0.3rem;
+  box-shadow: var(--don-shadow);
+  overflow: hidden;
+}
+/* the blue stripe down the right edge */
+.don-back::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 0.65rem;
+  background: linear-gradient(to right, var(--don-sky-pale), var(--don-sky));
+  border-left: 1px solid var(--don-ink);
+}
+.don-who { grid-area: who; min-width: 0; }
+.don-back-name {
+  margin: 0 0 0.3rem;
+  font-family: var(--don-font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.02;
+  text-transform: uppercase;
+  color: var(--don-red);
+}
+.don-back-no {
+  grid-area: no;
+  justify-self: end;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--don-ink);
+}
+.don-bio { margin: 0; font-size: 0.62rem; line-height: 1.35; color: var(--don-ink); }
+.don-bio b { font-weight: 600; }
+.don-logos { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; }
+/* the DONRUSS wordmark: heavy italic red caps */
+.don-logo {
+  font-family: var(--don-font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--don-red);
+}
+/* licensing marks: small ink-ruled squares */
+.don-mark { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; border: 1px solid var(--don-ink); border-radius: 0.2rem; font-size: 0.4rem; font-weight: 800; letter-spacing: 0.04em; color: var(--don-ink); }
+.don-hl { grid-area: hl; min-width: 0; }
+.don-contract { margin: 0 0 0.4rem; font-size: 0.62rem; line-height: 1.35; color: var(--don-blue); }
+.don-hl-title {
+  margin: 0 0 0.15rem;
+  font-family: var(--don-font-display);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--don-red);
+}
+.don-hl-text { margin: 0; font-size: 0.62rem; line-height: 1.35; color: var(--don-ink); }
+
+/* ---- stats table: RECENT MAJOR LEAGUE PERFORMANCE ------------------------- */
+
+.don-stats-wrap { grid-area: stats; min-width: 0; overflow-x: auto; }
+.don-stats {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--don-paper);
+  color: var(--don-ink);
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
+}
+/* the dark title band: a caption reading "Series 1  RECENT MAJOR LEAGUE PERFORMANCE" */
+.don-stats caption {
+  caption-side: top;
+  padding: 0.15rem 0.4rem;
+  background: var(--don-slate);
+  color: var(--don-on-slate);
+  font-family: var(--don-font-display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.don-stats caption small { margin-right: 0.5rem; font-size: 0.5rem; font-weight: 600; letter-spacing: 0.02em; opacity: 0.9; }
+.don-stats th, .don-stats td { padding: 0.1rem 0.25rem; text-align: right; border-bottom: 1px solid #14202B33; white-space: nowrap; }
+.don-stats thead th { font-weight: 800; text-transform: uppercase; border-bottom: 1px solid var(--don-ink); }
+.don-stats th:first-child, .don-stats td:first-child, .don-stats th:nth-child(2), .don-stats td:nth-child(2) { text-align: left; }
+.don-stats tbody th { font-weight: 400; }
+.don-stats tfoot th, .don-stats tfoot td { font-weight: 800; border-top: 1px solid var(--don-ink); border-bottom: 0; }
+
+/* ---- sheet: a nine-pocket binder page ------------------------------------- */
+
+.don-sheet {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.3rem, 1.5vw, 0.75rem);
+  padding: clamp(0.4rem, 2vw, 1rem);
+  background: color-mix(in srgb, var(--don-text) 8%, var(--don-bg));
+  border: 1px solid var(--don-line);
+  border-radius: var(--don-radius);
+}
+.don-sheet .don-card { width: 100%; padding: clamp(0.15rem, 1vw, 0.5rem); }
+.don-sheet .don-name { font-size: clamp(0.55rem, 2.6vw, 1.15rem); -webkit-text-stroke-width: 2px; }
+.don-sheet .don-sub { font-size: clamp(0.35rem, 1.5vw, 0.55rem); }
+.don-sheet .don-card-head { font-size: clamp(0.3rem, 1.3vw, 0.5rem); letter-spacing: 0.3em; }
+
+/* ---- controls ------------------------------------------------------------- */
+
+.don-button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--don-bar);
+  color: var(--don-ink);
+  border: 2px solid var(--don-ink);
+  border-radius: var(--don-radius);
+  box-shadow: 0 3px 0 var(--don-ink);
+  font: 800 0.85rem/1.1 var(--don-font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+.don-button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--don-ink); }
+.don-button:disabled { opacity: 0.55; cursor: not-allowed; }
+.don-button--red { background: var(--don-red); color: var(--don-on-red); }
+.don-button--paper { background: var(--don-paper); }
+.don-button--ghost { background: transparent; color: var(--don-text); border-color: var(--don-line); box-shadow: none; }
+.don-button--ghost:active { transform: none; }
+
+.don-field { display: grid; gap: 0.3rem; }
+.don-input, .don-select {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--don-paper);
+  color: var(--don-ink);
+  border: 2px solid var(--don-ink);
+  border-radius: var(--don-radius);
+  font: 1rem/1.3 var(--don-font-body);
+}
+.don-input::placeholder { color: var(--don-ink-muted); }
+
+/* ---- badge, divider -------------------------------------------------------- */
+
+.don-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  background: var(--don-bar);
+  color: var(--don-ink);
+  border: 1px solid var(--don-ink);
+  border-radius: 99rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.don-badge--red { background: var(--don-red); color: var(--don-on-red); }
+.don-divider { height: 0.6rem; margin: 1.5rem 0; border: 0; background: var(--don-bar); border-block: 1px solid var(--don-line); }
