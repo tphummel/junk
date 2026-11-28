@@ -169,6 +169,39 @@ export function improve(p, max) {
 }
 
 /**
+ * The properties of a group you can develop together: you own enough of the set (all of it, or in Mega all but
+ * one) and it can be built on.
+ * @param {Game} g @param {string} group @returns {Property[]}
+ */
+export function developableSet(g, group) {
+  const set = g.properties.filter((p) => p.group === group);
+  const need = set.length ? (g.edition === "mega" ? partialAt(set[0]) : set[0].groupSize) : 0;
+  return set.length > 0 && set.length >= need && set.every((p) => p.houseCost > 0) ? set : [];
+}
+
+/**
+ * Add one improvement to every property in the group that has room. Nothing changes if any is mortgaged.
+ * @param {Game} g @param {string} group @returns {string | null}
+ */
+export function improveGroup(g, group) {
+  const set = developableSet(g, group);
+  if (!set.length) return g.edition === "mega" ? "Own all but one of the group to develop it together." : "Own the whole group to develop it together.";
+  if (set.some((p) => p.mortgaged)) return "Lift the group's mortgages first.";
+  const open = set.filter((p) => p.level < maxLevel(g, p));
+  if (!open.length) return "Already fully built.";
+  for (const p of open) improve(p, maxLevel(g, p));
+  return null;
+}
+
+/** Sell one improvement back from every property in the group that has one. @param {Game} g @param {string} group @returns {string | null} */
+export function sellGroup(g, group) {
+  const set = developableSet(g, group).filter((p) => p.level > 0);
+  if (!set.length) return "Nothing to sell.";
+  for (const p of set) sellImprovement(p);
+  return null;
+}
+
+/**
  * Whether a history entry may be deleted. The purchase (including one that carries basis from a trade) can't be:
  * delete the property instead. Trade entries tie two properties together. Once a property is traded away only its
  * rent can be corrected, because its other state is closed.
