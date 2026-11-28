@@ -61,15 +61,52 @@ def test_missing_blendshapes_raises():
         sf.score_result(r)
 
 
-def test_cli_logs_csv(tmp_path, capsys):
-    src = tmp_path / "a.json"
-    src.write_text(json.dumps(perfect()))
+def write_day(directory, name, **overrides):
+    r = perfect()
+    r.update(overrides)
+    (directory / name).write_text(json.dumps(r))
+
+
+def test_directory_trend_groups_by_day_with_median(tmp_path, capsys):
+    bad_hair = {"mustache_probability": 1, "beard_probability": 1}
+    write_day(tmp_path, "2026-11-01_a.json", facial_hair_indicators=bad_hair)
+    write_day(tmp_path, "2026-11-01_b.json", facial_hair_indicators=bad_hair)
+    write_day(tmp_path, "2026-11-01_c.json")  # median of the 3 shots is still the bad one
+    write_day(tmp_path, "20261102.json")
+    (tmp_path / "notes.txt").write_text("ignored")
+
+    assert sf.main([str(tmp_path)]) == 0
+
+    out = capsys.readouterr().out
+    assert "2026-11-01     3" in out and "2026-11-02     1" in out
+    assert "days: 2" in out and "change since first day: +33.3" in out
+
+
+def test_date_from_name_or_mtime(tmp_path):
+    assert sf.date_of(tmp_path / "x-2026-11-05-y.json") == "2026-11-05"
+    assert sf.date_of(tmp_path / "20261106.json") == "2026-11-06"
+    f = tmp_path / "plain.json"
+    f.write_text("{}")
+    assert len(sf.date_of(f)) == 10
+
+
+def test_log_is_idempotent(tmp_path):
+    write_day(tmp_path, "2026-11-01.json")
+    write_day(tmp_path, "2026-11-02.json")
     log = tmp_path / "scores.csv"
 
-    assert sf.main([str(src), "--log", str(log), "--date", "2026-11-28"]) == 0
-    assert sf.main([str(src), "--log", str(log), "--date", "2026-11-29"]) == 0
+    assert sf.main([str(tmp_path), "--log", str(log)]) == 0
+    assert sf.main([str(tmp_path), "--log", str(log)]) == 0
 
     rows = list(csv.reader(log.open()))
     assert rows[0][:3] == ["date", "file", "total"]
-    assert [r[0] for r in rows[1:]] == ["2026-11-28", "2026-11-29"]
+    assert [r[0] for r in rows[1:]] == ["2026-11-01", "2026-11-02"]
+
+
+def test_single_file_report_and_bad_file_status(tmp_path, capsys):
+    write_day(tmp_path, "2026-11-01.json")
+    assert sf.main([str(tmp_path / "2026-11-01.json")]) == 0
     assert "100.0 / 100" in capsys.readouterr().out
+
+    (tmp_path / "bad.json").write_text(json.dumps({"error": "No face detected"}))
+    assert sf.main([str(tmp_path / "bad.json")]) == 1

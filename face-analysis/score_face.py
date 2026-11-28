@@ -6,15 +6,21 @@ the service. Perfect (100) means: head pose at 0/0/0 degrees, a neutral expressi
 facial hair. The score is the weighted mean of those three parts, each 0-100.
 
 Usage:
-    python score_face.py analysis.json [more.json ...]
-    python score_face.py analysis.json --json
-    python score_face.py analysis.json --log scores.csv --date 2026-11-28
+    python score_face.py analysis.json                  # one file: full breakdown
+    python score_face.py ~/faces/                       # a directory of daily JSON: trend by day
+    python score_face.py ~/faces/ --log scores.csv      # also record per-file rows (idempotent)
+    python score_face.py ~/faces/ --json
+
+A day's date comes from a YYYY-MM-DD or YYYYMMDD in the file name, else the file's modified
+date. Several files with the same date are summarized by their median.
 """
 import argparse
 import csv
 import json
+import re
+import statistics
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 # Weights of the three parts (normalized, so they need not sum to 1).
@@ -97,42 +103,114 @@ def format_report(name, scored):
     return "\n".join(lines)
 
 
-def append_log(path, day, name, scored):
+DATE_RE = re.compile(r"(\d{4})-?(\d{2})-?(\d{2})")
+
+
+def expand(paths):
+    """Files as given; a directory contributes its *.json files, sorted."""
+    files = []
+    for p in map(Path, paths):
+        files.extend(sorted(p.glob("*.json")) if p.is_dir() else [p])
+    return files
+
+
+def date_of(path):
+    m = DATE_RE.search(path.name)
+    if m:
+        try:
+            return datetime(*map(int, m.groups())).date().isoformat()
+        except ValueError:
+            pass
+    return datetime.fromtimestamp(path.stat().st_mtime).date().isoformat()
+
+
+def append_log(path, rows):
+    """Append (date, file, scored) rows to a CSV, skipping (date, file) pairs already there."""
     path = Path(path)
+    seen = set()
+    if path.exists():
+        with path.open(newline="") as fh:
+            seen = {(r["date"], r["file"]) for r in csv.DictReader(fh)}
     new = not path.exists()
     with path.open("a", newline="") as fh:
         writer = csv.writer(fh)
         if new:
             writer.writerow(["date", "file", "total", "pose", "expression", "facial_hair"])
-        parts = scored["parts"]
-        writer.writerow([day, name, f"{scored['total']:.1f}", f"{parts['pose']['score']:.1f}",
-                         f"{parts['expression']['score']:.1f}", f"{parts['facial_hair']['score']:.1f}"])
+        for day, name, scored in rows:
+            if (day, name) in seen:
+                continue
+            parts = scored["parts"]
+            writer.writerow([day, name, f"{scored['total']:.1f}", f"{parts['pose']['score']:.1f}",
+                             f"{parts['expression']['score']:.1f}", f"{parts['facial_hair']['score']:.1f}"])
+
+
+def summarize_days(rows):
+    """Median score per day -> [{date, shots, total, pose, expression, facial_hair}], by date."""
+    by_day = {}
+    for day, _, scored in rows:
+        by_day.setdefault(day, []).append(scored)
+    days = []
+    for day in sorted(by_day):
+        shots = by_day[day]
+        entry = {"date": day, "shots": len(shots),
+                 "total": statistics.median(x["total"] for x in shots)}
+        for part in WEIGHTS:
+            entry[part] = statistics.median(x["parts"][part]["score"] for x in shots)
+        days.append(entry)
+    return days
+
+
+def format_trend(days):
+    lines = [f"{'date':<11}{'shots':>5}{'total':>8}{'pose':>7}{'expr':>7}{'hair':>7}"]
+    for d in days:
+        lines.append(f"{d['date']:<11}{d['shots']:>5}{d['total']:>8.1f}{d['pose']:>7.1f}"
+                     f"{d['expression']:>7.1f}{d['facial_hair']:>7.1f}")
+    totals = [d["total"] for d in days]
+    best = max(days, key=lambda d: d["total"])
+    summary = [f"days: {len(days)}   latest: {totals[-1]:.1f}   best: {best['total']:.1f} ({best['date']})"]
+    if len(days) > 1:
+        summary.append(f"change since first day: {totals[-1] - totals[0]:+.1f}")
+    if len(days) >= 7:
+        summary.append(f"last 7 days avg: {statistics.mean(totals[-7:]):.1f}")
+    return "\n".join(lines + ["", "   ".join(summary)])
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("files", nargs="+", help="analysis JSON file(s)")
+    parser.add_argument("paths", nargs="+", help="analysis JSON file(s) and/or directories of them")
     parser.add_argument("--json", action="store_true", help="print machine-readable JSON")
-    parser.add_argument("--log", metavar="CSV", help="append a row per file to this CSV")
-    parser.add_argument("--date", default=date.today().isoformat(), help="date for --log (default today)")
+    parser.add_argument("--log", metavar="CSV", help="append per-file rows to this CSV (skips ones already logged)")
     args = parser.parse_args(argv)
 
+    files = expand(args.paths)
+    if not files:
+        print("no JSON files found", file=sys.stderr)
+        return 1
+
     status = 0
-    out = {}
-    for f in args.files:
+    rows = []
+    for f in files:
         try:
-            scored = score_result(json.loads(Path(f).read_text()))
+            rows.append((date_of(f), f.name, score_result(json.loads(f.read_text())), str(f)))
         except (OSError, ValueError) as exc:
             print(f"{f}: {exc}", file=sys.stderr)
             status = 1
-            continue
-        out[f] = scored
-        if not args.json:
-            print(format_report(f, scored))
-        if args.log:
-            append_log(args.log, args.date, Path(f).name, scored)
+    if not rows:
+        return 1
+
+    if args.log:
+        append_log(args.log, [(d, n, s) for d, n, s, _ in rows])
+
+    single = len(rows) == 1 and not Path(args.paths[0]).is_dir()
     if args.json:
+        out = {"files": {path: {"date": d, "score": s} for d, _, s, path in rows}}
+        if not single:
+            out["days"] = summarize_days([(d, n, s) for d, n, s, _ in rows])
         print(json.dumps(out, indent=2))
+    elif single:
+        print(format_report(rows[0][3], rows[0][2]))
+    else:
+        print(format_trend(summarize_days([(d, n, s) for d, n, s, _ in rows])))
     return status
 
 
