@@ -233,11 +233,11 @@
   </details>
   </div>
 
-  <small id="version">2026-11-27T20:13:55Z</small>
+  <small id="version">2026-11-28T04:40:33Z</small>
 
   <script type="module">
     import { reportFileName, reportHtml } from './report.js';
-    import { gameCreated, ymd, CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, exportFileName, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+    import { gameCreated, ymd, CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, improveGroup, sellGroup, developableSet, levelName, maxLevel, exportFileName, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
 
     // Kept from this page's earlier name so games already saved in the browser still load.
     const KEY = 'monopoly-tracker-v1';
@@ -328,7 +328,14 @@
       $('archivedPanel').hidden = !arch.length;
       $('archivedSummary').textContent = 'Traded away (' + arch.length + ')';
       $('archived').replaceChildren(...arch.map((p) => archivedCard(g, p)));
-      $('list').replaceChildren(...(props.length ? props.map(({ p, s }) => card(g, p, s)) : [h('p', { class: 'muted', text: 'No properties yet. Add one above.' })]));
+      const items = [];
+      let last = null;
+      for (const { p, s } of props) {
+        if (sort === 'group' && p.group !== last && developableSet(g, p.group).length) items.push(groupBar(g, p.group));
+        last = p.group;
+        items.push(card(g, p, s));
+      }
+      $('list').replaceChildren(...(props.length ? items : [h('p', { class: 'muted', text: 'No properties yet. Add one above.' })]));
     }
 
     const LABELS = ['rent', '1 house', '2 houses', '3 houses', '4 houses', 'hotel', 'skyscraper'];
@@ -382,6 +389,19 @@
         h('span', { text: 'rent ' }, h('b', { text: money(s.rent) })), h('span', { text: 'profit ' }, h('b', { class: cls(s.profit), text: money(s.profit) }))));
       c.append(history(p, true));
       return c;
+    }
+
+    // Shown above a color group you own in full (when sorted by group): build or sell one level on every deed at once.
+    function groupBar(g, group) {
+      const set = developableSet(g, group);
+      const sample = set[0];
+      const cost = set.reduce((t, p) => t + p.houseCost, 0);
+      const b = (action, text, disabled) => h('button', { 'data-group-action': action, 'data-group': group, class: 'mon-button mon-button--paper', text, ...(disabled ? { disabled: '' } : {}) });
+      const full = set.every((p) => p.level >= maxLevel(g, p)) || set.some((p) => p.mortgaged);
+      return h('div', { class: 'row bar groupbar ' + groupClass(g, sample) },
+        h('span', { class: 'muted', text: 'Whole group: ' }),
+        b('build-all', '+ build all (' + money(cost) + ')', full),
+        b('sell-all', '− sell back all', set.every((p) => p.level <= 0)));
     }
 
     const expanded = new Set(); // property ids whose card is open; survives re-renders
@@ -497,6 +517,12 @@
       say(err); if (!err) save(); render();
     });
     $('list').addEventListener('click', (e) => {
+      const gb = e.target.closest('button[data-group-action]');
+      if (gb) {
+        const g = game();
+        const err = gb.dataset.groupAction === 'build-all' ? improveGroup(g, gb.dataset.group) : sellGroup(g, gb.dataset.group);
+        say(err); save(); render(); return;
+      }
       const b = e.target.closest('button[data-action]'); if (!b || b.dataset.action === 'delete-entry') return;
       const c = b.closest('.card'); const g = game(); const p = g.properties.find((x) => x.id === c.dataset.id);
       const a = b.dataset.action;

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { reportFileName, reportHtml, esc } from "../web/monopoly-asset-manager/report.js";
-import { CARDS, CLASSIC, MEGA, REPAIR_RATES, exportFileName, gameCreated, slug, uid, basisOf, payRepairs, pieces, planRepairs, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
+import { CARDS, CLASSIC, MEGA, REPAIR_RATES, exportFileName, gameCreated, slug, uid, basisOf, payRepairs, pieces, planRepairs, canDeleteEntry, deleteEntry, partialAt, buyProperty, collectAutoRent, executeTrade, planTrade, splitEvenly, collectRent, gameStats, improve, migrateGames, newProperty, parseGames, pricePaid, rentFor, setPricePaid, sellImprovement, improveGroup, sellGroup, stats, toggleMortgage } from "../web/monopoly-asset-manager/tracker.js";
 
 const boardwalk = () => newProperty({ name: "Boardwalk", group: "darkblue", price: 400, houseCost: 200, rent: 50 });
 
@@ -619,4 +619,19 @@ test("report: an empty game still makes a valid report", () => {
   assert.ok(html.includes("No properties owned."));
   assert.ok(html.includes("Nothing yet."));
   assert.ok(!html.includes("Traded away"));
+});
+
+test("group build and sell act on every owned deed once the set is complete", () => {
+  const mk = (name, mortgaged = false) => ({ ...newProperty({ name, group: "darkblue", price: 350, houseCost: 200, groupSize: 2 }), mortgaged });
+  const g = { edition: "classic", properties: [mk("Park Place")] };
+  assert.match(improveGroup(g, "darkblue"), /whole group/i);
+  g.properties.push(mk("Boardwalk"));
+  assert.equal(improveGroup(g, "darkblue"), null);
+  assert.deepEqual(g.properties.map((p) => p.level), [1, 1]);
+  assert.equal(sellGroup(g, "darkblue"), null);
+  assert.deepEqual(g.properties.map((p) => p.level), [0, 0]);
+  assert.match(sellGroup(g, "darkblue"), /Nothing/);
+  g.properties[1].mortgaged = true;
+  assert.match(improveGroup(g, "darkblue"), /mortgage/);
+  assert.deepEqual(g.properties.map((p) => p.level), [0, 0]);
 });
