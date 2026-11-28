@@ -635,3 +635,14 @@ test("group build and sell act on every owned deed once the set is complete", ()
   assert.match(improveGroup(g, "darkblue"), /mortgage/);
   assert.deepEqual(g.properties.map((p) => p.level), [0, 0]);
 });
+
+test("in Mega a group can be developed with all but one deed owned", () => {
+  const mk = (name) => newProperty({ name, group: "red", price: 220, houseCost: 150, groupSize: 4 });
+  const g = { edition: "mega", properties: [mk("A"), mk("B")] };
+  assert.match(improveGroup(g, "red"), /all but one/i);
+  g.properties.push(mk("C"));
+  assert.equal(improveGroup(g, "red"), null);
+  assert.deepEqual(g.properties.map((p) => p.level), [1, 1, 1]);
+  assert.equal(sellGroup(g, "red"), null);
+  assert.deepEqual(g.properties.map((p) => p.level), [0, 0, 0]);
+});

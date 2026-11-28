@@ -169,12 +169,14 @@ export function improve(p, max) {
 }
 
 /**
- * The properties of a group you can develop together: you own the whole set and it can be built on.
+ * The properties of a group you can develop together: you own enough of the set (all of it, or in Mega all but
+ * one) and it can be built on.
  * @param {Game} g @param {string} group @returns {Property[]}
  */
 export function developableSet(g, group) {
   const set = g.properties.filter((p) => p.group === group);
-  return set.length > 0 && set.length >= set[0].groupSize && set.every((p) => p.houseCost > 0) ? set : [];
+  const need = set.length ? (g.edition === "mega" ? partialAt(set[0]) : set[0].groupSize) : 0;
+  return set.length > 0 && set.length >= need && set.every((p) => p.houseCost > 0) ? set : [];
 }
 
 /**
@@ -183,7 +185,7 @@ export function developableSet(g, group) {
  */
 export function improveGroup(g, group) {
   const set = developableSet(g, group);
-  if (!set.length) return "Own the whole group to develop it together.";
+  if (!set.length) return g.edition === "mega" ? "Own all but one of the group to develop it together." : "Own the whole group to develop it together.";
   if (set.some((p) => p.mortgaged)) return "Lift the group's mortgages first.";
   const open = set.filter((p) => p.level < maxLevel(g, p));
   if (!open.length) return "Already fully built.";
