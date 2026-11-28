@@ -39,6 +39,7 @@
     /* property cards: a deed, with the group's color down the left edge */
     .card:not([class*="mon-g-"]):not(.g-brown) { --mon-bar: var(--mon-ink-muted); } /* railroads and utilities have no color group */
     .card { background: var(--mon-paper); border: 1px solid var(--mon-ink); border-left: 10px solid var(--mon-bar); border-radius: var(--mon-radius); padding: .4rem .8rem; margin: .6rem 0; box-shadow: var(--mon-shadow); }
+    .groupbar { border-left: 10px solid var(--mon-bar, var(--mon-ink-muted)); padding-left: .8rem; margin: .6rem 0 -.2rem; } /* the group's bulk buttons, with the same color edge as its deeds */
     .g-brown { --mon-bar: #8B5A2B; } /* 5.7:1 on the card paper */
     .card.mortgaged { background-image: repeating-linear-gradient(135deg, #12171214 0 6px, transparent 6px 12px); }
     .card h3 { margin: 0; font-size: 1rem; }
@@ -233,7 +234,7 @@
   </details>
   </div>
 
-  <small id="version">2026-11-28T06:53:01Z</small>
+  <small id="version">2026-11-28T07:00:31Z</small>
 
   <script type="module">
     import { reportFileName, reportHtml } from './report.js';
