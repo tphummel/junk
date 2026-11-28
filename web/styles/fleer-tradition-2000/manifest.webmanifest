@@ -1,0 +1,14 @@
+{
+  "name": "fleer tradition 2000 style sheet",
+  "short_name": "fleer 2000",
+  "description": "A style sheet inspired by the 2000 Fleer Tradition baseball cards: team-color fronts, kraft-cardboard backs, stat tables and binder pages, plus a storybook.",
+  "start_url": "/styles/fleer-tradition-2000/",
+  "scope": "/styles/fleer-tradition-2000/",
+  "display": "standalone",
+  "background_color": "#15171E",
+  "theme_color": "#15171E",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

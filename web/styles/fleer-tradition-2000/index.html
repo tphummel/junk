@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>fleer tradition 2000 style sheet</title>
+  <link rel="stylesheet" href="fleer-tradition-2000.css">
+  <style>
+    /* storybook chrome only; the components below come from fleer-tradition-2000.css */
+    .sb { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 72rem; margin: 0 auto; padding: 0 1rem 5rem; gap: 0 2.5rem; }
+    @media (min-width: 60rem) { .sb { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .sb header { grid-column: 1 / -1; padding: 1.5rem 0 2rem; }
+    .hero { display: grid; gap: 0.9rem; justify-items: center; text-align: center; padding: clamp(2rem, 6vw, 3.5rem) 1rem; background: var(--ft-yellow); color: var(--ft-on-yellow); border: 0.5rem solid var(--ft-paper); border-radius: 0.3rem; box-shadow: var(--ft-shadow); }
+    .hero .ft-title, .hero .ft-label, .hero .ft-copy { color: var(--ft-on-yellow); margin: 0; }
+    .hero .ft-label { color: var(--ft-ink); }
+    .sb nav { position: sticky; top: 1rem; align-self: start; display: none; }
+    @media (min-width: 60rem) { .sb nav { display: block; } }
+    .sb nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+    .sb nav a { display: block; padding: 0.35rem 0.6rem; border-left: 3px solid var(--ft-line); color: var(--ft-text); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .sb nav a:hover { color: var(--ft-link); border-color: var(--ft-link); }
+    .theme { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .theme button { font-size: 0.72rem; min-height: 2.25rem; padding: 0.3rem 0.9rem; }
+    .theme button[aria-pressed="true"] { background: var(--ft-brand); color: var(--ft-on-brand); border-color: var(--ft-ink); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    main section { padding-top: 2.5rem; scroll-margin-top: 0.5rem; }
+    main section > p { max-width: 42rem; }
+    .demo { padding: clamp(1rem, 3vw, 1.75rem); border: 1px dashed var(--ft-line); border-radius: var(--ft-radius); }
+    .demo + details { margin-top: 0.5rem; }
+    .stack { display: grid; gap: 1.25rem; }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+    details summary { cursor: pointer; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--ft-track); color: var(--ft-muted); padding: 0.4rem 0; }
+    pre { margin: 0; overflow-x: auto; padding: 1rem; background: var(--ft-paper); color: var(--ft-ink); border: 1px solid var(--ft-ink); border-radius: var(--ft-radius); font: 0.8rem/1.5 var(--ft-font-mono); }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.75rem; }
+    .sw { border: 1px solid var(--ft-ink); border-radius: var(--ft-radius); overflow: hidden; background: var(--ft-paper); color: var(--ft-ink); }
+    .sw i { display: block; height: 3rem; border-bottom: 1px solid var(--ft-ink); }
+    .sw div { padding: 0.5rem 0.65rem; font-size: 0.8rem; line-height: 1.4; }
+    .sw code { display: block; font-size: 0.75rem; word-break: break-all; }
+    .sw .pass { color: var(--ft-ink-muted); }
+    footer { grid-column: 1 / -1; margin-top: 3rem; font-size: 0.85rem; color: var(--ft-muted); }
+  </style>
+  <meta name="theme-color" content="#15171E">
+  <link rel="icon" href="/styles/fleer-tradition-2000/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/styles/fleer-tradition-2000/apple-touch-icon.png">
+  <link rel="manifest" href="/styles/fleer-tradition-2000/manifest.webmanifest">
+</head>
+<body class="ft">
+<div class="sb">
+  <header>
+    <div class="top">
+      <span class="ft-label"><a href="/">junk</a> / style sheets / fleer tradition 2000</span>
+      <div class="theme" id="theme" role="group" aria-label="Preview theme"></div>
+    </div>
+    <div class="hero">
+      <span class="ft-label">Style sheet</span>
+      <h1 class="ft-title ft-title--xl">Fleer Tradition</h1>
+      <p class="ft-copy">Flat team colors in a cream border, wide black-caps names, kraft-cardboard backs with a home-plate number and a cartoon, inspired by the 2000 Fleer Tradition baseball cards. Plain CSS, no fonts or scripts to load, light and dark.</p>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#use">Use it</a></li>
+      <li><a href="#palette">Palette</a></li>
+      <li><a href="#type">Type</a></li>
+      <li><a href="#front">Card front</a></li>
+      <li><a href="#back">Card back</a></li>
+      <li><a href="#table">Stat table</a></li>
+      <li><a href="#binder">Binder page</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#badge">Badge, divider</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="use">
+      <h2>Use it</h2>
+      <p>Link the sheet from any page on this site, then add <code>class="ft"</code> to <code>&lt;body&gt;</code> for the page defaults. Nothing changes until you do: every class is prefixed <code>ft-</code> and every custom property <code>--ft-</code>.</p>
+      <pre>&lt;link rel="stylesheet" href="/styles/fleer-tradition-2000/fleer-tradition-2000.css"&gt;
+&lt;body class="ft"&gt;
+  &lt;article class="ft-card ft-c-blue"&gt;
+    &lt;header class="ft-card-head"&gt;
+      &lt;h3 class="ft-card-name"&gt;Tom Davey&lt;/h3&gt;
+      &lt;p class="ft-card-sub"&gt;Seattle Mariners &amp;bull; Pitcher&lt;/p&gt;
+    &lt;/header&gt;
+  &lt;/article&gt;
+&lt;/body&gt;</pre>
+      <p>The page is a binder page of card stock and changes with light and dark. Cards, backs and sleeves are printed cardboard: they keep cream, kraft and ink in both modes, like cards on a dark table. Force a theme with <code>data-theme="light"</code> or <code>"dark"</code> on <code>&lt;html&gt;</code>. Photos, logos and cartoons are slots: put an <code>&lt;img&gt;</code> in them, or leave them empty for a placeholder.</p>
+    </section>
+
+    <section id="palette">
+      <h2>Palette</h2>
+      <p>Values are read from the live sheet and follow the theme switch. Ratios are WCAG contrast against the stated background; text needs 4.5, lines 3.</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section id="type">
+      <h2>Type</h2>
+      <p>Names are wide heavy caps (Eurostile or Arial Black, whichever the device has). Team and position lines are small spaced caps. Backs use a narrow sans, and the signature is a script face.</p>
+      <div class="demo stack">
+        <h1 class="ft-title ft-title--lg">Doug Mientkiewicz</h1>
+        <span class="ft-label">Minnesota Twins &bull; First base</span>
+        <p class="ft-copy">Doug enjoyed a breakthrough year at Double-A in 1998, hitting .323 with 45 doubles.</p>
+      </div>
+    </section>
+
+    <section id="front">
+      <h2>Card front</h2>
+      <p>A team-color field in a cream border (thicker at the foot). Six colors: <code>ft-c-yellow</code>, <code>blue</code>, <code>red</code>, <code>green</code>, <code>purple</code>, <code>orange</code>; each sets the text color that reads on it. Parts: <code>ft-card-head</code> (name and team line), <code>ft-logo</code>, <code>ft-photo</code>, <code>ft-action</code> (shown in black and white), <code>ft-sig</code> and <code>ft-brand</code>.</p>
+      <div class="demo row">
+        <article class="ft-card ft-c-yellow">
+          <header class="ft-card-head"><h3 class="ft-card-name">Brian Giles</h3><p class="ft-card-sub">Pittsburgh Pirates &bull; Outfield</p></header>
+          <span class="ft-logo">Pirates</span>
+          <div class="ft-photo"></div>
+          <div class="ft-action"></div>
+          <span class="ft-sig" aria-hidden="true">Brian Giles</span>
+          <span class="ft-brand">Fleer<small>Tradition</small></span>
+        </article>
+        <article class="ft-card ft-c-blue">
+          <header class="ft-card-head"><h3 class="ft-card-name">Tom Davey</h3><p class="ft-card-sub">Seattle Mariners &bull; Pitcher</p></header>
+          <span class="ft-logo">Mariners</span>
+          <div class="ft-photo"></div>
+          <div class="ft-action"></div>
+          <span class="ft-sig" aria-hidden="true">Tom Davey</span>
+          <span class="ft-brand">Fleer<small>Tradition</small></span>
+        </article>
+        <article class="ft-card ft-c-red">
+          <header class="ft-card-head"><h3 class="ft-card-name">Mo Vaughn</h3><p class="ft-card-sub">Anaheim Angels &bull; First base/DH</p></header>
+          <span class="ft-logo">Angels</span>
+          <div class="ft-photo"></div>
+          <div class="ft-action"></div>
+          <span class="ft-sig" aria-hidden="true">Mo Vaughn</span>
+          <span class="ft-brand">Fleer<small>Tradition</small></span>
+        </article>
+        <article class="ft-card ft-c-green">
+          <header class="ft-card-head"><h3 class="ft-card-name">Jose Hernandez</h3><p class="ft-card-sub">Signed by Milwaukee Brewers &bull; Infield/OF</p></header>
+          <span class="ft-logo">Brewers</span>
+          <div class="ft-photo"></div>
+          <div class="ft-action"></div>
+          <span class="ft-sig" aria-hidden="true">Jose Hernandez</span>
+          <span class="ft-brand">Fleer<small>Tradition</small></span>
+        </article>
+        <article class="ft-card ft-c-purple">
+          <header class="ft-card-head"><h3 class="ft-card-name">Jim Parque</h3><p class="ft-card-sub">Chicago White Sox &bull; Pitcher</p></header>
+          <span class="ft-logo">White Sox</span>
+          <div class="ft-photo"></div>
+          <div class="ft-action"></div>
+          <span class="ft-sig" aria-hidden="true">Jim Parque</span>
+          <span class="ft-brand">Fleer<small>Tradition</small></span>
+        </article>
+        <article class="ft-card ft-c-orange">
+          <header class="ft-card-head"><h3 class="ft-card-name">Bruce Aven</h3><p class="ft-card-sub">Traded to Pittsburgh Pirates &bull; Outfield</p></header>
+          <span class="ft-logo">Pirates</span>
+          <div class="ft-photo"></div>
+          <div class="ft-action"></div>
+          <span class="ft-sig" aria-hidden="true">Bruce Aven</span>
+          <span class="ft-brand">Fleer<small>Tradition</small></span>
+        </article>
+      </div>
+    </section>
+
+    <section id="back">
+      <h2>Card back</h2>
+      <p>Maroon border, kraft stock. <code>ft-num</code> is the home-plate card number, <code>ft-bio</code> the height, weight and birth lines, <code>ft-blurb</code> a paragraph beside a <code>ft-toon</code> cartoon box, then a stat table and <code>ft-fine</code> print with a <code>span</code> brand tag. Add <code>data-team="Pirates"</code> for the faint watermark.</p>
+      <div class="demo row">
+        <article class="ft-back" data-team="Pirates">
+          <span class="ft-num">181</span>
+          <header class="ft-back-head"><h3 class="ft-back-name">Brian Giles</h3><span class="ft-back-team">Pittsburgh Pirates</span><span class="ft-back-pos">outfield</span></header>
+          <p class="ft-bio"><b>Height:</b> 5'11" <b>Weight:</b> 200 <b>Bats:</b> Left <b>Throws:</b> Left<br><b>Born:</b> 1-20-71 El Cajon, CA</p>
+          <div class="ft-blurb">
+            <p>Brian always had the bat but never had an opportunity to play in Cleveland. Giles found a spot in Pittsburgh, leading the Pirates in average, homers and RBI.</p>
+            <div class="ft-toon" aria-hidden="true">⚾</div>
+          </div>
+          <div class="ft-table-wrap">
+            <table class="ft-table">
+              <caption>Major League Batting Record</caption>
+              <thead><tr><th>Year</th><th>Team</th><th>G</th><th>AB</th><th>H</th><th>HR</th><th>RBI</th><th>AVG</th></tr></thead>
+              <tbody>
+                <tr><td>1998</td><td>Indians</td><td>112</td><td>350</td><td>98</td><td>16</td><td>66</td><td>.269</td></tr>
+                <tr><td>1999</td><td>Pirates</td><td>141</td><td>521</td><td>164</td><td>39</td><td>115</td><td>.315</td></tr>
+              </tbody>
+              <tfoot><tr><td>MLB Totals</td><td></td><td>440</td><td>1378</td><td>407</td><td>78</td><td>272</td><td>.295</td></tr></tfoot>
+            </table>
+          </div>
+          <p class="ft-fine">Major League Baseball trademarks and copyrights are used with permission of Major League Baseball Properties, Inc. <span>Fleer 2000</span></p>
+        </article>
+        <article class="ft-back" data-team="Mariners">
+          <span class="ft-num">182</span>
+          <header class="ft-back-head"><h3 class="ft-back-name">Tom Davey</h3><span class="ft-back-team">Seattle Mariners</span><span class="ft-back-pos">pitcher</span></header>
+          <p class="ft-bio"><b>Height:</b> 6'7" <b>Weight:</b> 230 <b>Bats:</b> Right <b>Throws:</b> Right<br><b>Born:</b> 9-11-73 Garden City, MI</p>
+          <div class="ft-blurb">
+            <p>Tom's heater hastened his conversion from starter to reliever in 1998, and that same heater prompted the Mariners to acquire him in 1999 as a future closer.</p>
+            <div class="ft-toon" aria-hidden="true">🔥</div>
+          </div>
+          <div class="ft-table-wrap">
+            <table class="ft-table">
+              <caption>Major League Pitching Record</caption>
+              <thead><tr><th>Year</th><th>Team</th><th>G</th><th>IP</th><th>W</th><th>L</th><th>SO</th><th>ERA</th></tr></thead>
+              <tbody>
+                <tr><td>1998</td><td>Syracuse</td><td>33</td><td>33.2</td><td>2</td><td>1</td><td>29</td><td>3.48</td></tr>
+                <tr><td>1999</td><td>Jays-Mar</td><td>45</td><td>65.0</td><td>2</td><td>1</td><td>59</td><td>4.71</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="ft-fine">Major League Baseball trademarks and copyrights are used with permission of Major League Baseball Properties, Inc. <span>Fleer 2000</span></p>
+        </article>
+      </div>
+    </section>
+
+    <section id="table">
+      <h2>Stat table</h2>
+      <p>On a card back the table inherits the kraft ink and sits under a black caption bar. <code>ft-table--page</code> puts the same table on the page in a cream box ruled in ink, with room to breathe. Put numbers in plain cells; they align right, and the first two columns align left.</p>
+      <div class="demo">
+        <div class="ft-table-wrap">
+          <table class="ft-table ft-table--page">
+            <caption>Major League Batting Record</caption>
+            <thead><tr><th>Year</th><th>Team</th><th>G</th><th>AB</th><th>H</th><th>HR</th><th>RBI</th><th>AVG</th></tr></thead>
+            <tbody>
+              <tr><td>1997</td><td>Mariners</td><td>85</td><td>240</td><td>63</td><td>9</td><td>34</td><td>.263</td></tr>
+              <tr><td>1998</td><td>Twins</td><td>8</td><td>25</td><td>5</td><td>0</td><td>1</td><td>.200</td></tr>
+              <tr><td>1999</td><td>Twins</td><td>118</td><td>327</td><td>75</td><td>2</td><td>32</td><td>.229</td></tr>
+            </tbody>
+            <tfoot><tr><td>MLB Totals</td><td></td><td>211</td><td>592</td><td>143</td><td>11</td><td>67</td><td>.242</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="binder">
+      <h2>Binder page</h2>
+      <p>Nine-pocket pages: <code>ft-binder</code> is the page, <code>ft-sleeve</code> a clear pocket that holds a card or a back at full width.</p>
+      <div class="demo">
+        <div class="ft-binder">
+          <div class="ft-sleeve"><article class="ft-card ft-c-yellow"><header class="ft-card-head"><h3 class="ft-card-name">Brian Giles</h3><p class="ft-card-sub">Pittsburgh Pirates &bull; Outfield</p></header><div class="ft-photo"></div><span class="ft-brand">Fleer<small>Tradition</small></span></article></div>
+          <div class="ft-sleeve"><article class="ft-card ft-c-blue"><header class="ft-card-head"><h3 class="ft-card-name">Tom Davey</h3><p class="ft-card-sub">Seattle Mariners &bull; Pitcher</p></header><div class="ft-photo"></div><span class="ft-brand">Fleer<small>Tradition</small></span></article></div>
+          <div class="ft-sleeve"><article class="ft-card ft-c-red"><header class="ft-card-head"><h3 class="ft-card-name">Mo Vaughn</h3><p class="ft-card-sub">Anaheim Angels &bull; First base/DH</p></header><div class="ft-photo"></div><span class="ft-brand">Fleer<small>Tradition</small></span></article></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <p>Buttons are blue like the Fleer badge, with a hard ink shadow that presses in. <code>--paper</code> is cream, <code>--ghost</code> is an outline. Inputs sit on cream with an ink border.</p>
+      <div class="demo stack">
+        <div class="row">
+          <button class="ft-button" type="button">Add to binder</button>
+          <button class="ft-button ft-button--paper" type="button">Trade</button>
+          <button class="ft-button ft-button--ghost" type="button">Pass</button>
+          <button class="ft-button" type="button" disabled>Disabled</button>
+        </div>
+        <div class="row">
+          <div class="ft-field"><label class="ft-label" for="sb-name">Player</label><input class="ft-input" id="sb-name" placeholder="Player name" autocomplete="off"></div>
+          <div class="ft-field"><label class="ft-label" for="sb-team">Team</label><select class="ft-select" id="sb-team"><option>Pirates</option><option>Mariners</option><option>Angels</option><option>Twins</option></select></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badge">
+      <h2>Badge, divider</h2>
+      <p>Badges are small caps in a pill. The divider is a thin rule over a thick one.</p>
+      <div class="demo">
+        <div class="row"><span class="ft-badge">Rookie</span><span class="ft-badge ft-badge--solid">Traded</span></div>
+        <hr class="ft-divider">
+        <span class="ft-label">Printed in U.S.A.</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source: <code>web/styles/fleer-tradition-2000/fleer-tradition-2000.css</code> in <a href="https://github.com/tphummel/junk">tphummel/junk</a>. Decision record: ADR 0009. Not affiliated with Fleer, Upper Deck or MLB; the look is inspired by a 2000 card set.</footer>
+  <small id="version">2026-11-27T17:26:06Z</small>
+</div>
+<script>
+(() => {
+  // Show each demo's markup under it, taken from the DOM so it cannot drift.
+  for (const demo of document.querySelectorAll('.demo')) {
+    const lines = demo.innerHTML.replace(/^\n+|\s+$/g, '').split('\n');
+    const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    const d = document.createElement('details');
+    const s = document.createElement('summary'); s.textContent = 'Markup';
+    const pre = document.createElement('pre'); pre.textContent = lines.map(l => l.slice(indent)).join('\n');
+    d.append(s, pre); demo.after(d);
+  }
+
+  // Theme switch: auto follows the OS, light and dark set data-theme on <html>.
+  const root = document.documentElement, box = document.getElementById('theme');
+  const get = () => { try { return localStorage.getItem('ft-theme') || 'auto'; } catch { return 'auto'; } };
+  const set = v => { try { v === 'auto' ? localStorage.removeItem('ft-theme') : localStorage.setItem('ft-theme', v); } catch {} };
+  function apply(v) {
+    v === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', v);
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.v === v);
+    swatches();
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'ft-button ft-button--ghost'; b.dataset.v = v; b.textContent = v;
+    b.onclick = () => { set(v); apply(v); };
+    box.append(b);
+  }
+
+  // Palette swatches read from the computed sheet, with contrast against a background.
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const tokens = [
+    ['--ft-bg', 'page (binder stock)'], ['--ft-text', 'text', '--ft-bg'], ['--ft-muted', 'muted text', '--ft-bg'],
+    ['--ft-link', 'links', '--ft-bg'], ['--ft-line', 'lines', '--ft-bg', 'needs 3'],
+    ['--ft-paper', 'cream card border'], ['--ft-ink', 'ink on paper', '--ft-paper'], ['--ft-ink-muted', 'muted on paper', '--ft-paper'],
+    ['--ft-kraft', 'card back stock'], ['--ft-kraft-ink', 'ink on kraft', '--ft-kraft'], ['--ft-kraft-muted', 'muted on kraft', '--ft-kraft'],
+    ['--ft-maroon', 'back border, number', '--ft-on-maroon', 'white on it'], ['--ft-brand', 'Fleer Tradition blue', '--ft-on-brand', 'white on it'],
+    ['--ft-yellow', 'yellow', '--ft-on-yellow', 'text on it'], ['--ft-blue', 'blue', '--ft-on-blue', 'text on it'],
+    ['--ft-red', 'red', '--ft-on-red', 'text on it'], ['--ft-green', 'green', '--ft-on-green', 'text on it'],
+    ['--ft-purple', 'purple', '--ft-on-purple', 'text on it'], ['--ft-orange', 'orange', '--ft-on-orange', 'text on it'],
+  ];
+  function swatches() {
+    const cs = getComputedStyle(root), val = n => cs.getPropertyValue(n).trim().toUpperCase();
+    const out = document.getElementById('swatches'); out.replaceChildren();
+    for (const [name, use, vs, note] of tokens) {
+      const hex = val(name), el = document.createElement('div'); el.className = 'sw';
+      const chip = document.createElement('i'); chip.style.background = `var(${name})`;
+      const meta = document.createElement('div');
+      const code = document.createElement('code'); code.textContent = `${name} ${hex}`;
+      meta.append(code, use);
+      if (vs && /^#[0-9A-F]{6}$/.test(hex)) {
+        const r = ratio(hex, val(vs));
+        const p = document.createElement('div'); p.className = 'pass'; p.textContent = `${r.toFixed(1)}:1 ${note || 'vs ' + vs.replace('--ft-', '')}`; meta.append(p);
+      }
+      el.append(chip, meta); out.append(el);
+    }
+  }
+  apply(get());
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', swatches);
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/styles/fleer-tradition-2000/sw.js', { scope: '/styles/fleer-tradition-2000/' }).catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
