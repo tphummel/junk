@@ -1,5 +1,5 @@
 import {
-  DEFAULT_SETTINGS, backupDue, GOAL_TYPES, MAX_DAY_STARTS_AT, MAX_GOAL, MAX_REMINDER_MONTHS, REMINDER_TYPES, STEPS, TOTAL_SECONDS, buildExport, addMonthKey, currentStreak, dayGoals, dayKey, firstMonth, firstYear, formatClock, groupByDay, longestStreak,
+  DEFAULT_SETTINGS, backupDue, GOAL_TYPES, MAX_DAY_STARTS_AT, MAX_GOAL, MAX_REMINDER_MONTHS, REMINDER_TYPES, ROUTINE_STEPS, STEPS, stepsBefore, TOTAL_SECONDS, buildExport, addMonthKey, currentStreak, dayGoals, dayKey, firstMonth, firstYear, formatClock, groupByDay, longestStreak,
   makeEvent, mergeEvents, normalizePlace, monthGrid, monthReport, yearReport, normalizeEvents, normalizeSettings, parseDay, parseImport, rangeStats, reminderStatus, todayKey, versionOf,
 } from "./logic.js";
 import { CHART_CSS, annualReportHtml, esc, heatmapSvg, hoursMinutes, monthBarsSvg, shortDate, weekdayBarsSvg } from "./report.js";
@@ -141,7 +141,7 @@ function tick() {
     if (run.step + 1 < STEPS.length) {
       startStep(run.step + 1);
       cue(false);
-    } else return finish(STEPS.length);
+    } else return finish(ROUTINE_STEPS);
   }
   renderBrush();
 }
@@ -162,13 +162,13 @@ function skip() {
     startStep(run.step + 1);
     cue(false);
     renderBrush();
-  } else finish(STEPS.length);
+  } else finish(ROUTINE_STEPS);
 }
 
 function finish(steps) {
   clearInterval(run.timer);
   keepAwake(false);
-  if (steps < STEPS.length) run.elapsed += STEPS[run.step].seconds - Math.ceil(run.left);
+  if (steps < ROUTINE_STEPS) run.elapsed += STEPS[run.step].seconds - Math.ceil(run.left);
   run.phase = "done";
   run.left = 0;
   const s = makeEvent(state.events, "brush", run.begun, { seconds: run.elapsed, steps });
@@ -181,8 +181,7 @@ function finish(steps) {
 
 function stopEarly() {
   if (run.phase === "running" || run.phase === "paused") {
-    const done = run.step;
-    finish(done);
+    finish(stepsBefore(run.step));
   }
 }
 
@@ -510,7 +509,7 @@ function renderDay() {
     const li = document.createElement("li");
     // Show the time where you were when it happened, not in the current zone.
     const time = new Date(s.start + s.offset * 60000).toLocaleTimeString(undefined, { timeStyle: "short", timeZone: "UTC" });
-    const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.steps}/${STEPS.length} steps` : "";
+    const detail = s.type === "brush" ? ` · ${formatClock(s.seconds)} · ${s.steps}/${ROUTINE_STEPS} steps` : "";
     li.append(`${time} · ${TYPE_LABEL[s.type]}${detail}${g.roles.get(s.id) === "extra" ? " · extra" : ""} `);
     if (s.lat !== null) {
       // A quiet pin that the place was captured; the coordinates stay out of sight.
@@ -561,7 +560,7 @@ document.querySelectorAll("[data-log]").forEach((btn) => {
     const noon = parseDay(view.selected);
     noon.setHours(12);
     const when = view.selected === today() ? Date.now() : noon.getTime();
-    const e = makeEvent(state.events, btn.dataset.log, when, { seconds: TOTAL_SECONDS, steps: STEPS.length });
+    const e = makeEvent(state.events, btn.dataset.log, when, { seconds: TOTAL_SECONDS, steps: ROUTINE_STEPS });
     state.events = mergeEvents(state.events, [e]).events;
     save();
     if (view.selected === today()) setPlace(e.id, locate()); // a backdated entry has no known place

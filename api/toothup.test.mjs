@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DEFAULT_SETTINGS, STEPS, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
+  DEFAULT_SETTINGS, ROUTINE_STEPS, STEPS, stepsBefore, TOTAL_SECONDS, addDays, addMonths, backupDue, buildExport, currentStreak, daysBetween, dayGoals, eventDay,
   formatClock, groupByDay, versionOf, longestStreak, makeEvent, mergeEvents, monthGrid, normalizeEvent, normalizeEvents, normalizeSettings,
   parseImport, rangeStats, reminderStatus,
 } from "../web/toothup/logic.js";
@@ -24,16 +24,19 @@ test("addDays crosses month and year boundaries", () => {
   assert.equal(addDays("2026-03-01", -1), "2026-02-28");
 });
 
-test("routine: 8 facial/lingual steps of 15s per quadrant, then 5s of tongue", () => {
-  assert.equal(STEPS.length, 9);
+test("routine: 8 facial/lingual steps of 15s per quadrant, then a 5s spit pause, then 5s of tongue", () => {
+  assert.equal(STEPS.length, 10);
+  assert.equal(ROUTINE_STEPS, 9);
+  assert.equal(stepsBefore(9), 8);
   assert.deepEqual(STEPS.slice(0, 8).map((x) => x.seconds), Array(8).fill(15));
   assert.deepEqual(STEPS.slice(0, 4).map((x) => x.label), [
     "Upper right facial", "Upper right lingual", "Upper left facial", "Upper left lingual",
   ]);
   assert.deepEqual(STEPS.slice(0, 8).map((x) => x.surface), ["facial", "lingual", "facial", "lingual", "facial", "lingual", "facial", "lingual"]);
   assert.deepEqual(STEPS.slice(0, 8).map((x) => x.quadrant), [0, 0, 1, 1, 2, 2, 3, 3]);
-  assert.deepEqual(STEPS[8], { label: "Tongue", quadrant: null, surface: "tongue", seconds: 5 });
-  assert.equal(TOTAL_SECONDS, 125);
+  assert.deepEqual(STEPS[8], { label: "Spit", quadrant: null, surface: "spit", seconds: 5, rest: true });
+  assert.deepEqual(STEPS[9], { label: "Tongue", quadrant: null, surface: "tongue", seconds: 5 });
+  assert.equal(TOTAL_SECONDS, 130);
 });
 
 test("makeEvent: ids come from type and time, a taken id moves the start by 1 ms, only brushes carry seconds and steps", () => {
