@@ -1,6 +1,6 @@
 // pounce UI: sessions, roster, game timer, result entry and reports. State lives in localStorage.
 import {
-  cumulative, DEFAULT_BONUS, DEFAULT_PILE, formatDuration, gameTotals, gameWinners, headToHeadAll, pounceStats, paceStats,
+  cumulative, DEFAULT_BONUS, DEFAULT_PILE, endTimeLabel, formatDuration, gameTotals, gameWinners, headToHeadAll, pounceStats, paceStats,
   SCORE_MAX, SCORE_MIN, sessionExport, sessionReportHtml, standings, validateResults, venueStats,
 } from './engine.js';
 
@@ -140,7 +140,7 @@ function sessionView(s) {
     ${rosterView(s)}
     ${gamePanel(s, cur)}
     ${games.length ? reportsView(games) : '<p class="muted">Reports appear after the first saved game.</p>'}
-    ${games.length ? gamesListView(games) : ''}
+    ${games.length ? gamesListView(s, games) : ''}
     <section>
       <h2>Export this session</h2>
       <div class="row">
@@ -151,14 +151,23 @@ function sessionView(s) {
     ${db.sessions.length > 1 ? `<section><h2>All-time</h2>${allTimeInner()}</section>` : ''}`;
 }
 
-/** Every saved game with edit and delete. @param {any[]} games */
-function gamesListView(games) {
-  return `<section><h2>Games</h2><ul class="list">${games.map((g, i) => `
-    <li><b>Game ${i + 1}</b>
-      <span>${gameTotals(g).sort((a, b) => b.total - a.total).map((t) => `<span class="${gameWinners(g).includes(t.playerId) ? 'win' : ''}">${esc(nameOf(t.playerId))} ${t.total}${t.pounced ? ' ⚡' : ''}</span>`).join(' · ')}</span>
-      ${g.updatedAt ? `<span class="muted" title="${esc(new Date(g.updatedAt).toLocaleString())}">edited ${esc(new Date(g.updatedAt).toLocaleString())}</span>` : ''}
-      <button class="link" data-act="edit-game" data-id="${g.id}">edit</button>
-      <button class="link" data-act="del-game" data-id="${g.id}">delete</button></li>`).join('')}</ul></section>`;
+/** Every saved game as a grid: end time, one column per player, game length, with edit and delete. @param {Session} s @param {any[]} games */
+function gamesListView(s, games) {
+  const ids = [...new Set([...s.present, ...games.flatMap((g) => g.results.map((/** @type {any} */ r) => r.playerId))])];
+  const rows = games.map((g) => {
+    const totals = gameTotals(g);
+    const winners = gameWinners(g);
+    const cells = ids.map((id) => {
+      const t = totals.find((x) => x.playerId === id);
+      return t ? `<td class="${winners.includes(id) ? 'win' : ''}">${t.total}${t.pounced ? ' ⚡' : ''}</td>` : '<td>–</td>';
+    }).join('');
+    const edited = g.updatedAt ? ` title="edited ${esc(new Date(g.updatedAt).toLocaleString())}"` : '';
+    return `<tr><td${edited}>${esc(endTimeLabel(g))}${g.updatedAt ? ' <span class="muted">(edited)</span>' : ''}
+      <br><button class="link" data-act="edit-game" data-id="${g.id}">edit</button> <button class="link" data-act="del-game" data-id="${g.id}">delete</button></td>${cells}<td>${g.durationMs > 0 ? formatDuration(g.durationMs) : '–'}</td></tr>`;
+  }).join('');
+  return `<section><h2>Games</h2>
+    <div style="overflow-x:auto"><table><thead><tr><th>Ended</th>${ids.map((id) => `<th>${esc(nameOf(id))}</th>`).join('')}<th>Length</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="muted">Totals include the pounce bonus. ⚡ pounced, bold won.</p></section>`;
 }
 
 /** @param {Session} s */
