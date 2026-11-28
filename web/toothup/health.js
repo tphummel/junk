@@ -1,7 +1,7 @@
 // Import toothbrushing history from an Apple Health export (export.zip, or the export.xml inside it).
 // Everything runs in the browser and streams the file, because export.xml is often hundreds of MB. Needs Blob,
 // TextDecoderStream and DecompressionStream, so the API test suite can import it under Node too.
-import { STEPS } from "./logic.js";
+import { ROUTINE_STEPS } from "./logic.js";
 
 const BRUSH_TYPE = "HKCategoryTypeIdentifierToothbrushingEvent";
 const RECORD = new RegExp(`<Record\\b[^>]*\\btype="${BRUSH_TYPE}"[^>]*>`, "g");
@@ -25,7 +25,7 @@ export function brushFromRecord(tag) {
   const b = parseHealthDate(attrs.endDate);
   if (!a || !b || !(b.ms > a.ms)) return null;
   const seconds = Math.round((b.ms - a.ms) / 1000);
-  const steps = seconds >= FULL_BRUSH_SECONDS ? STEPS.length : Math.floor((seconds * STEPS.length) / FULL_BRUSH_SECONDS);
+  const steps = seconds >= FULL_BRUSH_SECONDS ? ROUTINE_STEPS : Math.floor((seconds * ROUTINE_STEPS) / FULL_BRUSH_SECONDS);
   // The id depends only on the start time, so importing the same export twice, or the same brush from a watch and a phone, adds it once.
   return { id: `s${a.ms}`, type: "brush", start: a.ms, offset: a.offset, lat: null, lon: null, acc: null, seconds, steps };
 }

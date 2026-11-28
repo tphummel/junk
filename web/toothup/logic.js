@@ -24,11 +24,13 @@ export function normalizePlace(e) {
 
 export const QUADRANTS = ["Upper right", "Upper left", "Lower left", "Lower right"];
 export const STEP_SECONDS = 15;
+export const SPIT_SECONDS = 5;
 export const TONGUE_SECONDS = 5;
 
 /**
- * The brushing routine: each quadrant's outer (facial) then inner (lingual) surfaces, then the tongue.
- * @typedef {{ label: string, quadrant: number | null, surface: "facial" | "lingual" | "tongue", seconds: number }} Step
+ * The brushing routine: each quadrant's outer (facial) then inner (lingual) surfaces, a spit pause, then the tongue.
+ * The spit pause is a rest: it is timed but is not counted as a brushing step.
+ * @typedef {{ label: string, quadrant: number | null, surface: "facial" | "lingual" | "spit" | "tongue", seconds: number, rest?: boolean }} Step
  * @type {Step[]}
  */
 export const STEPS = [
@@ -36,8 +38,13 @@ export const STEPS = [
     /** @type {const} */ (["facial", "lingual"]).map((surface) => ({
       label: `${name} ${surface}`, quadrant, surface, seconds: STEP_SECONDS,
     }))),
+  { label: "Spit", quadrant: null, surface: "spit", seconds: SPIT_SECONDS, rest: true },
   { label: "Tongue", quadrant: null, surface: "tongue", seconds: TONGUE_SECONDS },
 ];
+/** Brushing steps in the routine (rests excluded); this is what a brush event's steps counts toward. */
+export const ROUTINE_STEPS = STEPS.filter((st) => !st.rest).length;
+/** Brushing steps completed before STEPS[index] starts. @param {number} index @returns {number} */
+export const stepsBefore = (index) => STEPS.slice(0, index).filter((st) => !st.rest).length;
 export const TOTAL_SECONDS = STEPS.reduce((t, st) => t + st.seconds, 0);
 export const TYPES = ["brush", "floss", "mouthwash"];
 export const EXPORT_APP = "toothup";
@@ -175,7 +182,7 @@ export function normalizeEvent(e) {
   if (e.type !== "brush") return base;
   const seconds = Math.round(Number(e.seconds));
   const steps = Math.round(Number(e.steps));
-  if (!(seconds >= 0) || !(steps >= 0 && steps <= STEPS.length)) return null;
+  if (!(seconds >= 0) || !(steps >= 0 && steps <= ROUTINE_STEPS)) return null;
   return { ...base, seconds, steps };
 }
 
@@ -249,7 +256,7 @@ export function groupByDay(events, settings) {
 // ---------- daily goals ----------
 
 /** A brush only counts if the whole routine was done. @param {Event} e */
-const countable = (e) => e.type !== "brush" || e.steps >= STEPS.length;
+const countable = (e) => e.type !== "brush" || e.steps >= ROUTINE_STEPS;
 
 /**
  * Check one day's events against the goals. Events beyond a goal, and partial brushes, are extras.

@@ -12,6 +12,7 @@ import {
   fmtSheetStamp,
   fmtStamp,
   isDone,
+  notesReport,
   journalDays,
   pace,
   runningPercent,
@@ -164,6 +165,7 @@ ${css}
  * @param {{ notes?: boolean, journal?: boolean, remaining?: boolean }} [opts]
  */
 export function buildSheetHtml(game, opts = {}) {
+  if (opts.layout === "notes") return buildNotesReportHtml(game);
   if (opts.layout === "scoresheet" || !opts.layout) return buildScoresheetHtml(game);
   const card = opts.layout === "card";
   const { notes = false, journal = true, remaining = true } = opts;
@@ -222,6 +224,47 @@ export function buildSheetHtml(game, opts = {}) {
     ${!card && entries ? `<div class="sheet-journal"><h2>Journal</h2>${entries}</div>` : ""}
     <footer class="sheet-foot"><span>Metroid 3</span><span>${esc(game.name)} · printed ${esc(fmtStamp(Date.now()).slice(0, 10))}</span></footer>
   </article>`;
+}
+
+/**
+ * Printable notes report: every route note, log note and route feedback, step by step in route
+ * order, then every journal entry. Feedback is marked so it can be applied to the route later.
+ * @param {Game} game
+ */
+export function buildNotesReportHtml(game) {
+  const report = notesReport(game);
+  const c = report.counts;
+  const when = (iso) => (iso ? fmtStamp(Date.parse(iso)).slice(0, 16) : "not done");
+  const steps = report.steps
+    .map((s) => {
+      const cat = classify(s.checkpoint).cat;
+      const place = [s.area ? (s.seq != null ? `${s.area} #${s.seq}` : s.area) : "", s.room ?? ""].filter(Boolean).join(" · ");
+      return `<div class="nr c-${cat}${s.feedback ? " has-fb" : ""}">
+        <div class="nr-h"><span class="n">${s.step}</span><b>${esc(s.checkpoint)}</b><span class="w">${esc(place)}</span><span class="t">${esc(when(s.done))}</span></div>
+        ${s.routeNote ? `<p class="rn"><i>Route</i>${esc(s.routeNote)}</p>` : ""}
+        ${s.log ? `<p class="lg"><i>Log</i>${esc(s.log)}</p>` : ""}
+        ${s.feedback ? `<p class="fb"><i>⚑ Feedback</i>${esc(s.feedback)}</p>` : ""}
+      </div>`;
+    })
+    .join("");
+  const entries = report.entries
+    .map(
+      (e) =>
+        `<div class="nr entry"><div class="nr-h"><b>${esc(e.title || "Journal entry")}</b><span class="t">${esc(when(e.ts))}</span></div><p class="lg">${esc(e.body)}</p></div>`,
+    )
+    .join("");
+  return `<article class="sheet notes-report m3" aria-label="Notes report for ${esc(game.name)}">
+    <header class="sheet-head"><h1>${esc(game.name)}</h1><div class="sub">Notes report · printed ${esc(fmtStamp(Date.now()).slice(0, 10))}</div></header>
+    <p class="nr-sum">${c.stepsWithNotes} step${c.stepsWithNotes === 1 ? "" : "s"} with notes · ${c.feedback} route feedback · ${c.routeNotes} route notes · ${c.logNotes} log notes · ${c.journalEntries} journal entr${c.journalEntries === 1 ? "y" : "ies"}</p>
+    <h2>Steps</h2>
+    ${steps || '<p class="nr-none">No step notes yet.</p>'}
+    ${entries ? `<h2>Journal entries</h2>${entries}` : ""}
+  </article>`;
+}
+
+/** The notes report as a JSON string, for feeding back into the route. @param {Game} game */
+export function notesReportJson(game) {
+  return JSON.stringify(notesReport(game), null, 2);
 }
 
 /**

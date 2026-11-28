@@ -1,7 +1,8 @@
-const CACHE_NAME = 'solitaire-v6';
+const CACHE_NAME = 'solitaire-v7';
 
 const PRECACHE = [
   '/solitaire/',
+  '/solitaire/efficiency.js',
   '/solitaire/manifest.webmanifest',
   '/solitaire/icon-192.png',
   '/solitaire/icon-512.png',

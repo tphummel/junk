@@ -336,6 +336,21 @@ label.check input { width: 1.1rem; height: 1.1rem; accent-color: var(--primary);
 .sc-th .c, .sc-th .t, .sc-th .g { text-align: center; }
 .sheet.sc .m3-segs { display: none; }
 
+/* Notes report: every note, step by step. */
+.sheet.notes-report { min-height: 0; }
+.nr-sum { margin: 0 0 0.4rem; font-size: 9pt; color: var(--support); }
+.nr-none { color: var(--support); }
+.nr { break-inside: avoid; border-bottom: 1px solid var(--line); padding: 0.3rem 0; font-size: 9pt; }
+.nr-h { display: flex; flex-wrap: wrap; gap: 0 0.6rem; align-items: baseline; }
+.nr-h .n { color: var(--support); min-width: 1.8em; text-align: right; font-variant-numeric: tabular-nums; }
+.nr-h .w { color: var(--support); }
+.nr-h .t { margin-left: auto; color: var(--support); font-variant-numeric: tabular-nums; }
+.nr p { margin: 0.1rem 0 0 2.4em; white-space: pre-wrap; }
+.nr p i { display: inline-block; min-width: 5.5em; margin-right: 0.4em; font-style: normal; font-size: 7.5pt; letter-spacing: 0.08em; text-transform: uppercase; color: var(--support); }
+.nr .fb { color: #111; font-weight: 600; background: #fff3c4; border-left: 3px solid var(--accent); padding: 0.1rem 0.4rem; }
+.nr.entry { border-left: 3px solid var(--accent); padding-left: 0.5rem; }
+.m3-fb { margin: 0.25rem 0 0; font-weight: 600; border-left: 3px solid var(--accent); padding-left: 0.5rem; white-space: pre-wrap; }
+
 /* Summary card: the illustrated sheet without the checkpoint log, sized as a card, not a full page. */
 .sheet.card-only { width: min(7.5in, calc(var(--sheet-w, 11in) - 0.8in)); min-height: 0; margin: 0 auto; }
 .sheet.card-only .sheet-top { margin-bottom: 0; }
@@ -380,3 +395,6 @@ label.check input { width: 1.1rem; height: 1.1rem; accent-color: var(--primary);
 /* Next steps and History rows share one height. */
 .nav-list li, .m3-history li { min-height: 3.4rem; padding: 0.4rem 0.5rem; align-items: center; line-height: 1.35; }
 .nav-list li small, .m3-history li small { font-size: 0.85rem; }
+
+.app-version { max-width: 76rem; margin: 0 auto; padding: 0 1rem 1.5rem; }
+.app-version small { font-size: 0.7rem; color: var(--support); font-variant-numeric: tabular-nums; }

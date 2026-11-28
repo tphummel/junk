@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Monopoly asset manager</title>
+  <link rel="stylesheet" href="/styles/monopoly/monopoly.css">
+  <style>
+    /* style sheet: monopoly */
+    /* Page layout only; colors, type and controls come from /styles/monopoly/monopoly.css (ADR 0009).
+       Surfaces that are printed paper (stats, cards, panels, dialogs) read ink colors in both modes. */
+    body { max-width: 56rem; margin: 0 auto; padding: 1rem 16px 3rem; }
+    .mon { --fg: var(--mon-text); --fg2: var(--mon-muted); --bad: var(--mon-red-ink); --good: var(--mon-text); }
+    .paper, .stat, .card, .gamecard, details.panel, dialog { --fg: var(--mon-ink); --fg2: var(--mon-ink-muted); --bad: var(--mon-red); --good: #0B6B33; color: var(--fg); }
+    [hidden] { display: none !important; }
+    .mon h1.mon-title { margin: 0 0 .25rem; }
+    .mon .paper h1, .mon .paper h2, .mon .paper h3, .mon .stat h3, .mon .card h3, .mon dialog h2, .mon details.panel h2 { color: var(--fg); }
+    .mon-label, label { font-size: .72rem; font-weight: 700; line-height: 1.3; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg2); }
+    label { display: grid; gap: .15rem; }
+    .muted { color: var(--fg2); }
+    .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    .bar { margin: .75rem 0; }
+    .mon-input, .mon-select { min-height: 2.5rem; width: auto; }
+    input[type=number].mon-input { width: 6.5rem; }
+    .mon-button.danger { color: var(--mon-red); }
+    .mon :focus-visible { outline-color: var(--mon-focus); }
+    .mon .paper :focus-visible, .mon .stat :focus-visible, .mon .card :focus-visible, .mon details.panel :focus-visible, .mon dialog :focus-visible { outline-color: var(--mon-red); }
+    .good { color: var(--good); } .bad { color: var(--bad); }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .5rem; margin: .75rem 0; }
+    .stat { background: var(--mon-paper); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .7rem; box-shadow: var(--mon-shadow); }
+    .stat b { display: block; font: 800 1.25rem/1.2 var(--mon-font-display); font-variant-numeric: tabular-nums; }
+    .stat span { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg2); }
+    details.panel { background: var(--mon-paper); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; margin: .75rem 0; box-shadow: var(--mon-shadow); }
+    details.panel > summary { cursor: pointer; font: 800 .8rem/1.4 var(--mon-font-display); text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg); }
+    form.grid { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; margin-top: .4rem; }
+    #msg { min-height: 1.4rem; color: var(--mon-red-ink); font-weight: 700; }
+
+    /* property cards: a deed, with the group's color down the left edge */
+    .card:not([class*="mon-g-"]):not(.g-brown) { --mon-bar: var(--mon-ink-muted); } /* railroads and utilities have no color group */
+    .card { background: var(--mon-paper); border: 1px solid var(--mon-ink); border-left: 10px solid var(--mon-bar); border-radius: var(--mon-radius); padding: .4rem .8rem; margin: .6rem 0; box-shadow: var(--mon-shadow); }
+    .g-brown { --mon-bar: #8B5A2B; } /* 5.7:1 on the card paper */
+    .card.mortgaged { background-image: repeating-linear-gradient(135deg, #12171214 0 6px, transparent 6px 12px); }
+    .card h3 { margin: 0; font-size: 1rem; }
+    .head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .25rem .75rem; }
+    .head.stack { grid-template-columns: minmax(0, 1fr); } /* a card that needs a dice or rent field puts its rent row on its own line */
+    .toggle { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem; min-height: 2.5rem; padding: .1rem 0; border: 0; background: none; color: var(--fg); text-align: left; cursor: pointer; font: inherit; }
+    .title { display: flex; align-items: center; gap: .3rem; }
+    .chev { color: var(--fg2); width: 1rem; flex: none; }
+    .quick { margin: 0; flex-wrap: nowrap; }
+    .card .mon-button { min-height: 2.25rem; padding: .25rem .8rem; font-size: .72rem; }
+    .card .mon-input { min-height: 2.25rem; width: 5.5rem; }
+    .more { margin: .25rem 0 .35rem; }
+    .nums { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: .4rem 0; font-size: .9rem; font-variant-numeric: tabular-nums; }
+    .nums span b { font-weight: 700; }
+    progress { width: 100%; height: .6rem; accent-color: var(--mon-green); }
+    table.rents { border-collapse: collapse; font-size: .85rem; font-variant-numeric: tabular-nums; margin: .4rem 0 0; }
+    table.rents td { border-top: 1px solid #12171233; padding: .1rem .75rem .1rem .25rem; }
+    table.rents tr.now td { background: var(--mon-chest); font-weight: 800; }
+    .hist { font-size: .85rem; margin: .4rem 0 0; padding: 0; list-style: none; max-height: 12rem; overflow: auto; font-variant-numeric: tabular-nums; }
+    .hist li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-top: 1px solid #12171233; padding: .15rem 0; }
+    .hist .amt { display: flex; align-items: center; gap: .5rem; flex: none; }
+    .card .hist .mon-button, details.panel .hist .mon-button { min-height: 1.75rem; min-width: 1.75rem; padding: 0 .4rem; font-size: .75rem; box-shadow: none; }
+    details summary.muted { cursor: pointer; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); }
+
+    /* dialogs */
+    dialog { background: var(--mon-paper); border: 2px solid var(--mon-ink); border-radius: var(--mon-radius); padding: 1rem 1.25rem; width: min(26rem, calc(100vw - 32px)); box-shadow: var(--mon-shadow); }
+    dialog::backdrop { background: #000A; }
+    dialog form { display: grid; gap: .75rem; }
+    dialog h2 { margin: 0; }
+    fieldset.editions { border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); display: grid; gap: .5rem; margin: 0; }
+    fieldset.editions legend { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: var(--mon-track); color: var(--fg2); }
+    label.opt { display: flex; gap: .6rem; align-items: start; color: var(--fg); font-size: 1rem; text-transform: none; letter-spacing: 0; font-weight: 400; }
+    label.opt input { margin-top: .3rem; }
+    .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .75rem; }
+    .pick { border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .35rem .6rem; max-height: 14rem; overflow: auto; display: grid; gap: .1rem; align-content: start; }
+    .pick label { display: flex; gap: .5rem; align-items: center; color: var(--fg); font-size: .95rem; font-weight: 400; text-transform: none; letter-spacing: 0; min-height: 1.9rem; }
+    .pick label.off { color: var(--fg2); }
+    #tradeDlg { width: min(40rem, calc(100vw - 32px)); }
+    #preview { background: var(--mon-bill-1); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; }
+    #repairPreview { background: var(--mon-bill-1); border: 1px solid var(--mon-ink); border-radius: var(--mon-radius); padding: .5rem .75rem; font-size: .9rem; font-variant-numeric: tabular-nums; white-space: pre-wrap; }
+    #preview.err { color: var(--bad); font-weight: 700; }
+    .crumb { margin: .25rem 0; }
+    .gametitle, #gameTitle { overflow-wrap: anywhere; }
+    .mon a.gamecard { color: var(--mon-ink); }
+    .gamecard { display: block; margin: .6rem 0; padding: .6rem .8rem; background: var(--mon-paper); color: var(--mon-ink); text-decoration: none; border: 1px solid var(--mon-ink); border-left: 10px solid var(--mon-ink-muted); border-radius: var(--mon-radius); box-shadow: var(--mon-shadow); }
+    .gamecard:hover { outline: 2px solid var(--mon-ink); }
+    .gamecard .gc-head { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .6rem; }
+    .gamecard .gc-name { font: 800 1.05rem/1.2 var(--mon-font-display); text-transform: uppercase; letter-spacing: .04em; overflow-wrap: anywhere; }
+    .gamecard .gc-meta { margin: .1rem 0 .3rem; font-size: .85rem; color: var(--mon-ink-muted); }
+    .gamecard .nums { margin: 0; }
+    .mon a.gamecard:focus-visible { outline: 3px solid var(--mon-red); outline-offset: 2px; }
+    small#version { display: block; margin-top: 2rem; color: var(--fg2); }
+  </style>
+  <meta name="theme-color" content="#10241A">
+  <link rel="icon" href="/monopoly-asset-manager/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/monopoly-asset-manager/apple-touch-icon.png">
+  <link rel="manifest" href="/monopoly-asset-manager/manifest.webmanifest">
+</head>
+<body class="mon">
+  <h1 class="mon-title mon-title--lg">Monopoly asset manager</h1>
+  <p class="muted">Track what you own in Monopoly or Monopoly Mega: rent collected, mortgages, improvements, ROI and break-even. Saved in this browser.</p>
+
+  <div id="msg" role="status"></div>
+
+  <dialog id="newGameDlg">
+    <form id="newGameForm" method="dialog">
+      <h2>New game</h2>
+      <label>Name <input class="mon-input" name="name" required maxlength="40" autocomplete="off"></label>
+      <fieldset class="editions">
+        <legend>Edition</legend>
+        <label class="opt"><input type="radio" name="edition" value="classic" checked> <span><b>Standard Monopoly</b><br><span class="muted">40 spaces. Improvements: 4 houses, then a hotel.</span></span></label>
+        <label class="opt"><input type="radio" name="edition" value="mega"> <span><b>Monopoly Mega</b><br><span class="muted">Adds 9 deeds (8 streets and the Gas Company), train depots, and a skyscraper above the hotel.</span></span></label>
+      </fieldset>
+      <div class="row">
+        <button class="mon-button" value="create">Create game</button>
+        <button class="mon-button mon-button--paper" value="cancel" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="tradeDlg">
+    <form id="tradeForm">
+      <h2>Trade</h2>
+      <p class="muted" style="margin:0">Each side's cost basis is totaled. What you give away carries its cost basis to what you receive, split evenly. Only unimproved, unmortgaged properties can be traded.</p>
+      <div class="cols">
+        <div><b>You give</b><div class="pick" id="giveList"></div></div>
+        <div><b>You receive</b><div class="pick" id="getList"></div></div>
+      </div>
+      <div class="row">
+        <label>Cash <select id="cashSide" class="mon-select"><option value="none">none</option><option value="paid">I pay</option><option value="got">I receive</option></select></label>
+        <label>Amount <input id="cashAmt" class="mon-input" type="number" min="0" step="1" disabled></label>
+      </div>
+      <div id="preview" role="status"></div>
+      <div class="row">
+        <button class="mon-button" id="tradeGo" value="go">Make trade</button>
+        <button type="button" id="tradeCancel" class="mon-button mon-button--paper">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="repairsDlg">
+    <form id="repairsForm">
+      <h2>Repairs</h2>
+      <p class="muted" style="margin:0">A repairs card charges you for every house, hotel, skyscraper and train depot you own. Each property's share is added to its cost basis.</p>
+      <fieldset class="editions">
+        <legend>Card drawn</legend>
+        <label class="opt"><input type="radio" name="rcard" value="chance" checked> <span><b>Chance</b><br><span class="muted" id="rateChance"></span></span></label>
+        <label class="opt"><input type="radio" name="rcard" value="chest"> <span><b>Community Chest</b><br><span class="muted" id="rateChest"></span></span></label>
+      </fieldset>
+      <div id="repairPreview" role="status"></div>
+      <div class="row">
+        <button class="mon-button" id="repairGo" value="go">Pay</button>
+        <button type="button" id="repairCancel" class="mon-button mon-button--paper">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Games list: the home screen (#/) -->
+  <div id="listView" hidden>
+    <div class="row bar"><h2 style="margin:0">Games</h2>
+      <button id="newGame" class="mon-button">New game</button>
+    </div>
+    <div id="games"></div>
+    <details class="panel" id="backupPanel">
+      <summary>Backup</summary>
+      <div class="row">
+        <button id="exportAll" class="mon-button mon-button--paper">Export all games</button>
+        <label>Import JSON <input id="import" class="mon-input" type="file" accept="application/json,.json"></label>
+      </div>
+      <p class="muted">Export all games writes every game to one file. Import adds the games in a file to this browser; a game with the same ID is replaced and your other games are kept. Open a game to export just that game, or a report you can print.</p>
+    </details>
+  </div>
+
+  <!-- One game (#/game/<id>) -->
+  <div id="gameView" hidden>
+  <p class="crumb"><a href="#/">&larr; All games</a></p>
+  <div class="row bar">
+    <h2 id="gameTitle" style="margin:0"></h2>
+    <button id="renameGame" class="mon-button mon-button--paper">Rename</button>
+    <button id="deleteGame" class="mon-button mon-button--paper danger">Delete</button>
+  </div>
+  <p class="muted" id="gameMeta" style="margin:0 0 .5rem"></p>
+
+  <div id="main">
+    <div class="summary" id="summary"></div>
+    <p class="muted" id="summaryNote" style="margin:.25rem 0 .75rem;font-size:.85rem"></p>
+
+    <details class="panel" id="addPanel" open>
+      <summary>Buy a property</summary>
+      <form id="quick" class="grid">
+        <label>Title deed <select id="deed" class="mon-select"></select></label>
+        <label>Price paid <input id="paid" class="mon-input" type="number" min="0" step="1" placeholder="list price"></label>
+        <button class="mon-button">Buy</button>
+      </form>
+    </details>
+
+    <div class="row"><h2 style="margin:0">Properties</h2>
+      <button id="trade" class="mon-button mon-button--paper">Trade</button>
+      <button id="repairs" class="mon-button mon-button--paper">Repairs</button>
+      <select id="sort" class="mon-select" aria-label="Sort"><option value="group">by group</option><option value="added">in order bought</option><option value="remaining">most left to break even</option><option value="profit">best profit</option></select>
+    </div>
+    <div id="list"></div>
+    <details class="panel" id="archivedPanel" hidden>
+      <summary id="archivedSummary">Traded away</summary>
+      <div id="archived"></div>
+    </details>
+
+    <details class="panel">
+      <summary>Export this game</summary>
+      <div class="row">
+        <button id="export" class="mon-button mon-button--paper">Export game (JSON)</button>
+        <button id="exportReport" class="mon-button mon-button--paper">Export report (HTML)</button>
+      </div>
+      <p class="muted">The JSON file is a backup of this game that you can import later. The report is a single page you can open anywhere or print. Both are named with the day the game was created and its name.</p>
+    </details>
+  </div>
+
+  <details class="panel">
+    <summary>How the numbers work</summary>
+    <ul>
+      <li><b>Invested</b>: purchase price, every house, and the 10% interest when you lift a mortgage.</li>
+      <li><b>Returned</b>: rent collected plus improvements sold back (at half cost).</li>
+      <li><b>Game left to break even</b> is your net loss across the whole game (invested less returned, never below zero). <b>Owed by unpaid properties</b> adds up what each property you own that hasn't paid back still owes, so a property that has paid off doesn't offset the others. They differ by the profit on paid-off properties, net of any loss on traded-away ones.</li>
+      <li><b>Break even</b> when returned reaches invested. <b>ROI</b> is (returned − invested) ÷ invested.</li>
+      <li>A mortgage is a loan: the cash is not counted as income, only the interest is a cost. Outstanding loans are shown separately.</li>
+      <li><b>Repairs:</b> the Repairs button charges a Chance or Community Chest repairs card for every house, hotel, skyscraper and train depot you own. A hotel replaces its houses and a skyscraper replaces its hotel, as on the board. Each property's share goes in its history and adds to its cost basis, so it counts toward what you need to break even.</li>
+      <li><b>Trades:</b> the cost basis of what you give (price paid, less improvements sold back) plus cash you pay, less cash you receive, becomes the cost basis of what you receive, split evenly. Properties traded away stay in your totals, and basis moved between them is not counted twice.</li>
+      <li><b>Rent</b> is taken from the card and your game: improvement level, set bonuses (standard: double for a full unimproved set; Mega: one shy of the full set pays double the site rent, and the full set pays triple), railroads and utilities by number owned. You only enter the dice total for a utility.</li>
+      <li><b>Rents to break even</b> uses your average rent collected so far, or what the card pays now.</li>
+      <li>Improvement levels: 1–4 houses, 5 hotel, and in Mega 6 skyscraper (Mega: 1–4 houses, hotel, skyscraper; a railroad takes one train depot, which doubles its rent).</li>
+    </ul>
+  </details>
+  </div>
+
+  <small id="version">2026-11-27T20:13:55Z</small>
+
+  <script type="module">
+    import { reportFileName, reportHtml } from './report.js';
+    import { gameCreated, ymd, CARDS, GROUPS, REPAIR_RATES, buyProperty, canDeleteEntry, collectAutoRent, deleteEntry, executeTrade, gameStats, improve, levelName, maxLevel, exportFileName, migrateGames, newProperty, parseGames, partialAt, payRepairs, planRepairs, planTrade, pricePaid, rentFor, setPricePaid, sellImprovement, stats, toggleMortgage, tradeBlock, uid } from './tracker.js';
+
+    // Kept from this page's earlier name so games already saved in the browser still load.
+    const KEY = 'monopoly-tracker-v1';
+    // The monopoly sheet's color groups (its names for them), by this page's group names.
+    // The first group is purple in the sheet's vintage palette, which suits the original game. Mega's is brown,
+    // which the sheet does not have, so that one is this page's own (.g-brown).
+    const MON_GROUP = { lightblue: 'lblue', pink: 'magenta', orange: 'orange', red: 'red', yellow: 'yellow', green: 'green', darkblue: 'blue' };
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n * 100) / 100).toLocaleString();
+    const pct = (r) => (r * 100).toFixed(0) + '%';
+    const cls = (n) => (n > 0 ? 'good' : n < 0 ? 'bad' : '');
+
+    let games = [];
+    let currentId = '';
+    let sort = 'group'; // matches the first option of #sort
+
+    function load() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
+        const g = raw && parseGames(raw.games);
+        if (g) games = migrateGames(g);
+      } catch {}
+    }
+    // The address picks the screen: #/ is the games list, #/game/<id> is one game. A bad id goes back to the list.
+    function route() {
+      const m = location.hash.match(/^#\/game\/(.+)$/);
+      const id = m ? decodeURIComponent(m[1]) : '';
+      const next = games.some((g) => g.id === id) ? id : '';
+      if (next !== currentId) { currentId = next; say(''); window.scrollTo(0, 0); }
+      if (m && !next) location.replace('#/');
+    }
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify({ games, current: currentId })); } catch { say('Could not save to this browser.'); }
+    }
+    const game = () => games.find((g) => g.id === currentId);
+    function say(t) { $('msg').textContent = t || ''; }
+    function h(tag, attrs = {}, ...kids) {
+      const e = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) { if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v; else e.setAttribute(k, v); }
+      for (const k of kids) e.append(k);
+      return e;
+    }
+
+    // The games list: newest first, each a link to its game with the figures that matter.
+    function renderList() {
+      const made = (g) => gameCreated(g)?.getTime() ?? 0;
+      const sorted = [...games].sort((a, b) => made(b) - made(a));
+      $('games').replaceChildren(...(sorted.length ? sorted.map((g) => {
+        const t = gameStats(g), d = gameCreated(g);
+        const a = h('a', { class: 'gamecard', href: '#/game/' + encodeURIComponent(g.id) },
+          h('div', { class: 'gc-head' }, h('span', { class: 'gc-name', text: g.name }), h('span', { class: 'mon-badge', text: g.edition === 'mega' ? 'Mega' : 'Original' })),
+          h('div', { class: 'gc-meta', text: (d ? 'Created ' + ymd(d) + ' · ' : '') + t.count + (t.count === 1 ? ' property owned' : ' properties owned') }),
+          h('div', { class: 'nums' }, h('span', { text: 'invested ' }, h('b', { text: money(t.invested) })), h('span', { text: 'rent ' }, h('b', { text: money(t.rent) })),
+            h('span', { text: 'profit ' }, h('b', { class: cls(t.profit), text: money(t.profit) })), h('span', { text: 'ROI ' }, h('b', { class: cls(t.profit), text: t.invested ? pct(t.roi) : '–' }))));
+        return a;
+      }) : [h('p', { class: 'muted', text: 'No games yet. Start one with New game, or import a backup.' })]));
+    }
+
+    function render() {
+      const g = game();
+      $('listView').hidden = !!g; $('gameView').hidden = !g;
+      document.title = (g ? g.name + ' · ' : '') + 'Monopoly asset manager';
+      if (!g) { renderList(); return; }
+      const made = gameCreated(g);
+      $('gameTitle').textContent = g.name;
+      $('gameMeta').textContent = (g.edition === 'mega' ? 'Monopoly Mega' : 'Monopoly (original)') + (made ? ' · created ' + ymd(made) : '');
+      fillDeeds(g);
+      const t = gameStats(g);
+      const stat = (label, value, c = '') => h('div', { class: 'stat' }, h('b', { class: c, text: value }), h('span', { text: label }));
+      $('summary').replaceChildren(
+        stat('Invested', money(t.invested)), stat('Rent collected', money(t.rent)),
+        stat('Net profit', money(t.profit), cls(t.profit)), stat('ROI', t.invested ? pct(t.roi) : '–', cls(t.profit)),
+        stat('Game left to break even', money(t.gameRemaining)), stat('Owed by unpaid properties', money(t.remaining)),
+        stat('Properties broken even', t.broken + ' of ' + t.count), stat('Mortgage loans out', money(t.loan), t.loan ? 'bad' : ''));
+      // The two break-even numbers differ when something has paid off, or been traded away, at a different rate.
+      $('summaryNote').textContent = !t.offset ? '' : t.offset > 0
+        ? 'Game left to break even is ' + money(t.offset) + ' less than what unpaid properties owe: properties that have paid off are ahead (net of any loss on traded-away ones), and that profit counts for the game as a whole.'
+        : 'Game left to break even is ' + money(-t.offset) + ' more than what the properties you own owe: traded-away properties lost money, which the game total still carries.';
+      const props = g.properties.map((p) => ({ p, s: stats(p, g) }));
+      if (sort === 'remaining') props.sort((a, b) => b.s.remaining - a.s.remaining);
+      else if (sort === 'profit') props.sort((a, b) => b.s.profit - a.s.profit);
+      else if (sort === 'group') {
+        // Color groups in board order, and within a group the deeds in board order.
+        const spot = (p) => { const i = CARDS[g.edition].findIndex((c) => c.name === p.name); return i < 0 ? Infinity : i; };
+        props.sort((a, b) => GROUPS.indexOf(a.p.group) - GROUPS.indexOf(b.p.group) || spot(a.p) - spot(b.p));
+      }
+      const arch = g.archived || [];
+      $('archivedPanel').hidden = !arch.length;
+      $('archivedSummary').textContent = 'Traded away (' + arch.length + ')';
+      $('archived').replaceChildren(...arch.map((p) => archivedCard(g, p)));
+      $('list').replaceChildren(...(props.length ? props.map(({ p, s }) => card(g, p, s)) : [h('p', { class: 'muted', text: 'No properties yet. Add one above.' })]));
+    }
+
+    const LABELS = ['rent', '1 house', '2 houses', '3 houses', '4 houses', 'hotel', 'skyscraper'];
+    function rentTable(g, p, due) {
+      const n = g.properties.filter((x) => x.group === p.group).length;
+      const rows = [];
+      if (p.kind === 'railroad' || p.kind === 'utility') {
+        const cur = Math.min(n, p.rents.length);
+        p.rents.forEach((r, i) => rows.push([(i + 1) + ' owned', p.kind === 'utility' ? r + '× dice' : money(r) + (p.houseCost > 0 ? ' · ' + money(r * 2) + ' with depot' : ''), i + 1 === cur]));
+      } else {
+        const full = p.groupSize > 0 && n >= p.groupSize;
+        if (p.tiers) {
+          const part = partialAt(p);
+          rows.push([part <= 2 ? '1 owned' : '1–' + (part - 1) + ' owned', money(p.rents[0]), p.level === 0 && n < part],
+            [part + ' owned (2×)', money(p.tiers[0]), p.level === 0 && n >= part && !full], ['all ' + p.groupSize + ' owned (3×)', money(p.tiers[1]), p.level === 0 && full]);
+          p.rents.slice(1).forEach((r, i) => rows.push([LABELS[i + 1], money(r), i + 1 === p.level]));
+        } else p.rents.forEach((r, i) => rows.push([i === 0 ? 'unimproved' : LABELS[i] || 'level ' + i, money(r), i === p.level]));
+      }
+      const note = p.kind === 'street' && p.groupSize && !p.tiers ? 'Unimproved rent doubles with the full set (' + n + ' of ' + p.groupSize + ' owned).'
+        : p.kind === 'street' && p.groupSize ? n + ' of ' + p.groupSize + ' owned in this group.' : '';
+      return h('details', {}, h('summary', { class: 'muted', text: 'Rent card' + (due != null && p.kind !== 'utility' ? ' · pays ' + money(due) + ' now' : '') }),
+        h('table', { class: 'rents' }, ...rows.map(([a, b, now]) => h('tr', { class: now ? 'now' : '' }, h('td', { text: a }), h('td', { text: b })))),
+        ...(note ? [h('p', { class: 'muted', text: note })] : []));
+    }
+
+    // History list. Each entry has a delete button unless it can't be deleted (the purchase, trade entries).
+    const historyOpen = new Set(); // property ids whose history is open; survives re-renders
+    function history(p, archived) {
+      const d = h('details', { 'data-hist': p.id }, h('summary', { class: 'muted', text: 'History (' + p.entries.length + ')' }),
+        h('ul', { class: 'hist' }, ...[...p.entries].reverse().map((e) => {
+          const label = e.type + (e.note ? ': ' + e.note : '');
+          const amt = h('span', { class: 'amt' }, h('span', { class: cls(e.amount), text: money(e.amount) }));
+          if (canDeleteEntry(p, e, archived)) {
+            amt.append(h('button', { class: 'mon-button mon-button--paper danger', 'data-action': 'delete-entry', 'data-entry': e.id, 'data-label': label + ' ' + money(e.amount), 'aria-label': 'Delete history entry: ' + label + ' ' + money(e.amount), text: '✕' }));
+          }
+          return h('li', {}, h('span', { text: label }), amt);
+        })));
+      if (historyOpen.has(p.id)) d.open = true;
+      return d;
+    }
+
+    /** The class that sets a card's color accent, or '' for railroads and utilities. */
+    const groupClass = (g, p) => (p.group === 'brown' ? (g.edition === 'mega' ? 'g-brown' : 'mon-g-purple') : MON_GROUP[p.group] ? 'mon-g-' + MON_GROUP[p.group] : '');
+
+    function archivedCard(g, p) {
+      const s = stats(p, g);
+      const c = h('div', { class: 'card', 'data-id': p.id });
+      if (groupClass(g, p)) c.classList.add(groupClass(g, p));
+      c.append(h('div', { class: 'row' }, h('h3', { text: p.name }), h('span', { class: 'mon-badge', text: 'traded away' })));
+      c.append(h('div', { class: 'nums' }, h('span', { text: 'invested ' }, h('b', { text: money(s.invested) })),
+        h('span', { text: 'rent ' }, h('b', { text: money(s.rent) })), h('span', { text: 'profit ' }, h('b', { class: cls(s.profit), text: money(s.profit) }))));
+      c.append(history(p, true));
+      return c;
+    }
+
+    const expanded = new Set(); // property ids whose card is open; survives re-renders
+
+    function card(g, p, s) {
+      const max = maxLevel(g, p);
+      const open = expanded.has(p.id);
+      const c = h('div', { class: 'card' + (p.mortgaged ? ' mortgaged' : '') + (open ? ' open' : ''), 'data-id': p.id });
+      if (groupClass(g, p)) c.classList.add(groupClass(g, p));
+      const btn = (action, text, extra = '') => h('button', { 'data-action': action, class: 'mon-button' + (extra === 'primary' ? '' : ' mon-button--paper' + (extra ? ' ' + extra : '')), text });
+
+      // Collapsed view: name, pills and the rent button.
+      // The color accent already names the group; railroads and utilities have none, so they keep a pill.
+      const tags = h('span', { class: 'row' }, ...(groupClass(g, p) ? [] : [h('span', { class: 'mon-badge', text: p.group })]));
+      if (p.houseCost > 0) tags.append(h('span', { class: 'mon-badge', text: levelName(p) }));
+      if (p.mortgaged) tags.append(h('span', { class: 'mon-badge mon-badge--solid', text: 'mortgaged' }));
+      if (s.broken) tags.append(h('span', { class: 'mon-badge', text: '✓ broke even' }));
+      const toggle = h('button', { class: 'toggle', 'data-action': 'toggle', 'aria-expanded': String(open), 'aria-label': (open ? 'Collapse ' : 'Expand ') + p.name },
+        h('span', { class: 'title' }, h('span', { class: 'chev', text: open ? '▾' : '▸', 'aria-hidden': 'true' }), h('h3', { text: p.name })), tags);
+      const due = rentFor(g, p);
+      // The card and game state say what is owed; ask only for what they cannot know.
+      const ask = p.mortgaged ? null : p.kind === 'utility' ? 'dice total' : due == null ? 'rent' : null;
+      const quick = h('div', { class: 'row quick' });
+      if (ask) quick.append(h('input', { class: 'mon-input', type: 'number', min: '0', step: '1', 'aria-label': ask, placeholder: ask === 'dice total' ? 'dice' : ask, 'data-rent': '' }));
+      quick.append(btn('rent', 'Collect rent' + (!p.mortgaged && due != null && !ask ? ' (' + money(due) + ')' : ''), 'primary'));
+      c.append(h('div', { class: 'head' + (ask ? ' stack' : '') }, toggle, quick));
+
+      // Expanded view: numbers, the other actions, the rent card and history.
+      const more = h('div', { class: 'more' });
+      if (!open) more.hidden = true;
+      const n = (label, value, k = '') => h('span', { text: label + ' ' }, h('b', { class: k, text: value }));
+      const hits = s.remaining === 0 ? '' : s.hitsToBreakEven == null ? 'no rent data to estimate' : '≈ ' + s.hitsToBreakEven + (s.hitsToBreakEven === 1 ? ' rent' : ' rents');
+      more.append(h('div', { class: 'nums' },
+        n('invested', money(s.invested)), ...(p.entries[0]?.carried != null ? [n('cost basis (traded)', money(pricePaid(p)) + ' (list ' + money(p.price) + ')')] : pricePaid(p) !== p.price ? [n('paid', money(pricePaid(p)) + ' (list ' + money(p.price) + ')', pricePaid(p) < p.price ? 'good' : 'bad')] : []), n('rent', money(s.rent) + (s.rentCount ? ' (' + s.rentCount + '×)' : '')),
+        n('profit', money(s.profit), cls(s.profit)), n('ROI', s.invested ? pct(s.roi) : '–', cls(s.profit)),
+        n('to break even', money(s.remaining) + (hits ? ', ' + hits : '')),
+        ...(s.loan ? [n('mortgage loan', money(s.loan), 'bad')] : [])));
+      more.append(h('progress', { max: String(s.invested || 1), value: String(Math.min(s.returned, s.invested)), 'aria-label': 'Progress to break even' }));
+      const actions = h('div', { class: 'row bar' });
+      if (p.houseCost > 0) actions.append(btn('build', (p.kind === 'railroad' ? '+ depot (' : '+ build (') + money(p.houseCost) + ')'), btn('sell', '− sell back'));
+      actions.append(btn('mortgage', p.mortgaged ? 'Lift mortgage (' + money(Math.ceil(p.mortgageValue * 1.1)) + ')' : 'Mortgage (+' + money(p.mortgageValue) + ')'), btn('edit', 'Edit'), btn('remove', 'Remove', 'danger'));
+      if (p.level >= max) actions.querySelector('[data-action=build]')?.setAttribute('disabled', '');
+      more.append(actions);
+      if (p.rents && p.rents.length) more.append(rentTable(g, p, due));
+      more.append(history(p, false));
+      c.append(more);
+      return c;
+    }
+
+    // --- events ---
+    $('sort').addEventListener('change', (e) => { sort = e.target.value; render(); });
+    const dlg = $('newGameDlg');
+    $('newGame').addEventListener('click', () => {
+      $('newGameForm').reset();
+      $('newGameForm').elements.name.value = 'Game ' + (games.length + 1);
+      dlg.showModal();
+      $('newGameForm').elements.name.select();
+    });
+    $('newGameForm').addEventListener('submit', (e) => {
+      if (e.submitter?.value !== 'create') return;
+      const f = e.target.elements;
+      const name = f.name.value.trim().slice(0, 40);
+      if (!name) return;
+      const g = { id: uid(), name, edition: f.edition.value, properties: [], created: new Date().toISOString() };
+      games.push(g); currentId = g.id; location.hash = '#/game/' + encodeURIComponent(g.id); save(); say(); render(); window.scrollTo(0, 0);
+    });
+    $('renameGame').addEventListener('click', () => {
+      const g = game(); const name = g && prompt('Game name', g.name);
+      if (name) { g.name = name.trim().slice(0, 40); save(); render(); }
+    });
+    $('deleteGame').addEventListener('click', () => {
+      const g = game();
+      if (g && confirm('Delete "' + g.name + '" and all its properties?')) { games = games.filter((x) => x !== g); currentId = ''; location.hash = '#/'; save(); say(); render(); }
+    });
+
+    // Only deeds you do not own are offered; the picker is rebuilt on every render so it stays current.
+    function fillDeeds(g) {
+      const own = new Set(g.properties.map((p) => p.name));
+      const before = $('deed').value;
+      const left = CARDS[g.edition].map((d, i) => ({ d, i })).filter(({ d }) => !own.has(d.name));
+      $('deed').replaceChildren(...left.map(({ d, i }) => h('option', { value: String(i), text: d.name + ' ($' + d.price + ')' })));
+      if (left.some(({ i }) => String(i) === before)) $('deed').value = before;
+      const none = !left.length;
+      $('deed').disabled = none; $('paid').disabled = none; $('quick').querySelector('button').disabled = none;
+      if (none) $('deed').replaceChildren(h('option', { text: 'You own every deed' }));
+    }
+    function add(card, paid) {
+      const g = game(); if (!g) return;
+      const err = buyProperty(g, card, paid);
+      if (err) { say(err); render(); return; }
+      save(); say(); render();
+    }
+    $('quick').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Blank means list price; enter the bid for an auction or the agreed price.
+      const raw = $('paid').value.trim();
+      if (raw !== '' && !(Number(raw) >= 0)) { say('Price paid must be a number.'); return; }
+      add(CARDS[game().edition][+$('deed').value], raw === '' ? undefined : Number(raw));
+      $('paid').value = '';
+    });
+    // Remember which histories are open (the toggle event does not bubble, so listen in the capture phase).
+    $('main').addEventListener('toggle', (e) => {
+      const id = e.target.dataset?.hist; if (!id) return;
+      e.target.open ? historyOpen.add(id) : historyOpen.delete(id);
+    }, true);
+    $('main').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-action="delete-entry"]'); if (!b) return;
+      const g = game(); const c = b.closest('.card');
+      const live = g.properties.find((x) => x.id === c.dataset.id);
+      const p = live || (g.archived || []).find((x) => x.id === c.dataset.id);
+      if (!p || !confirm('Delete this history entry?\n\n' + b.dataset.label)) return;
+      const err = deleteEntry(g, p, b.dataset.entry, !live);
+      say(err); if (!err) save(); render();
+    });
+    $('list').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-action]'); if (!b || b.dataset.action === 'delete-entry') return;
+      const c = b.closest('.card'); const g = game(); const p = g.properties.find((x) => x.id === c.dataset.id);
+      const a = b.dataset.action;
+      if (a === 'toggle') { expanded.has(p.id) ? expanded.delete(p.id) : expanded.add(p.id); render(); return; }
+      let err = null;
+      if (a === 'rent') {
+        const input = c.querySelector('[data-rent]');
+        err = collectAutoRent(g, p, input && input.value !== '' ? Number(input.value) : undefined);
+        if (err && input) input.focus();
+      } else if (a === 'build') err = improve(p, maxLevel(g, p));
+      else if (a === 'sell') err = sellImprovement(p);
+      else if (a === 'mortgage') err = toggleMortgage(p);
+      else if (a === 'remove') { if (!confirm('Remove ' + p.name + ' and its history?')) return; g.properties = g.properties.filter((x) => x !== p); }
+      else if (a === 'edit') {
+        const v = (q, cur) => { const r = prompt(q, String(cur)); return r === null || r.trim() === '' || !(Number(r) >= 0) ? cur : Number(r); };
+        setPricePaid(p, v((p.entries[0]?.carried != null ? 'Cost basis' : 'Price paid') + ' (list price ' + money(p.price) + ')', pricePaid(p)));
+        p.houseCost = v('Cost per house/improvement', p.houseCost);
+        p.mortgageValue = v('Mortgage value', p.mortgageValue);
+      }
+      say(err); save(); render();
+    });
+
+    // --- trade ---
+    const tdlg = $('tradeDlg');
+    function tradeInput() {
+      const side = $('cashSide').value, amt = Number($('cashAmt').value) || 0;
+      const g = game();
+      return {
+        giveIds: [...document.querySelectorAll('#giveList input:checked')].map((i) => i.value),
+        receive: [...document.querySelectorAll('#getList input:checked')].map((i) => CARDS[g.edition][+i.value]),
+        cashPaid: side === 'paid' ? amt : 0, cashReceived: side === 'got' ? amt : 0,
+      };
+    }
+    function previewTrade() {
+      const g = game(), pv = $('preview');
+      $('cashAmt').disabled = $('cashSide').value === 'none';
+      const t = tradeInput();
+      pv.classList.remove('err');
+      if (!t.giveIds.length && !t.receive.length) { pv.textContent = 'Pick what you give and what you receive.'; $('tradeGo').disabled = true; return; }
+      const plan = planTrade(g, t);
+      $('tradeGo').disabled = 'error' in plan;
+      if ('error' in plan) { pv.classList.add('err'); pv.textContent = plan.error; return; }
+      const lines = [];
+      lines.push('Give: ' + (plan.give.length ? plan.give.map((p, i) => p.name + ' ' + money(plan.bases[i])).join(' + ') + ' = ' + money(plan.giveBasis) + ' basis' : 'no properties'));
+      if (plan.cashPaid) lines.push('Plus cash you pay: ' + money(plan.cashPaid));
+      if (plan.cashReceived) lines.push('Cash you receive: ' + money(plan.cashReceived) + ' (reduces the basis carried over)');
+      if (t.receive.length) {
+        lines.push('Receive ' + t.receive.length + (t.receive.length === 1 ? ' property' : ' properties') + ', basis ' + money(plan.carried + plan.cashPaid) + ' split evenly:');
+        t.receive.forEach((c, i) => lines.push('  ' + c.name + ': ' + money(plan.shares[i].basis) + ' (list ' + money(c.price) + ')'));
+      } else lines.push('You receive no properties; the cash is a sale.');
+      pv.textContent = lines.join('\n');
+      pv.style.whiteSpace = 'pre-wrap';
+    }
+    $('trade').addEventListener('click', () => {
+      const g = game(); if (!g) return;
+      const own = new Set(g.properties.map((p) => p.name));
+      $('giveList').replaceChildren(...(g.properties.length ? g.properties.map((p) => {
+        const block = tradeBlock(p);
+        const l = h('label', { class: block ? 'off' : '' }, h('input', { type: 'checkbox', value: p.id }), p.name + (block ? ' (' + block + ')' : ''));
+        if (block) l.querySelector('input').disabled = true;
+        return l;
+      }) : [h('span', { class: 'muted', text: 'You own nothing yet.' })]));
+      $('getList').replaceChildren(...CARDS[g.edition].map((c, i) => ({ c, i })).filter(({ c }) => !own.has(c.name))
+        .map(({ c, i }) => h('label', {}, h('input', { type: 'checkbox', value: String(i) }), c.name + ' ($' + c.price + ')')));
+      $('cashSide').value = 'none'; $('cashAmt').value = '';
+      previewTrade(); tdlg.showModal();
+    });
+    $('tradeForm').addEventListener('input', previewTrade);
+    $('tradeForm').addEventListener('change', previewTrade);
+    $('tradeCancel').addEventListener('click', () => tdlg.close());
+    $('tradeForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const err = executeTrade(game(), tradeInput());
+      if (err) { $('preview').classList.add('err'); $('preview').textContent = err; return; }
+      tdlg.close(); say('Trade recorded.'); save(); render();
+    });
+
+    // --- repairs (Chance / Community Chest) ---
+    const rdlg = $('repairsDlg');
+    const rateText = (g, r) => '$' + r.house + ' per house, $' + r.hotel + ' per hotel' + (g.edition === 'mega' ? ', $' + r.skyscraper + ' per skyscraper, $' + r.depot + ' per train depot' : '');
+    const repairCard = () => $('repairsForm').elements.rcard.value;
+    function previewRepairs() {
+      const g = game(), plan = planRepairs(g, repairCard());
+      $('repairGo').disabled = !plan.lines.length;
+      $('repairGo').textContent = plan.lines.length ? 'Pay ' + money(plan.total) : 'Nothing to pay';
+      $('repairPreview').textContent = plan.lines.length
+        ? plan.lines.map((l) => l.property.name + ': ' + l.text + ' = ' + money(l.cost)).join('\n') + '\nTotal ' + money(plan.total) + ', added to each property\'s cost basis.'
+        : 'You have no improvements.';
+    }
+    $('repairs').addEventListener('click', () => {
+      const g = game(); if (!g) return;
+      $('rateChance').textContent = rateText(g, REPAIR_RATES.chance);
+      $('rateChest').textContent = rateText(g, REPAIR_RATES.chest);
+      previewRepairs(); rdlg.showModal();
+    });
+    $('repairsForm').addEventListener('change', previewRepairs);
+    $('repairCancel').addEventListener('click', () => rdlg.close());
+    $('repairsForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const g = game(), plan = planRepairs(g, repairCard());
+      const err = payRepairs(g, repairCard());
+      if (err) { $('repairPreview').textContent = err; return; }
+      rdlg.close(); say(plan.card + ' repairs paid: ' + money(plan.total) + ' across ' + plan.lines.length + (plan.lines.length === 1 ? ' property.' : ' properties.')); save(); render();
+    });
+
+    function downloadText(name, text, type) {
+      const a = h('a', { href: URL.createObjectURL(new Blob([text], { type })), download: name });
+      a.click(); URL.revokeObjectURL(a.href);
+    }
+    const download = (name, data) => downloadText(name, JSON.stringify(data, null, 2), 'application/json');
+    // One game per file, named with the day it was created and its name.
+    $('export').addEventListener('click', () => {
+      const g = game(); if (!g) return;
+      download(exportFileName(g), { exportedAt: new Date().toISOString(), games: [g] });
+    });
+    // A standalone page for reading or printing: totals, what you own, what you traded away, and every history.
+    $('exportReport').addEventListener('click', () => {
+      const g = game(); if (!g) return;
+      downloadText(reportFileName(g), reportHtml(g), 'text/html');
+    });
+    $('exportAll').addEventListener('click', () => {
+      download('monopoly-asset-manager-all-games-' + new Date().toISOString().slice(0, 10) + '.json', { exportedAt: new Date().toISOString(), games });
+    });
+    $('import').addEventListener('change', async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      try {
+        const incoming = parseGames(JSON.parse(await file.text()));
+        if (!incoming || !incoming.length) throw new Error('bad file');
+        migrateGames(incoming);
+        const ids = new Set(incoming.map((g) => g.id));
+        const same = games.filter((g) => ids.has(g.id)).length;
+        if (!confirm('Add ' + incoming.length + ' game(s) from this file?' + (same ? '\n\n' + same + ' with the same ID will be replaced.' : ''))) { e.target.value = ''; return; }
+        games = [...games.filter((g) => !ids.has(g.id)), ...incoming]; currentId = ''; location.hash = '#/'; save(); render(); say('Imported ' + incoming.length + (incoming.length === 1 ? ' game.' : ' games.'));
+      } catch { say('That file is not a valid Monopoly asset manager export.'); }
+      e.target.value = '';
+    });
+
+    load(); route(); render();
+    addEventListener('hashchange', () => { route(); render(); });
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => { navigator.serviceWorker.register('/monopoly-asset-manager/sw.js', { scope: '/monopoly-asset-manager/' }).catch(() => {}); });
+    }
+  </script>
+</body>
+</html>
