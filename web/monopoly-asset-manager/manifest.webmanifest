@@ -1,0 +1,14 @@
+{
+  "name": "Monopoly asset manager",
+  "short_name": "Monopoly assets",
+  "description": "Track owned Monopoly and Monopoly Mega properties: rent, mortgages, improvements, ROI and break-even",
+  "start_url": "/monopoly-asset-manager/",
+  "scope": "/monopoly-asset-manager/",
+  "display": "standalone",
+  "background_color": "#10241A",
+  "theme_color": "#10241A",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

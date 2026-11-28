@@ -244,3 +244,35 @@ test("scoresheet helpers: running item % and hours:minutes:seconds", async () =>
   assert.equal(fmtHms(309 * 3600000 + 6 * 60000 + 1000), "309:06:01");
   assert.equal(fmtSheetStamp(new Date(2026, 10, 1, 16, 48, 40).getTime()), "11/1/2026 16:48:40");
 });
+
+test("route feedback round-trips and the notes report includes every note", async () => {
+  const { notesReport } = await import("../web/metroid-3/engine.js");
+  const game = newGame({ name: "Run" });
+  assert.equal(game.steps[3].feedback, null);
+  game.steps[3].feedback = "First missile is actually left of the morph ball.";
+  game.steps[3].log = "Took the left one first.";
+  game.steps[10].feedback = "Swap with step 12.";
+  game.steps[20].log = "No route note on this one, only a log.";
+  game.entries.push({ id: "e1", ts: T0, title: "Session 1", body: "Notes about the day." });
+
+  const [back] = parseImport(JSON.stringify(toExportJson([game])));
+  assert.equal(back.steps[3].feedback, "First missile is actually left of the morph ball.");
+  assert.equal(back.steps[0].feedback, null);
+
+  const report = notesReport(game, T0);
+  assert.equal(report.format, "metroid-3-notes");
+  assert.equal(report.counts.feedback, 2);
+  assert.equal(report.counts.journalEntries, 1);
+  // Every step with a route note, a log or feedback is present, in route order, not only the feedback ones.
+  const withNote = game.steps.filter((s) => s.note || s.log || s.feedback).map((s) => s.step);
+  assert.deepEqual(report.steps.map((s) => s.step), withNote);
+  assert.ok(report.steps.length >= 90); // the built-in route has 90 steps with a route note
+  const s4 = report.steps.find((s) => s.step === 4);
+  assert.equal(s4.routeNote, "to the right of morph ball");
+  assert.equal(s4.log, "Took the left one first.");
+  assert.equal(s4.feedback, "First missile is actually left of the morph ball.");
+  assert.equal(s4.stepId, game.steps[3].id);
+  assert.equal(report.steps.find((s) => s.step === 21).log, "No route note on this one, only a log.");
+  assert.equal(report.entries[0].body, "Notes about the day.");
+  assert.equal(JSON.parse(JSON.stringify(report)).game.name, "Run");
+});
