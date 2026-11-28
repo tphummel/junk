@@ -10,11 +10,11 @@
     "test": "node --experimental-strip-types --no-warnings --test \"api/**/*.test.mjs\""
   },
   "dependencies": {
-    "hono": "^4.13.18"
+    "hono": "^4.13.22"
   },
   "devDependencies": {
     "typescript": "^7.0.2",
-    "wrangler": "^4.162.0"
+    "wrangler": "^4.168.0"
   },
   "engines": {
     "node": ">=22"
