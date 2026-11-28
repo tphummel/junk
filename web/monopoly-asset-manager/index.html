@@ -233,7 +233,7 @@
   </details>
   </div>
 
-  <small id="version">2026-11-28T04:56:08Z</small>
+  <small id="version">2026-11-28T06:53:01Z</small>
 
   <script type="module">
     import { reportFileName, reportHtml } from './report.js';
@@ -399,9 +399,8 @@
       const b = (action, text, disabled) => h('button', { 'data-group-action': action, 'data-group': group, class: 'mon-button mon-button--paper', text, ...(disabled ? { disabled: '' } : {}) });
       const full = set.every((p) => p.level >= maxLevel(g, p)) || set.some((p) => p.mortgaged);
       return h('div', { class: 'row bar groupbar ' + groupClass(g, sample) },
-        h('span', { class: 'muted', text: 'Whole group: ' }),
-        b('build-all', '+ build all (' + money(cost) + ')', full),
-        b('sell-all', '− sell back all', set.every((p) => p.level <= 0)));
+        b('build-all', '+1 All (' + money(cost) + ')', full),
+        b('sell-all', '−1 All', set.every((p) => p.level <= 0)));
     }
 
     const expanded = new Set(); // property ids whose card is open; survives re-renders
